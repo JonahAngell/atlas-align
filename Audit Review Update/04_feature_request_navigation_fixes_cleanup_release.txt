@@ -1,0 +1,191 @@
+ATLAS Align Update Request
+
+## 1. Title
+Request type: New feature; Refactor; Audit logic or business-rule change; Documentation only
+Title: Add issue navigation and safe fixes, remove duplicate validators, and prepare the feature release
+Risk classification: Medium
+
+## 2. Implementation Contract
+Goal: Add safe Jump and Fix actions through existing ATLAS navigation/mutation paths, complete migration from duplicate legacy issue calculations, and produce the integrated modified-files release package. Preserve publication as advisory-only unless an existing gate already applies.
+Expected files allowed to change:
+- js/23-atlas-audit-issues.js
+- catalogs/audit-issue-rules.json
+- js/08-step-templates-validation.js
+- js/15g-visual-ui-events.js
+- js/16-page-shell.js only for bounded reusable navigation/focus hooks
+- js/21-display-fields.js only for bounded Display Fields focus/navigation hook
+- sections/audit-issues.html and css/audit-issues.css only for action UI refinements
+- sections/readiness-review.html and css/readiness-review.css only for action UI refinements
+- tutorials files only if current selectors are affected
+- css/manifest.json only through build
+- PROJECT_CONTEXT.md
+- PROJECT_TREE.txt
+Required generated artifacts: styles.css if CSS changes.
+Behavior that must remain unchanged:
+- Audit/source/assignment/step/display mutation rules, autosave, durable write scheduling, editor DOM preservation, virtualization, preview/export, publication, API/database/authorization, Visual Picker, and Join Picker.
+Definition of done:
+- Supported issues navigate to stable current targets.
+- Selected deterministic fixes use established mutation paths and stale-target guards.
+- Unsupported fixes remain navigation-only.
+- Duplicate active issue calculations are removed or retained only as documented thin compatibility wrappers.
+- Final integrated modified-files ZIP is delivered with documentation and validation.
+Blocking assumptions or decisions:
+- Assignment selection, source/field choice, relationship resolution, hierarchy repair, removed references, and other ambiguous changes are navigation-only.
+- Initial inline fixes are limited to deterministic selections supported by existing options and commit paths; do not create speculative fixes.
+Implementation flexibility: If a direct fix cannot preserve current mutation/persistence contracts, omit it and provide Jump behavior.
+
+## 3. User-visible Problem
+Users affected: Users resolving audit issues.
+Workflow affected: Moving from issue discovery to correction.
+Current behavior: Phase 3 displays issues but actions are not yet connected to owning controls or safe mutation paths.
+Where it occurs: Issue popup, Readiness & Review, Audit Overview, Sources, Logic Builder, Display Fields.
+Frequency: Data-dependent.
+Impact: Users must locate issue targets manually and duplicated validators may remain confusing to maintain.
+Screenshot attached: Not applicable.
+
+## 4. Verified Source Evidence
+### 4.1 Source Authority
+Authoritative planning materials:
+- Current FEATURE_REQUEST_TEMPLATE.md
+- Current PROJECT_CONTEXT.md
+- Current PROJECT_TREE.txt
+- Current-request Issue Review requirements and approved five-part delivery plan
+- For implementation, use the most recent consolidated review bundle produced from the companion file list.
+
+Important version instruction: Use only the most recently attached current files as implementation inputs. Do not substitute archived files, prior-conversation copies, generated aggregates, repository-history versions, or enterprise copies unless explicitly directed.
+
+### 4.2 Verified Facts
+- The app uses ordered classic browser scripts and shared global runtime dependencies.
+- HTML partials load before DOM caching and bootstrap.
+- Readiness Review validates audit completeness and identifies logic issues before publication.
+- Existing validation is documented in js/08-step-templates-validation.js, including validateAudit(), renderValidationPanel(), validateAuditWithMath(), and addMathIssues().
+- Additional issue calculations and caching are documented in js/15g-visual-ui-events.js, including math, string-transform, created-field, and Logic Builder checks.
+- Logic Builder hierarchy is authoritative in application state while the rule list is virtualized; stable step IDs must be revealed before focus.
+- Assignment state preserves separate assigned, backup, and developer roles.
+- Audit edits use existing autosave and revision-aware durable-write coordination.
+- Split CSS files under css/ are authoritative; css/manifest.json controls cascade order and build-css.mjs generates styles.css.
+- PROJECT_CONTEXT.md identifies current version v2.0, while FEATURE_REQUEST_TEMPLATE.md says v1.6.1. Do not silently change version text during this feature.
+
+### 4.3 Implementation Hypotheses
+- A portable engine can evaluate normalized context through named evaluators and declarative rule metadata without reading state.audit directly.
+- JSON can safely hold rule IDs, severity, category, text, order, evaluator names, navigation names, and remediation names while executable functions remain registered in JavaScript.
+- Existing validation functions can remain as temporary compatibility wrappers while their calculations migrate to one canonical issue collection.
+
+### 4.4 Unknowns
+- Exact historical floating-control dimensions are non-blocking; follow current app tokens and accessible patterns.
+- Browser-computed focus, contrast, stacking, and responsive behavior require runtime checks.
+- Field-relationship validation is blocking only for that rule: do not enable it unless authoritative metadata or an explicit audit relationship proves incompatibility.
+- Inline fixes are non-blocking individually; unsupported or ambiguous fixes must remain navigation-only.
+
+## 8. Technical Constraints
+- Preserve the classic script architecture, established load order, vanilla JavaScript, existing dependencies, and deployment model.
+- Make the smallest safe change and avoid unrelated refactoring, modernization, or framework conversion.
+- Keep issue results transient and derived; do not persist issue snapshots in the audit document or database.
+- Do not add API routes, database migrations, authorization changes, or dependencies.
+- Keep the portable engine free of ATLAS state, selectors, navigation, persistence, rendering, export, and database functions.
+- Never evaluate catalog strings as JavaScript. Named evaluator, target resolver, and remediation registries are required.
+- Escape issue content before rendering.
+- Preserve selected-editor DOM behavior, hierarchy, virtualization, drag and drop, autosave, durable writes, preview/export, and publication behavior.
+- js/15-visual-ui-upgrades.js must not be loaded, imported, required, fetched, executed, or used as an implementation source. If executable access is detected, stop and report a release-blocking conflict.
+- Edit split CSS source files and generate styles.css with build-css.mjs.
+- Never claim a check passed unless it was performed successfully.
+
+## 10. Validation Plan
+### 10.1 Required Before Delivery
+- Run node --check on every modified JavaScript file.
+- Validate catalogs/audit-issue-rules.json with JSON.parse.
+- Run node build-css.mjs --check before writing CSS output when CSS changes.
+- Run node build-css.mjs and node build-css.mjs --check --no-discover after CSS changes.
+- Run applicable npm tests after inspecting package.json.
+- Review file paths, load order, unique IDs, listener binding, stale references, scoped diff, and ZIP contents.
+- Run the protected-file reference guard:
+  grep -RInE --exclude='15-visual-ui-upgrades.js' --exclude='PROJECT_CONTEXT.md' --exclude='PROJECT_TREE.txt' --exclude='*.txt' '15-visual-ui-upgrades\.js' index.html public js sections server.js package.json .launch tools test
+- The reference guard must return no executable references.
+
+### 10.2 Evidence Rule
+For every check, report the exact command or browser action and actual result. Use Passed or Verified only when performed successfully; otherwise state Failed or Not performed and provide the exact follow-up.
+
+## 11. Documentation Determination
+Expected determination: Update expected when this phase adds/removes files, changes file responsibilities, public functions, load order, architectural constraints, or validation ownership.
+PROJECT_CONTEXT.md must be updated and included when a maintenance trigger occurs.
+PROJECT_TREE.txt must be updated and included whenever the implemented file tree changes.
+Do not silently resolve the v2.0 versus v1.6.1 documentation conflict; disclose it and preserve the most recent authoritative project version.
+
+## 12. Deliverable
+Requested format: Modified files only in a ZIP package.
+Preserve project-relative paths. Include files actually modified, required generated artifacts, css/manifest.json only if changed by the build, PROJECT_CONTEXT.md when triggered, and PROJECT_TREE.txt when the tree changes. Exclude aggregate review bundles, request files, screenshots, logs, node_modules, secrets, prior packages, historical patches, and unchanged files.
+
+## 13. Evidence-based Delivery Summary
+Use these headings: Root cause; Implementation; Modified source files; Generated artifacts; Conditional files; Validation performed; Validation not performed; Assumptions; Known risks or limitations; Scope confirmation; Application steps; Verification steps; Download.
+
+
+## 5. Desired Behavior
+Required behavior:
+- Jump actions resolve from named adapter actions, not catalog code.
+- Metadata/assignment issues navigate to Audit Overview and focus the exact existing control.
+- Source issues navigate to Sources and focus the relevant source control.
+- Logic issues navigate to Logic Builder, select/reveal virtualized step by stable ID, then focus the target condition/action/join control.
+- Display issues navigate to Display Fields and focus the owning control/row when present.
+- Stale target falls back to owning page or disables Jump without mutating another item.
+- Safe inline fixes validate active audit identity, step/condition target, supported option set, and current state immediately before mutation.
+- Candidate safe fixes: audit name/purpose text only if existing mutation path can be reused; missing join type from existing supported join values; missing condition operator from current valid operators; missing action type from current valid action options.
+- Assignment, source, field, relationship, hierarchy, deleted-reference, and ambiguous fixes remain navigation-only.
+- Successful fix uses current commit path, invalidates relevant pages/issues, schedules existing autosave/durable write, re-evaluates canonical issues, and preserves predictable focus.
+- Failed/stale fix makes no mutation and leaves an actionable message.
+- Remove duplicate evaluator bodies/wrapper chains only after all callers point to the canonical result.
+- Retain public validateAudit()/renderValidationPanel()/atlasLogicIssues names only as thin compatibility wrappers if active callers require them.
+- Do not add a publication block. Critical issues remain prominent advisory results unless existing code already blocks publication.
+Expected user flow: Open issue panel, select Jump or supported Fix, navigate/fix safely, see issue result update, persist through normal paths.
+Source of truth: Current active audit and existing mutation options/commit functions.
+Error behavior: Stale audit/target/action aborts with no mutation; one action failure does not close the panel or suppress other issues.
+Required implementation: No action logic in JSON; no destructive automatic fix; no access to js/15-visual-ui-upgrades.js.
+
+## 6. Acceptance Criteria
+1. Every issue with canJump true navigates to its owning page and resolves the intended current target or safe fallback.
+2. Off-screen Logic Builder targets are revealed by stable step ID before focus.
+3. Supported fixes present only current valid choices and commit through existing mutation paths.
+4. Stale or mismatched audit/target prevents mutation and shows an actionable error.
+5. Assignment, source/field selection, relationship, hierarchy repair, and deleted-reference issues remain navigation-only unless unambiguous current evidence proves a safe fix.
+6. Successful fix updates canonical issues and both UI surfaces while preserving autosave/durable-write behavior.
+7. Parent-descendant action exception remains exact after navigation/fix integration.
+8. Duplicate issue calculations are removed; remaining public validation functions are documented thin wrappers.
+9. Publication, preview/export, Visual Picker, Join Picker, database/API/authorization, hierarchy, virtualization, and dependencies remain unchanged.
+10. Documentation accurately describes final files, ownership, public functions, rule catalog, compatibility wrappers, and protected-file rule.
+11. Final ZIP contains actual feature files and required generated/documentation artifacts only.
+
+## 7. Expected, Review-only, and Protected Files
+### 7.1 Files Allowed to Change
+- js/23-atlas-audit-issues.js: Navigation, focus, fixes, stale guards, orchestration.
+- catalogs/audit-issue-rules.json: Action enablement and metadata.
+- js/08-step-templates-validation.js and js/15g-visual-ui-events.js: Final duplicate cleanup/compatibility wrappers.
+- js/16-page-shell.js: Bounded navigation/assignment focus hook only if required.
+- js/21-display-fields.js: Bounded display focus hook only if required.
+- sections/audit-issues.html, css/audit-issues.css, sections/readiness-review.html, css/readiness-review.css: Action presentation refinements only.
+- tutorials/tutorial-global.js, tutorials/tutorial-fields.js, tutorials/tutorial-logic-builder.js, tutorials/tutorial-save-export.js: Only if selector compatibility requires it.
+- css/manifest.json through build; PROJECT_CONTEXT.md; PROJECT_TREE.txt.
+### 7.2 Required Generated Artifacts
+- styles.css if CSS changes.
+### 7.3 Review-only Files
+- sections/audit-overview.html, sections/sources.html, sections/logic-builder.html, sections/display-fields.html: Target selectors.
+- js/01-state-dom.js, js/02-hierarchy.js, js/02-logic-rendering.js, js/03-capture-actions.js, js/04-persistence.js, js/07-phrase-catalog.js, js/10-field-picker.js, js/14-catalog-driven-builder.js, js/15d-logic-rules-list.js, js/15e-logic-step-editor.js, js/15f-join-picker.js, js/18-audit-database.js: Navigation/mutation/persistence contracts.
+- js/12-export-foundation.js and sections/publication-preview.html: Confirm unchanged publication/export behavior.
+### 7.4 Protected Files and Areas
+- Database/API/migrations/authorization/schema/dependencies; audit/source catalogs; Visual Picker; Join Picker; js/15-visual-ui-upgrades.js.
+### 7.5 Touchpoints to Inspect
+Functions: atlasRevealLogicStep, showSection/atlasNavigateToSection, assignment mutation/render functions, atlasCommitLiveEditor, join commit functions, atlasDisplayRows, scheduleAutosave, atlasScheduleDatabaseWrite, atlasInvalidatePages.
+Selectors: audit metadata and assignment controls, source add/browser, selected-step editor, conditions/actions/joins, Display Fields rows.
+
+## 9. Regression Matrix
+High risk: Fixes must not affect wrong audit/target or bypass established source-of-truth/persistence.
+Medium risk: Navigation/focus with virtualization, compatibility wrappers, audit switching, repeated actions.
+Low risk: Action button states and focus messaging.
+Explicitly unaffected: Publication gating and exported content.
+
+## 10. Focused Runtime Validation
+- Jump for metadata, assignment, source, visible/off-screen logic, condition, join, and Display Fields targets.
+- One supported operator fix, join-type fix, and action fix when current UI supports each.
+- Stale target and audit-switch guard.
+- Persistence after reload through existing write path.
+- Parent-with-valid-descendant action exception.
+- Readiness/popup synchronization after fix.
+- No new publication block and no export diff.

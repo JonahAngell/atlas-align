@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-09-10T14:12:16.218Z",
+  "request": {
+    "method": "GET",
+    "path": "/api/source-library/access"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "canRead": true,
+    "canReplace": false,
+    "accessStatus": "required_role_absent",
+    "error": null,
+    "code": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CSS: Find fully overridden units",
+      "type": "process",
+      "command": "node",
+      "args": ["${workspaceFolder}/tools/analyze-css-cascade.mjs"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": {
+        "owner": "atlas-css-cascade",
+        "source": "ATLAS CSS Cascade",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):(warning|error|information):([^:]+):(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CSS: Find all overridden declarations",
+      "type": "process",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/tools/analyze-css-cascade.mjs",
+        "--include-partial"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": {
+        "owner": "atlas-css-cascade",
+        "source": "ATLAS CSS Cascade",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^(.+):(\\d+):(\\d+):(warning|error|information):([^:]+):(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "code": 5,
+          "message": 6
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "CSS: Write cascade report JSON",
+      "type": "shell",
+      "command": "node tools/analyze-css-cascade.mjs --format=json > css-cascade-report.json",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

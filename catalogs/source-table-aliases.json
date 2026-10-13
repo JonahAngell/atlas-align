@@ -1,0 +1,361 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "sourceFile": "HI0256_Maseke",
+      "alias": "sap.hi0256"
+    },
+    {
+      "sourceFile": "ZHRELEQ015",
+      "alias": "sap.q15dcl"
+    },
+    {
+      "sourceFile": "ZHRPAYR060",
+      "alias": "sap.dclit210"
+    },
+    {
+      "sourceFile": "ZHRELER057",
+      "alias": "ZHRELER057"
+    },
+    {
+      "sourceFile": "ZHRPAYR121",
+      "alias": "sap.cantax"
+    },
+    {
+      "sourceFile": "SAP Actions File",
+      "alias": "SAP Actions File"
+    },
+    {
+      "sourceFile": "Core Connector Worker iDoc",
+      "alias": "Core Connector Worker iDoc"
+    },
+    {
+      "sourceFile": "ZHRELER076",
+      "alias": "sap.idoc076curr"
+    },
+    {
+      "sourceFile": "ZHR_SEG_PA",
+      "alias": "sap.segpamaseke"
+    },
+    {
+      "sourceFile": "ZHRELER077",
+      "alias": "sap.idoc077"
+    },
+    {
+      "sourceFile": "SWAT",
+      "alias": "SWAT"
+    },
+    {
+      "sourceFile": "DIESI-SAPL Cast List",
+      "alias": "sap.diesicst"
+    },
+    {
+      "sourceFile": "People Insights",
+      "alias": "piwd.worker"
+    },
+    {
+      "sourceFile": "Worker Currency Audit",
+      "alias": "wd.INT2128a"
+    },
+    {
+      "sourceFile": "SAP Currency",
+      "alias": "sap.currency"
+    },
+    {
+      "sourceFile": "Currency Accuracy Indirect Indicator",
+      "alias": "sap.indirectind"
+    },
+    {
+      "sourceFile": "Employee Details",
+      "alias": "Employee Details"
+    },
+    {
+      "sourceFile": "System Security Audit",
+      "alias": "System Security Audit"
+    },
+    {
+      "sourceFile": "Workday Rehire Eligibility",
+      "alias": "Workday Rehire Eligibility"
+    },
+    {
+      "sourceFile": "Workday Region Hierarchy",
+      "alias": "Workday Region Hierarchy"
+    },
+    {
+      "sourceFile": "SAP PA-PSA",
+      "alias": "SAP PA-PSA"
+    },
+    {
+      "sourceFile": "Work Contract Exception",
+      "alias": "Work Contract Exception"
+    },
+    {
+      "sourceFile": "Vanity Labels",
+      "alias": "Vanity Labels"
+    },
+    {
+      "sourceFile": "Mobile Home Mismatches",
+      "alias": "Mobile Home Mismatches"
+    },
+    {
+      "sourceFile": "Mobile Work Mismatches",
+      "alias": "Mobile Work Mismatches"
+    },
+    {
+      "sourceFile": "Landline Home Mismatches",
+      "alias": "Landline Home Mismatches"
+    },
+    {
+      "sourceFile": "Landline Work Mismatches",
+      "alias": "Landline Work Mismatches"
+    },
+    {
+      "sourceFile": "Duplicate Phones",
+      "alias": "Duplicate Phones"
+    },
+    {
+      "sourceFile": "Home Contact Information",
+      "alias": "Home Contact Information"
+    },
+    {
+      "sourceFile": "HR File",
+      "alias": "HR File"
+    },
+    {
+      "sourceFile": "PA0016",
+      "alias": "PA0016"
+    },
+    {
+      "sourceFile": "SAP Rehire Status",
+      "alias": "sap.seprehire"
+    },
+    {
+      "sourceFile": "Actions_File_RPR",
+      "alias": "sap.INT2127b"
+    },
+    {
+      "sourceFile": "ELE_TABLE_ZHR_WD_ERR_IDOC",
+      "alias": "ELE_TABLE_ZHR_WD_ERR_IDOC"
+    },
+    {
+      "sourceFile": "SAP Currency RECENT",
+      "alias": "SAP Currency RECENT"
+    },
+    {
+      "sourceFile": "Currency Accuracy Audit",
+      "alias": "Currency Accuracy Audit"
+    },
+    {
+      "sourceFile": "DLP Contractual Data",
+      "alias": "s9.cont"
+    },
+    {
+      "sourceFile": "Currency Accuracy Outside North America",
+      "alias": "Currency Accuracy Outside North America"
+    },
+    {
+      "sourceFile": "Workday Interface IDoc Error Report",
+      "alias": "Workday Interface IDoc Error Report"
+    },
+    {
+      "sourceFile": "DIESI-SAPL Cast List PREVIOUS",
+      "alias": "DIESI-SAPL Cast List PREVIOUS"
+    },
+    {
+      "sourceFile": "DIESI-SAPL IT0395",
+      "alias": "sap.diesi395"
+    },
+    {
+      "sourceFile": "DIESI-SAPL IT0396",
+      "alias": "sap.diesi396"
+    },
+    {
+      "sourceFile": "DIESI-SAPL IT0027",
+      "alias": "sap.diesi27"
+    },
+    {
+      "sourceFile": "DIESI-SAPL IT0209",
+      "alias": "sap.diesi209"
+    },
+    {
+      "sourceFile": "DIESI SAPL - Infotypes Missing",
+      "alias": "DIESI SAPL - Infotypes Missing"
+    },
+    {
+      "sourceFile": "ZMAPORGS",
+      "alias": "ZMAPORGS"
+    },
+    {
+      "sourceFile": "Sensitive Churnover",
+      "alias": "sap.dailychurnna"
+    },
+    {
+      "sourceFile": "Rehire",
+      "alias": "Rehire"
+    },
+    {
+      "sourceFile": "Midweek Rehire Status",
+      "alias": "Midweek Rehire Status"
+    },
+    {
+      "sourceFile": "sensitive_churnover",
+      "alias": "sap.dailychurnna"
+    },
+    {
+      "sourceFile": "SAP Position",
+      "alias": "sap.position"
+    },
+    {
+      "sourceFile": "Headcount Data Position",
+      "alias": "wd.int2128s"
+    },
+    {
+      "sourceFile": "SAP Vacant Position Job Roles",
+      "alias": "sap.secvacpos"
+    },
+    {
+      "sourceFile": "Headcount Data Worker",
+      "alias": "wd.int2128v"
+    },
+    {
+      "sourceFile": "SAP_Service Dates_IT41_",
+      "alias": "sap.it41"
+    },
+    {
+      "sourceFile": "Workday Service Dates",
+      "alias": "wd.dvwsd"
+    },
+    {
+      "sourceFile": "Service Dates",
+      "alias": "Service Dates"
+    },
+    {
+      "sourceFile": "ccw_fileheader",
+      "alias": "ccw_fileheader"
+    },
+    {
+      "sourceFile": "ccw_workeraddress",
+      "alias": "ccw_workeraddress"
+    },
+    {
+      "sourceFile": "ccw_workercompensation",
+      "alias": "ccw_workercompensation"
+    },
+    {
+      "sourceFile": "ccw_workeremail",
+      "alias": "ccw_workeremail"
+    },
+    {
+      "sourceFile": "ccw_workerheader",
+      "alias": "ccw_workerheader"
+    },
+    {
+      "sourceFile": "ccw_workeridentification",
+      "alias": "ccw_workeridentification"
+    },
+    {
+      "sourceFile": "ccw_workername",
+      "alias": "ccw_workername"
+    },
+    {
+      "sourceFile": "ccw_workerphone",
+      "alias": "ccw_workerphone"
+    },
+    {
+      "sourceFile": "ccw_workerposition",
+      "alias": "ccw_workerposition"
+    },
+    {
+      "sourceFile": "ccw_workerpositionaddlinfo",
+      "alias": "ccw_workerpositionaddlinfo"
+    },
+    {
+      "sourceFile": "ccw_workerpositionjobclass",
+      "alias": "ccw_workerpositionjobclass"
+    },
+    {
+      "sourceFile": "ccw_workerpositionorg",
+      "alias": "ccw_workerpositionorg"
+    },
+    {
+      "sourceFile": "ccw_workerpositionsupervisor",
+      "alias": "ccw_workerpositionsupervisor"
+    },
+    {
+      "sourceFile": "ccw_workerrelatedperson",
+      "alias": "ccw_workerrelatedperson"
+    },
+    {
+      "sourceFile": "Home Contact Information (Pivot)",
+      "alias": "Home Contact Information (Pivot)"
+    },
+    {
+      "sourceFile": "Compensation Details",
+      "alias": "wd.int2128t"
+    },
+    {
+      "sourceFile": "Enterprise Separations",
+      "alias": "wd.int2128o"
+    },
+    {
+      "sourceFile": "Active Employees in SAP, Not WD",
+      "alias": "Active Employees in SAP, Not WD"
+    },
+    {
+      "sourceFile": "ATLAS Global Names",
+      "alias": "sap.it182gblnms"
+    },
+    {
+      "sourceFile": "ATLAS Global Names - Previous",
+      "alias": "ATLAS Global Names - Previous"
+    },
+    {
+      "sourceFile": "Data Validation - Worker Visa & Passport Data",
+      "alias": "wd.passport"
+    },
+    {
+      "sourceFile": "DIESI SAPL IT209 - ATLAS",
+      "alias": "sap.diesi209"
+    },
+    {
+      "sourceFile": "DCL Leave Start",
+      "alias": "DCL Leave Start"
+    },
+    {
+      "sourceFile": "Calculated Field",
+      "alias": "Calculated Field"
+    },
+    {
+      "sourceFile": "Employee Details - Primary Position Only",
+      "alias": "wd.eedetailscomp"
+    },
+    {
+      "sourceFile": "Rehire Status",
+      "alias": "sap.seprehire"
+    },
+    {
+      "sourceFile": "SAP Service Dates",
+      "alias": "sap.it41"
+    },
+    {
+      "sourceFile": "SAP With Currency",
+      "alias": "SAP With Currency"
+    },
+    {
+      "sourceFile": "WD_Data Validation_Worker Service Dates_",
+      "alias": "wd.dvwsd"
+    },
+    {
+      "sourceFile": "S9 Contractual Data",
+      "alias": "s9.cont"
+    },
+    {
+      "sourceFile": "Cast List",
+      "alias": "Cast List"
+    },
+    {
+      "sourceFile": "Created Columns",
+      "alias": "Created Columns"
+    }
+  ]
+}

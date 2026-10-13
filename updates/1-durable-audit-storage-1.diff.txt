@@ -1,0 +1,2874 @@
+diff --git a/.launch/migrations/20260820200000_create_audit_version_tables.sql b/.launch/migrations/20260820200000_create_audit_version_tables.sql
+new file mode 100644
+index 0000000000000000000000000000000000000000..bdfe8c2afef4f907d3a84f1007994567f04a168e
+--- /dev/null
++++ b/.launch/migrations/20260820200000_create_audit_version_tables.sql
+@@ -0,0 +1,103 @@
++-- migrate:up
++CREATE TABLE IF NOT EXISTS atlas_audits (
++  id text PRIMARY KEY,
++  name text NOT NULL,
++  purpose text NOT NULL DEFAULT '',
++  description text NOT NULL DEFAULT '',
++  schema_version integer NOT NULL DEFAULT 1,
++  source_kind text NOT NULL DEFAULT 'database',
++  owner_user_id text,
++  owner_username text,
++  current_revision_id bigint,
++  current_revision_number integer NOT NULL DEFAULT 0,
++  created_by_user_id text,
++  created_by_username text NOT NULL,
++  created_at timestamptz NOT NULL DEFAULT current_timestamp,
++  updated_by_user_id text,
++  updated_by_username text NOT NULL,
++  updated_at timestamptz NOT NULL DEFAULT current_timestamp,
++  archived_at timestamptz,
++  archived_by_username text
++);
++
++CREATE TABLE IF NOT EXISTS atlas_audit_revisions (
++  id bigserial PRIMARY KEY,
++  audit_id text NOT NULL REFERENCES atlas_audits(id),
++  revision_number integer NOT NULL,
++  parent_revision_id bigint REFERENCES atlas_audit_revisions(id),
++  document jsonb NOT NULL,
++  document_sha256 text NOT NULL,
++  change_type text NOT NULL,
++  change_summary text,
++  created_by_user_id text,
++  created_by_username text NOT NULL,
++  created_by_full_name text,
++  created_by_email text,
++  created_at timestamptz NOT NULL DEFAULT current_timestamp,
++  restored_from_revision_id bigint REFERENCES atlas_audit_revisions(id),
++  UNIQUE (audit_id, revision_number)
++);
++
++ALTER TABLE atlas_audits
++  ADD CONSTRAINT atlas_audits_current_revision_fk
++  FOREIGN KEY (current_revision_id) REFERENCES atlas_audit_revisions(id)
++  DEFERRABLE INITIALLY DEFERRED;
++
++CREATE TABLE IF NOT EXISTS atlas_audit_steps (
++  audit_id text NOT NULL REFERENCES atlas_audits(id),
++  step_id text NOT NULL,
++  current_step_revision_id bigint,
++  parent_step_id text,
++  branch_type text NOT NULL DEFAULT 'root',
++  sort_order integer NOT NULL DEFAULT 0,
++  step_type text,
++  enabled boolean NOT NULL DEFAULT true,
++  auto_generated_reference boolean NOT NULL DEFAULT false,
++  locked boolean NOT NULL DEFAULT false,
++  created_at timestamptz NOT NULL DEFAULT current_timestamp,
++  deleted_at timestamptz,
++  PRIMARY KEY (audit_id, step_id),
++  FOREIGN KEY (audit_id, parent_step_id)
++    REFERENCES atlas_audit_steps(audit_id, step_id)
++    DEFERRABLE INITIALLY DEFERRED
++);
++
++CREATE TABLE IF NOT EXISTS atlas_audit_step_revisions (
++  id bigserial PRIMARY KEY,
++  audit_id text NOT NULL,
++  step_id text NOT NULL,
++  audit_revision_id bigint NOT NULL REFERENCES atlas_audit_revisions(id),
++  step_revision_number integer NOT NULL,
++  operation text NOT NULL,
++  step_document jsonb,
++  step_sha256 text,
++  change_summary text,
++  created_by_user_id text,
++  created_by_username text NOT NULL,
++  created_by_full_name text,
++  created_at timestamptz NOT NULL DEFAULT current_timestamp,
++  restored_from_step_revision_id bigint REFERENCES atlas_audit_step_revisions(id),
++  FOREIGN KEY (audit_id, step_id) REFERENCES atlas_audit_steps(audit_id, step_id),
++  UNIQUE (audit_id, step_id, step_revision_number)
++);
++
++ALTER TABLE atlas_audit_steps
++  ADD CONSTRAINT atlas_audit_steps_current_revision_fk
++  FOREIGN KEY (current_step_revision_id) REFERENCES atlas_audit_step_revisions(id)
++  DEFERRABLE INITIALLY DEFERRED;
++
++CREATE INDEX IF NOT EXISTS atlas_audits_active_name_idx
++  ON atlas_audits (lower(name)) WHERE archived_at IS NULL;
++CREATE INDEX IF NOT EXISTS atlas_audit_revisions_history_idx
++  ON atlas_audit_revisions (audit_id, revision_number DESC);
++CREATE INDEX IF NOT EXISTS atlas_step_revisions_history_idx
++  ON atlas_audit_step_revisions (audit_id, step_id, step_revision_number DESC);
++CREATE INDEX IF NOT EXISTS atlas_audit_steps_order_idx
++  ON atlas_audit_steps (audit_id, parent_step_id, sort_order) WHERE deleted_at IS NULL;
++
++-- migrate:down
++DROP TABLE IF EXISTS atlas_audit_step_revisions;
++DROP TABLE IF EXISTS atlas_audit_steps;
++ALTER TABLE atlas_audits DROP CONSTRAINT IF EXISTS atlas_audits_current_revision_fk;
++DROP TABLE IF EXISTS atlas_audit_revisions;
++DROP TABLE IF EXISTS atlas_audits;
+diff --git a/.launch/opa/authz.rego b/.launch/opa/authz.rego
+index a2cc5b885f971a6ddd166248a4ce8a6133f5ab4b..e63a1ac52d82cc2d58d9d06e13d31d4ae09f963c 100644
+--- a/.launch/opa/authz.rego
++++ b/.launch/opa/authz.rego
+@@ -9,7 +9,6 @@ allow if {
+ 
+ allow if {
+   input.user.authenticated == true
+-  input.request.method == "GET"
+   not startswith(input.request.path, "/api/admin/")
+ }
+ 
+@@ -17,12 +16,12 @@ allow if {
+   input.user.authenticated == true
+   input.request.method == "GET"
+   startswith(input.request.path, "/api/admin/")
+-  input.user.roles[_] == "admin"
++  input.user.roles[_] == "owner"
+ }
+ 
+ allow if {
+   input.user.authenticated == true
+   input.request.method == "POST"
+   input.request.path == "/api/admin/field-library/replace"
+-  input.user.roles[_] == "admin"
++  input.user.roles[_] == "owner"
+ }
+diff --git a/.launch/opa/authz.rego.txt b/.launch/opa/authz.rego.txt
+index 5eedc1c46637d90cb555a84a3b49e1cd083d6a93..ceffc1610f5980b42fa1cc6ce2053aafa299a2cc 100644
+--- a/.launch/opa/authz.rego.txt
++++ b/.launch/opa/authz.rego.txt
+@@ -2,26 +2,27 @@ package authz
+ 
+ default allow := false
+ 
+-# Launch health checks must be able to reach the application root.
+ allow if {
+   input.request.method == "GET"
+   input.request.path == "/"
+ }
+ 
+-# Static assets required by the administration page.
+ allow if {
++  input.user.authenticated == true
+   input.request.method == "GET"
+-  input.request.path == "/styles.css"
++  not startswith(input.request.path, "/api/admin/")
+ }
+ 
+ allow if {
++  input.user.authenticated == true
+   input.request.method == "GET"
+-  input.request.path == "/app.js"
++  startswith(input.request.path, "/api/admin/")
++  input.user.roles[_] == "owner"
+ }
+ 
+-# Every API call requires a StudioShare-authenticated user. Access to the
+-# application itself is managed in the Launch app Permissions settings.
+ allow if {
+-  startswith(input.request.path, "/api/")
+   input.user.authenticated == true
++  input.request.method == "POST"
++  input.request.path == "/api/admin/field-library/replace"
++  input.user.roles[_] == "owner"
+ }
+diff --git a/index.html b/index.html
+index 3b23ead4aedea5d9a7c9d644aa87ed0ed149516d..369dfff8e23fba67403b9af775c6794b5e9f8ebc 100644
+--- a/index.html
++++ b/index.html
+@@ -72,10 +72,10 @@
+     <div class="content">
+       <section class="page active" id="page-my-audits" data-page="my-audits">
+         <h1>My Audits</h1>
+-        <div class="subtitle">Audits available from your repo library, browser saves, and workbook imports.</div>
++        <div class="subtitle">Audits available from the shared database, repository fallback, and workbook imports.</div>
+         <div class="grid cards">
+           <div class="card metric-card"><div class="small">Repo audits</div><div class="metric" id="metricRepoAudits">--</div></div>
+-          <div class="card metric-card"><div class="small">Saved audits</div><div class="metric" id="metricSavedAudits">--</div></div>
++          <div class="card metric-card"><div class="small">Database audits</div><div class="metric" id="metricSavedAudits">--</div></div>
+         </div>
+ 
+         <div class="card library-card">
+@@ -150,7 +150,7 @@
+           <section class="card">
+             <div class="section-title"><strong>Audit setup</strong><span class="badge blue">Current Audit</span></div>
+             <div class="toolbar">
+-              <button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button>
++              <button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button><button id="auditVersionHistoryBtn" class="btn secondary small" type="button">Version History</button><span id="auditRevisionBadge" class="badge blue">Unsaved</span>
+             </div>
+             <label>
+               Audit Name
+@@ -178,7 +178,7 @@
+         <div id="fieldPickerSummary" class="field-picker-summary"></div>
+         <div class="layout3">
+           <section class="card source-field-browser-panel">
+-            <div class="section-title"><strong>Source Library</strong><div class="toolbar compact-toolbar"><button id="replaceSourceLibraryBtn" class="btn secondary small" type="button" hidden>Replace Source Library CSV</button><input id="replaceSourceLibraryFile" class="visually-hidden" type="file" accept=".csv,text/csv"><button id="fieldsTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Fields tutorial" aria-label="Fields tutorial" data-start-tutorial="fields">?</button></div></div>
++            <div class="section-title"><strong>Source Library</strong><div class="toolbar compact-toolbar"><button id="fieldsTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Fields tutorial" aria-label="Fields tutorial" data-start-tutorial="fields">?</button></div></div>
+             <p class="hint">Search by source file, alias, raw field name, or vanity label. Select source files for this audit; reference steps are generated automatically.</p>
+             <input id="sourceFieldSearch" class="input full-input" placeholder="Search filename, alias, field name, or vanity label...">
+             <div class="source-library-tabs" id="sourceLibraryTabs"></div>
+@@ -213,7 +213,7 @@
+                             type="button"
+                             title="Switch to vanity labels"
+                             aria-label="Toggle field display mode">Aa</button>
+-                    <button id="addStepBtn" class="btn primary small new-rule-menu-button" type="button" aria-haspopup="menu" aria-expanded="false">+ New Rule</button>
++                    <button id="stepVersionHistoryBtn" class="btn secondary small" type="button">Selected Step History</button><button id="addStepBtn" class="btn primary small new-rule-menu-button" type="button" aria-haspopup="menu" aria-expanded="false">+ New Rule</button>
+                   </div>
+               </div>
+               <div id="stepsList" class="steps-workspace logic-list"></div>
+@@ -257,9 +257,9 @@
+           <section class="card" id="savePanel">
+             <div class="section-title"><strong>Save / Export</strong><button id="saveTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Save / Export tutorial" aria-label="Save / Export tutorial" data-start-tutorial="saveExport">?</button></div>
+             <p class="hint">Save audits locally, export the current audit, or export/import saved audit bundles.</p>
+-            <button id="saveFlowBtn" class="btn primary full" type="button">Save Current Audit Locally</button>
+-            <label>Load Saved Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
+-            <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Saved Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Delete Saved Audit</button></div>
++            <button id="saveFlowBtn" class="btn primary full" type="button">Save Audit to Database</button>
++            <label>Load Database Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
++            <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Database Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Archive Database Audit</button></div>
+             <p id="saveStatus" class="hint">No saved audit selected.</p><p id="autosaveStatus" class="hint">Autosave restores your last local draft when possible.</p><button id="clearAutosaveBtn" class="btn secondary full" type="button">Clear Autosaved Draft</button><button id="resetLocalDataBtn" class="btn danger full" type="button">Clear All Saved Data</button>
+           </section>
+           <section class="card">
+@@ -271,7 +271,7 @@
+             <div class="package"><span>Confluence HTML</span><button id="downloadHtmlBtn" class="btn secondary small" type="button">Download HTML</button></div>
+             <div class="package"><span>Clipboard HTML</span><button id="copyHtmlBtn" class="btn secondary small" type="button">Copy HTML</button></div>
+             <div class="package"><span>Markdown</span><button id="copyMarkdownBtn" class="btn secondary small" type="button">Copy Markdown</button></div>
+-            <div class="section-title package-heading"><strong>Saved Audit Bundle</strong></div>
++            <div class="section-title package-heading"><strong>Database Audit Bundle</strong></div>
+             <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export All Saved Audits</button><label class="btn secondary small import-label">Import Saved Audits<input id="importAllFile" type="file" accept=".json"></label></div>
+           </section>
+         </div>
+@@ -302,7 +302,8 @@
+ <script src="./js/14-catalog-driven-builder.js"></script>
+ <script src="./js/15-visual-ui-upgrades.js"></script>
+ <script src="./js/16-page-shell.js"></script>
+-<script src="./js/17-source-database.js"></script>
++<script src="./js/18-audit-database.js"></script>
++<script src="./js/19-audit-version-history.js"></script>
+ <script src="./js/06-events-bootstrap.js"></script>
+ </body>
+ </html>
+diff --git a/js/01-state-dom.js b/js/01-state-dom.js
+index 3a089fa0e87fbc02f7b6fba1b159339f8c6113dd..eb2334e1d5e0d1939963b1a72d86192f88bf7feb 100644
+--- a/js/01-state-dom.js
++++ b/js/01-state-dom.js
+@@ -1,317 +1,319 @@
+-/**
+- * 01-state-dom.js
+- *
+- * Global state, cached DOM references, status/theme helpers, field-display helpers, and navigation helpers. Later modules read and mutate this shared state directly.
+- * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
+- */
+-
+-// -----------------------------------------------------------------------------
+-// State initialization
+-// -----------------------------------------------------------------------------
+-/**
+- * Creates a new empty audit object with the expected state shape.
+- */
+-function defaultAudit() {
+-  return {
+-    // Generate a unique audit identifier using the shared uid helper (from 00-config-utils.js).
+-    id: uid('audit'),
+-
+-    // Default display name used until the user provides an audit name.
+-    name: 'Untitled Audit',
+-
+-    // Optional audit purpose or business context entered by the user.
+-    purpose: '',
+-
+-    // Source systems, files, tables, or datasets associated with this audit.
+-    sources: [],
+-
+-    // Field definitions or mapped data elements used by the audit.
+-    fields: [],
+-
+-    // Audit workflow steps, validations, or review activities.
+-    steps: [],
+-  };
+-}
+-
+-const state = {
+-  // Current working audit object loaded into the application.
+-  audit: defaultAudit(),
+-
+-  // Tracks the currently selected audit step for detail editing or preview.
+-  selectedStepId: null,
+-
+-  // Collection of saved audit flows available to the user.
+-  savedFlows: [],
+-
+-  // Controls whether autosave is temporarily suspended.
+-  autosavePaused: false,
+-
+-  // Cached repository/library data used by the audit flow experience.
+-  repoLibrary: null,
+-
+-  // Indicates whether the user has actively selected an audit.
+-  auditSelected: false,
+-
+-  // Current active audit selector value.
+-  activeAuditValue: '',
+-
+-  // Temporary audit selector value used while an audit switch is pending.
+-  pendingActiveAuditValue: '',
+-
+-  // Baseline active audit value used to detect or restore switch state.
+-  activeAuditBaseline: '',
+-
+-  // Prevents duplicate or conflicting audit-switch operations while one is running.
+-  auditSwitchInProgress: false,
+-
+-  // Stores the preferred field display mode, defaulting to source-based display.
+-  // The value is persisted in localStorage so the preference survives page reloads.
+-  fieldDisplayMode: localStorage.getItem('atlasAlignFieldDisplayMode') || 'source',
+-
+-  // Requirements Preview display mode. Nested is the default; complete is display-only.
+-  previewStatementMode: localStorage.getItem('atlasAlignPreviewStatementMode') || 'nested',
+-};
+-
+-const e = {
+-  // Audit metadata inputs.
+-  auditName: $('auditName'),
+-  auditPurpose: $('auditPurpose'),
+-
+-  // Primary list containers for audit configuration sections.
+-  sourcesList: $('sourcesList'),
+-  fieldsList: $('fieldsList'),
+-  stepsList: $('stepsList'),
+-
+-  // Preview and detail panels used to display generated logic and selected step data.
+-  logicPreview: $('logicPreview'),
+-  selectedStepDetails: $('selectedStepDetails'),
+-
+-  // General status and save status indicators.
+-  status: $('status'),
+-  saveStatus: $('saveStatus'),
+-  autosaveStatus: $('autosaveStatus'),
+-
+-  // Flow selection and preview configuration controls.
+-  flowSelect: $('flowSelect'),
+-  previewStyle: $('previewStyle'),
+-  includeNotes: $('includeNotesToggle'),
+-  completeStatements: $('completeStatementsToggle'),
+-
+-  // Theme toggle/control.
+-  theme: $('themeBtn'),
+-
+-  // Workbook import controls and related status messaging.
+-  workbookFile: $('workbookFile'),
+-  workbookAuditSelect: $('workbookAuditSelect'),
+-  workbookStatus: $('workbookStatus'),
+-
+-  // Audit library selector and repository/library status messaging.
+-  auditLibrarySelect: $('auditLibrarySelect'),
+-  repoLibraryStatus: $('repoLibraryStatus'),
+-};
+-
+-
+-// -----------------------------------------------------------------------------
+-// UI feedback and theme state
+-// -----------------------------------------------------------------------------
+-/**
+- * Displays a status message in the app status area.
+- * @param {any} message - Status or validation message.
+- * @param {any} kind - Picker or record kind.
+- */
+-function status(message, kind = '') {
+-  if (!e.status) return;
+-  e.status.innerHTML = `<div class="status ${esc(kind)}">${esc(message)}</div>`;
+-}
+-
+-/**
+- * Returns the active light/dark theme.
+- */
+-function themeMode() {
+-  return document.body.classList.contains('dark') ? 'dark' : 'light';
+-}
+-
+-/**
+- * Applies the requested light/dark theme and persists the preference.
+- * @param {any} mode - Requested mode value.
+- */
+-function setTheme(mode) {
+-  const normalizedMode = mode === 'dark' ? 'dark' : 'light';
+-  document.body.classList.toggle('dark', normalizedMode === 'dark');
+-  if (e.theme) e.theme.textContent = normalizedMode === 'dark' ? '☀' : '⏾';
+-  localStorage.setItem('atlasAlignTheme', normalizedMode);
+-  if (typeof scheduleAutosave === 'function') scheduleAutosave();
+-}
+-
+-/**
+- * Returns whether an audit has been selected or created.
+- */
+-function hasSelectedAudit() {
+-  return !!state.auditSelected;
+-}
+-
+-/**
+- * Marks the app as having an active audit and unlocks audit pages.
+- */
+-function markAuditSelected() {
+-  state.auditSelected = true;
+-  document.body.classList.add('audit-selected');
+-  document.body.classList.remove('audit-not-selected');
+-  updateNavigationLockState?.();
+-}
+-
+-/**
+- * Marks the app as not having an active audit and locks audit pages.
+- */
+-function clearAuditSelection() {
+-  state.auditSelected = false;
+-  document.body.classList.remove('audit-selected');
+-  document.body.classList.add('audit-not-selected');
+-  updateNavigationLockState?.();
+-}
+-
+-/**
+- * Captures the current audit state as a JSON string for change detection.
+- */
+-function auditSnapshot() {
+-  capture?.();
+-  return JSON.stringify(state.audit || {});
+-}
+-
+-/**
+- * Stores the current audit snapshot as the clean baseline.
+- */
+-function updateActiveAuditBaseline() {
+-  state.activeAuditBaseline = auditSnapshot();
+-}
+-
+-/**
+- * Compares the current audit snapshot to the saved baseline.
+- */
+-function auditHasUnsavedChanges() {
+-  if (!hasSelectedAudit()) return false;
+-  return auditSnapshot() !== state.activeAuditBaseline;
+-}
+-
+-
+-
+-// -----------------------------------------------------------------------------
+-// Field display mode helpers
+-// -----------------------------------------------------------------------------
+-/**
+- * Returns whether raw source names or vanity labels should be displayed.
+- */
+-function fieldDisplayMode() {
+-  return state.fieldDisplayMode === 'vanity' ? 'vanity' : 'source';
+-}
+-
+-/**
+- * Finds the catalog field record that matches a raw or display field name.
+- * @param {any} value - Value to process or assign.
+- * @param {any} sourceFile - Raw source file name.
+- */
+-function findFieldDisplayCandidate(value, sourceFile = '') {
+-  const text = String(value || '');
+-  if (!text) return null;
+-  const pools = [];
+-  if (typeof fieldsForSource === 'function') pools.push(...fieldsForSource(sourceFile || ''));
+-  pools.push(...(state.audit.fields || []));
+-  return pools.find((field) => [field.fieldName, field.rawFieldName, field.name, field.label, field.vanityLabel].some((item) => item && String(item) === text)) || null;
+-}
+-
+-/**
+- * Returns the field name to show based on the active display mode.
+- * @param {any} fieldOrName - Input used by fieldDisplayName.
+- * @param {any} sourceFile - Raw source file name.
+- */
+-function fieldDisplayName(fieldOrName, sourceFile = '') {
+-  if (!fieldOrName) return '';
+-  const field = typeof fieldOrName === 'string' ? findFieldDisplayCandidate(fieldOrName, sourceFile) : fieldOrName;
+-  if (!field) return String(fieldOrName || '');
+-  const raw = field.fieldName || field.rawFieldName || field.name || field.label || '';
+-  const vanity = field.vanityLabel || field.label || field.name || raw;
+-  return fieldDisplayMode() === 'vanity' ? (vanity || raw || String(fieldOrName || '')) : (raw || vanity || String(fieldOrName || ''));
+-}
+-
+-/**
+- * Updates and persists the field display mode, then re-renders the UI.
+- * @param {any} mode - Requested mode value.
+- */
+-function setFieldDisplayMode(mode) {
+-  state.fieldDisplayMode = mode === 'vanity' ? 'vanity' : 'source';
+-  localStorage.setItem('atlasAlignFieldDisplayMode', state.fieldDisplayMode);
+-  renderAll?.();
+-  renderFieldDisplayModeButton?.();
+-}
+-
+-/**
+- * Switches between raw/source and vanity-label display modes.
+- */
+-function toggleFieldDisplayMode() {
+-  setFieldDisplayMode(fieldDisplayMode() === 'vanity' ? 'source' : 'vanity');
+-}
+-
+-/**
+- * Maps legacy section names to current page ids.
+- * @param {any} section - Section/page identifier.
+- */
+-function pageForSection(section) {
+-  if (section === 'audit') return 'overview';
+-  if (section === 'logic') return 'steps';
+-  if (section === 'publication') return 'save';
+-  if (section === 'sources') return 'fields';
+-  return section || 'my-audits';
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Page navigation helpers
+-// -----------------------------------------------------------------------------
+-/**
+- * Activates a page, updates navigation state, and refreshes page-level controls.
+- * @param {any} section - Section/page identifier.
+- */
+-function showSection(section) {
+-  // Resolve the requested section into the canonical page name used by the app.
+-  let page = pageForSection(section);
+-
+-  // If no audit is selected, keep users on an allowed landing/setup page.
+-  // This prevents navigation into audit-specific pages before an audit context exists.
+-  if (!hasSelectedAudit() && page !== 'my-audits' && page !== 'group') page = 'my-audits';
+-
+-  // Update the active state for navigation buttons in both the top nav and rail.
+-  // Each button may identify its target through section, page, or panel metadata.
+-  document.querySelectorAll('.navitem, .rail-item').forEach((button) => {
+-    const buttonPage = pageForSection(button.dataset.section || button.dataset.page || button.dataset.panel || '');
+-    button.classList.toggle('active', buttonPage === page);
+-  });
+-
+-  // Show the matching main page panel and hide all other page panels.
+-  // Supports matching by data-page, page-prefixed id, or direct id for compatibility.
+-  document.querySelectorAll('.page').forEach((panel) => {
+-    panel.classList.toggle('active', panel.dataset.page === page || panel.id === `page-${page}` || panel.id === page);
+-  });
+-
+-  // Show the matching setup panel when the selected page maps to setup content.
+-  document.querySelectorAll('.setup-panel').forEach((panel) => {
+-    panel.classList.toggle('active', panel.dataset.panel === page);
+-  });
+-
+-  // Persist the active section so the app can restore the user's last location later.
+-  localStorage.setItem('atlasAlignActiveSection', page);
+-
+-  // Refresh page-dependent UI elements after navigation changes.
+-  // Function checks keep this safe when optional modules are not loaded.
+-  if (typeof updateDashboardMetrics === 'function') updateDashboardMetrics();
+-  if (page === 'preview' && typeof atlasPreviewDirty !== 'undefined' && atlasPreviewDirty) {
+-    atlasRequestRender?.({ preview: true });
+-  }
+-  if (typeof positionTutorial === 'function') positionTutorial();
+-  updateNavigationLockState?.();
+-  renderFlowNavControls?.();
+-  renderActiveAuditSelect?.();
+-  renderFieldDisplayModeButton?.();
+-
+-  // Return the viewport to the top of the newly displayed section.
+-  window.scrollTo({ top: 0, behavior: 'auto' });
+-}
++/**
++ * 01-state-dom.js
++ *
++ * Global state, cached DOM references, status/theme helpers, field-display helpers, and navigation helpers. Later modules read and mutate this shared state directly.
++ * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
++ */
++
++// -----------------------------------------------------------------------------
++// State initialization
++// -----------------------------------------------------------------------------
++/**
++ * Creates a new empty audit object with the expected state shape.
++ */
++function defaultAudit() {
++  return {
++    // Generate a unique audit identifier using the shared uid helper (from 00-config-utils.js).
++    id: uid('audit'),
++
++    // Default display name used until the user provides an audit name.
++    name: 'Untitled Audit',
++
++    // Optional audit purpose or business context entered by the user.
++    purpose: '',
++
++    // Source systems, files, tables, or datasets associated with this audit.
++    sources: [],
++
++    // Field definitions or mapped data elements used by the audit.
++    fields: [],
++
++    // Audit workflow steps, validations, or review activities.
++    steps: [],
++  };
++}
++
++const state = {
++  // Current working audit object loaded into the application.
++  audit: defaultAudit(),
++
++  // Tracks the currently selected audit step for detail editing or preview.
++  selectedStepId: null,
++
++  // Collection of saved audit flows available to the user.
++  savedFlows: [],
++
++  // Controls whether autosave is temporarily suspended.
++  autosavePaused: false,
++
++  // Cached repository/library data used by the audit flow experience.
++  repoLibrary: null,
++
++  // Indicates whether the user has actively selected an audit.
++  auditSelected: false,
++
++  // Current active audit selector value.
++  activeAuditValue: '',
++
++  // Temporary audit selector value used while an audit switch is pending.
++  pendingActiveAuditValue: '',
++
++  // Baseline active audit value used to detect or restore switch state.
++  activeAuditBaseline: '',
++
++  // Prevents duplicate or conflicting audit-switch operations while one is running.
++  auditSwitchInProgress: false,
++  databaseAudits: [],
++  auditPersistence: { auditId: null, revisionId: null, revisionNumber: 0, access: null, saving: false, conflict: null },
++
++  // Stores the preferred field display mode, defaulting to source-based display.
++  // The value is persisted in localStorage so the preference survives page reloads.
++  fieldDisplayMode: localStorage.getItem('atlasAlignFieldDisplayMode') || 'source',
++
++  // Requirements Preview display mode. Nested is the default; complete is display-only.
++  previewStatementMode: localStorage.getItem('atlasAlignPreviewStatementMode') || 'nested',
++};
++
++const e = {
++  // Audit metadata inputs.
++  auditName: $('auditName'),
++  auditPurpose: $('auditPurpose'),
++
++  // Primary list containers for audit configuration sections.
++  sourcesList: $('sourcesList'),
++  fieldsList: $('fieldsList'),
++  stepsList: $('stepsList'),
++
++  // Preview and detail panels used to display generated logic and selected step data.
++  logicPreview: $('logicPreview'),
++  selectedStepDetails: $('selectedStepDetails'),
++
++  // General status and save status indicators.
++  status: $('status'),
++  saveStatus: $('saveStatus'),
++  autosaveStatus: $('autosaveStatus'),
++
++  // Flow selection and preview configuration controls.
++  flowSelect: $('flowSelect'),
++  previewStyle: $('previewStyle'),
++  includeNotes: $('includeNotesToggle'),
++  completeStatements: $('completeStatementsToggle'),
++
++  // Theme toggle/control.
++  theme: $('themeBtn'),
++
++  // Workbook import controls and related status messaging.
++  workbookFile: $('workbookFile'),
++  workbookAuditSelect: $('workbookAuditSelect'),
++  workbookStatus: $('workbookStatus'),
++
++  // Audit library selector and repository/library status messaging.
++  auditLibrarySelect: $('auditLibrarySelect'),
++  repoLibraryStatus: $('repoLibraryStatus'),
++};
++
++
++// -----------------------------------------------------------------------------
++// UI feedback and theme state
++// -----------------------------------------------------------------------------
++/**
++ * Displays a status message in the app status area.
++ * @param {any} message - Status or validation message.
++ * @param {any} kind - Picker or record kind.
++ */
++function status(message, kind = '') {
++  if (!e.status) return;
++  e.status.innerHTML = `<div class="status ${esc(kind)}">${esc(message)}</div>`;
++}
++
++/**
++ * Returns the active light/dark theme.
++ */
++function themeMode() {
++  return document.body.classList.contains('dark') ? 'dark' : 'light';
++}
++
++/**
++ * Applies the requested light/dark theme and persists the preference.
++ * @param {any} mode - Requested mode value.
++ */
++function setTheme(mode) {
++  const normalizedMode = mode === 'dark' ? 'dark' : 'light';
++  document.body.classList.toggle('dark', normalizedMode === 'dark');
++  if (e.theme) e.theme.textContent = normalizedMode === 'dark' ? '☀' : '⏾';
++  localStorage.setItem('atlasAlignTheme', normalizedMode);
++  if (typeof scheduleAutosave === 'function') scheduleAutosave();
++}
++
++/**
++ * Returns whether an audit has been selected or created.
++ */
++function hasSelectedAudit() {
++  return !!state.auditSelected;
++}
++
++/**
++ * Marks the app as having an active audit and unlocks audit pages.
++ */
++function markAuditSelected() {
++  state.auditSelected = true;
++  document.body.classList.add('audit-selected');
++  document.body.classList.remove('audit-not-selected');
++  updateNavigationLockState?.();
++}
++
++/**
++ * Marks the app as not having an active audit and locks audit pages.
++ */
++function clearAuditSelection() {
++  state.auditSelected = false;
++  document.body.classList.remove('audit-selected');
++  document.body.classList.add('audit-not-selected');
++  updateNavigationLockState?.();
++}
++
++/**
++ * Captures the current audit state as a JSON string for change detection.
++ */
++function auditSnapshot() {
++  capture?.();
++  return JSON.stringify(state.audit || {});
++}
++
++/**
++ * Stores the current audit snapshot as the clean baseline.
++ */
++function updateActiveAuditBaseline() {
++  state.activeAuditBaseline = auditSnapshot();
++}
++
++/**
++ * Compares the current audit snapshot to the saved baseline.
++ */
++function auditHasUnsavedChanges() {
++  if (!hasSelectedAudit()) return false;
++  return auditSnapshot() !== state.activeAuditBaseline;
++}
++
++
++
++// -----------------------------------------------------------------------------
++// Field display mode helpers
++// -----------------------------------------------------------------------------
++/**
++ * Returns whether raw source names or vanity labels should be displayed.
++ */
++function fieldDisplayMode() {
++  return state.fieldDisplayMode === 'vanity' ? 'vanity' : 'source';
++}
++
++/**
++ * Finds the catalog field record that matches a raw or display field name.
++ * @param {any} value - Value to process or assign.
++ * @param {any} sourceFile - Raw source file name.
++ */
++function findFieldDisplayCandidate(value, sourceFile = '') {
++  const text = String(value || '');
++  if (!text) return null;
++  const pools = [];
++  if (typeof fieldsForSource === 'function') pools.push(...fieldsForSource(sourceFile || ''));
++  pools.push(...(state.audit.fields || []));
++  return pools.find((field) => [field.fieldName, field.rawFieldName, field.name, field.label, field.vanityLabel].some((item) => item && String(item) === text)) || null;
++}
++
++/**
++ * Returns the field name to show based on the active display mode.
++ * @param {any} fieldOrName - Input used by fieldDisplayName.
++ * @param {any} sourceFile - Raw source file name.
++ */
++function fieldDisplayName(fieldOrName, sourceFile = '') {
++  if (!fieldOrName) return '';
++  const field = typeof fieldOrName === 'string' ? findFieldDisplayCandidate(fieldOrName, sourceFile) : fieldOrName;
++  if (!field) return String(fieldOrName || '');
++  const raw = field.fieldName || field.rawFieldName || field.name || field.label || '';
++  const vanity = field.vanityLabel || field.label || field.name || raw;
++  return fieldDisplayMode() === 'vanity' ? (vanity || raw || String(fieldOrName || '')) : (raw || vanity || String(fieldOrName || ''));
++}
++
++/**
++ * Updates and persists the field display mode, then re-renders the UI.
++ * @param {any} mode - Requested mode value.
++ */
++function setFieldDisplayMode(mode) {
++  state.fieldDisplayMode = mode === 'vanity' ? 'vanity' : 'source';
++  localStorage.setItem('atlasAlignFieldDisplayMode', state.fieldDisplayMode);
++  renderAll?.();
++  renderFieldDisplayModeButton?.();
++}
++
++/**
++ * Switches between raw/source and vanity-label display modes.
++ */
++function toggleFieldDisplayMode() {
++  setFieldDisplayMode(fieldDisplayMode() === 'vanity' ? 'source' : 'vanity');
++}
++
++/**
++ * Maps legacy section names to current page ids.
++ * @param {any} section - Section/page identifier.
++ */
++function pageForSection(section) {
++  if (section === 'audit') return 'overview';
++  if (section === 'logic') return 'steps';
++  if (section === 'publication') return 'save';
++  if (section === 'sources') return 'fields';
++  return section || 'my-audits';
++}
++
++
++// -----------------------------------------------------------------------------
++// Page navigation helpers
++// -----------------------------------------------------------------------------
++/**
++ * Activates a page, updates navigation state, and refreshes page-level controls.
++ * @param {any} section - Section/page identifier.
++ */
++function showSection(section) {
++  // Resolve the requested section into the canonical page name used by the app.
++  let page = pageForSection(section);
++
++  // If no audit is selected, keep users on an allowed landing/setup page.
++  // This prevents navigation into audit-specific pages before an audit context exists.
++  if (!hasSelectedAudit() && page !== 'my-audits' && page !== 'group') page = 'my-audits';
++
++  // Update the active state for navigation buttons in both the top nav and rail.
++  // Each button may identify its target through section, page, or panel metadata.
++  document.querySelectorAll('.navitem, .rail-item').forEach((button) => {
++    const buttonPage = pageForSection(button.dataset.section || button.dataset.page || button.dataset.panel || '');
++    button.classList.toggle('active', buttonPage === page);
++  });
++
++  // Show the matching main page panel and hide all other page panels.
++  // Supports matching by data-page, page-prefixed id, or direct id for compatibility.
++  document.querySelectorAll('.page').forEach((panel) => {
++    panel.classList.toggle('active', panel.dataset.page === page || panel.id === `page-${page}` || panel.id === page);
++  });
++
++  // Show the matching setup panel when the selected page maps to setup content.
++  document.querySelectorAll('.setup-panel').forEach((panel) => {
++    panel.classList.toggle('active', panel.dataset.panel === page);
++  });
++
++  // Persist the active section so the app can restore the user's last location later.
++  localStorage.setItem('atlasAlignActiveSection', page);
++
++  // Refresh page-dependent UI elements after navigation changes.
++  // Function checks keep this safe when optional modules are not loaded.
++  if (typeof updateDashboardMetrics === 'function') updateDashboardMetrics();
++  if (page === 'preview' && typeof atlasPreviewDirty !== 'undefined' && atlasPreviewDirty) {
++    atlasRequestRender?.({ preview: true });
++  }
++  if (typeof positionTutorial === 'function') positionTutorial();
++  updateNavigationLockState?.();
++  renderFlowNavControls?.();
++  renderActiveAuditSelect?.();
++  renderFieldDisplayModeButton?.();
++
++  // Return the viewport to the top of the newly displayed section.
++  window.scrollTo({ top: 0, behavior: 'auto' });
++}
+diff --git a/js/04-persistence.js b/js/04-persistence.js
+index d53097b6260e60f26b90e28a9a6d0d785cbabce6..de3e9540a4567b417c13aa439a92219d538e039f 100644
+--- a/js/04-persistence.js
++++ b/js/04-persistence.js
+@@ -1,355 +1,375 @@
+-/**
+- * 04-persistence.js
+- *
+- * IndexedDB persistence layer for saved audits, autosave, import/export bundles, and active audit switching support.
+- * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
+- */
+-
+-// -----------------------------------------------------------------------------
+-// Persistence state
+-// -----------------------------------------------------------------------------
+-let autosaveTimer = null;
+-let atlasAutosaveDirty = false;
+-let atlasAutosaveRevision = 0;
+-let atlasAutosaveSavedRevision = 0;
+-
+-
+-// -----------------------------------------------------------------------------
+-// IndexedDB helpers
+-// -----------------------------------------------------------------------------
+-/**
+- * Opens the IndexedDB database used for saved flows.
+- */
+-function openDb() {
+-  return new Promise((resolve, reject) => {
+-    const request = indexedDB.open(ATLAS_DB_NAME, ATLAS_DB_VERSION);
+-    request.onupgradeneeded = () => {
+-      const db = request.result;
+-      if (!db.objectStoreNames.contains(ATLAS_FLOW_STORE)) db.createObjectStore(ATLAS_FLOW_STORE, { keyPath: 'id' });
+-    };
+-    request.onsuccess = () => resolve(request.result);
+-    request.onerror = () => reject(request.error);
+-  });
+-}
+-
+-/**
+- * Reads all saved flow records from IndexedDB.
+- */
+-async function dbAll() {
+-  const db = await openDb();
+-  try {
+-    return await new Promise((resolve, reject) => {
+-      const tx = db.transaction(ATLAS_FLOW_STORE, 'readonly');
+-      const request = tx.objectStore(ATLAS_FLOW_STORE).getAll();
+-      request.onsuccess = () => resolve(request.result || []);
+-      request.onerror = () => reject(request.error);
+-    });
+-  } finally {
+-    db.close();
+-  }
+-}
+-
+-/**
+- * Writes a saved flow or autosave record to IndexedDB.
+- * @param {any} record - IndexedDB record to write.
+- */
+-async function dbPut(record) {
+-  const db = await openDb();
+-  try {
+-    return await new Promise((resolve, reject) => {
+-      const tx = db.transaction(ATLAS_FLOW_STORE, 'readwrite');
+-      const request = tx.objectStore(ATLAS_FLOW_STORE).put(record);
+-      request.onsuccess = () => resolve();
+-      request.onerror = () => reject(request.error);
+-    });
+-  } finally {
+-    db.close();
+-  }
+-}
+-
+-/**
+- * Reads a saved flow by id from IndexedDB.
+- * @param {any} id - Element id or record id to look up.
+- */
+-async function dbGet(id) {
+-  const db = await openDb();
+-  try {
+-    return await new Promise((resolve, reject) => {
+-      const tx = db.transaction(ATLAS_FLOW_STORE, 'readonly');
+-      const request = tx.objectStore(ATLAS_FLOW_STORE).get(id);
+-      request.onsuccess = () => resolve(request.result);
+-      request.onerror = () => reject(request.error);
+-    });
+-  } finally {
+-    db.close();
+-  }
+-}
+-
+-/**
+- * Deletes a saved flow from IndexedDB.
+- * @param {any} id - Element id or record id to look up.
+- */
+-async function dbDelete(id) {
+-  const db = await openDb();
+-  try {
+-    return await new Promise((resolve, reject) => {
+-      const tx = db.transaction(ATLAS_FLOW_STORE, 'readwrite');
+-      const request = tx.objectStore(ATLAS_FLOW_STORE).delete(id);
+-      request.onsuccess = () => resolve();
+-      request.onerror = () => reject(request.error);
+-    });
+-  } finally {
+-    db.close();
+-  }
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Saved audit operations
+-// -----------------------------------------------------------------------------
+-/**
+- * Loads saved flows into state and updates the saved-flow selector.
+- */
+-async function refreshSaved() {
+-  const all = (await dbAll()).filter((record) => record.id !== ATLAS_AUTOSAVE_ID);
+-  state.savedFlows = all.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+-  e.flowSelect.innerHTML = state.savedFlows.length
+-    ? state.savedFlows.map((flow) => `<option value="${flow.id}">${esc(flow.name)} — ${new Date(flow.updatedAt).toLocaleString()}</option>`).join('')
+-    : '<option value="">No saved audits yet</option>';
+-  e.saveStatus.textContent = `${state.savedFlows.length} saved audit${state.savedFlows.length === 1 ? '' : 's'} in this browser.`;
+-}
+-
+-/**
+- * Prompts for a name and saves the current audit locally.
+- */
+-async function saveFlow() {
+-  capture();
+-  const id = e.flowSelect.value || uid('flow');
+-  const name = prompt('Name this saved audit:', state.audit.name || 'Audit Logic Flow');
+-  if (!name) return;
+-  const existing = await dbGet(id);
+-  const record = {
+-    id,
+-    name,
+-    updatedAt: new Date().toISOString(),
+-    createdAt: existing?.createdAt || new Date().toISOString(),
+-    audit: structuredClone({ ...state.audit, name }),
+-  };
+-  await dbPut(record);
+-  await refreshSaved();
+-  e.flowSelect.value = id;
+-  state.activeAuditValue = `local:${id}`;
+-  updateActiveAuditBaseline();
+-  renderActiveAuditSelect?.();
+-  status(`Saved audit: ${name}`, 'ok');
+-}
+-
+-/**
+- * Saves the active audit before switching when requested.
+- */
+-async function saveCurrentAuditForSwitch() {
+-  capture?.();
+-  const isLocal = String(state.activeAuditValue || '').startsWith('local:');
+-  const id = isLocal ? state.activeAuditValue.split(':').slice(1).join(':') : uid('flow');
+-  const existing = isLocal ? await dbGet(id) : null;
+-  let name = state.audit.name || existing?.name || 'Audit Logic Flow';
+-  if (!isLocal || !name) {
+-    const promptedName = prompt('Save current audit as:', name || 'Audit Logic Flow');
+-    if (!promptedName) return false;
+-    name = promptedName;
+-  }
+-  const record = {
+-    id,
+-    name,
+-    updatedAt: new Date().toISOString(),
+-    createdAt: existing?.createdAt || new Date().toISOString(),
+-    audit: structuredClone({ ...state.audit, name }),
+-  };
+-  await dbPut(record);
+-  await refreshSaved();
+-  state.activeAuditValue = `local:${id}`;
+-  if (e.flowSelect) e.flowSelect.value = id;
+-  updateActiveAuditBaseline();
+-  renderActiveAuditSelect?.();
+-  status(`Saved audit: ${name}`, 'ok');
+-  return true;
+-}
+-
+-/**
+- * Loads a locally saved audit.
+- */
+-async function loadFlow() {
+-  const id = e.flowSelect.value;
+-  if (!id) return status('Select a saved audit first.', 'warn');
+-  const record = await dbGet(id);
+-  if (!record) return;
+-  state.audit = structuredClone(record.audit);
+-  state.selectedStepId = state.audit.steps[0]?.id || null;
+-  state.activeAuditValue = `local:${id}`;
+-  markAuditSelected();
+-  renderAll();
+-  showSection('overview');
+-  status(`Loaded saved audit: ${record.name}.`, 'ok');
+-  scheduleAutosave();
+-  updateActiveAuditBaseline();
+-  renderActiveAuditSelect?.();
+-}
+-
+-/**
+- * Deletes the selected saved audit.
+- */
+-async function deleteFlow() {
+-  const id = e.flowSelect.value;
+-  if (!id) return status('Select a saved audit first.', 'warn');
+-  if (!confirm('Delete selected saved audit from this browser?')) return;
+-  await dbDelete(id);
+-  await refreshSaved();
+-  status('Saved audit deleted.', 'ok');
+-}
+-
+-/**
+- * Exports the saved audit bundle.
+- */
+-async function exportAll() {
+-  const bundle = {
+-    app: ATLAS_APP_NAME,
+-    bundleType: 'atlas-align-audit-logic-flows',
+-    exportedAt: new Date().toISOString(),
+-    flows: state.savedFlows,
+-  };
+-  downloadJson(`atlas_align_saved_audits_${today()}.json`, bundle);
+-}
+-
+-/**
+- * Imports one or more saved audits from a JSON file.
+- * @param {any} file - Browser File object to import.
+- */
+-async function importAll(file) {
+-  const json = JSON.parse(await file.text());
+-  const flows = Array.isArray(json.flows) ? json.flows : (Array.isArray(json) ? json : [{ id: uid('flow'), name: json.name || json.preset_name || 'Imported Audit', updatedAt: new Date().toISOString(), audit: json }]);
+-  for (const flow of flows) {
+-    await dbPut({
+-      id: flow.id || uid('flow'),
+-      name: flow.name || flow.audit?.name || 'Imported Audit',
+-      createdAt: flow.createdAt || new Date().toISOString(),
+-      updatedAt: new Date().toISOString(),
+-      audit: flow.audit || flow,
+-    });
+-  }
+-  await refreshSaved();
+-  status('Imported saved audit flow(s).', 'ok');
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Autosave
+-// -----------------------------------------------------------------------------
+-/**
+- * Debounces autosave after state changes.
+- */
+-function scheduleAutosave() {
+-  if (state.autosavePaused) return;
+-  atlasAutosaveDirty = true;
+-  atlasAutosaveRevision += 1;
+-  clearTimeout(autosaveTimer);
+-  autosaveTimer = setTimeout(saveAutosave, 500);
+-}
+-
+-/**
+- * Writes the current audit to the autosave record.
+- */
+-async function saveAutosave() {
+-  if (!atlasAutosaveDirty && atlasAutosaveSavedRevision === atlasAutosaveRevision) return;
+-  const revision = atlasAutosaveRevision;
+-  capture();
+-  const auditSnapshot = structuredClone(state.audit);
+-  await dbPut({
+-    id: ATLAS_AUTOSAVE_ID,
+-    name: 'Autosaved Draft',
+-    updatedAt: new Date().toISOString(),
+-    theme: themeMode(),
+-    audit: auditSnapshot,
+-  });
+-  atlasAutosaveSavedRevision = revision;
+-  atlasAutosaveDirty = atlasAutosaveRevision !== revision;
+-  e.autosaveStatus.textContent = `Autosaved draft at ${new Date().toLocaleString()}.`;
+-}
+-
+-/**
+- * Restores the autosaved draft if one exists.
+- */
+-async function restoreAutosave() {
+-  const record = await dbGet(ATLAS_AUTOSAVE_ID);
+-  if (record?.audit) {
+-    state.autosavePaused = true;
+-    state.audit = structuredClone(record.audit);
+-    setTheme(record.theme || localStorage.getItem('atlasAlignTheme') || 'light');
+-    state.autosavePaused = false;
+-    state.selectedStepId = state.audit.steps[0]?.id || null;
+-    state.audit.id = state.audit.id || uid('audit');
+-    state.activeAuditValue = `draft:${state.audit.id}`;
+-    markAuditSelected();
+-    updateActiveAuditBaseline();
+-    renderActiveAuditSelect?.();
+-    e.autosaveStatus.textContent = `Restored autosaved draft from ${new Date(record.updatedAt).toLocaleString()}.`;
+-    return true;
+-  }
+-  return false;
+-}
+-
+-/**
+- * Deletes the autosave record.
+- */
+-async function clearAutosave() {
+-  await dbDelete(ATLAS_AUTOSAVE_ID);
+-  e.autosaveStatus.textContent = 'Autosaved draft cleared.';
+-}
+-
+-/**
+- * Deletes the IndexedDB database used for saved audits and autosave records.
+- */
+-function deleteAtlasDatabase() {
+-  return new Promise((resolve, reject) => {
+-    if (!window.indexedDB) {
+-      resolve();
+-      return;
+-    }
+-    const request = indexedDB.deleteDatabase(ATLAS_DB_NAME);
+-    request.onsuccess = () => resolve();
+-    request.onerror = () => reject(request.error || new Error('Could not delete the local audit database.'));
+-    request.onblocked = () => reject(new Error('Close other ATLAS Align tabs and try clearing local data again.'));
+-  });
+-}
+-
+-/**
+- * Removes browser storage used by this app. Repo JSON files are not changed.
+- */
+-function clearAtlasBrowserStorage() {
+-  const appPrefixes = ['atlasAlign'];
+-  [localStorage, sessionStorage].forEach((store) => {
+-    if (!store) return;
+-    Object.keys(store).forEach((key) => {
+-      if (appPrefixes.some((prefix) => key.startsWith(prefix))) store.removeItem(key);
+-    });
+-  });
+-}
+-
+-/**
+- * Confirms and clears all locally saved app data, then reloads from a clean state.
+- */
+-async function resetLocalAppData() {
+-  const warning = [
+-    'Clear all saved ATLAS Align data from this browser?',
+-    '',
+-    'This will permanently delete locally saved audits, the autosaved draft, app preferences, and navigation state stored in this browser.',
+-    'Repo/source JSON files and downloaded exports will not be changed.',
+-    '',
+-    'This action cannot be undone. Continue?'
+-  ].join('\n');
+-  if (!confirm(warning)) return;
+-  state.autosavePaused = true;
+-  clearTimeout(autosaveTimer);
+-  await deleteAtlasDatabase();
+-  clearAtlasBrowserStorage();
+-  window.location.reload();
+-}
++/**
++ * 04-persistence.js
++ *
++ * IndexedDB persistence layer for saved audits, autosave, import/export bundles, and active audit switching support.
++ * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
++ */
++
++// -----------------------------------------------------------------------------
++// Persistence state
++// -----------------------------------------------------------------------------
++let autosaveTimer = null;
++let atlasAutosaveDirty = false;
++let atlasAutosaveRevision = 0;
++let atlasAutosaveSavedRevision = 0;
++
++
++// -----------------------------------------------------------------------------
++// IndexedDB helpers
++// -----------------------------------------------------------------------------
++/**
++ * Opens the IndexedDB database used for saved flows.
++ */
++function openDb() {
++  return new Promise((resolve, reject) => {
++    const request = indexedDB.open(ATLAS_DB_NAME, ATLAS_DB_VERSION);
++    request.onupgradeneeded = () => {
++      const db = request.result;
++      if (!db.objectStoreNames.contains(ATLAS_FLOW_STORE)) db.createObjectStore(ATLAS_FLOW_STORE, { keyPath: 'id' });
++    };
++    request.onsuccess = () => resolve(request.result);
++    request.onerror = () => reject(request.error);
++  });
++}
++
++/**
++ * Reads all saved flow records from IndexedDB.
++ */
++async function dbAll() {
++  const db = await openDb();
++  try {
++    return await new Promise((resolve, reject) => {
++      const tx = db.transaction(ATLAS_FLOW_STORE, 'readonly');
++      const request = tx.objectStore(ATLAS_FLOW_STORE).getAll();
++      request.onsuccess = () => resolve(request.result || []);
++      request.onerror = () => reject(request.error);
++    });
++  } finally {
++    db.close();
++  }
++}
++
++/**
++ * Writes a saved flow or autosave record to IndexedDB.
++ * @param {any} record - IndexedDB record to write.
++ */
++async function dbPut(record) {
++  const db = await openDb();
++  try {
++    return await new Promise((resolve, reject) => {
++      const tx = db.transaction(ATLAS_FLOW_STORE, 'readwrite');
++      const request = tx.objectStore(ATLAS_FLOW_STORE).put(record);
++      request.onsuccess = () => resolve();
++      request.onerror = () => reject(request.error);
++    });
++  } finally {
++    db.close();
++  }
++}
++
++/**
++ * Reads a saved flow by id from IndexedDB.
++ * @param {any} id - Element id or record id to look up.
++ */
++async function dbGet(id) {
++  const db = await openDb();
++  try {
++    return await new Promise((resolve, reject) => {
++      const tx = db.transaction(ATLAS_FLOW_STORE, 'readonly');
++      const request = tx.objectStore(ATLAS_FLOW_STORE).get(id);
++      request.onsuccess = () => resolve(request.result);
++      request.onerror = () => reject(request.error);
++    });
++  } finally {
++    db.close();
++  }
++}
++
++/**
++ * Deletes a saved flow from IndexedDB.
++ * @param {any} id - Element id or record id to look up.
++ */
++async function dbDelete(id) {
++  const db = await openDb();
++  try {
++    return await new Promise((resolve, reject) => {
++      const tx = db.transaction(ATLAS_FLOW_STORE, 'readwrite');
++      const request = tx.objectStore(ATLAS_FLOW_STORE).delete(id);
++      request.onsuccess = () => resolve();
++      request.onerror = () => reject(request.error);
++    });
++  } finally {
++    db.close();
++  }
++}
++
++
++// -----------------------------------------------------------------------------
++// Saved audit operations
++// -----------------------------------------------------------------------------
++/**
++ * Loads saved flows into state and updates the saved-flow selector.
++ */
++async function refreshSaved() {
++  const all = (await dbAll()).filter((record) => record.id !== ATLAS_AUTOSAVE_ID);
++  state.savedFlows = all.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
++  e.flowSelect.innerHTML = state.savedFlows.length
++    ? state.savedFlows.map((flow) => `<option value="${flow.id}">${esc(flow.name)} — ${new Date(flow.updatedAt).toLocaleString()}</option>`).join('')
++    : '<option value="">No saved audits yet</option>';
++  e.saveStatus.textContent = `${state.savedFlows.length} saved audit${state.savedFlows.length === 1 ? '' : 's'} in this browser.`;
++}
++
++/**
++ * Prompts for a name and saves the current audit locally.
++ */
++async function saveFlow() {
++  capture();
++  const id = e.flowSelect.value || uid('flow');
++  const name = prompt('Name this saved audit:', state.audit.name || 'Audit Logic Flow');
++  if (!name) return;
++  const existing = await dbGet(id);
++  const record = {
++    id,
++    name,
++    updatedAt: new Date().toISOString(),
++    createdAt: existing?.createdAt || new Date().toISOString(),
++    audit: structuredClone({ ...state.audit, name }),
++  };
++  await dbPut(record);
++  await refreshSaved();
++  e.flowSelect.value = id;
++  state.activeAuditValue = `local:${id}`;
++  updateActiveAuditBaseline();
++  renderActiveAuditSelect?.();
++  status(`Saved audit: ${name}`, 'ok');
++}
++
++/**
++ * Saves the active audit before switching when requested.
++ */
++async function saveCurrentAuditForSwitch() {
++  capture?.();
++  const isLocal = String(state.activeAuditValue || '').startsWith('local:');
++  const id = isLocal ? state.activeAuditValue.split(':').slice(1).join(':') : uid('flow');
++  const existing = isLocal ? await dbGet(id) : null;
++  let name = state.audit.name || existing?.name || 'Audit Logic Flow';
++  if (!isLocal || !name) {
++    const promptedName = prompt('Save current audit as:', name || 'Audit Logic Flow');
++    if (!promptedName) return false;
++    name = promptedName;
++  }
++  const record = {
++    id,
++    name,
++    updatedAt: new Date().toISOString(),
++    createdAt: existing?.createdAt || new Date().toISOString(),
++    audit: structuredClone({ ...state.audit, name }),
++  };
++  await dbPut(record);
++  await refreshSaved();
++  state.activeAuditValue = `local:${id}`;
++  if (e.flowSelect) e.flowSelect.value = id;
++  updateActiveAuditBaseline();
++  renderActiveAuditSelect?.();
++  status(`Saved audit: ${name}`, 'ok');
++  return true;
++}
++
++/**
++ * Loads a locally saved audit.
++ */
++async function loadFlow() {
++  const id = e.flowSelect.value;
++  if (!id) return status('Select a saved audit first.', 'warn');
++  const record = await dbGet(id);
++  if (!record) return;
++  state.audit = structuredClone(record.audit);
++  state.selectedStepId = state.audit.steps[0]?.id || null;
++  state.activeAuditValue = `local:${id}`;
++  markAuditSelected();
++  renderAll();
++  showSection('overview');
++  status(`Loaded saved audit: ${record.name}.`, 'ok');
++  scheduleAutosave();
++  updateActiveAuditBaseline();
++  renderActiveAuditSelect?.();
++}
++
++/**
++ * Deletes the selected saved audit.
++ */
++async function deleteFlow() {
++  const id = e.flowSelect.value;
++  if (!id) return status('Select a saved audit first.', 'warn');
++  if (!confirm('Delete selected saved audit from this browser?')) return;
++  await dbDelete(id);
++  await refreshSaved();
++  status('Saved audit deleted.', 'ok');
++}
++
++/**
++ * Exports the saved audit bundle.
++ */
++async function exportAll() {
++  const bundle = {
++    app: ATLAS_APP_NAME,
++    bundleType: 'atlas-align-audit-logic-flows',
++    exportedAt: new Date().toISOString(),
++    flows: state.savedFlows,
++  };
++  downloadJson(`atlas_align_saved_audits_${today()}.json`, bundle);
++}
++
++/**
++ * Imports one or more saved audits from a JSON file.
++ * @param {any} file - Browser File object to import.
++ */
++async function importAll(file) {
++  const json = JSON.parse(await file.text());
++  const flows = Array.isArray(json.flows) ? json.flows : (Array.isArray(json) ? json : [{ id: uid('flow'), name: json.name || json.preset_name || 'Imported Audit', updatedAt: new Date().toISOString(), audit: json }]);
++  for (const flow of flows) {
++    await dbPut({
++      id: flow.id || uid('flow'),
++      name: flow.name || flow.audit?.name || 'Imported Audit',
++      createdAt: flow.createdAt || new Date().toISOString(),
++      updatedAt: new Date().toISOString(),
++      audit: flow.audit || flow,
++    });
++  }
++  await refreshSaved();
++  status('Imported saved audit flow(s).', 'ok');
++}
++
++
++// -----------------------------------------------------------------------------
++// Autosave
++// -----------------------------------------------------------------------------
++/**
++ * Debounces autosave after state changes.
++ */
++function scheduleAutosave() {
++  if (state.autosavePaused) return;
++  atlasAutosaveDirty = true;
++  atlasAutosaveRevision += 1;
++  clearTimeout(autosaveTimer);
++  autosaveTimer = setTimeout(saveAutosave, 500);
++}
++
++/**
++ * Writes the current audit to the autosave record.
++ */
++async function saveAutosave() {
++  if (!atlasAutosaveDirty && atlasAutosaveSavedRevision === atlasAutosaveRevision) return;
++  const revision = atlasAutosaveRevision;
++  capture();
++  const auditSnapshot = structuredClone(state.audit);
++  await dbPut({
++    id: ATLAS_AUTOSAVE_ID,
++    name: 'Autosaved Draft',
++    updatedAt: new Date().toISOString(),
++    theme: themeMode(),
++    audit: auditSnapshot,
++  });
++  atlasAutosaveSavedRevision = revision;
++  atlasAutosaveDirty = atlasAutosaveRevision !== revision;
++  e.autosaveStatus.textContent = `Autosaved draft at ${new Date().toLocaleString()}.`;
++}
++
++/**
++ * Restores the autosaved draft if one exists.
++ */
++async function restoreAutosave() {
++  const record = await dbGet(ATLAS_AUTOSAVE_ID);
++  if (record?.audit) {
++    state.autosavePaused = true;
++    state.audit = structuredClone(record.audit);
++    setTheme(record.theme || localStorage.getItem('atlasAlignTheme') || 'light');
++    state.autosavePaused = false;
++    state.selectedStepId = state.audit.steps[0]?.id || null;
++    state.audit.id = state.audit.id || uid('audit');
++    state.activeAuditValue = `draft:${state.audit.id}`;
++    markAuditSelected();
++    updateActiveAuditBaseline();
++    renderActiveAuditSelect?.();
++    e.autosaveStatus.textContent = `Restored autosaved draft from ${new Date(record.updatedAt).toLocaleString()}.`;
++    return true;
++  }
++  return false;
++}
++
++/**
++ * Deletes the autosave record.
++ */
++async function clearAutosave() {
++  await dbDelete(ATLAS_AUTOSAVE_ID);
++  e.autosaveStatus.textContent = 'Autosaved draft cleared.';
++}
++
++/**
++ * Deletes the IndexedDB database used for saved audits and autosave records.
++ */
++function deleteAtlasDatabase() {
++  return new Promise((resolve, reject) => {
++    if (!window.indexedDB) {
++      resolve();
++      return;
++    }
++    const request = indexedDB.deleteDatabase(ATLAS_DB_NAME);
++    request.onsuccess = () => resolve();
++    request.onerror = () => reject(request.error || new Error('Could not delete the local audit database.'));
++    request.onblocked = () => reject(new Error('Close other ATLAS Align tabs and try clearing local data again.'));
++  });
++}
++
++/**
++ * Removes browser storage used by this app. Repo JSON files are not changed.
++ */
++function clearAtlasBrowserStorage() {
++  const appPrefixes = ['atlasAlign'];
++  [localStorage, sessionStorage].forEach((store) => {
++    if (!store) return;
++    Object.keys(store).forEach((key) => {
++      if (appPrefixes.some((prefix) => key.startsWith(prefix))) store.removeItem(key);
++    });
++  });
++}
++
++/**
++ * Confirms and clears all locally saved app data, then reloads from a clean state.
++ */
++async function resetLocalAppData() {
++  const warning = [
++    'Clear all saved ATLAS Align data from this browser?',
++    '',
++    'This will permanently delete locally saved audits, the autosaved draft, app preferences, and navigation state stored in this browser.',
++    'Repo/source JSON files and downloaded exports will not be changed.',
++    '',
++    'This action cannot be undone. Continue?'
++  ].join('\n');
++  if (!confirm(warning)) return;
++  state.autosavePaused = true;
++  clearTimeout(autosaveTimer);
++  await deleteAtlasDatabase();
++  clearAtlasBrowserStorage();
++  window.location.reload();
++}
++
++
++// Durable audit operations now use PostgreSQL; IndexedDB remains autosave/crash recovery only.
++refreshSaved = async function refreshSavedDatabaseAudits() {
++  if (typeof atlasRefreshDatabaseAudits === 'function') await atlasRefreshDatabaseAudits();
++  state.savedFlows = (state.databaseAudits || []).map(audit => ({ id:audit.id, name:audit.name, updatedAt:audit.updatedAt, revisionNumber:audit.currentRevisionNumber }));
++  if (e.flowSelect) e.flowSelect.innerHTML = state.savedFlows.length ? state.savedFlows.map(flow => `<option value="${esc(flow.id)}">${esc(flow.name)} — revision ${flow.revisionNumber}</option>`).join('') : '<option value="">No database audits yet</option>';
++  if (e.saveStatus) e.saveStatus.textContent = `${state.savedFlows.length} audit${state.savedFlows.length===1?'':'s'} in the shared database.`;
++};
++saveFlow = async function saveFlowDatabase(){ return atlasSaveCurrentAudit?.(); };
++saveCurrentAuditForSwitch = async function saveCurrentAuditForSwitchDatabase(){ return atlasSaveCurrentAudit?.('Saved before switching audits'); };
++loadFlow = async function loadFlowDatabase(){ const id=e.flowSelect?.value;if(!id)return status('Select a database audit first.','warn');return atlasLoadDatabaseAudit(id); };
++deleteFlow = async function archiveFlowDatabase(){ return atlasArchiveCurrentAudit?.(); };
++importAll = async function importAllDatabase(file){ const json=JSON.parse(await file.text());const flows=Array.isArray(json.flows)?json.flows:(Array.isArray(json)?json:[{audit:json}]);for(const flow of flows)await atlasImportAuditDocument(flow.audit||flow,'Imported audit bundle');await refreshSaved();status(`Imported ${flows.length} audit(s) into the database.`,'ok'); };
++const atlasLocalSaveAutosaveBase = saveAutosave;
++saveAutosave = async function saveAutosaveWithDatabaseBase(){
++  await atlasLocalSaveAutosaveBase();
++  const record=await dbGet(ATLAS_AUTOSAVE_ID);
++  if(record){record.databaseAuditId=state.auditPersistence?.auditId||null;record.baseRevisionId=state.auditPersistence?.revisionId||null;await dbPut(record);}
++};
+diff --git a/js/06-events-bootstrap.js b/js/06-events-bootstrap.js
+index 5212cd757552110d19421dc9d4df14f8db6d2c7e..a7fb8a4ba0cd2af39d03c36625fb385b7f9aec56 100644
+--- a/js/06-events-bootstrap.js
++++ b/js/06-events-bootstrap.js
+@@ -86,6 +86,8 @@ function bindEvents() {
+     renderAll();
+     scheduleAutosave();
+   });
++  on('auditVersionHistoryBtn', 'click', () => atlasOpenAuditHistory?.().catch((err) => status(err.message, 'bad')));
++  on('stepVersionHistoryBtn', 'click', () => atlasOpenStepHistory?.().catch((err) => status(err.message, 'bad')));
+   on('duplicateAuditBtn', 'click', () => {
+     capture();
+     const clone = structuredClone(state.audit);
+@@ -291,6 +293,7 @@ async function init() {
+   setTheme(localStorage.getItem('atlasAlignTheme') || 'light');
+   await initPhraseCatalog?.();
+   await atlasInitSourceDatabase?.();
++  await atlasInitAuditDatabase?.();
+   await loadRepoLibrary?.();
+   renderStepTemplateOptions?.();
+   bindEvents();
+diff --git a/js/11-repo-library.js b/js/11-repo-library.js
+index 967b66ae87fee46946922496d8686aae5a6680d1..5e0e251073fcd6810cb48842dacace8d7380bb1d 100644
+--- a/js/11-repo-library.js
++++ b/js/11-repo-library.js
+@@ -371,3 +371,20 @@ async function switchActiveAudit(value) {
+     renderActiveAuditSelect?.();
+   }
+ }
++
++
++// Database audits are primary; repository JSON audits remain a migration fallback.
++const atlasRepoLoadBase = loadRepoLibrary;
++loadRepoLibrary = async function loadHybridLibrary(){
++  await atlasRefreshDatabaseAudits?.();
++  await atlasRepoLoadBase();
++};
++const atlasGetAuditItemsBase = getAuditLibraryItems;
++getAuditLibraryItems = function getHybridAuditLibraryItems(){
++  const databaseItems=(state.databaseAudits||[]).map(audit=>({value:`database:${audit.id}`,title:audit.name||audit.id,detail:`Revision ${audit.currentRevisionNumber} · ${audit.updatedByUsername||''}`,kind:'Database Audit',group:'Database Audits'}));
++  return [...databaseItems,...atlasGetAuditItemsBase()];
++};
++const atlasLoadSelectedBase = loadSelectedLibraryAudit;
++loadSelectedLibraryAudit = async function loadSelectedHybridAudit(){const value=$('auditLibrarySelect')?.value||'';if(value.startsWith('database:'))return atlasLoadDatabaseAudit(value.slice(9));return atlasLoadSelectedBase();};
++const atlasSwitchBase = switchActiveAudit;
++switchActiveAudit = async function switchHybridAudit(value){if(String(value).startsWith('database:')){if(state.auditSwitchInProgress)return;const previousPage=document.querySelector('.page.active')?.dataset.page||'my-audits';capture?.();const behavior=await confirmAuditSwitchSaveBehavior();if(behavior==='cancel')return;if(behavior==='save'&&!(await saveCurrentAuditForSwitch()))return;state.auditSwitchInProgress=true;try{await atlasLoadDatabaseAudit(value.slice(9));showSection(previousPage);}finally{state.auditSwitchInProgress=false;renderActiveAuditSelect?.();}return;}return atlasSwitchBase(value);};
+diff --git a/js/16-page-shell.js b/js/16-page-shell.js
+index 0b1a1239558d11d0baba00b2230ed00c9ed404ea..1c7712a4ff7fe80b8517975f9cab6b5004a7268b 100644
+--- a/js/16-page-shell.js
++++ b/js/16-page-shell.js
+@@ -1,392 +1,402 @@
+-/**
+- * 16-page-shell.js
+- *
+- * Page shell enhancements for dashboard metrics, topbar audit switching, navigation lock state, flow navigation, and field display toggle rendering.
+- * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
+- */
+-
+-// -----------------------------------------------------------------------------
+-// Dashboard metric helpers
+-// -----------------------------------------------------------------------------
+-/**
+- * Sets textContent for an element by id.
+- * @param {any} id - Element id or record id to look up.
+- * @param {any} value - Value to process or assign.
+- */
+-function setText(id, value) {
+-  const el = $(id);
+-  if (el) el.textContent = value;
+-}
+-
+-/**
+- * Updates dashboard, overview, and group snapshot metrics.
+- */
+-function updateDashboardMetrics() {
+-  const repoAudits = repoLibraryState?.audits?.length || 0;
+-  const savedAudits = state.savedFlows?.length || 0;
+-  const selectedSources = state.audit.sources?.length || 0;
+-  const logicSteps = state.audit.steps?.length || 0;
+-  const sourceFiles = repoLibraryState?.sourceFiles?.length || 0;
+-  const vanityLabels = repoLibraryState?.vanityLabels?.length || 0;
+-  const sourceAliases = repoLibraryState?.sourceAliases?.length || 0;
+-  const fieldCount = (state.audit.fields || []).length || (state.audit.sources || []).reduce((total, source) => total + (typeof fieldsForSource === 'function' ? fieldsForSource(source.name).length : 0), 0);
+-
+-  setText('metricRepoAudits', repoAudits.toLocaleString());
+-  setText('metricSavedAudits', savedAudits.toLocaleString());
+-  setText('metricSelectedSources', selectedSources.toLocaleString());
+-  setText('metricLogicSteps', logicSteps.toLocaleString());
+-  setText('metricSourceFiles', sourceFiles.toLocaleString());
+-  setText('metricVanityLabels', vanityLabels.toLocaleString());
+-  setText('metricSourceAliases', sourceAliases.toLocaleString());
+-  setText('overviewSourceCount', selectedSources.toLocaleString());
+-  setText('overviewFieldCount', fieldCount.toLocaleString());
+-  setText('overviewStepCount', logicSteps.toLocaleString());
+-  setText('selectedSourceBadge', selectedSources.toLocaleString());
+-
+-  const progress = Math.min(100, Math.round([
+-    state.audit.name && state.audit.name !== 'New Audit Logic Flow',
+-    !!state.audit.purpose,
+-    selectedSources > 0,
+-    fieldCount > 0,
+-    logicSteps > 0,
+-  ].filter(Boolean).length / 5 * 100));
+-  setText('overviewProgressBadge', `${progress}% ready`);
+-
+-  const snapshot = $('groupAuditSnapshot');
+-  if (snapshot) {
+-    snapshot.innerHTML = `
+-      <div class="package"><span>Audit</span><strong>${esc(state.audit.name || 'Untitled Audit')}</strong></div>
+-      <div class="package"><span>Purpose</span><strong>${state.audit.purpose ? 'Entered' : 'Missing'}</strong></div>
+-      <div class="package"><span>Sources</span><strong>${selectedSources.toLocaleString()}</strong></div>
+-      <div class="package"><span>Logic steps</span><strong>${logicSteps.toLocaleString()}</strong></div>
+-    `;
+-  }
+-  const savedList = $('groupSavedAuditList');
+-  if (savedList) {
+-    const flows = (state.savedFlows || []).slice(0, 6);
+-    savedList.innerHTML = flows.length ? flows.map((flow) => `<div class="package"><span>${esc(flow.name || 'Saved Audit')}</span><small>${esc(flow.updatedAt ? new Date(flow.updatedAt).toLocaleString() : '')}</small></div>`).join('') : '<p class="hint">Saved audits will appear here after local saves are loaded.</p>';
+-  }
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Render wrappers for page shell
+-// -----------------------------------------------------------------------------
+-function renderPageShellStatus() {
+-  updateDashboardMetrics();
+-  updateNavigationLockState?.();
+-  renderFlowNavControls?.();
+-  renderActiveAuditSelect?.();
+-  renderFieldDisplayModeButton?.();
+-}
+-
+-const pageShellRenderAllBase = typeof renderAll === 'function' ? renderAll : null;
+-if (pageShellRenderAllBase) {
+-  /**
+-   * Central render coordinator for the current audit UI.
+-   */
+-  renderAll = function renderAllWithPageShell(options = {}) {
+-    pageShellRenderAllBase();
+-    if (options.shell !== false) renderPageShellStatus();
+-  };
+-}
+-
+-const pageShellRefreshSavedBase = typeof refreshSaved === 'function' ? refreshSaved : null;
+-if (pageShellRefreshSavedBase) {
+-  /**
+-   * Loads saved flows into state and updates the saved-flow selector.
+-   */
+-  refreshSaved = async function refreshSavedWithPageShell() {
+-    await pageShellRefreshSavedBase();
+-    if (typeof renderAuditLibrarySelect === 'function') renderAuditLibrarySelect();
+-    updateDashboardMetrics();
+-    renderActiveAuditSelect?.();
+-    renderFieldDisplayModeButton?.();
+-  };
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Topbar audit switcher
+-// -----------------------------------------------------------------------------
+-/**
+- * Builds audit options for the topbar selector.
+- */
+-function topbarAuditOptions() {
+-  const options = [];
+-  (repoLibraryState?.audits || []).forEach((audit) => options.push({ group: 'Repo Audits', value: `repo:${audit.id}`, label: audit.name || audit.id }));
+-  (state.savedFlows || []).forEach((flow) => options.push({ group: 'Local Saved Audits', value: `local:${flow.id}`, label: flow.name || 'Saved audit' }));
+-  if (typeof workbookState !== 'undefined' && workbookState.loaded) {
+-    (workbookState.auditSheets || []).forEach((name) => options.push({ group: 'Workbook Imports', value: `workbook:${name}`, label: name }));
+-  }
+-  if (hasSelectedAudit() && String(state.activeAuditValue || '').startsWith('draft:') && !options.some((option) => option.value === state.activeAuditValue)) {
+-    options.push({ group: 'Current Draft', value: state.activeAuditValue, label: state.audit.name || 'Unsaved Draft' });
+-  }
+-  if (hasSelectedAudit() && state.activeAuditValue && !options.some((option) => option.value === state.activeAuditValue) && state.audit.name) {
+-    options.push({ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name });
+-  }
+-  return options;
+-}
+-
+-/**
+- * Returns the active page name.
+- */
+-function activePageName() {
+-  return document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
+-}
+-
+-/**
+- * Shows or hides the topbar audit switcher.
+- */
+-function renderTopbarAuditSwitcherVisibility() {
+-  const wrapper = document.querySelector('.topbar-audit-switcher');
+-  if (!wrapper) return;
+-  wrapper.hidden = activePageName() === 'my-audits';
+-}
+-
+-/**
+- * Returns the audit value staged in the topbar selector.
+- */
+-function pendingActiveAuditValue() {
+-  return state.pendingActiveAuditValue || $('activeAuditSelect')?.value || '';
+-}
+-
+-/**
+- * Renders the topbar active-audit selector.
+- */
+-function renderActiveAuditSelect() {
+-  const select = $('activeAuditSelect');
+-  const confirmButton = $('confirmActiveAuditBtn');
+-  renderTopbarAuditSwitcherVisibility();
+-  if (!select) return;
+-  const options = topbarAuditOptions();
+-  const stagedValue = state.pendingActiveAuditValue || '';
+-  if (!hasSelectedAudit()) {
+-    const placeholder = options.length ? 'Select an audit...' : 'No audit selected';
+-    const groups = [...new Set(options.map((option) => option.group))];
+-    select.innerHTML = `<option value="">${esc(placeholder)}</option>` + groups.map((group) => `<optgroup label="${esc(group)}">${options.filter((option) => option.group === group).map((option) => `<option value="${esc(option.value)}">${esc(option.label)}</option>`).join('')}</optgroup>`).join('');
+-    select.disabled = !options.length;
+-    select.value = stagedValue && options.some((option) => option.value === stagedValue) ? stagedValue : '';
+-    if (confirmButton) confirmButton.disabled = !select.value;
+-    return;
+-  }
+-  let renderOptions = options;
+-  if (state.activeAuditValue && state.audit.name && !renderOptions.some((option) => option.value === state.activeAuditValue)) {
+-    renderOptions = [{ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name }, ...renderOptions];
+-  }
+-  const groups = [...new Set(renderOptions.map((option) => option.group))];
+-  select.innerHTML = groups.map((group) => `<optgroup label="${esc(group)}">${renderOptions.filter((option) => option.group === group).map((option) => `<option value="${esc(option.value)}">${esc(option.label)}</option>`).join('')}</optgroup>`).join('');
+-  select.disabled = !renderOptions.length;
+-  const valueToShow = stagedValue && renderOptions.some((option) => option.value === stagedValue) ? stagedValue : state.activeAuditValue;
+-  if (valueToShow && renderOptions.some((option) => option.value === valueToShow)) select.value = valueToShow;
+-  if (confirmButton) confirmButton.disabled = !select.value || select.value === state.activeAuditValue;
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Display-mode button
+-// -----------------------------------------------------------------------------
+-/**
+- * Renders the vanity/raw display toggle button.
+- */
+-function renderFieldDisplayModeButton() {
+-  const button = $('fieldDisplayModeBtn');
+-  if (!button) return;
+-
+-  const mode = fieldDisplayMode?.() || 'source';
+-  const nextMode = mode === 'vanity' ? 'source field names' : 'vanity labels';
+-
+-  button.innerHTML = mode === 'vanity'
+-    ? (typeof atlasVanityLabelIconSvg === 'function' ? atlasVanityLabelIconSvg() : '')
+-    : 'Aa';
+-
+-  button.title = `Switch to ${nextMode}`;
+-  button.setAttribute('aria-label', `Switch to ${nextMode}`);
+-  button.classList.toggle('active', mode === 'vanity');
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Workflow navigation
+-// -----------------------------------------------------------------------------
+-const AUDIT_FLOW_PAGES = [
+-  { page: 'overview', label: 'Audit Overview', nextLabel: 'Select Sources' },
+-  { page: 'fields', label: 'Select Sources', nextLabel: 'Build Logic' },
+-  { page: 'steps', label: 'Logic Builder', nextLabel: 'Requirements Preview' },
+-  { page: 'preview', label: 'Requirements Preview', nextLabel: 'Readiness & Review' },
+-  { page: 'review', label: 'Readiness & Review', nextLabel: 'Publication Preview' },
+-  { page: 'save', label: 'Publication Preview' },
+-];
+-
+-/**
+- * Locks or unlocks navigation based on active audit state.
+- */
+-function updateNavigationLockState() {
+-  const unlockedPages = new Set(['my-audits', 'group']);
+-  const locked = !hasSelectedAudit();
+-  document.body.classList.toggle('audit-selected', !locked);
+-  document.body.classList.toggle('audit-not-selected', locked);
+-  document.querySelectorAll('.navitem, .rail-item').forEach((button) => {
+-    const targetPage = pageForSection(button.dataset.section || button.dataset.page || button.dataset.panel || '');
+-    const shouldLock = locked && !unlockedPages.has(targetPage);
+-    button.classList.toggle('is-locked', shouldLock);
+-    if (shouldLock) {
+-      button.setAttribute('aria-disabled', 'true');
+-      button.setAttribute('title', 'Select or create an audit first.');
+-    } else {
+-      button.removeAttribute('aria-disabled');
+-      button.removeAttribute('title');
+-    }
+-  });
+-  renderFlowNavControls?.();
+-}
+-
+-/**
+- * Returns the active page for flow navigation.
+- */
+-function activeAuditFlowPage() {
+-  return document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
+-}
+-
+-/**
+- * Renders Back/Next controls for the audit workflow.
+- */
+-function renderFlowNavControls() {
+-  const controls = $('flowNavControls');
+-  const back = $('flowBackBtn');
+-  const next = $('flowNextBtn');
+-  if (!controls || !back || !next) return;
+-  const currentPage = activeAuditFlowPage();
+-  const currentIndex = AUDIT_FLOW_PAGES.findIndex((item) => item.page === currentPage);
+-  const showControls = hasSelectedAudit() && currentIndex >= 0;
+-  controls.hidden = !showControls;
+-  if (!showControls) {
+-    back.hidden = true;
+-    next.hidden = true;
+-    back.removeAttribute('data-flow-target');
+-    next.removeAttribute('data-flow-target');
+-    return;
+-  }
+-  const previous = AUDIT_FLOW_PAGES[currentIndex - 1];
+-  const current = AUDIT_FLOW_PAGES[currentIndex];
+-  const nextPage = AUDIT_FLOW_PAGES[currentIndex + 1];
+-  back.hidden = !previous;
+-  if (previous) {
+-    back.textContent = `Back: ${previous.label}`;
+-    back.dataset.flowTarget = previous.page;
+-  } else {
+-    back.removeAttribute('data-flow-target');
+-  }
+-  next.hidden = !nextPage;
+-  if (nextPage) {
+-    next.textContent = `Next: ${current.nextLabel || nextPage.label}`;
+-    next.dataset.flowTarget = nextPage.page;
+-  } else {
+-    next.removeAttribute('data-flow-target');
+-  }
+-}
+-
+-
+-// -----------------------------------------------------------------------------
+-// Page shell event handlers
+-// -----------------------------------------------------------------------------
+-document.addEventListener('click', (event) => {
+-  const flowNav = event.target.closest('[data-flow-target]');
+-  if (flowNav) {
+-    showSection(flowNav.dataset.flowTarget);
+-    renderActiveAuditSelect?.();
+-    renderFieldDisplayModeButton?.();
+-    return;
+-  }
+-  const nav = event.target.closest('.navitem');
+-  if (nav) {
+-    if (nav.classList.contains('is-locked')) {
+-      event.preventDefault();
+-      event.stopPropagation();
+-      return;
+-    }
+-    showSection(nav.dataset.section);
+-    renderActiveAuditSelect?.();
+-    renderFieldDisplayModeButton?.();
+-    return;
+-  }
+-  if (event.target.closest('#collapseNavBtn')) {
+-    $('sidebar')?.classList.toggle('collapsed');
+-    $('main')?.classList.toggle('expanded');
+-    localStorage.setItem('atlasAlignNavCollapsed', $('sidebar')?.classList.contains('collapsed') ? 'Yes' : 'No');
+-    return;
+-  }
+-  if (event.target.closest('#myAuditsNewAuditBtn')) {
+-    $('newAuditBtn')?.click();
+-    return;
+-  }
+-  const previewTab = event.target.closest('[data-preview-tab]');
+-  if (previewTab) {
+-    document.querySelectorAll('[data-preview-tab]').forEach((tab) => tab.classList.toggle('active', tab === previewTab));
+-    if (e.previewStyle) e.previewStyle.value = previewTab.dataset.previewTab;
+-    renderPreview?.();
+-  }
+-});
+-
+-document.addEventListener('DOMContentLoaded', () => {
+-  if (localStorage.getItem('atlasAlignNavCollapsed') === 'Yes') {
+-    $('sidebar')?.classList.add('collapsed');
+-    $('main')?.classList.add('expanded');
+-  }
+-  updateNavigationLockState?.();
+-  renderFlowNavControls?.();
+-  renderActiveAuditSelect?.();
+-  renderFieldDisplayModeButton?.();
+-});
+-
+-
+-
+-// -----------------------------------------------------------------------------
+-// Final audit switcher override
+-// -----------------------------------------------------------------------------
+-/* Final audit switcher rendering and Switch button refinements */
+-function atlasOptionHtml(option) {
+-  return `<option value="${esc(option.value)}">${esc(option.label || option.value)}</option>`;
+-}
+-/**
+- * Groups audit options for the topbar selector.
+- * @param {any} options - Configuration/options object.
+- * @param {any} includePlaceholder - Input used by atlasGroupedAuditOptionsHtml.
+- * @param {any} placeholder - Input used by atlasGroupedAuditOptionsHtml.
+- */
+-function atlasGroupedAuditOptionsHtml(options, includePlaceholder = false, placeholder = 'Select an audit...') {
+-  const groups = [...new Set((options || []).map((option) => option.group || 'Audits'))];
+-  const placeholderHtml = includePlaceholder ? `<option value="">${esc(placeholder)}</option>` : '';
+-  return placeholderHtml + groups.map((group) => `<optgroup label="${esc(group)}">${options.filter((option) => (option.group || 'Audits') === group).map(atlasOptionHtml).join('')}</optgroup>`).join('');
+-}
+-/**
+- * Renders the topbar active-audit selector.
+- */
+-renderActiveAuditSelect = function renderActiveAuditSelectFinal() {
+-  const select = $('activeAuditSelect');
+-  const confirmButton = $('confirmActiveAuditBtn');
+-  renderTopbarAuditSwitcherVisibility?.();
+-  if (!select) return;
+-  const options = topbarAuditOptions?.() || [];
+-  const hasOptions = options.length > 0;
+-  let renderOptions = options;
+-  if (hasSelectedAudit?.() && state.activeAuditValue && state.audit?.name && !renderOptions.some((option) => option.value === state.activeAuditValue)) {
+-    renderOptions = [{ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name }, ...renderOptions];
+-  }
+-  const stagedValue = state.pendingActiveAuditValue || '';
+-  const includePlaceholder = !hasSelectedAudit?.();
+-  const placeholder = hasOptions ? 'Select an audit...' : 'No audit selected';
+-  select.innerHTML = atlasGroupedAuditOptionsHtml(renderOptions, includePlaceholder, placeholder);
+-  select.disabled = !renderOptions.length;
+-  const valueToShow = stagedValue && renderOptions.some((option) => option.value === stagedValue) ? stagedValue : (state.activeAuditValue || '');
+-  if (valueToShow && renderOptions.some((option) => option.value === valueToShow)) select.value = valueToShow;
+-  else select.value = includePlaceholder ? '' : (renderOptions[0]?.value || '');
+-  if (confirmButton) {
+-    confirmButton.textContent = 'Switch';
+-    confirmButton.title = 'Switch audit';
+-    confirmButton.setAttribute('aria-label', 'Switch audit');
+-    confirmButton.classList.remove('secondary', 'icon-button');
+-    confirmButton.classList.add('primary');
+-    confirmButton.disabled = !select.value || select.value === state.activeAuditValue;
+-  }
+-};
++/**
++ * 16-page-shell.js
++ *
++ * Page shell enhancements for dashboard metrics, topbar audit switching, navigation lock state, flow navigation, and field display toggle rendering.
++ * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
++ */
++
++// -----------------------------------------------------------------------------
++// Dashboard metric helpers
++// -----------------------------------------------------------------------------
++/**
++ * Sets textContent for an element by id.
++ * @param {any} id - Element id or record id to look up.
++ * @param {any} value - Value to process or assign.
++ */
++function setText(id, value) {
++  const el = $(id);
++  if (el) el.textContent = value;
++}
++
++/**
++ * Updates dashboard, overview, and group snapshot metrics.
++ */
++function updateDashboardMetrics() {
++  const repoAudits = repoLibraryState?.audits?.length || 0;
++  const savedAudits = state.savedFlows?.length || 0;
++  const selectedSources = state.audit.sources?.length || 0;
++  const logicSteps = state.audit.steps?.length || 0;
++  const sourceFiles = repoLibraryState?.sourceFiles?.length || 0;
++  const vanityLabels = repoLibraryState?.vanityLabels?.length || 0;
++  const sourceAliases = repoLibraryState?.sourceAliases?.length || 0;
++  const fieldCount = (state.audit.fields || []).length || (state.audit.sources || []).reduce((total, source) => total + (typeof fieldsForSource === 'function' ? fieldsForSource(source.name).length : 0), 0);
++
++  setText('metricRepoAudits', repoAudits.toLocaleString());
++  setText('metricSavedAudits', savedAudits.toLocaleString());
++  setText('metricSelectedSources', selectedSources.toLocaleString());
++  setText('metricLogicSteps', logicSteps.toLocaleString());
++  setText('metricSourceFiles', sourceFiles.toLocaleString());
++  setText('metricVanityLabels', vanityLabels.toLocaleString());
++  setText('metricSourceAliases', sourceAliases.toLocaleString());
++  setText('overviewSourceCount', selectedSources.toLocaleString());
++  setText('overviewFieldCount', fieldCount.toLocaleString());
++  setText('overviewStepCount', logicSteps.toLocaleString());
++  setText('selectedSourceBadge', selectedSources.toLocaleString());
++
++  const progress = Math.min(100, Math.round([
++    state.audit.name && state.audit.name !== 'New Audit Logic Flow',
++    !!state.audit.purpose,
++    selectedSources > 0,
++    fieldCount > 0,
++    logicSteps > 0,
++  ].filter(Boolean).length / 5 * 100));
++  setText('overviewProgressBadge', `${progress}% ready`);
++
++  const snapshot = $('groupAuditSnapshot');
++  if (snapshot) {
++    snapshot.innerHTML = `
++      <div class="package"><span>Audit</span><strong>${esc(state.audit.name || 'Untitled Audit')}</strong></div>
++      <div class="package"><span>Purpose</span><strong>${state.audit.purpose ? 'Entered' : 'Missing'}</strong></div>
++      <div class="package"><span>Sources</span><strong>${selectedSources.toLocaleString()}</strong></div>
++      <div class="package"><span>Logic steps</span><strong>${logicSteps.toLocaleString()}</strong></div>
++    `;
++  }
++  const savedList = $('groupSavedAuditList');
++  if (savedList) {
++    const flows = (state.savedFlows || []).slice(0, 6);
++    savedList.innerHTML = flows.length ? flows.map((flow) => `<div class="package"><span>${esc(flow.name || 'Saved Audit')}</span><small>${esc(flow.updatedAt ? new Date(flow.updatedAt).toLocaleString() : '')}</small></div>`).join('') : '<p class="hint">Saved audits will appear here after local saves are loaded.</p>';
++  }
++}
++
++
++// -----------------------------------------------------------------------------
++// Render wrappers for page shell
++// -----------------------------------------------------------------------------
++function renderPageShellStatus() {
++  updateDashboardMetrics();
++  updateNavigationLockState?.();
++  renderFlowNavControls?.();
++  renderActiveAuditSelect?.();
++  renderFieldDisplayModeButton?.();
++}
++
++const pageShellRenderAllBase = typeof renderAll === 'function' ? renderAll : null;
++if (pageShellRenderAllBase) {
++  /**
++   * Central render coordinator for the current audit UI.
++   */
++  renderAll = function renderAllWithPageShell(options = {}) {
++    pageShellRenderAllBase();
++    if (options.shell !== false) renderPageShellStatus();
++  };
++}
++
++const pageShellRefreshSavedBase = typeof refreshSaved === 'function' ? refreshSaved : null;
++if (pageShellRefreshSavedBase) {
++  /**
++   * Loads saved flows into state and updates the saved-flow selector.
++   */
++  refreshSaved = async function refreshSavedWithPageShell() {
++    await pageShellRefreshSavedBase();
++    if (typeof renderAuditLibrarySelect === 'function') renderAuditLibrarySelect();
++    updateDashboardMetrics();
++    renderActiveAuditSelect?.();
++    renderFieldDisplayModeButton?.();
++  };
++}
++
++
++// -----------------------------------------------------------------------------
++// Topbar audit switcher
++// -----------------------------------------------------------------------------
++/**
++ * Builds audit options for the topbar selector.
++ */
++function topbarAuditOptions() {
++  const options = [];
++  (repoLibraryState?.audits || []).forEach((audit) => options.push({ group: 'Repo Audits', value: `repo:${audit.id}`, label: audit.name || audit.id }));
++  (state.savedFlows || []).forEach((flow) => options.push({ group: 'Local Saved Audits', value: `local:${flow.id}`, label: flow.name || 'Saved audit' }));
++  if (typeof workbookState !== 'undefined' && workbookState.loaded) {
++    (workbookState.auditSheets || []).forEach((name) => options.push({ group: 'Workbook Imports', value: `workbook:${name}`, label: name }));
++  }
++  if (hasSelectedAudit() && String(state.activeAuditValue || '').startsWith('draft:') && !options.some((option) => option.value === state.activeAuditValue)) {
++    options.push({ group: 'Current Draft', value: state.activeAuditValue, label: state.audit.name || 'Unsaved Draft' });
++  }
++  if (hasSelectedAudit() && state.activeAuditValue && !options.some((option) => option.value === state.activeAuditValue) && state.audit.name) {
++    options.push({ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name });
++  }
++  return options;
++}
++
++/**
++ * Returns the active page name.
++ */
++function activePageName() {
++  return document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
++}
++
++/**
++ * Shows or hides the topbar audit switcher.
++ */
++function renderTopbarAuditSwitcherVisibility() {
++  const wrapper = document.querySelector('.topbar-audit-switcher');
++  if (!wrapper) return;
++  wrapper.hidden = activePageName() === 'my-audits';
++}
++
++/**
++ * Returns the audit value staged in the topbar selector.
++ */
++function pendingActiveAuditValue() {
++  return state.pendingActiveAuditValue || $('activeAuditSelect')?.value || '';
++}
++
++/**
++ * Renders the topbar active-audit selector.
++ */
++function renderActiveAuditSelect() {
++  const select = $('activeAuditSelect');
++  const confirmButton = $('confirmActiveAuditBtn');
++  renderTopbarAuditSwitcherVisibility();
++  if (!select) return;
++  const options = topbarAuditOptions();
++  const stagedValue = state.pendingActiveAuditValue || '';
++  if (!hasSelectedAudit()) {
++    const placeholder = options.length ? 'Select an audit...' : 'No audit selected';
++    const groups = [...new Set(options.map((option) => option.group))];
++    select.innerHTML = `<option value="">${esc(placeholder)}</option>` + groups.map((group) => `<optgroup label="${esc(group)}">${options.filter((option) => option.group === group).map((option) => `<option value="${esc(option.value)}">${esc(option.label)}</option>`).join('')}</optgroup>`).join('');
++    select.disabled = !options.length;
++    select.value = stagedValue && options.some((option) => option.value === stagedValue) ? stagedValue : '';
++    if (confirmButton) confirmButton.disabled = !select.value;
++    return;
++  }
++  let renderOptions = options;
++  if (state.activeAuditValue && state.audit.name && !renderOptions.some((option) => option.value === state.activeAuditValue)) {
++    renderOptions = [{ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name }, ...renderOptions];
++  }
++  const groups = [...new Set(renderOptions.map((option) => option.group))];
++  select.innerHTML = groups.map((group) => `<optgroup label="${esc(group)}">${renderOptions.filter((option) => option.group === group).map((option) => `<option value="${esc(option.value)}">${esc(option.label)}</option>`).join('')}</optgroup>`).join('');
++  select.disabled = !renderOptions.length;
++  const valueToShow = stagedValue && renderOptions.some((option) => option.value === stagedValue) ? stagedValue : state.activeAuditValue;
++  if (valueToShow && renderOptions.some((option) => option.value === valueToShow)) select.value = valueToShow;
++  if (confirmButton) confirmButton.disabled = !select.value || select.value === state.activeAuditValue;
++}
++
++
++// -----------------------------------------------------------------------------
++// Display-mode button
++// -----------------------------------------------------------------------------
++/**
++ * Renders the vanity/raw display toggle button.
++ */
++function renderFieldDisplayModeButton() {
++  const button = $('fieldDisplayModeBtn');
++  if (!button) return;
++
++  const mode = fieldDisplayMode?.() || 'source';
++  const nextMode = mode === 'vanity' ? 'source field names' : 'vanity labels';
++
++  button.innerHTML = mode === 'vanity'
++    ? (typeof atlasVanityLabelIconSvg === 'function' ? atlasVanityLabelIconSvg() : '')
++    : 'Aa';
++
++  button.title = `Switch to ${nextMode}`;
++  button.setAttribute('aria-label', `Switch to ${nextMode}`);
++  button.classList.toggle('active', mode === 'vanity');
++}
++
++
++// -----------------------------------------------------------------------------
++// Workflow navigation
++// -----------------------------------------------------------------------------
++const AUDIT_FLOW_PAGES = [
++  { page: 'overview', label: 'Audit Overview', nextLabel: 'Select Sources' },
++  { page: 'fields', label: 'Select Sources', nextLabel: 'Build Logic' },
++  { page: 'steps', label: 'Logic Builder', nextLabel: 'Requirements Preview' },
++  { page: 'preview', label: 'Requirements Preview', nextLabel: 'Readiness & Review' },
++  { page: 'review', label: 'Readiness & Review', nextLabel: 'Publication Preview' },
++  { page: 'save', label: 'Publication Preview' },
++];
++
++/**
++ * Locks or unlocks navigation based on active audit state.
++ */
++function updateNavigationLockState() {
++  const unlockedPages = new Set(['my-audits', 'group']);
++  const locked = !hasSelectedAudit();
++  document.body.classList.toggle('audit-selected', !locked);
++  document.body.classList.toggle('audit-not-selected', locked);
++  document.querySelectorAll('.navitem, .rail-item').forEach((button) => {
++    const targetPage = pageForSection(button.dataset.section || button.dataset.page || button.dataset.panel || '');
++    const shouldLock = locked && !unlockedPages.has(targetPage);
++    button.classList.toggle('is-locked', shouldLock);
++    if (shouldLock) {
++      button.setAttribute('aria-disabled', 'true');
++      button.setAttribute('title', 'Select or create an audit first.');
++    } else {
++      button.removeAttribute('aria-disabled');
++      button.removeAttribute('title');
++    }
++  });
++  renderFlowNavControls?.();
++}
++
++/**
++ * Returns the active page for flow navigation.
++ */
++function activeAuditFlowPage() {
++  return document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
++}
++
++/**
++ * Renders Back/Next controls for the audit workflow.
++ */
++function renderFlowNavControls() {
++  const controls = $('flowNavControls');
++  const back = $('flowBackBtn');
++  const next = $('flowNextBtn');
++  if (!controls || !back || !next) return;
++  const currentPage = activeAuditFlowPage();
++  const currentIndex = AUDIT_FLOW_PAGES.findIndex((item) => item.page === currentPage);
++  const showControls = hasSelectedAudit() && currentIndex >= 0;
++  controls.hidden = !showControls;
++  if (!showControls) {
++    back.hidden = true;
++    next.hidden = true;
++    back.removeAttribute('data-flow-target');
++    next.removeAttribute('data-flow-target');
++    return;
++  }
++  const previous = AUDIT_FLOW_PAGES[currentIndex - 1];
++  const current = AUDIT_FLOW_PAGES[currentIndex];
++  const nextPage = AUDIT_FLOW_PAGES[currentIndex + 1];
++  back.hidden = !previous;
++  if (previous) {
++    back.textContent = `Back: ${previous.label}`;
++    back.dataset.flowTarget = previous.page;
++  } else {
++    back.removeAttribute('data-flow-target');
++  }
++  next.hidden = !nextPage;
++  if (nextPage) {
++    next.textContent = `Next: ${current.nextLabel || nextPage.label}`;
++    next.dataset.flowTarget = nextPage.page;
++  } else {
++    next.removeAttribute('data-flow-target');
++  }
++}
++
++
++// -----------------------------------------------------------------------------
++// Page shell event handlers
++// -----------------------------------------------------------------------------
++document.addEventListener('click', (event) => {
++  const flowNav = event.target.closest('[data-flow-target]');
++  if (flowNav) {
++    showSection(flowNav.dataset.flowTarget);
++    renderActiveAuditSelect?.();
++    renderFieldDisplayModeButton?.();
++    return;
++  }
++  const nav = event.target.closest('.navitem');
++  if (nav) {
++    if (nav.classList.contains('is-locked')) {
++      event.preventDefault();
++      event.stopPropagation();
++      return;
++    }
++    showSection(nav.dataset.section);
++    renderActiveAuditSelect?.();
++    renderFieldDisplayModeButton?.();
++    return;
++  }
++  if (event.target.closest('#collapseNavBtn')) {
++    $('sidebar')?.classList.toggle('collapsed');
++    $('main')?.classList.toggle('expanded');
++    localStorage.setItem('atlasAlignNavCollapsed', $('sidebar')?.classList.contains('collapsed') ? 'Yes' : 'No');
++    return;
++  }
++  if (event.target.closest('#myAuditsNewAuditBtn')) {
++    $('newAuditBtn')?.click();
++    return;
++  }
++  const previewTab = event.target.closest('[data-preview-tab]');
++  if (previewTab) {
++    document.querySelectorAll('[data-preview-tab]').forEach((tab) => tab.classList.toggle('active', tab === previewTab));
++    if (e.previewStyle) e.previewStyle.value = previewTab.dataset.previewTab;
++    renderPreview?.();
++  }
++});
++
++document.addEventListener('DOMContentLoaded', () => {
++  if (localStorage.getItem('atlasAlignNavCollapsed') === 'Yes') {
++    $('sidebar')?.classList.add('collapsed');
++    $('main')?.classList.add('expanded');
++  }
++  updateNavigationLockState?.();
++  renderFlowNavControls?.();
++  renderActiveAuditSelect?.();
++  renderFieldDisplayModeButton?.();
++});
++
++
++
++// -----------------------------------------------------------------------------
++// Final audit switcher override
++// -----------------------------------------------------------------------------
++/* Final audit switcher rendering and Switch button refinements */
++function atlasOptionHtml(option) {
++  return `<option value="${esc(option.value)}">${esc(option.label || option.value)}</option>`;
++}
++/**
++ * Groups audit options for the topbar selector.
++ * @param {any} options - Configuration/options object.
++ * @param {any} includePlaceholder - Input used by atlasGroupedAuditOptionsHtml.
++ * @param {any} placeholder - Input used by atlasGroupedAuditOptionsHtml.
++ */
++function atlasGroupedAuditOptionsHtml(options, includePlaceholder = false, placeholder = 'Select an audit...') {
++  const groups = [...new Set((options || []).map((option) => option.group || 'Audits'))];
++  const placeholderHtml = includePlaceholder ? `<option value="">${esc(placeholder)}</option>` : '';
++  return placeholderHtml + groups.map((group) => `<optgroup label="${esc(group)}">${options.filter((option) => (option.group || 'Audits') === group).map(atlasOptionHtml).join('')}</optgroup>`).join('');
++}
++/**
++ * Renders the topbar active-audit selector.
++ */
++renderActiveAuditSelect = function renderActiveAuditSelectFinal() {
++  const select = $('activeAuditSelect');
++  const confirmButton = $('confirmActiveAuditBtn');
++  renderTopbarAuditSwitcherVisibility?.();
++  if (!select) return;
++  const options = topbarAuditOptions?.() || [];
++  const hasOptions = options.length > 0;
++  let renderOptions = options;
++  if (hasSelectedAudit?.() && state.activeAuditValue && state.audit?.name && !renderOptions.some((option) => option.value === state.activeAuditValue)) {
++    renderOptions = [{ group: 'Current Audit', value: state.activeAuditValue, label: state.audit.name }, ...renderOptions];
++  }
++  const stagedValue = state.pendingActiveAuditValue || '';
++  const includePlaceholder = !hasSelectedAudit?.();
++  const placeholder = hasOptions ? 'Select an audit...' : 'No audit selected';
++  select.innerHTML = atlasGroupedAuditOptionsHtml(renderOptions, includePlaceholder, placeholder);
++  select.disabled = !renderOptions.length;
++  const valueToShow = stagedValue && renderOptions.some((option) => option.value === stagedValue) ? stagedValue : (state.activeAuditValue || '');
++  if (valueToShow && renderOptions.some((option) => option.value === valueToShow)) select.value = valueToShow;
++  else select.value = includePlaceholder ? '' : (renderOptions[0]?.value || '');
++  if (confirmButton) {
++    confirmButton.textContent = 'Switch';
++    confirmButton.title = 'Switch audit';
++    confirmButton.setAttribute('aria-label', 'Switch audit');
++    confirmButton.classList.remove('secondary', 'icon-button');
++    confirmButton.classList.add('primary');
++    confirmButton.disabled = !select.value || select.value === state.activeAuditValue;
++  }
++};
++
++
++const atlasTopbarAuditOptionsBase = topbarAuditOptions;
++topbarAuditOptions = function topbarAuditOptionsWithDatabase(){
++  const base=atlasTopbarAuditOptionsBase().filter(option=>option.group!=='Local Saved Audits');
++  const database=(state.databaseAudits||[]).map(audit=>({group:'Database Audits',value:`database:${audit.id}`,label:`${audit.name||audit.id} · r${audit.currentRevisionNumber}`}));
++  return [...database,...base];
++};
++const atlasUpdateDashboardMetricsBase = updateDashboardMetrics;
++updateDashboardMetrics = function updateDashboardMetricsWithDatabase(){ atlasUpdateDashboardMetricsBase(); setText('metricSavedAudits',(state.databaseAudits||[]).length.toLocaleString()); setText('auditRevisionBadge',state.auditPersistence?.revisionNumber?`Revision ${state.auditPersistence.revisionNumber}`:'Unsaved'); };
+diff --git a/js/18-audit-database.js b/js/18-audit-database.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..efdcc93b7d9a71f505e1ccbedf9e531955327fd0
+--- /dev/null
++++ b/js/18-audit-database.js
+@@ -0,0 +1,49 @@
++/** Durable database audit persistence. IndexedDB remains local crash recovery only. */
++async function atlasAuditApi(path, options = {}) {
++  const response = await fetch(path, { cache:'no-store', headers:{ 'Content-Type':'application/json', ...(options.headers || {}) }, ...options });
++  let payload=null; try { payload=await response.json(); } catch(_error) {}
++  if (!response.ok) { const error=new Error(payload?.error || `Request failed with status ${response.status}.`); error.status=response.status; error.currentRevisionId=payload?.currentRevisionId; throw error; }
++  return payload;
++}
++function atlasApplyLoadedAudit(payload, source='database') {
++  state.audit=normalizeLoadedAudit(payload.audit,source);
++  state.selectedStepId=state.audit.steps?.[0]?.id || null;
++  state.activeAuditValue=`database:${state.audit.id}`;
++  state.auditPersistence={ auditId:state.audit.id, revisionId:payload.revision?.id || null, revisionNumber:payload.revision?.number || 0, access:payload.access || null, saving:false, conflict:null };
++  markAuditSelected(); updateActiveAuditBaseline(); renderAll(); renderActiveAuditSelect?.();
++}
++async function atlasRefreshDatabaseAudits() {
++  const payload=await atlasAuditApi('/api/audits');
++  state.databaseAudits=Array.isArray(payload.audits)?payload.audits:[];
++  return state.databaseAudits;
++}
++async function atlasLoadDatabaseAudit(id) {
++  const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(id)}`);
++  atlasApplyLoadedAudit(payload); scheduleAutosave(); return payload;
++}
++async function atlasSaveCurrentAudit(changeSummary='') {
++  capture?.();
++  state.auditPersistence.saving=true;
++  try {
++    const exists=state.auditPersistence.auditId===state.audit.id && state.auditPersistence.revisionId;
++    const payload=await atlasAuditApi(exists?`/api/audits/${encodeURIComponent(state.audit.id)}`:'/api/audits', {
++      method:exists?'PUT':'POST', body:JSON.stringify({ audit:structuredClone(state.audit), expectedRevisionId:exists?state.auditPersistence.revisionId:null, changeSummary:changeSummary || null })
++    });
++    atlasApplyLoadedAudit(payload); await atlasRefreshDatabaseAudits(); await refreshSaved?.();
++    status(`Saved ${state.audit.name} as revision ${payload.revision.number}.`,'ok'); return true;
++  } catch(error) {
++    if(error.status===409) { state.auditPersistence.conflict={ currentRevisionId:error.currentRevisionId }; atlasOpenConflictDialog?.(error); return false; }
++    throw error;
++  } finally { state.auditPersistence.saving=false; }
++}
++async function atlasImportAuditDocument(document, summary='Imported JSON audit') {
++  const payload=await atlasAuditApi('/api/audits/import',{method:'POST',body:JSON.stringify({audit:document,changeSummary:summary})});
++  await atlasRefreshDatabaseAudits(); return payload;
++}
++async function atlasArchiveCurrentAudit() {
++  if(!state.auditPersistence.revisionId) throw new Error('Save this audit before archiving it.');
++  if(!confirm(`Archive ${state.audit.name}? Version history will remain in the database.`)) return;
++  await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}`,{method:'DELETE',body:JSON.stringify({expectedRevisionId:state.auditPersistence.revisionId})});
++  await atlasRefreshDatabaseAudits(); state.audit=defaultAudit(); state.auditPersistence={auditId:null,revisionId:null,revisionNumber:0,access:null,saving:false,conflict:null}; clearAuditSelection(); renderAll();
++}
++async function atlasInitAuditDatabase() { await atlasRefreshDatabaseAudits(); }
+diff --git a/js/19-audit-version-history.js b/js/19-audit-version-history.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a4391d0911f4e3aea5c170a750fffdb30e296d80
+--- /dev/null
++++ b/js/19-audit-version-history.js
+@@ -0,0 +1,22 @@
++/** Audit-level and step-level immutable revision history UI. */
++function atlasHistoryClose(){ document.querySelector('.audit-history-backdrop')?.remove(); }
++function atlasJsonLines(value){ return JSON.stringify(value,null,2).split('\n'); }
++function atlasSimpleDiff(before,after){
++  const a=atlasJsonLines(before),b=atlasJsonLines(after),max=Math.max(a.length,b.length),rows=[];
++  for(let i=0;i<max;i++){ const left=a[i]||'',right=b[i]||''; if(left!==right)rows.push(`<tr><td>${i+1}</td><td><pre>${esc(left)}</pre></td><td><pre>${esc(right)}</pre></td></tr>`); }
++  return rows.length?`<table class="revision-diff"><thead><tr><th>Line</th><th>Earlier</th><th>Later/current</th></tr></thead><tbody>${rows.join('')}</tbody></table>`:'<p>No differences.</p>';
++}
++function atlasShowHistoryModal(title,content){ atlasHistoryClose(); const root=document.createElement('div');root.className='audit-history-backdrop';root.innerHTML=`<section class="audit-history-modal" role="dialog" aria-modal="true" aria-label="${esc(title)}"><header><h2>${esc(title)}</h2><button class="btn ghost" type="button" data-close-history>Close</button></header><div class="audit-history-content">${content}</div></section>`;document.body.append(root);root.addEventListener('click',e=>{if(e.target===root||e.target.closest('[data-close-history]'))atlasHistoryClose();});return root;}
++async function atlasOpenAuditHistory(){
++  if(!state.auditPersistence.auditId)return status('Save this audit before opening version history.','warn');
++  const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/revisions`);
++  const rows=payload.revisions.map(r=>`<tr><td>${r.number}</td><td>${esc(r.changeType)}</td><td>${esc(r.changeSummary||'')}</td><td>${esc(r.createdByFullName||r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-view-audit-revision="${r.id}">View</button> <button class="btn secondary small" data-compare-audit-revision="${r.id}">Compare</button> <button class="btn danger small" data-restore-audit-revision="${r.id}">Restore</button></td></tr>`).join('');
++  const root=atlasShowHistoryModal(`Version History: ${state.audit.name}`,`<table class="revision-table"><thead><tr><th>Revision</th><th>Type</th><th>Summary</th><th>Saved by</th><th>Saved at</th><th>Actions</th></tr></thead><tbody>${rows||'<tr><td colspan="6">No revisions.</td></tr>'}</tbody></table>`);
++  root.addEventListener('click',async e=>{const view=e.target.closest('[data-view-audit-revision]');const compare=e.target.closest('[data-compare-audit-revision]');const restore=e.target.closest('[data-restore-audit-revision]');if(view)await atlasViewAuditRevision(view.dataset.viewAuditRevision,false);if(compare)await atlasViewAuditRevision(compare.dataset.compareAuditRevision,true);if(restore)await atlasRestoreAuditRevision(restore.dataset.restoreAuditRevision);});
++}
++async function atlasViewAuditRevision(id,compare){ const revision=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/revisions/${id}`);atlasShowHistoryModal(`Audit revision ${revision.number}`,compare?atlasSimpleDiff(revision.document,state.audit):`<pre class="revision-json">${esc(JSON.stringify(revision.document,null,2))}</pre>`); }
++async function atlasRestoreAuditRevision(id){ if(!confirm('Restore this historical audit as a new revision? Current history will be preserved.'))return;const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/revisions/${id}/restore`,{method:'POST',body:JSON.stringify({expectedRevisionId:state.auditPersistence.revisionId})});atlasApplyLoadedAudit(payload);atlasHistoryClose();status(`Restored audit as revision ${payload.revision.number}.`,'ok'); }
++async function atlasOpenStepHistory(){ const step=state.audit.steps?.find(item=>item.id===state.selectedStepId);if(!step)return status('Select a step first.','warn');if(!state.auditPersistence.auditId)return status('Save this audit before opening step history.','warn');const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/steps/${encodeURIComponent(step.id)}/revisions`);const rows=payload.revisions.map(r=>`<tr><td>${r.number}</td><td>${esc(r.operation)}</td><td>${esc(r.changeSummary||'')}</td><td>${esc(r.createdByFullName||r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-compare-step-revision="${r.id}">Compare</button> <button class="btn danger small" data-restore-step-revision="${r.id}">Restore</button></td></tr>`).join('');const root=atlasShowHistoryModal(`Step History: ${step.title||step.id}`,`<table class="revision-table"><thead><tr><th>Revision</th><th>Operation</th><th>Summary</th><th>Changed by</th><th>Changed at</th><th>Actions</th></tr></thead><tbody>${rows||'<tr><td colspan="6">No step revisions.</td></tr>'}</tbody></table>`);root.addEventListener('click',async e=>{const compare=e.target.closest('[data-compare-step-revision]');const restore=e.target.closest('[data-restore-step-revision]');if(compare)await atlasCompareStepRevision(step,compare.dataset.compareStepRevision);if(restore)await atlasRestoreStepRevision(step,restore.dataset.restoreStepRevision);}); }
++async function atlasCompareStepRevision(current,id){const revision=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/steps/${encodeURIComponent(current.id)}/revisions/${id}`);atlasShowHistoryModal(`Step revision ${revision.number}`,atlasSimpleDiff(revision.stepDocument,current));}
++async function atlasRestoreStepRevision(step,id){if(!confirm('Restore this historical step as a new audit revision?'))return;const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(state.audit.id)}/steps/${encodeURIComponent(step.id)}/revisions/${id}/restore`,{method:'POST',body:JSON.stringify({expectedRevisionId:state.auditPersistence.revisionId})});atlasApplyLoadedAudit(payload);atlasHistoryClose();status(`Restored step in audit revision ${payload.revision.number}.`,'ok');}
++function atlasOpenConflictDialog(error){atlasShowHistoryModal('Save conflict',`<div class="revision-warning"><strong>A newer database revision exists.</strong><p>${esc(error.message)}</p><button class="btn primary" type="button" data-load-latest>Load latest revision</button> <button class="btn secondary" type="button" data-download-conflict>Download my draft JSON</button></div>`);document.querySelector('[data-load-latest]')?.addEventListener('click',async()=>{await atlasLoadDatabaseAudit(state.audit.id);atlasHistoryClose();status('Loaded the latest database revision.','ok');});document.querySelector('[data-download-conflict]')?.addEventListener('click',()=>exportCurrent?.());}
+diff --git a/server.js b/server.js
+index 1bdcdf98a5c4c3e681c092c9d6cb402d0aa28ec6..eacef12f1c4e94e2b84eed891d2393dec8a098ae 100644
+--- a/server.js
++++ b/server.js
+@@ -5,6 +5,8 @@ import multer from 'multer';
+ import pg from 'pg';
+ import { CsvValidationError, replaceFieldLibrary } from './src/field-library.js';
+ import { FIELD_LIBRARY_COLUMNS, FIELD_LIBRARY_TABLE, quoteIdentifier } from './src/schema.js';
++import { auditAccessForUser, requireAuditCapability } from './src/audit-authorization.js';
++import { listAudits, getAudit, saveAudit, listAuditRevisions, getAuditRevision, restoreAuditRevision, listStepRevisions, getStepRevision, restoreStepRevision, archiveAudit } from './src/audit-repository.js';
+ 
+ 
+ const { Pool } = pg;
+@@ -15,7 +17,7 @@ const app = express();
+ const port = Number(process.env.PORT || 8080);
+ const databaseUrl = process.env.STUDIOSHARE_DB_URL || process.env.DATABASE_URL;
+ const studioshareApiUrl = process.env.STUDIOSHARE_API_URL;
+-const SOURCE_LIBRARY_ADMIN_ROLE = 'admin';
++const SOURCE_LIBRARY_ADMIN_ROLE = 'owner';
+ 
+ if (!databaseUrl) {
+   console.error('Missing STUDIOSHARE_DB_URL or DATABASE_URL.');
+@@ -33,6 +35,7 @@ const upload = multer({
+ });
+ 
+ app.disable('x-powered-by');
++app.use(express.json({ limit: '12mb' }));
+ 
+ app.get('/', (_req, res) => {
+   res.sendFile(path.join(__dirname, 'index.html'));
+@@ -193,6 +196,57 @@ app.get('/api/source-library', requireCurrentUser, async (_req, res) => {
+   }
+ });
+ 
++
++// Durable audit storage and immutable revision history.
++app.get('/api/audits', requireCurrentUser, requireAuditCapability('canRead'), async (_req, res) => {
++  try { res.json({ audits: await listAudits(pool) }); }
++  catch (error) { console.error(JSON.stringify({ level:'error', event:'audit_list_failed', message:error.message })); res.status(500).json({ error:'Could not list audits.' }); }
++});
++app.post('/api/audits', requireCurrentUser, requireAuditCapability('canCreate'), async (req, res) => {
++  try {
++    const result = await saveAudit(pool, { document:req.body.audit, expectedRevisionId:null, user:req.studioshareUser, changeType:'create', changeSummary:req.body.changeSummary || 'Created audit' });
++    res.status(201).json({ ...result, access:auditAccessForUser(req.studioshareUser, result.audit) });
++  } catch (error) { res.status(error.status || 500).json({ error:error.message, currentRevisionId:error.currentRevisionId }); }
++});
++app.post('/api/audits/import', requireCurrentUser, requireAuditCapability('canCreate'), async (req, res) => {
++  try {
++    const documents = Array.isArray(req.body.audits) ? req.body.audits : [req.body.audit];
++    const imported=[];
++    for (const document of documents) imported.push(await saveAudit(pool, { document, expectedRevisionId:null, user:req.studioshareUser, changeType:'import', changeSummary:req.body.changeSummary || 'Imported repository JSON audit' }));
++    res.status(201).json({ imported });
++  } catch (error) { res.status(error.status || 500).json({ error:error.message, currentRevisionId:error.currentRevisionId }); }
++});
++app.get('/api/audits/:auditId', requireCurrentUser, requireAuditCapability('canRead'), async (req, res) => {
++  try { const result=await getAudit(pool, req.params.auditId); if (!result) return res.status(404).json({ error:'Audit not found.' }); res.json({ ...result, access:auditAccessForUser(req.studioshareUser,result.audit) }); }
++  catch (error) { res.status(500).json({ error:'Could not load the audit.' }); }
++});
++app.put('/api/audits/:auditId', requireCurrentUser, requireAuditCapability('canEdit'), async (req, res) => {
++  try { const audit={ ...req.body.audit, id:req.params.auditId }; const result=await saveAudit(pool,{ document:audit, expectedRevisionId:req.body.expectedRevisionId, user:req.studioshareUser, changeType:'save', changeSummary:req.body.changeSummary || null }); res.json({ ...result, access:auditAccessForUser(req.studioshareUser,result.audit) }); }
++  catch (error) { res.status(error.status || 500).json({ error:error.message, currentRevisionId:error.currentRevisionId }); }
++});
++app.delete('/api/audits/:auditId', requireCurrentUser, requireAuditCapability('canArchive'), async (req, res) => {
++  try { res.json(await archiveAudit(pool,req.params.auditId,req.body.expectedRevisionId,req.studioshareUser)); }
++  catch (error) { res.status(error.status || 500).json({ error:error.message }); }
++});
++app.get('/api/audits/:auditId/revisions', requireCurrentUser, requireAuditCapability('canRead'), async (req,res) => {
++  try { res.json({ revisions:await listAuditRevisions(pool,req.params.auditId) }); } catch(error) { res.status(500).json({ error:'Could not list audit revisions.' }); }
++});
++app.get('/api/audits/:auditId/revisions/:revisionId', requireCurrentUser, requireAuditCapability('canRead'), async (req,res) => {
++  try { const revision=await getAuditRevision(pool,req.params.auditId,req.params.revisionId); if(!revision)return res.status(404).json({error:'Audit revision not found.'}); res.json(revision); } catch(error){res.status(500).json({error:'Could not load audit revision.'});}
++});
++app.post('/api/audits/:auditId/revisions/:revisionId/restore', requireCurrentUser, requireAuditCapability('canRestore'), async (req,res) => {
++  try { const result=await restoreAuditRevision(pool,{auditId:req.params.auditId,revisionId:req.params.revisionId,expectedRevisionId:req.body.expectedRevisionId,user:req.studioshareUser}); if(!result)return res.status(404).json({error:'Audit revision not found.'}); res.json({ ...result, access:auditAccessForUser(req.studioshareUser,result.audit) }); } catch(error){res.status(error.status||500).json({error:error.message,currentRevisionId:error.currentRevisionId});}
++});
++app.get('/api/audits/:auditId/steps/:stepId/revisions', requireCurrentUser, requireAuditCapability('canRead'), async (req,res) => {
++  try {res.json({revisions:await listStepRevisions(pool,req.params.auditId,req.params.stepId)});}catch(error){res.status(500).json({error:'Could not list step revisions.'});}
++});
++app.get('/api/audits/:auditId/steps/:stepId/revisions/:revisionId', requireCurrentUser, requireAuditCapability('canRead'), async (req,res) => {
++  try {const revision=await getStepRevision(pool,req.params.auditId,req.params.stepId,req.params.revisionId);if(!revision)return res.status(404).json({error:'Step revision not found.'});res.json(revision);}catch(error){res.status(500).json({error:'Could not load step revision.'});}
++});
++app.post('/api/audits/:auditId/steps/:stepId/revisions/:revisionId/restore', requireCurrentUser, requireAuditCapability('canRestore'), async (req,res) => {
++  try {const result=await restoreStepRevision(pool,{auditId:req.params.auditId,stepId:req.params.stepId,revisionId:req.params.revisionId,expectedRevisionId:req.body.expectedRevisionId,user:req.studioshareUser});if(!result)return res.status(404).json({error:'Step revision not found.'});res.json({ ...result, access:auditAccessForUser(req.studioshareUser,result.audit) });}catch(error){res.status(error.status||500).json({error:error.message,currentRevisionId:error.currentRevisionId});}
++});
++
+ app.get('/api/field-library/summary', requireCurrentUser, async (_req, res) => {
+   try {
+     const result = await pool.query(
+diff --git a/src/audit-authorization.js b/src/audit-authorization.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..92ef5a6e99e4f3f163dfe3d6b563502d42c4fb58
+--- /dev/null
++++ b/src/audit-authorization.js
+@@ -0,0 +1,19 @@
++/** Central audit authorization policy. All authenticated users are allowed in phase 1. */
++export function auditAccessForUser(user, _audit = null) {
++  const authenticated = Boolean(user?.id && user?.username && !user?.disabled);
++  return {
++    canRead: authenticated,
++    canCreate: authenticated,
++    canEdit: authenticated,
++    canRestore: authenticated,
++    canArchive: authenticated
++  };
++}
++export function requireAuditCapability(capability) {
++  return (req, res, next) => {
++    const access = auditAccessForUser(req.studioshareUser);
++    if (!access[capability]) return res.status(403).json({ error: `Audit capability ${capability} is required.` });
++    req.auditAccess = access;
++    return next();
++  };
++}
+diff --git a/src/audit-repository.js b/src/audit-repository.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..b12b27e42996fd1ceb12329dc4a2b9e5cb009647
+--- /dev/null
++++ b/src/audit-repository.js
+@@ -0,0 +1,183 @@
++import { createHash } from 'node:crypto';
++
++function stableValue(value) {
++  if (Array.isArray(value)) return value.map(stableValue);
++  if (value && typeof value === 'object') {
++    return Object.keys(value).sort().reduce((result, key) => {
++      result[key] = stableValue(value[key]);
++      return result;
++    }, {});
++  }
++  return value;
++}
++export function canonicalJson(value) { return JSON.stringify(stableValue(value)); }
++export function documentHash(value) { return createHash('sha256').update(canonicalJson(value)).digest('hex'); }
++function userFields(user) {
++  return [user?.id || null, user?.username || 'unknown', user?.fullName || null, user?.email || null];
++}
++function validateAudit(document) {
++  if (!document || typeof document !== 'object' || Array.isArray(document)) throw Object.assign(new Error('Audit document must be a JSON object.'), { status: 400 });
++  if (!String(document.id || '').trim()) throw Object.assign(new Error('Audit id is required.'), { status: 400 });
++  if (!String(document.name || '').trim()) throw Object.assign(new Error('Audit name is required.'), { status: 400 });
++  for (const key of ['sources', 'fields', 'steps']) if (!Array.isArray(document[key])) document[key] = [];
++  const ids = new Set();
++  for (const step of document.steps) {
++    if (!step?.id) throw Object.assign(new Error('Every audit step requires an id.'), { status: 400 });
++    if (ids.has(step.id)) throw Object.assign(new Error(`Duplicate step id: ${step.id}`), { status: 400 });
++    ids.add(step.id);
++  }
++  return document;
++}
++export async function listAudits(pool) {
++  const result = await pool.query(`SELECT id, name, purpose, description, schema_version AS "schemaVersion",
++    source_kind AS "sourceKind", current_revision_id AS "currentRevisionId",
++    current_revision_number AS "currentRevisionNumber", owner_username AS "ownerUsername",
++    created_at AS "createdAt", updated_at AS "updatedAt", updated_by_username AS "updatedByUsername"
++    FROM atlas_audits WHERE archived_at IS NULL ORDER BY lower(name), id`);
++  return result.rows;
++}
++export async function getAudit(pool, auditId) {
++  const result = await pool.query(`SELECT a.*, r.document, r.created_at AS revision_created_at,
++    r.created_by_username AS revision_created_by_username
++    FROM atlas_audits a JOIN atlas_audit_revisions r ON r.id = a.current_revision_id
++    WHERE a.id = $1 AND a.archived_at IS NULL`, [auditId]);
++  if (!result.rowCount) return null;
++  const row = result.rows[0];
++  return { audit: row.document, revision: { id: Number(row.current_revision_id), number: row.current_revision_number,
++    createdAt: row.revision_created_at, createdByUsername: row.revision_created_by_username } };
++}
++async function insertStepRevision(client, { auditId, auditRevisionId, step, operation, user, changeSummary, restoredFromStepRevisionId = null }) {
++  const current = await client.query(`SELECT COALESCE(max(step_revision_number), 0)::integer + 1 AS next
++    FROM atlas_audit_step_revisions WHERE audit_id = $1 AND step_id = $2`, [auditId, step.id]);
++  const [uid, username, fullName] = userFields(user);
++  await client.query(`INSERT INTO atlas_audit_steps
++    (audit_id, step_id, parent_step_id, branch_type, sort_order, step_type, enabled, auto_generated_reference, locked, deleted_at)
++    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NULL)
++    ON CONFLICT (audit_id, step_id) DO UPDATE SET parent_step_id=EXCLUDED.parent_step_id,
++      branch_type=EXCLUDED.branch_type, sort_order=EXCLUDED.sort_order, step_type=EXCLUDED.step_type,
++      enabled=EXCLUDED.enabled, auto_generated_reference=EXCLUDED.auto_generated_reference,
++      locked=EXCLUDED.locked, deleted_at=NULL`, [auditId, step.id, step.parentId || null, step.branchType || 'root',
++      Number(step.sortOrder || 0), step.step_type || step.type || null, step.enabled !== false,
++      step.autoGeneratedReference === true, step.locked === true]);
++  const inserted = await client.query(`INSERT INTO atlas_audit_step_revisions
++    (audit_id, step_id, audit_revision_id, step_revision_number, operation, step_document,
++     step_sha256, change_summary, created_by_user_id, created_by_username, created_by_full_name, restored_from_step_revision_id)
++    VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12) RETURNING id`, [auditId, step.id, auditRevisionId,
++      current.rows[0].next, operation, JSON.stringify(step), documentHash(step), changeSummary || null,
++      uid, username, fullName, restoredFromStepRevisionId]);
++  await client.query(`UPDATE atlas_audit_steps SET current_step_revision_id=$3 WHERE audit_id=$1 AND step_id=$2`, [auditId, step.id, inserted.rows[0].id]);
++}
++export async function saveAudit(pool, { document, expectedRevisionId, user, changeType = 'save', changeSummary = null, restoredFromRevisionId = null, restoredStep = null }) {
++  document = validateAudit(structuredClone(document));
++  const client = await pool.connect();
++  try {
++    await client.query('BEGIN');
++    const existing = await client.query('SELECT * FROM atlas_audits WHERE id=$1 FOR UPDATE', [document.id]);
++    const isCreate = !existing.rowCount;
++    if (!isCreate && expectedRevisionId != null && Number(existing.rows[0].current_revision_id) !== Number(expectedRevisionId)) {
++      const error = new Error('This audit has a newer database revision. Load the latest revision before saving.');
++      error.status = 409; error.currentRevisionId = Number(existing.rows[0].current_revision_id); throw error;
++    }
++    const hash = documentHash(document);
++    if (!isCreate) {
++      const currentDoc = await client.query('SELECT document_sha256 FROM atlas_audit_revisions WHERE id=$1', [existing.rows[0].current_revision_id]);
++      if (currentDoc.rows[0]?.document_sha256 === hash && changeType === 'save') {
++        await client.query('ROLLBACK');
++        return getAudit(pool, document.id);
++      }
++    }
++    const revisionNumber = isCreate ? 1 : Number(existing.rows[0].current_revision_number) + 1;
++    const [uid, username, fullName, email] = userFields(user);
++    if (isCreate) {
++      await client.query(`INSERT INTO atlas_audits
++        (id,name,purpose,description,schema_version,source_kind,owner_user_id,owner_username,
++         created_by_user_id,created_by_username,updated_by_user_id,updated_by_username)
++        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$7,$8,$7,$8)`, [document.id, document.name,
++          document.purpose || '', document.description || '', Number(document.schemaVersion || 1),
++          document.sourceKind || 'database', uid, username]);
++    }
++    const revision = await client.query(`INSERT INTO atlas_audit_revisions
++      (audit_id,revision_number,parent_revision_id,document,document_sha256,change_type,change_summary,
++       created_by_user_id,created_by_username,created_by_full_name,created_by_email,restored_from_revision_id)
++      VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id, created_at`, [document.id,
++        revisionNumber, isCreate ? null : existing.rows[0].current_revision_id, JSON.stringify(document), hash,
++        isCreate ? 'create' : changeType, changeSummary, uid, username, fullName, email, restoredFromRevisionId]);
++    const auditRevisionId = Number(revision.rows[0].id);
++    let previousSteps = new Map();
++    if (!isCreate) {
++      const previous = await client.query('SELECT document FROM atlas_audit_revisions WHERE id=$1', [existing.rows[0].current_revision_id]);
++      previousSteps = new Map((previous.rows[0]?.document?.steps || []).map(step => [step.id, step]));
++    }
++    const submitted = new Map(document.steps.map(step => [step.id, step]));
++    for (const step of document.steps) {
++      const before = previousSteps.get(step.id);
++      let operation = before ? 'update' : 'create';
++      if (before && documentHash(before) === documentHash(step)) continue;
++      if (before && (before.parentId !== step.parentId || Number(before.sortOrder || 0) !== Number(step.sortOrder || 0))) operation = 'move';
++      if (restoredStep?.stepId === step.id) operation = 'restore';
++      await insertStepRevision(client, { auditId: document.id, auditRevisionId, step, operation, user, changeSummary,
++        restoredFromStepRevisionId: restoredStep?.stepId === step.id ? restoredStep.stepRevisionId : null });
++    }
++    for (const [stepId, step] of previousSteps) if (!submitted.has(stepId)) {
++      const current = await client.query(`SELECT COALESCE(max(step_revision_number),0)::integer+1 AS next FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2`, [document.id, stepId]);
++      await client.query(`INSERT INTO atlas_audit_step_revisions
++        (audit_id,step_id,audit_revision_id,step_revision_number,operation,step_document,step_sha256,change_summary,created_by_user_id,created_by_username,created_by_full_name)
++        VALUES ($1,$2,$3,$4,'delete',$5::jsonb,$6,$7,$8,$9,$10)`, [document.id, stepId, auditRevisionId, current.rows[0].next,
++          JSON.stringify(step), documentHash(step), changeSummary, uid, username, fullName]);
++      await client.query('UPDATE atlas_audit_steps SET deleted_at=current_timestamp,current_step_revision_id=NULL WHERE audit_id=$1 AND step_id=$2', [document.id, stepId]);
++    }
++    await client.query(`UPDATE atlas_audits SET name=$2,purpose=$3,description=$4,schema_version=$5,source_kind=$6,
++      current_revision_id=$7,current_revision_number=$8,updated_by_user_id=$9,updated_by_username=$10,updated_at=current_timestamp
++      WHERE id=$1`, [document.id, document.name, document.purpose || '', document.description || '',
++      Number(document.schemaVersion || 1), document.sourceKind || 'database', auditRevisionId, revisionNumber, uid, username]);
++    await client.query('COMMIT');
++    return { audit: document, revision: { id: auditRevisionId, number: revisionNumber,
++      createdAt: revision.rows[0].created_at, createdByUsername: username } };
++  } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
++}
++export async function listAuditRevisions(pool, auditId) {
++  const result = await pool.query(`SELECT id,revision_number AS "number",change_type AS "changeType",change_summary AS "changeSummary",
++    created_by_username AS "createdByUsername",created_by_full_name AS "createdByFullName",created_at AS "createdAt",
++    restored_from_revision_id AS "restoredFromRevisionId" FROM atlas_audit_revisions WHERE audit_id=$1 ORDER BY revision_number DESC`, [auditId]);
++  return result.rows;
++}
++export async function getAuditRevision(pool, auditId, revisionId) {
++  const result = await pool.query(`SELECT id,revision_number AS "number",document,document_sha256 AS sha256,
++    change_type AS "changeType",change_summary AS "changeSummary",created_by_username AS "createdByUsername",
++    created_at AS "createdAt" FROM atlas_audit_revisions WHERE audit_id=$1 AND id=$2`, [auditId, revisionId]);
++  return result.rows[0] || null;
++}
++export async function restoreAuditRevision(pool, { auditId, revisionId, expectedRevisionId, user }) {
++  const revision = await getAuditRevision(pool, auditId, revisionId);
++  if (!revision) return null;
++  return saveAudit(pool, { document: revision.document, expectedRevisionId, user, changeType: 'restore',
++    changeSummary: `Restored audit revision ${revision.number}`, restoredFromRevisionId: Number(revisionId) });
++}
++export async function listStepRevisions(pool, auditId, stepId) {
++  const result = await pool.query(`SELECT id,audit_revision_id AS "auditRevisionId",step_revision_number AS "number",operation,
++    change_summary AS "changeSummary",created_by_username AS "createdByUsername",created_by_full_name AS "createdByFullName",
++    created_at AS "createdAt" FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2 ORDER BY step_revision_number DESC`, [auditId, stepId]);
++  return result.rows;
++}
++export async function getStepRevision(pool, auditId, stepId, revisionId) {
++  const result = await pool.query(`SELECT id,audit_revision_id AS "auditRevisionId",step_revision_number AS "number",operation,
++    step_document AS "stepDocument",step_sha256 AS sha256,created_by_username AS "createdByUsername",created_at AS "createdAt"
++    FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2 AND id=$3`, [auditId, stepId, revisionId]);
++  return result.rows[0] || null;
++}
++export async function restoreStepRevision(pool, { auditId, stepId, revisionId, expectedRevisionId, user }) {
++  const [current, stepRevision] = await Promise.all([getAudit(pool, auditId), getStepRevision(pool, auditId, stepId, revisionId)]);
++  if (!current || !stepRevision?.stepDocument) return null;
++  const document = structuredClone(current.audit);
++  const index = document.steps.findIndex(step => step.id === stepId);
++  if (index >= 0) document.steps[index] = stepRevision.stepDocument; else document.steps.push(stepRevision.stepDocument);
++  return saveAudit(pool, { document, expectedRevisionId, user, changeType: 'restore',
++    changeSummary: `Restored step ${stepId} revision ${stepRevision.number}`,
++    restoredStep: { stepId, stepRevisionId: Number(revisionId) } });
++}
++export async function archiveAudit(pool, auditId, expectedRevisionId, user) {
++  const result = await pool.query(`UPDATE atlas_audits SET archived_at=current_timestamp,archived_by_username=$3
++    WHERE id=$1 AND current_revision_id=$2 AND archived_at IS NULL RETURNING id`, [auditId, expectedRevisionId, user.username]);
++  if (!result.rowCount) { const error = new Error('This audit has changed or is already archived.'); error.status=409; throw error; }
++  return { id: auditId, archived: true };
++}
+diff --git a/styles.css b/styles.css
+index b68cbfa21f6cea146fc3959834b7de4eed5888c6..aa03aee49e561a8d5af069c6753048cc78a876c7 100644
+--- a/styles.css
++++ b/styles.css
+@@ -4832,3 +4832,12 @@ Final layout contract
+   #page-fields .section-title { align-items: flex-start; }
+   #page-fields .section-title .compact-toolbar { justify-content: flex-start; }
+ }
++
++
++/* Audit and step revision history */
++.audit-history-backdrop{position:fixed;inset:0;z-index:12000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:24px}
++.audit-history-modal{width:min(1180px,96vw);max-height:92vh;overflow:hidden;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column}
++.audit-history-modal>header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border)}
++.audit-history-modal h2{margin:0}.audit-history-content{padding:1rem 1.2rem;overflow:auto}.revision-table,.revision-diff{width:100%;border-collapse:collapse}.revision-table th,.revision-table td,.revision-diff th,.revision-diff td{padding:.65rem;border:1px solid var(--border);text-align:left;vertical-align:top}.revision-table th,.revision-diff th{background:var(--surface2)}
++.revision-json,.revision-diff pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace}.revision-warning{border-left:4px solid var(--warn);padding:1rem;background:var(--surface2)}
++@media(max-width:760px){.audit-history-backdrop{padding:8px}.audit-history-modal{width:100%;max-height:96vh}.revision-table,.revision-diff{font-size:.8rem}}

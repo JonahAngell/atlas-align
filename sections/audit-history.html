@@ -1,0 +1,115 @@
+<section class="page" data-page="history" id="page-history">
+  <div class="history-heading-row">
+    <div>
+      <h1 id="atlasHistoryPageHeading">Audit History</h1>
+      <p class="subtitle">
+        Read-only revisions, workflow activity, restorations, and publications.
+      </p>
+    </div>
+    <button class="btn secondary" id="atlasHistoryReturn" type="button">
+      Return to current audit
+    </button>
+  </div>
+  <div
+    id="atlasHistoryStatus"
+    class="hint"
+    role="status"
+    aria-live="polite"
+  ></div>
+  <div class="history-layout">
+    <aside
+      class="card history-timeline-panel"
+      aria-labelledby="atlasTimelineHeading"
+    >
+      <div class="section-title">
+        <strong id="atlasTimelineHeading">Unified timeline</strong
+        ><button
+          class="btn secondary small"
+          id="atlasHistoryRefresh"
+          type="button"
+        >
+          Refresh
+        </button>
+      </div>
+      <div id="atlasHistoryTimeline" class="history-timeline" role="list"></div>
+      <button
+        class="btn secondary full"
+        id="atlasHistoryMore"
+        type="button"
+        hidden
+      >
+        Load more activity
+      </button>
+    </aside>
+    <main
+      class="card history-viewer"
+      aria-labelledby="atlasHistoryViewerHeading"
+    >
+      <h2 id="atlasHistoryViewerHeading" tabindex="-1">Historical document</h2>
+      <div class="history-navigation">
+        <fieldset>
+          <legend>Revisions</legend>
+          <button
+            class="btn secondary small"
+            id="atlasRevisionPrevious"
+            type="button"
+          >
+            Previous</button
+          ><label
+            >Revision
+            <select id="atlasRevisionSelector"></select></label
+          ><button
+            class="btn secondary small"
+            id="atlasRevisionNext"
+            type="button"
+          >
+            Next
+          </button>
+        </fieldset>
+        <fieldset>
+          <legend>Publications</legend>
+          <button
+            class="btn secondary small"
+            id="atlasPublicationPrevious"
+            type="button"
+          >
+            Previous</button
+          ><label
+            >Publication
+            <select id="atlasPublicationSelector"></select></label
+          ><button
+            class="btn secondary small"
+            id="atlasPublicationNext"
+            type="button"
+          >
+            Next
+          </button>
+        </fieldset>
+      </div>
+      <div id="atlasHistoryMetadata" class="history-metadata"></div>
+      <div class="history-actions">
+        <button
+          class="btn secondary"
+          id="atlasHistoryCompare"
+          type="button"
+          disabled
+        >
+          Compare with current</button
+        ><button
+          class="btn danger"
+          id="atlasHistoryRestore"
+          type="button"
+          hidden
+        >
+          Restore as new revision
+        </button>
+      </div>
+      <pre
+        id="atlasHistoryDocument"
+        class="history-document"
+        aria-label="Selected historical document"
+      >
+Select a timeline entry, revision, or publication.</pre>
+    </main>
+  </div>
+</section>

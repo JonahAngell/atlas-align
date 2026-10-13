@@ -1,0 +1,197 @@
+/* ATLAS-SOURCE-UNIT:u0818:BEGIN */
+#page-display-fields .display-fields-card {
+  display: grid;
+  gap: 1rem;
+} /* ATLAS-SOURCE-UNIT:u0818:END */ /* ATLAS-SOURCE-UNIT:u0819:BEGIN */
+.display-fields-table-wrap {
+  overflow: auto;
+} /* ATLAS-SOURCE-UNIT:u0819:END */ /* ATLAS-SOURCE-UNIT:u0820:BEGIN */
+.display-fields-table {
+  width: 100%;
+  border-collapse: collapse;
+} /* ATLAS-SOURCE-UNIT:u0820:END */ /* ATLAS-SOURCE-UNIT:u0821:BEGIN */
+.display-fields-table th,
+.display-fields-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+} /* ATLAS-SOURCE-UNIT:u0821:END */ /* ATLAS-SOURCE-UNIT:u0822:BEGIN */
+.display-fields-table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+} /* ATLAS-SOURCE-UNIT:u0822:END */ /* ATLAS-SOURCE-UNIT:u0823:BEGIN */
+.display-fields-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+} /* ATLAS-SOURCE-UNIT:u0823:END */ /* ATLAS-SOURCE-UNIT:u0824:BEGIN */
+.display-fields-switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+} /* ATLAS-SOURCE-UNIT:u0824:END */ /* ATLAS-SOURCE-UNIT:u0825:BEGIN */
+.display-fields-switch-track {
+  width: 2.7rem;
+  height: 1.45rem;
+  border-radius: 999px;
+  background: var(--border);
+  padding: 0.18rem;
+} /* ATLAS-SOURCE-UNIT:u0825:END */ /* ATLAS-SOURCE-UNIT:u0826:BEGIN */
+.display-fields-switch-track:after {
+  content: "";
+  display: block;
+  width: 1.09rem;
+  height: 1.09rem;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px #0004;
+} /* ATLAS-SOURCE-UNIT:u0826:END */ /* ATLAS-SOURCE-UNIT:u0827:BEGIN */
+.display-fields-switch input:checked + .display-fields-switch-track {
+  background: var(--primary);
+} /* ATLAS-SOURCE-UNIT:u0827:END */ /* ATLAS-SOURCE-UNIT:u0828:BEGIN */
+.display-fields-switch input:checked + .display-fields-switch-track:after {
+  transform: translateX(1.25rem);
+} /* ATLAS-SOURCE-UNIT:u0828:END */ /* ATLAS-SOURCE-UNIT:u0829:BEGIN */
+.display-fields-switch input:focus-visible + .display-fields-switch-track {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+} /* ATLAS-SOURCE-UNIT:u0829:END */ /* ATLAS-SOURCE-UNIT:u0837:BEGIN */
+@media (max-width: 760px) {
+  .display-fields-table th:nth-child(4),
+  .display-fields-table td:nth-child(4),
+  .display-fields-table th:nth-child(5),
+  .display-fields-table td:nth-child(5) {
+    display: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0837:END */
+
+/* ATLAS-SOURCE-UNIT:u0943:BEGIN */
+.display-field-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  padding: 0.22rem 0.55rem;
+  color: var(--text);
+  background: color-mix(
+    in srgb,
+    var(--display-field-color) 18%,
+    var(--surface)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--display-field-color) 54%, var(--border));
+  border-left: 4px solid var(--display-field-color);
+  border-radius: 999px;
+  overflow-wrap: anywhere;
+}
+/* ATLAS-SOURCE-UNIT:u0943:END */
+/* ATLAS-SOURCE-UNIT:u0944:BEGIN */
+.display-field-pill.calculated-field-pill {
+  border-style: dotted;
+  border-left-style: solid;
+}
+/* ATLAS-SOURCE-UNIT:u0944:END */
+/* ATLAS-SOURCE-UNIT:u0945:BEGIN */
+.display-field-pill-badge {
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+/* ATLAS-SOURCE-UNIT:u0945:END */
+/* ATLAS-SOURCE-UNIT:u0946:BEGIN */
+@media (forced-colors: active) {
+  .display-field-pill {
+    border: 2px solid CanvasText;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0946:END *//* ATLAS-SOURCE-UNIT:u0952:BEGIN */
+
+
+.display-fields-table th:first-child,
+.display-fields-table td:first-child {
+  width: 2.75rem;
+  padding-right: 0.25rem;
+}
+/* ATLAS-SOURCE-UNIT:u0952:END *//* ATLAS-SOURCE-UNIT:u0953:BEGIN */.display-field-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: 0.45rem;
+  color: var(--muted);
+  cursor: grab;
+  user-select: none;
+}
+/* ATLAS-SOURCE-UNIT:u0953:END *//* ATLAS-SOURCE-UNIT:u0954:BEGIN */.display-field-drag-handle:active {
+  cursor: grabbing;
+}
+/* ATLAS-SOURCE-UNIT:u0954:END *//* ATLAS-SOURCE-UNIT:u0955:BEGIN */.display-field-drag-handle:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+/* ATLAS-SOURCE-UNIT:u0955:END *//* ATLAS-SOURCE-UNIT:u0956:BEGIN */.display-field-dragging {
+  opacity: 0.55;
+}
+/* ATLAS-SOURCE-UNIT:u0956:END *//* ATLAS-SOURCE-UNIT:u0957:BEGIN */.display-field-drop-target {
+  box-shadow: inset 0 3px 0 var(--primary);
+}
+/* ATLAS-SOURCE-UNIT:u0957:END *//* ATLAS-SOURCE-UNIT:u0958:BEGIN */@media (prefers-reduced-motion: reduce) {
+  .display-field-dragging {
+    opacity: 0.75;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0958:END *//* ATLAS-SOURCE-UNIT:u1169:BEGIN */
+.display-fields-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
+}
+/* ATLAS-SOURCE-UNIT:u1169:END *//* ATLAS-SOURCE-UNIT:u1170:BEGIN */.display-field-delete {
+  flex: 0 0 auto;
+}/* ATLAS-SOURCE-UNIT:u1170:END *//* ATLAS-SOURCE-UNIT:u1223:BEGIN */
+.display-field-pill.is-logic-locked {
+  color: var(--muted);
+  background: var(--surface);
+  border-color: var(--border);
+  border-left-color: var(--muted);
+}
+/* ATLAS-SOURCE-UNIT:u1223:END *//* ATLAS-SOURCE-UNIT:u1224:BEGIN */.display-field-delete-lock {
+  display: inline-flex;
+  cursor: not-allowed;
+}
+/* ATLAS-SOURCE-UNIT:u1224:END *//* ATLAS-SOURCE-UNIT:u1225:BEGIN */.display-field-delete:disabled,
+.display-field-delete:disabled:hover {
+  color: var(--muted) !important;
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}/* ATLAS-SOURCE-UNIT:u1225:END *//* ATLAS-SOURCE-UNIT:u1320:BEGIN */
+
+.display-field-pill.source-pill {
+  color: var(--text);
+  background: color-mix(
+    in srgb,
+    var(--source-pill-color, var(--display-field-color)) 10%,
+    var(--surface)
+  );
+  border-left-color: var(--source-pill-color, var(--display-field-color));
+}
+/* ATLAS-SOURCE-UNIT:u1320:END *//* ATLAS-SOURCE-UNIT:u1321:BEGIN */.display-field-pill.source-pill .source-color-dot {
+  background: var(--source-pill-color, var(--source-color));
+  border-color: color-mix(
+    in srgb,
+    var(--source-pill-color, var(--source-color)) 70%,
+    #000
+  );
+}/* ATLAS-SOURCE-UNIT:u1321:END */

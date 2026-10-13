@@ -1,0 +1,139 @@
+<section class="page active" data-page="my-audits" id="page-my-audits">
+  <h1>Audits</h1>
+  <div class="subtitle">Review audits</div>
+  <div
+    aria-label="Audit role filters"
+    class="grid cards my-audits-metrics"
+    role="group"
+  >
+    <button
+      aria-pressed="true"
+      class="card metric-card active"
+      data-my-audits-role="assigned"
+      type="button"
+    >
+      <span class="small">Assigned</span>
+      <span class="metric" id="myAuditsMetricAssigned">0</span>
+    </button>
+    <button
+      aria-pressed="false"
+      class="card metric-card"
+      data-my-audits-role="backup"
+      type="button"
+    >
+      <span class="small">Backup</span>
+      <span class="metric" id="myAuditsMetricBackup">0</span>
+    </button>
+    <button
+      aria-pressed="false"
+      class="card metric-card"
+      data-my-audits-role="developer"
+      type="button"
+    >
+      <span class="small">Developer</span>
+      <span class="metric" id="myAuditsMetricDeveloper">0</span>
+    </button>
+    <button
+      aria-pressed="false"
+      class="card metric-card"
+      data-my-audits-role="other"
+      type="button"
+    >
+      <span class="small">Other</span>
+      <span class="metric" id="myAuditsMetricOther">0</span>
+    </button>
+    <button
+      aria-pressed="false"
+      class="card metric-card"
+      data-my-audits-role="all"
+      type="button"
+    >
+      <span class="small">All</span>
+      <span class="metric" id="myAuditsMetricAll">0</span>
+    </button>
+  </div>
+  <div class="card my-audits-card">
+    <div class="toolbar my-audits-toolbar">
+      <input
+        aria-label="Search audits"
+        class="input my-audits-search"
+        id="myAuditsSearch"
+        placeholder="Search audits and assignments"
+        type="search"
+      />
+
+      <label class="my-audits-status-filter">
+        <span>Status</span>
+        <select id="myAuditsStatusFilter">
+          <option value="all">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="Requirement Gathering">Requirement Gathering</option>
+          <option value="Ready for Review">Ready for Review</option>
+          <option value="Complete">Complete</option>
+        </select>
+      </label>
+
+      <div class="my-audits-toolbar-actions">
+        <button class="btn secondary" id="refreshLibraryBtn" type="button">
+          Refresh
+        </button>
+        <button class="btn primary" id="newAuditBtn" type="button">
+          New Audit
+        </button>
+      </div>
+      <!-- <label class="btn secondary import-label">
+        Import JSON
+        <input
+          accept=".json,application/json"
+          id="importCurrentFile"
+          type="file"
+        />
+      </label> -->
+    </div>
+    <div
+      aria-label="Audit results"
+      class="tablewrap my-audits-table-scroll"
+      tabindex="0"
+    >
+      <table class="my-audits-table">
+        <thead>
+          <tr>
+            <th>Audit</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Assigned Analysts</th>
+            <th>Backup Analysts</th>
+            <th>Developers</th>
+            <th>Updated</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="myAuditsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div
+      aria-live="polite"
+      class="my-audits-state"
+      id="myAuditsState"
+      role="status"
+    >
+      Loading database audits…
+    </div>
+    <label class="hidden-backing-select"
+      >Audit Library
+      <select id="auditLibrarySelect">
+        <option value="">Loading audit library…</option>
+      </select>
+    </label>
+
+    <!-- <details>
+        <summary>Browse Audit Library</summary>
+        <div class="visual-library-picker contacts-library" id="auditLibraryVisual"></div>
+        <p aria-live="polite" class="hint audit-library-status" id="repoLibraryStatus">
+          <span data-audit-library-status-text="">Database audit library has not loaded yet.</span>
+          <span data-audit-loading-spinner="" hidden=""></span>
+        </p>
+      </details> -->
+  </div>
+</section>

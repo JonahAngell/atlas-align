@@ -1,0 +1,54 @@
+<section class="page" data-page="inbox" id="page-inbox">
+  <h1>Inbox</h1>
+  <div class="subtitle">
+    Approval actions and workflow results assigned to you.
+  </div>
+  <section class="card inbox-card" aria-labelledby="inboxHeading">
+    <div class="section-title">
+      <strong id="inboxHeading">Workflow messages</strong
+      ><button class="btn secondary small" id="atlasInboxRefresh" type="button">
+        Refresh
+      </button>
+    </div>
+    <div class="inbox-filters" role="group" aria-label="Inbox filters">
+      <button class="btn small primary" data-inbox-filter="all" type="button">
+        All
+      </button>
+      <button
+        class="btn small secondary"
+        data-inbox-filter="actionable"
+        type="button"
+      >
+        Action required
+      </button>
+      <button
+        class="btn small secondary"
+        data-inbox-filter="unread"
+        type="button"
+      >
+        Unread
+      </button>
+      <button
+        class="btn small secondary"
+        data-inbox-filter="history"
+        type="button"
+      >
+        History
+      </button>
+    </div>
+    <p id="atlasInboxCounts" class="inbox-counts" aria-live="polite">
+      0 action required · 0 unread
+    </p>
+    <div
+      id="atlasInboxStatus"
+      class="hint"
+      role="status"
+      aria-live="polite"
+    ></div>
+    <div id="atlasInboxList" class="inbox-list"></div>
+    <button class="btn secondary" id="atlasInboxMore" type="button" hidden>
+      Load more
+    </button>
+  </section>
+  <div id="atlasInboxDialogHost"></div>
+</section>

@@ -1,0 +1,215 @@
+/* ATLAS-SOURCE-UNIT:u0976:BEGIN */
+.inbox-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+/* ATLAS-SOURCE-UNIT:u0976:END */ /* ATLAS-SOURCE-UNIT:u0977:BEGIN */
+.inbox-list {
+  display: grid;
+  gap: 0.75rem;
+}
+/* ATLAS-SOURCE-UNIT:u0977:END */ /* ATLAS-SOURCE-UNIT:u0978:BEGIN */
+.inbox-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+}
+/* ATLAS-SOURCE-UNIT:u0978:END */ /* ATLAS-SOURCE-UNIT:u0979:BEGIN */
+.inbox-item[data-read-state="Unread"] {
+  border-inline-start: 4px solid var(--accent);
+}
+/* ATLAS-SOURCE-UNIT:u0979:END */ /* ATLAS-SOURCE-UNIT:u0980:BEGIN */
+.inbox-item-title {
+  font-weight: 700;
+}
+/* ATLAS-SOURCE-UNIT:u0980:END */ /* ATLAS-SOURCE-UNIT:u0981:BEGIN */
+.inbox-item-meta {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+/* ATLAS-SOURCE-UNIT:u0981:END */ /* ATLAS-SOURCE-UNIT:u0982:BEGIN */
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+/* ATLAS-SOURCE-UNIT:u0982:END */ /* ATLAS-SOURCE-UNIT:u0983:BEGIN */
+.workflow-value {
+  font-weight: 700;
+}
+/* ATLAS-SOURCE-UNIT:u0983:END */ /* ATLAS-SOURCE-UNIT:u0984:BEGIN */
+.workflow-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0984:END */ /* ATLAS-SOURCE-UNIT:u0985:BEGIN */
+.workflow-readonly {
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--warning-bg, #fff4ce);
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0985:END */ /* ATLAS-SOURCE-UNIT:u0986:BEGIN */
+.workflow-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0986:END */ /* ATLAS-SOURCE-UNIT:u0987:BEGIN */
+.workflow-dialog {
+  width: min(760px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: var(--panel, #fff);
+  color: var(--text, #111);
+  border-radius: 14px;
+  padding: 1.25rem;
+}
+/* ATLAS-SOURCE-UNIT:u0987:END */ /* ATLAS-SOURCE-UNIT:u0988:BEGIN */
+.workflow-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0988:END */ /* ATLAS-SOURCE-UNIT:u0989:BEGIN */
+.publication-snapshot {
+  max-height: 48vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0989:END */ /* ATLAS-SOURCE-UNIT:u0990:BEGIN */
+.publication-form {
+  display: grid;
+  gap: 0.75rem;
+}
+/* ATLAS-SOURCE-UNIT:u0990:END */ /* ATLAS-SOURCE-UNIT:u0991:BEGIN */
+.publication-separator {
+  margin-block: 2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+/* ATLAS-SOURCE-UNIT:u0991:END */ /* ATLAS-SOURCE-UNIT:u0992:BEGIN */
+@media (max-width: 700px) {
+  .inbox-item {
+    grid-template-columns: 1fr;
+  }
+  .workflow-dialog-actions {
+    flex-direction: column;
+  }
+  .workflow-dialog-actions .btn {
+    width: 100%;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0992:END */ /* ATLAS-SOURCE-UNIT:u0993:BEGIN */
+@media (prefers-reduced-motion: reduce) {
+  .workflow-dialog-backdrop {
+    scroll-behavior: auto;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0993:END *//* ATLAS-SOURCE-UNIT:u1030:BEGIN */
+
+
+.inbox-counts {
+  margin: 0.75rem 0;
+  font-weight: 600;
+}
+/* ATLAS-SOURCE-UNIT:u1030:END *//* ATLAS-SOURCE-UNIT:u1031:BEGIN */.inbox-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  align-items: stretch;
+}
+/* ATLAS-SOURCE-UNIT:u1031:END *//* ATLAS-SOURCE-UNIT:u1032:BEGIN */.inbox-message-card {
+  min-block-size: 17rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+/* ATLAS-SOURCE-UNIT:u1032:END *//* ATLAS-SOURCE-UNIT:u1033:BEGIN */.inbox-message-card[data-read-state="Unread"] {
+  border-inline-start: 0.35rem solid var(--accent, #1666c5);
+}
+/* ATLAS-SOURCE-UNIT:u1033:END *//* ATLAS-SOURCE-UNIT:u1034:BEGIN */.inbox-card-heading,
+.inbox-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+/* ATLAS-SOURCE-UNIT:u1034:END *//* ATLAS-SOURCE-UNIT:u1035:BEGIN */.inbox-unread-dot {
+  inline-size: 0.65rem;
+  block-size: 0.65rem;
+  border-radius: 50%;
+  background: transparent;
+}
+/* ATLAS-SOURCE-UNIT:u1035:END *//* ATLAS-SOURCE-UNIT:u1036:BEGIN */.inbox-message-card[data-read-state="Unread"] .inbox-unread-dot {
+  background: var(--accent, #1666c5);
+}
+/* ATLAS-SOURCE-UNIT:u1036:END *//* ATLAS-SOURCE-UNIT:u1037:BEGIN */.inbox-workflow-badge {
+  margin-inline-start: auto;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+/* ATLAS-SOURCE-UNIT:u1037:END *//* ATLAS-SOURCE-UNIT:u1038:BEGIN */.inbox-sender,
+.inbox-message {
+  margin: 0;
+}
+/* ATLAS-SOURCE-UNIT:u1038:END *//* ATLAS-SOURCE-UNIT:u1039:BEGIN */.inbox-message {
+  flex: 1;
+}
+/* ATLAS-SOURCE-UNIT:u1039:END *//* ATLAS-SOURCE-UNIT:u1040:BEGIN */.inbox-card-footer {
+  margin-top: auto;
+}
+/* ATLAS-SOURCE-UNIT:u1040:END *//* ATLAS-SOURCE-UNIT:u1041:BEGIN */.inbox-message-card:focus-within {
+  outline: 3px solid var(--focus, #1666c5);
+  outline-offset: 2px;
+}
+/* ATLAS-SOURCE-UNIT:u1041:END *//* ATLAS-SOURCE-UNIT:u1042:BEGIN */@media (max-width: 560px) {
+  .inbox-list {
+    grid-template-columns: 1fr;
+  }
+  .inbox-message-card {
+    min-block-size: auto;
+  }
+  .inbox-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .inbox-card-footer .btn {
+    width: 100%;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1042:END *//* ATLAS-SOURCE-UNIT:u1043:BEGIN */@media (forced-colors: active) {
+  .inbox-message-card[data-read-state="Unread"] {
+    border-inline-start-color: Highlight;
+  }
+  .inbox-message-card[data-read-state="Unread"] .inbox-unread-dot {
+    background: Highlight;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1043:END */

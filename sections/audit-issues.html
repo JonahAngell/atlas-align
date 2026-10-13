@@ -1,0 +1,88 @@
+<div id="atlas-audit-issues-root" class="atlas-audit-issues" hidden>
+  <button
+    id="atlas-audit-issues-trigger"
+    class="atlas-audit-issues__trigger"
+    type="button"
+    aria-label="Issues"
+    aria-haspopup="dialog"
+    aria-controls="atlas-audit-issues-panel"
+    aria-expanded="false"
+  >
+    <span class="atlas-audit-issues__icon" aria-hidden="true"></span>
+    <span
+      id="atlas-audit-issues-count"
+      class="atlas-audit-issues__count"
+      aria-hidden="true"
+      hidden
+    ></span>
+  </button>
+  <div
+    id="atlas-audit-issues-backdrop"
+    class="atlas-audit-issues__backdrop"
+    hidden
+  ></div>
+  <section
+    id="atlas-audit-issues-panel"
+    class="atlas-audit-issues__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="atlas-audit-issues-title"
+    tabindex="-1"
+    hidden
+  >
+    <header class="atlas-audit-issues__header">
+      <h2 id="atlas-audit-issues-title">Audit issues</h2>
+      <button
+        id="atlas-audit-issues-close"
+        class="btn secondary small"
+        type="button"
+        aria-label="Close audit issues"
+      >
+        Close
+      </button>
+    </header>
+    <div class="atlas-audit-issues__toolbar" aria-label="Issue filters">
+      <div
+        class="atlas-audit-issues__severity"
+        role="group"
+        aria-label="Severity"
+      >
+        <button
+          type="button"
+          class="btn secondary small is-active"
+          data-atlas-issue-surface="dialog"
+          data-atlas-issue-severity="all"
+          aria-pressed="true"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="btn secondary small"
+          data-atlas-issue-surface="dialog"
+          data-atlas-issue-severity="critical"
+          aria-pressed="false"
+        >
+          Critical
+        </button>
+        <button
+          type="button"
+          class="btn secondary small"
+          data-atlas-issue-surface="dialog"
+          data-atlas-issue-severity="warning"
+          aria-pressed="false"
+        >
+          Warning
+        </button>
+      </div>
+      <button
+        id="atlas-audit-issues-refresh"
+        class="btn secondary small"
+        type="button"
+      >
+        Refresh
+      </button>
+    </div>
+    <div id="atlas-audit-issues-list" class="atlas-audit-issues__list"></div>
+  </section>
+</div>

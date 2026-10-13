@@ -1,0 +1,195 @@
+ATLAS Align Update Request
+
+## 1. Title
+Request type: Refactor; UI or CSS adjustment; Documentation only
+Title: Validate the complete Audit Issues implementation and produce the final aligned package
+Risk classification: Medium
+
+## 2. Implementation Contract
+Goal: Audit the combined outputs of Parts 1 through 4, correct only verified feature-related defects, and produce one final release ZIP whose engine, catalog, ATLAS adapter, UI, Readiness synchronization, navigation, fixes, CSS, documentation, and compatibility paths are aligned.
+Expected files allowed to change:
+- Any file actually modified or created in Parts 1 through 4, but only to correct a verified defect or unmet acceptance criterion
+- PROJECT_CONTEXT.md and PROJECT_TREE.txt when final alignment requires correction
+Required generated artifacts:
+- styles.css regenerated from final CSS sources
+- css/manifest.json only if changed by the final build
+Behavior that must remain unchanged:
+- All protected contracts from Parts 1 through 4, especially transient issues, existing mutations/persistence, no new publication block, and no access to js/15-visual-ui-upgrades.js.
+Definition of done:
+- Static and available runtime validation demonstrate one canonical issue result, one UI host, deterministic catalog/registry mapping, synchronized Readiness, safe actions, and consistent generated CSS.
+- Only confirmed feature defects are corrected; no unrelated cleanup.
+- Final modified-files ZIP and evidence-based delivery summary are produced.
+Blocking assumptions or decisions: The latest successful outputs from Parts 1 through 4 must be supplied together. If file versions conflict, stop and identify the exact conflict instead of guessing.
+Implementation flexibility: Validation may add focused tests or guards where they directly prove acceptance criteria and remain within the feature scope.
+
+## 3. User-visible Problem
+Users affected: All Audit Issues and Readiness users.
+Workflow affected: End-to-end audit evaluation, review, navigation, remediation, persistence, and release readiness.
+Current behavior: Individually implemented phases can contain cross-phase load-order, catalog, selector, invalidation, CSS, or compatibility defects.
+Where it occurs: Application entry point, issue engine/adapter, panel, Readiness, owning pages, CSS build, documentation, tests.
+Frequency: Integration-dependent.
+Impact: Without final alignment, phase-level success may still leave contradictory results or regression risk.
+Screenshot attached: Not applicable unless runtime visual evidence is supplied.
+
+## 4. Verified Source Evidence
+### 4.1 Source Authority
+Authoritative planning materials:
+- Current FEATURE_REQUEST_TEMPLATE.md
+- Current PROJECT_CONTEXT.md
+- Current PROJECT_TREE.txt
+- Current-request Issue Review requirements and approved five-part delivery plan
+- For implementation, use the most recent consolidated review bundle produced from the companion file list.
+
+Important version instruction: Use only the most recently attached current files as implementation inputs. Do not substitute archived files, prior-conversation copies, generated aggregates, repository-history versions, or enterprise copies unless explicitly directed.
+
+### 4.2 Verified Facts
+- The app uses ordered classic browser scripts and shared global runtime dependencies.
+- HTML partials load before DOM caching and bootstrap.
+- Readiness Review validates audit completeness and identifies logic issues before publication.
+- Existing validation is documented in js/08-step-templates-validation.js, including validateAudit(), renderValidationPanel(), validateAuditWithMath(), and addMathIssues().
+- Additional issue calculations and caching are documented in js/15g-visual-ui-events.js, including math, string-transform, created-field, and Logic Builder checks.
+- Logic Builder hierarchy is authoritative in application state while the rule list is virtualized; stable step IDs must be revealed before focus.
+- Assignment state preserves separate assigned, backup, and developer roles.
+- Audit edits use existing autosave and revision-aware durable-write coordination.
+- Split CSS files under css/ are authoritative; css/manifest.json controls cascade order and build-css.mjs generates styles.css.
+- PROJECT_CONTEXT.md identifies current version v2.0, while FEATURE_REQUEST_TEMPLATE.md says v1.6.1. Do not silently change version text during this feature.
+
+### 4.3 Implementation Hypotheses
+- A portable engine can evaluate normalized context through named evaluators and declarative rule metadata without reading state.audit directly.
+- JSON can safely hold rule IDs, severity, category, text, order, evaluator names, navigation names, and remediation names while executable functions remain registered in JavaScript.
+- Existing validation functions can remain as temporary compatibility wrappers while their calculations migrate to one canonical issue collection.
+
+### 4.4 Unknowns
+- Exact historical floating-control dimensions are non-blocking; follow current app tokens and accessible patterns.
+- Browser-computed focus, contrast, stacking, and responsive behavior require runtime checks.
+- Field-relationship validation is blocking only for that rule: do not enable it unless authoritative metadata or an explicit audit relationship proves incompatibility.
+- Inline fixes are non-blocking individually; unsupported or ambiguous fixes must remain navigation-only.
+
+## 8. Technical Constraints
+- Preserve the classic script architecture, established load order, vanilla JavaScript, existing dependencies, and deployment model.
+- Make the smallest safe change and avoid unrelated refactoring, modernization, or framework conversion.
+- Keep issue results transient and derived; do not persist issue snapshots in the audit document or database.
+- Do not add API routes, database migrations, authorization changes, or dependencies.
+- Keep the portable engine free of ATLAS state, selectors, navigation, persistence, rendering, export, and database functions.
+- Never evaluate catalog strings as JavaScript. Named evaluator, target resolver, and remediation registries are required.
+- Escape issue content before rendering.
+- Preserve selected-editor DOM behavior, hierarchy, virtualization, drag and drop, autosave, durable writes, preview/export, and publication behavior.
+- js/15-visual-ui-upgrades.js must not be loaded, imported, required, fetched, executed, or used as an implementation source. If executable access is detected, stop and report a release-blocking conflict.
+- Edit split CSS source files and generate styles.css with build-css.mjs.
+- Never claim a check passed unless it was performed successfully.
+
+## 10. Validation Plan
+### 10.1 Required Before Delivery
+- Run node --check on every modified JavaScript file.
+- Validate catalogs/audit-issue-rules.json with JSON.parse.
+- Run node build-css.mjs --check before writing CSS output when CSS changes.
+- Run node build-css.mjs and node build-css.mjs --check --no-discover after CSS changes.
+- Run applicable npm tests after inspecting package.json.
+- Review file paths, load order, unique IDs, listener binding, stale references, scoped diff, and ZIP contents.
+- Run the protected-file reference guard:
+  grep -RInE --exclude='15-visual-ui-upgrades.js' --exclude='PROJECT_CONTEXT.md' --exclude='PROJECT_TREE.txt' --exclude='*.txt' '15-visual-ui-upgrades\.js' index.html public js sections server.js package.json .launch tools test
+- The reference guard must return no executable references.
+
+### 10.2 Evidence Rule
+For every check, report the exact command or browser action and actual result. Use Passed or Verified only when performed successfully; otherwise state Failed or Not performed and provide the exact follow-up.
+
+## 11. Documentation Determination
+Expected determination: Update expected when this phase adds/removes files, changes file responsibilities, public functions, load order, architectural constraints, or validation ownership.
+PROJECT_CONTEXT.md must be updated and included when a maintenance trigger occurs.
+PROJECT_TREE.txt must be updated and included whenever the implemented file tree changes.
+Do not silently resolve the v2.0 versus v1.6.1 documentation conflict; disclose it and preserve the most recent authoritative project version.
+
+## 12. Deliverable
+Requested format: Modified files only in a ZIP package.
+Preserve project-relative paths. Include files actually modified, required generated artifacts, css/manifest.json only if changed by the build, PROJECT_CONTEXT.md when triggered, and PROJECT_TREE.txt when the tree changes. Exclude aggregate review bundles, request files, screenshots, logs, node_modules, secrets, prior packages, historical patches, and unchanged files.
+
+## 13. Evidence-based Delivery Summary
+Use these headings: Root cause; Implementation; Modified source files; Generated artifacts; Conditional files; Validation performed; Validation not performed; Assumptions; Known risks or limitations; Scope confirmation; Application steps; Verification steps; Download.
+
+
+## 5. Desired Behavior
+Required behavior:
+- Verify one canonical evaluation result powers floating indicator, panel, Readiness, and compatibility callers.
+- Verify rule catalog references only registered evaluator/jump/fix names and contains no executable code.
+- Verify portable engine has no ATLAS/persistence/DOM/application dependency and supports independent instances.
+- Verify no duplicate issue engine, host, listener, validator body, or stale selector remains active.
+- Verify green/yellow/red aggregation, counts, filtering, empty/error states, accessibility, responsive behavior, and focus.
+- Verify user-requested rules and documented additional enabled rules against representative audit fixtures.
+- Verify parent-action descendant exception and disabled/unreachable descendant behavior.
+- Verify field-relationship rule is disabled or supported by explicit authoritative evidence.
+- Verify Jump and Fix stale guards, active audit identity, virtualization reveal, normal mutation/persistence, and post-action evaluation.
+- Verify Readiness and popup consistency across edit, save, reload, and audit switch.
+- Verify publication remains unchanged and exports are not modified.
+- Verify PROJECT_CONTEXT.md and PROJECT_TREE.txt exactly match the implemented source tree and responsibilities.
+- Correct only defects directly related to these checks.
+Expected user flow: Exercise complete and defective audits, review status, navigate/fix, switch/reload, confirm synchronization and unchanged adjacent workflows.
+Source of truth: Latest combined implementation and current audit/catalog/state contracts.
+Error behavior: Unresolved limitations are documented with exact reproduction and follow-up; do not conceal failures.
+Required implementation: Final ZIP contains complete current versions of actual changed/new files and required generated artifacts.
+
+## 6. Acceptance Criteria
+1. Engine/catalog/adapter pass focused automated tests for validation, normalization, deduplication, aggregation, rule mapping, and evaluator isolation.
+2. Exactly one shared issue host and one effective listener set exist after repeated initialization/opening.
+3. Indicator, popup, Readiness, and compatibility callers report identical canonical issues for the same audit state.
+4. All enabled rules have verified evaluator evidence and correct severity; unsupported relationship rules are disabled.
+5. Parent-action exception requires an active meaningful applicable descendant.
+6. Jump/fix actions resolve current targets, guard stale audit/target, and use existing mutation/persistence paths.
+7. Audit switching cannot apply prior-audit results or fixes to the new audit.
+8. No new publication block, export change, database/API/authorization/schema/dependency change, or persisted issue state exists.
+9. No executable reference to js/15-visual-ui-upgrades.js exists.
+10. JavaScript, JSON, CSS build, tests, static references, duplicate IDs/listeners, and package integrity pass or are truthfully reported.
+11. PROJECT_CONTEXT.md, PROJECT_TREE.txt, manifest, and styles.css align with final files and load order.
+12. Final ZIP contains only actual feature files and required artifacts with project-relative paths.
+
+## 7. Expected, Review-only, and Protected Files
+### 7.1 Files Allowed to Change
+- Files actually created/modified in Parts 1-4, only for verified feature defects.
+- test/audit-issue-engine.test.js and test/atlas-audit-issues.test.js for missing focused coverage.
+- PROJECT_CONTEXT.md and PROJECT_TREE.txt for final factual alignment.
+### 7.2 Required Generated Artifacts
+- styles.css: node build-css.mjs.
+- css/manifest.json only if final build changes it.
+### 7.3 Review-only Files
+- All companion file-list inputs from Parts 1-4 needed to verify contracts.
+- package.json/package-lock.json, build-css.mjs, tutorials, publication/export files, persistence/database files.
+### 7.4 Protected Files and Areas
+- Backend/API/database/migrations/authorization; dependencies; production data; audit/source catalogs other than issue rules; Visual Picker; Join Picker; js/15-visual-ui-upgrades.js; unrelated UI.
+### 7.5 Touchpoints to Inspect
+- All public engine/adapter APIs, registries, catalog entries, validation compatibility functions, host selectors/listeners, navigation/fix actions, invalidation events, load order, CSS units, tests, documentation, and package paths.
+
+## 9. Regression Matrix
+High risk: wrong-audit mutation, persisted data, publication, authorization/database, destructive fix.
+Medium risk: canonical synchronization, cache invalidation, audit switching, navigation/virtualization, load order, compatibility wrappers, generated outputs.
+Low risk: panel/indicator presentation, filters, focus, themes, forced colors, reduced motion.
+Explicitly unaffected: Source Library administration, history, profiles, imports, export formats.
+
+## 10. Exact Final Validation
+Run after inspecting package.json and current files:
+- node --check js/22-audit-issue-engine.js
+- node --check js/23-atlas-audit-issues.js
+- node --check js/08-step-templates-validation.js
+- node --check js/15g-visual-ui-events.js
+- node -e "JSON.parse(require('fs').readFileSync('catalogs/audit-issue-rules.json','utf8')); console.log('Rule catalog JSON passed.')"
+- node --test test/audit-issue-engine.test.js test/atlas-audit-issues.test.js
+- node build-css.mjs --check
+- node build-css.mjs
+- node build-css.mjs --check --no-discover
+- npm test
+- Protected-file reference guard from Section 10.1.
+- Search for duplicate validator bodies, host IDs, listeners, stale selectors, unregistered catalog names, and ATLAS dependencies in the portable engine.
+- Compare generated styles.css and manifest to final split sources.
+- Verify final ZIP with archive integrity test and content inventory.
+
+## 10.2 Combined Manual Matrix
+- Complete audit green state.
+- Warning-only yellow state.
+- Critical red state with warning coexistence.
+- Metadata/assignment/source/condition/action/join/created-field/hierarchy/display issue examples.
+- Parent without action but valid descendant action.
+- Disabled or incomplete descendant does not satisfy exception.
+- Popup/Readiness identity and filters.
+- Jump to visible/off-screen/stale targets.
+- Supported fixes, stale guards, autosave/durable persistence after reload.
+- Audit switch while panel is open.
+- No publication block and no export output change.
+- Keyboard/focus, light/dark, forced colors, reduced motion, desktop/narrow viewport.

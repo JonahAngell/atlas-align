@@ -1,0 +1,9 @@
+.env
+secret/
+node_modules/
+.DS_Store
+.cursor/*.log
+logs/
+playwright-report/
+test-results/
+playwright/.auth/

@@ -1,0 +1,32 @@
+INSERT INTO
+  atlas_audit_step_revisions (
+    audit_id,
+    step_id,
+    audit_revision_id,
+    step_revision_number,
+    operation,
+    step_document,
+    step_sha256,
+    change_summary,
+    created_by_user_id,
+    created_by_username,
+    created_by_full_name,
+    restored_from_step_revision_id
+  )
+VALUES
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6::jsonb,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12
+  )
+RETURNING
+  id

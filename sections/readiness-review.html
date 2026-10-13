@@ -1,0 +1,77 @@
+<section id="page-review" class="page" data-page="review">
+  <div class="page-header">
+    <div>
+      <h1>Readiness &amp; Review</h1>
+      <p>
+        Review and resolve the canonical audit issue result before publication.
+      </p>
+    </div>
+  </div>
+  <div class="review-grid">
+    <section
+      class="card validation-shell readiness-issues-shell"
+      aria-labelledby="atlas-readiness-issues-title"
+    >
+      <div class="section-title readiness-issues-header">
+        <div>
+          <strong id="atlas-readiness-issues-title">Audit issues</strong
+          ><span class="badge blue">Canonical</span>
+        </div>
+        <button
+          id="atlas-readiness-issues-refresh"
+          class="btn secondary small"
+          type="button"
+        >
+          Refresh
+        </button>
+      </div>
+      <p
+        id="atlas-readiness-issue-summary"
+        class="readiness-issue-summary"
+        aria-live="polite"
+      ></p>
+      <div
+        class="atlas-audit-issues__severity readiness-issue-filters"
+        role="group"
+        aria-label="Readiness issue severity"
+      >
+        <button
+          type="button"
+          class="btn secondary small is-active"
+          data-atlas-issue-surface="readiness"
+          data-atlas-issue-severity="all"
+          aria-pressed="true"
+        >
+          All
+        </button>
+        <button
+          type="button"
+          class="btn secondary small"
+          data-atlas-issue-surface="readiness"
+          data-atlas-issue-severity="critical"
+          aria-pressed="false"
+        >
+          Critical
+        </button>
+        <button
+          type="button"
+          class="btn secondary small"
+          data-atlas-issue-surface="readiness"
+          data-atlas-issue-severity="warning"
+          aria-pressed="false"
+        >
+          Warning
+        </button>
+      </div>
+      <p
+        id="atlas-readiness-category-status"
+        class="readiness-category-status sr-only"
+      ></p>
+      <div id="validationPanel" class="readiness-issue-list"></div>
+    </section>
+    <section class="card status-panel">
+      <div class="section-title"><strong>Status</strong></div>
+      <div id="status"></div>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,157 @@
+<section class="page" data-page="fields" id="page-fields">
+  <h1>Sources</h1>
+  <div class="subtitle">Search, choose a source, and inspect its fields.</div>
+  <div class="field-picker-summary" id="fieldPickerSummary"></div>
+  <div class="layout3">
+    <section class="card source-field-browser-panel">
+      <div class="section-title">
+        <strong>Source Library</strong>
+        <div
+          aria-live="polite"
+          class="field-library-lightboard"
+          id="fieldLibraryLightboard"
+          role="status"
+        >
+          <span class="field-library-lamps">
+            <span class="field-library-lamp" data-lamp="live"
+              ><span aria-hidden="true" class="field-library-lamp-dot"></span
+              >Live</span
+            >
+            <span class="field-library-lamp" data-lamp="backup"
+              ><span aria-hidden="true" class="field-library-lamp-dot"></span
+              >Backup</span
+            >
+            <span class="field-library-lamp" data-lamp="unavailable"
+              ><span aria-hidden="true" class="field-library-lamp-dot"></span
+              >Unavailable</span
+            >
+          </span>
+          <span
+            class="field-library-lightboard-detail visually-hidden"
+            id="fieldLibraryLightboardText"
+            >Checking field library source</span
+          >
+        </div>
+        <div class="toolbar compact-toolbar source-library-toolbar">
+          <button
+            aria-label="Add Custom Source"
+            class="btn secondary small"
+            id="addCustomSourceBtn"
+            title="Add a custom source to the field library"
+            type="button"
+          >
+            Add Custom Source
+          </button>
+          <button
+            aria-label="Replace Source Library CSV"
+            class="btn secondary small"
+            hidden
+            id="replaceSourceLibraryBtn"
+            title="Import the 33-column ATLAS Field Library CSV"
+            type="button"
+          >
+            Import Source Library CSV
+          </button>
+          <input
+            accept=".csv,text/csv"
+            class="visually-hidden"
+            id="replaceSourceLibraryFile"
+            type="file"
+          />
+          <button
+            aria-label="Fields tutorial"
+            class="btn ghost small tutorial-inline-button"
+            data-start-tutorial="fields"
+            id="fieldsTutorialBtn"
+            title="Fields tutorial"
+            type="button"
+          >
+            ?
+          </button>
+        </div>
+      </div>
+      <p class="hint">Search by file, alias, or field, then choose Use.</p>
+      <div
+        aria-live="polite"
+        class="source-library-import-status"
+        hidden
+        id="sourceLibraryImportStatus"
+      ></div>
+      <input
+        class="input full-input"
+        id="sourceFieldSearch"
+        placeholder="Search sources or fields"
+        autocomplete="off"
+      />
+      <div class="source-library-tabs" id="sourceLibraryTabs"></div>
+      <div
+        class="source-field-browser source-library-inline"
+        id="sourceFieldBrowser"
+      ></div>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <strong>Selected Sources &amp; Fields</strong
+        ><span class="badge blue" id="selectedSourceBadge">0</span>
+      </div>
+      <div id="sourcesList"></div>
+      <div class="visually-hidden" id="fieldsList"></div>
+    </section>
+  </div>
+  <dialog
+    aria-labelledby="customSourceDialogTitle"
+    class="custom-source-dialog"
+    id="customSourceDialog"
+  >
+    <form class="custom-source-form" id="customSourceForm">
+      <div class="custom-source-header">
+        <h2 id="customSourceDialogTitle">Add Custom Source</h2>
+        <p class="hint" id="customSourceDialogDescription">
+          Saved for everyone, with your name on the source.
+        </p>
+      </div>
+      <label class="custom-source-label" for="customSourceName">
+        Source name
+        <input
+          autocomplete="off"
+          class="input full-input"
+          id="customSourceName"
+          maxlength="200"
+          name="sourceName"
+          required
+          type="text"
+        />
+      </label>
+      <label class="custom-source-label" for="customSourceSystem">
+        Source system
+        <span class="hint">Optional</span>
+        <input
+          autocomplete="off"
+          class="input full-input"
+          id="customSourceSystem"
+          maxlength="120"
+          name="sourceSystem"
+          type="text"
+        />
+      </label>
+      <div
+        aria-label="Fields"
+        class="custom-source-fields"
+        id="customSourceFields"
+        role="group"
+      ></div>
+      <button class="btn secondary" id="addCustomSourceFieldBtn" type="button">
+        Add Field
+      </button>
+      <p aria-live="assertive" class="custom-source-error" id="customSourceError" role="alert"></p>
+      <div class="custom-source-actions">
+        <button class="btn secondary" id="customSourceCancelBtn" type="button">
+          Cancel
+        </button>
+        <button class="btn primary" id="customSourceSaveBtn" type="submit">
+          Save Custom Source
+        </button>
+      </div>
+    </form>
+  </dialog>
+</section>

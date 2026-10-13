@@ -1,0 +1,2 @@
+SELECT source_key
+FROM atlas_custom_sources

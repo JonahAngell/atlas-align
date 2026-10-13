@@ -1,0 +1,430 @@
+---
+paths:
+  - "**/*.ts"
+  - "**/*.tsx"
+---
+
+# TypeScript
+
+TypeScript patterns for type-safe JavaScript development
+
+TypeScript patterns for type-safe JavaScript development including generics, utility types, and advanced patterns.
+
+Apply when: writing TypeScript, defining types and interfaces, using generics, or applying utility types.
+
+---
+
+## Configuration
+
+Enable `strict: true` with all strict flags:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
+    "noEmitOnError": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": true
+  }
+}
+```
+
+**Note:** `exactOptionalPropertyTypes` may cause issues with existing code or libraries that assign `undefined` to optional properties. Enable incrementally if adopting on existing projects.
+
+- Never use `// @ts-ignore` or `// @ts-expect-error` without explanatory comments
+- Use `--noEmitOnError` to prevent generating JS when TypeScript errors exist
+
+---
+
+## Type Rules
+
+| Rule                    | Details                                                 |
+| ----------------------- | ------------------------------------------------------- |
+| Never use `any`         | Use `unknown` instead—requires explicit narrowing       |
+| Never use Enums         | Use union types or `as const` objects                   |
+| Explicit typing         | Type function parameters, return types, object literals |
+| Use `readonly`          | For immutable properties and arrays                     |
+| Discriminated unions    | Use exhaustiveness checking for type narrowing          |
+| `interface` for objects | Use for object shapes that may be extended              |
+| `type` for compositions | Use for unions, intersections, mapped types             |
+
+```typescript
+// Bad - Enum
+enum Status {
+  Pending,
+  Active,
+  Closed,
+}
+
+// Good - Union type
+type Status = "pending" | "active" | "closed";
+
+// Good - as const object (when you need values at runtime)
+const Status = {
+  Pending: "pending",
+  Active: "active",
+  Closed: "closed",
+} as const;
+type Status = (typeof Status)[keyof typeof Status];
+
+// Bad - any
+function process(data: any) {}
+
+// Good - unknown with narrowing
+function process(data: unknown) {
+  if (typeof data === "string") {
+    return data.toUpperCase();
+  }
+}
+```
+
+---
+
+## Type Assertions
+
+Type assertions (`as`) tell the compiler to trust you. Use sparingly and only when you have verified the type.
+
+**Acceptable uses:**
+
+| Context          | Example                                             |
+| ---------------- | --------------------------------------------------- |
+| After type guard | `if (isUser(data)) { return data as User; }`        |
+| Test assertions  | `expect(result as Error).toHaveProperty('message')` |
+| DOM elements     | `document.getElementById('app') as HTMLDivElement`  |
+
+**Never use `as` for:**
+
+| Context          | Why                                          |
+| ---------------- | -------------------------------------------- |
+| External data    | No runtime validation—use Zod instead        |
+| API responses    | Server can return anything—validate first    |
+| Unverified casts | Bypasses type safety, bugs appear at runtime |
+
+```typescript
+// Bad - External data with assertion
+const user = (await response.json()) as User;
+
+// Good - Validate external data (see Zod blueprint)
+const user = UserSchema.parse(await response.json());
+
+// Good - Assertion after verification
+if (isUser(data)) {
+  processUser(data as User);
+}
+```
+
+---
+
+## The `satisfies` Operator
+
+Use `satisfies` when you need both type validation and type inference. It validates that an expression matches a type while preserving the narrower inferred type.
+
+```typescript
+// With type annotation - loses literal types
+const config: Record<string, string> = {
+  apiUrl: "https://api.example.com",
+  env: "production",
+};
+// config.apiUrl is string
+
+// With satisfies - validates AND preserves literals
+const config = {
+  apiUrl: "https://api.example.com",
+  env: "production",
+} satisfies Record<string, string>;
+// config.apiUrl is 'https://api.example.com'
+// config.env is 'production'
+
+// Catches type errors while preserving narrow types
+const routes = {
+  home: "/",
+  about: "/about",
+  notFound: 404, // Error: number is not assignable to string
+} satisfies Record<string, string>;
+```
+
+---
+
+## Const Assertions
+
+Use `as const` to create literal types and readonly values.
+
+```typescript
+// Literal type inference
+const direction = "north" as const; // type: 'north', not string
+
+// Readonly tuple
+const point = [10, 20] as const; // type: readonly [10, 20]
+
+// Const object (enum replacement)
+const HttpStatus = {
+  Ok: 200,
+  NotFound: 404,
+  ServerError: 500,
+} as const;
+type HttpStatus = (typeof HttpStatus)[keyof typeof HttpStatus]; // 200 | 404 | 500
+```
+
+---
+
+## Type Fundamentals
+
+**Basic Types**
+
+```typescript
+const name: string = "Alice";
+const age: number = 30;
+const active: boolean = true;
+const numbers: number[] = [1, 2, 3];
+const pair: [string, number] = ["age", 30];
+```
+
+**Object Types**
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role?: string; // Optional
+  readonly createdAt: Date; // Immutable
+}
+
+// Extending interfaces
+interface Admin extends User {
+  permissions: string[];
+}
+```
+
+**Union and Intersection**
+
+```typescript
+// Discriminated union
+type Result<T> = { success: true; data: T } | { success: false; error: string };
+
+// Intersection
+type Employee = User & { department: string };
+```
+
+---
+
+## Generics
+
+```typescript
+// Generic function
+function first<T>(arr: T[]): T | undefined {
+  return arr[0];
+}
+
+// Generic interface
+interface Repository<T> {
+  find(id: string): Promise<T | null>;
+  save(item: T): Promise<T>;
+  delete(id: string): Promise<void>;
+}
+
+// Constraints
+function getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {
+  return obj[key];
+}
+```
+
+---
+
+## Utility Types
+
+| Type            | Purpose                      |
+| --------------- | ---------------------------- |
+| `Partial<T>`    | All properties optional      |
+| `Required<T>`   | All properties required      |
+| `Pick<T, K>`    | Select properties            |
+| `Omit<T, K>`    | Exclude properties           |
+| `Record<K, V>`  | Key-value mapping            |
+| `Readonly<T>`   | Immutable properties         |
+| `ReturnType<F>` | Extract function return type |
+| `Parameters<F>` | Extract function parameters  |
+
+```typescript
+type UserPreview = Pick<User, "id" | "name">;
+type PublicUser = Omit<User, "password">;
+```
+
+---
+
+## Type Guards
+
+```typescript
+// typeof guard
+function process(value: string | number) {
+  if (typeof value === "string") {
+    return value.toUpperCase();
+  }
+  return value * 2;
+}
+
+// Custom type guard
+function isDog(pet: Dog | Cat): pet is Dog {
+  return "bark" in pet;
+}
+
+// in operator
+function move(animal: Fish | Bird) {
+  if ("swim" in animal) {
+    animal.swim();
+  }
+}
+```
+
+---
+
+## Advanced Patterns
+
+**Mapped Types**
+
+```typescript
+type Nullable<T> = {
+  [K in keyof T]: T[K] | null;
+};
+
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>}`]: () => T[K];
+};
+```
+
+**Conditional Types**
+
+```typescript
+type NonNullable<T> = T extends null | undefined ? never : T;
+type Flatten<T> = T extends Array<infer U> ? U : T;
+```
+
+---
+
+## JavaScript Best Practices
+
+| Rule                               | Details                                       |
+| ---------------------------------- | --------------------------------------------- |
+| Use `const` by default             | Use `let` only for reassignment               |
+| Nullish coalescing                 | Use `??` and `?.` operators appropriately     |
+| Avoid redundant `await` in returns | Return Promise directly unless in `try/catch` |
+| Always use curly braces            | Even for single-line control structures       |
+| Object spread over `Object.assign` | Prefer `{ ...args }` syntax                   |
+| Rest parameters                    | Use instead of `arguments` object             |
+| Template literals                  | Use instead of string concatenation           |
+| Prefix unused variables            | Use underscore (e.g., `_unusedParam`)         |
+
+---
+
+## Import Organization
+
+Order imports in these groups with blank lines between:
+
+1. **Built-in** — Node.js modules (`fs`, `path`, `node:crypto`)
+2. **External** — npm packages (`react`, `zod`, `next`)
+3. **Internal** — Aliased paths (`@/lib`, `@/utils`, `@/components`)
+4. **Relative** — Parent and sibling (`../`, `./`)
+5. **Type-only** — Type imports (`import type`)
+
+```typescript
+import fs from "fs";
+import path from "path";
+
+import React from "react";
+import { z } from "zod";
+
+import { db } from "@/lib/database";
+import { logger } from "@/utils/logger";
+
+import { Parent } from "../Parent";
+import { Sibling } from "./Sibling";
+
+import type { User } from "@/types";
+```
+
+- Sort alphabetically within each group
+- Sort named imports: `import { A, B, C } from 'module'`
+- Avoid circular imports
+
+---
+
+## Security
+
+| Rule                             | Details                                |
+| -------------------------------- | -------------------------------------- |
+| Use `===` over `==`              | Prevents type coercion bugs            |
+| Avoid `eval()`, `new Function()` | Code injection risk                    |
+| Run `npm audit` regularly        | Check dependencies for vulnerabilities |
+| Enable `strict: true`            | Catches common errors at compile time  |
+| Avoid `any`                      | Use `unknown` for truly unknown types  |
+
+```typescript
+// Bad - loose equality
+const name = value == null ? "default" : value;
+
+// Good - nullish coalescing
+const name = value ?? "default";
+
+// Good - strict equality (when you need a conditional)
+if (value === null || value === undefined) {
+}
+
+// Bad - disables type checking
+function process(data: any) {}
+
+// Good - requires type narrowing
+function process(data: unknown) {
+  if (typeof data === "string") {
+    // data is now string
+  }
+}
+```
+
+---
+
+## Quick Reference
+
+| Task              | Pattern                                   |
+| ----------------- | ----------------------------------------- |
+| Optional property | `prop?: Type`                             |
+| Readonly property | `readonly prop: Type`                     |
+| Union type        | `Type1 \| Type2`                          |
+| Intersection      | `Type1 & Type2`                           |
+| Generic function  | `function fn<T>(arg: T): T`               |
+| Type assertion    | `value as Type` (after verification only) |
+| Const assertion   | `as const`                                |
+| Type validation   | `expression satisfies Type`               |
+
+---
+
+## Checklist
+
+- [ ] `strict: true` enabled with all strict flags
+- [ ] No `any` types (use `unknown` instead)
+- [ ] No Enums (use union types or `as const` objects)
+- [ ] No `as` assertions on external data (use Zod)
+- [ ] Explicit types on function parameters and return types
+- [ ] Use `satisfies` for validation with type inference
+- [ ] Type guards for runtime narrowing
+- [ ] Discriminated unions for variants
+- [ ] Imports organized and sorted
+- [ ] Use `const` by default, `let` for reassignment
+- [ ] Use `===` for equality checks
+- [ ] Regular `npm audit` runs

@@ -1,0 +1,76 @@
+#!/bin/sh
+set -eu
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+# Capture files staged for this commit.
+prettier_files=$(mktemp)
+trap 'rm -f "$prettier_files"' EXIT HUP INT TERM
+
+git diff --cached --name-only --diff-filter=ACMR -z > "$prettier_files"
+
+# Format only staged files that Prettier recognizes, then restage them.
+if [ -s "$prettier_files" ]; then
+    xargs -0 -n 25 npx prettier --write --ignore-unknown < "$prettier_files"
+    xargs -0 -n 25 git add -- < "$prettier_files"
+fi
+
+# Rebuild the generated CSS.
+node build-css.mjs
+
+# Regenerate the repository tree without requiring the external `tree` utility.
+node <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+
+const outputFile = "PROJECT_TREE.txt";
+const excludedNames = new Set([
+    ".git",
+    "node_modules",
+    outputFile,
+]);
+
+function getEntries(directory) {
+    return fs
+        .readdirSync(directory, { withFileTypes: true })
+        .filter((entry) => !excludedNames.has(entry.name))
+        .sort((left, right) => {
+            if (left.isDirectory() !== right.isDirectory()) {
+                return left.isDirectory() ? -1 : 1;
+            }
+
+            return left.name.localeCompare(right.name);
+        });
+}
+
+function buildTree(directory, prefix = "") {
+    const entries = getEntries(directory);
+    const lines = [];
+
+    entries.forEach((entry, index) => {
+        const isLast = index === entries.length - 1;
+        const connector = isLast ? "└── " : "├── ";
+        const entryPath = path.join(directory, entry.name);
+
+        lines.push(`${prefix}${connector}${entry.name}`);
+
+        if (entry.isDirectory()) {
+            const childPrefix = prefix + (isLast ? "    " : "│   ");
+            lines.push(...buildTree(entryPath, childPrefix));
+        }
+    });
+
+    return lines;
+}
+
+const contents = [".", ...buildTree(".")].join("\n") + "\n";
+fs.writeFileSync(outputFile, contents, "utf8");
+NODE
+
+git add -- PROJECT_TREE.txt
+
+# Increment and synchronize the application version.
+node tools/sync-app-version.mjs --hook
+
+git add -u

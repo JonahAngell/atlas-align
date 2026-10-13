@@ -1,0 +1,127 @@
+---
+description: >-
+  Enforces Conventional Commits, branch naming, and MR standards for all git
+  operations
+alwaysApply: true
+---
+
+# Contributing Guidelines
+
+Standards for contributing code to Studio Tech Engineering projects.
+
+Apply when: creating branches, writing commits, submitting merge requests, or reviewing code.
+
+---
+
+## Rule Strength Tags
+
+| Tag     | Meaning                                                          |
+|---------|------------------------------------------------------------------|
+| [HARD]  | Must not be broken. Refuse conflicting requests.                 |
+| [WARN]  | Default behavior. Explain trade-off if user wants to deviate.    |
+| [GUIDE] | Recommendation. Follow unless user has clear reason to deviate.  |
+
+---
+
+## Precedence
+
+[HARD] Repository-specific files (`README.md`, `CONTRIBUTING.md`, `AGENTS.md`) take precedence over this blueprint.
+
+---
+
+## Development Workflow
+
+1. **Create branch** from `main`: `{branch_type}-{ISSUE}-{description}`
+2. **Make changes** with atomic commits using Conventional Commits
+3. **Rebase** on `origin/main` before pushing
+4. **Create MR** with clear title, description, and `Closes #ISSUE`
+5. **Code review** — respond to feedback, keep branch current
+6. **Merge** after CI passes and approval received
+7. **Delete branch** after merge
+
+---
+
+## Branch Strategy
+
+| Branch  | Purpose                                                   |
+|---------|-----------------------------------------------------------|
+| `main`  | [HARD] Production-ready code                              |
+| Feature | [HARD] Format: `{branch_type}-{ISSUE}-{description}`      |
+
+[HARD] Valid branch types: `feature`, `bugfix`, `hotfix`
+
+Example: `feature-123-add-auth`, `bugfix-456-fix-login`
+
+---
+
+## Commit Guidelines
+
+| Rule                                      | Example                                              |
+|-------------------------------------------|------------------------------------------------------|
+| [HARD] Conventional Commits format        | `feat: add user auth`, `fix: resolve bug`            |
+| [HARD] Valid types only                   | feat, fix, docs, style, refactor, perf, test, build, ci, chore |
+| [HARD] Imperative mood                    | `add feature` not `added feature`                    |
+| [HARD] Lowercase after prefix             | `feat: add` not `feat: Add`                          |
+| [HARD] Subject under 72 characters        | Keep subject line concise                            |
+| [HARD] No AI attribution                  | Never add "Co-authored-by: AI" or similar            |
+| [WARN] Single-line preferred              | Body only when essential for complex changes         |
+| [GUIDE] Atomic commits                    | One logical change per commit                        |
+
+---
+
+## Merge Request Process
+
+[HARD] Before creating MR:
+
+```bash
+git fetch origin
+git rebase origin/main
+git push --force-with-lease origin <branch>
+```
+
+**MR requirements:**
+
+| Requirement                            | Details                                             |
+|----------------------------------------|-----------------------------------------------------|
+| [HARD] Rebased on main                 | No merge conflicts, clean history                   |
+| [HARD] Clear title                     | Under 72 characters, descriptive                    |
+| [HARD] Description                     | What changed, why, testing performed                |
+| [HARD] Links issue                     | Include `Closes #ISSUE` in description              |
+| [HARD] No AI attribution               | Never mention AI assistance in title or description |
+| [HARD] CI checks passing               | All pipelines green                                 |
+| [HARD] Code review approval            | At least one team member                            |
+| [GUIDE] Tests added                    | Coverage thresholds met                             |
+| [GUIDE] Docs updated                   | If APIs or behavior changed                         |
+
+---
+
+## Code Review
+
+| Role     | Responsibilities                                                            |
+|----------|-----------------------------------------------------------------------------|
+| Author   | Keep MRs focused, provide context, respond to feedback, keep branch current |
+| Reviewer | Verify tests, check CI passes, consider architecture, look for security issues |
+
+---
+
+## Quick Reference
+
+| Task          | Pattern                                                              |
+|---------------|----------------------------------------------------------------------|
+| Create branch | `{branch_type}-{ISSUE}-{description}`                                |
+| Write commit  | `type: description` (imperative, lowercase, <72 chars)               |
+| Before MR     | Rebase on `origin/main`, push with `--force-with-lease`              |
+| Commit types  | feat, fix, docs, style, refactor, perf, test, build, ci, chore       |
+
+---
+
+## Checklist
+
+- [ ] Branch named with type and issue number
+- [ ] Commits use Conventional Commits format
+- [ ] Subject line under 72 characters
+- [ ] No AI attribution in commits or MR
+- [ ] Branch rebased on `origin/main` before MR
+- [ ] MR has clear title and `Closes #ISSUE`
+- [ ] CI checks passing
+- [ ] No secrets committed

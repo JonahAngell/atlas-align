@@ -1,0 +1,12 @@
+diff --git a/Dockerfile b/Dockerfile
+index 86a15f21b7b7a2f5532592c126133bbb72ea7dd0..4a9769b478ad9b1d3ec54129f5f5dcd4df5e2fc4 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -23,6 +23,7 @@ COPY index.html styles.css ./
+ COPY js ./js
+ COPY vendor ./vendor
+ COPY tutorials ./tutorials
++COPY vendor ./vendor
+ 
+ # Supporting source catalogs
+ COPY catalogs ./catalogs

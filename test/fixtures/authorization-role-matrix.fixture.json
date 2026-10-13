@@ -1,0 +1,105 @@
+{
+  "roles": {
+    "reviewer": "atlas-admin-team"
+  },
+  "users": {
+    "assignedAnalyst": {
+      "id": "user-analyst",
+      "username": "analyst.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": [],
+      "roleResolutionStatus": "resolved"
+    },
+    "selectedReviewer": {
+      "id": "user-reviewer",
+      "username": "reviewer.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": ["atlas-admin-team"],
+      "roleResolutionStatus": "resolved"
+    },
+    "backupAnalyst": {
+      "id": "user-backup",
+      "username": "backup.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": [],
+      "roleResolutionStatus": "resolved"
+    },
+    "developer": {
+      "id": "user-developer",
+      "username": "developer.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": [],
+      "roleResolutionStatus": "resolved"
+    },
+    "unrelatedEligible": {
+      "id": "user-other-admin",
+      "username": "other.admin.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": ["atlas-admin-team"],
+      "roleResolutionStatus": "resolved"
+    },
+    "unrelatedUser": {
+      "id": "user-other",
+      "username": "other.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": [],
+      "roleResolutionStatus": "resolved"
+    },
+    "disabledReviewer": {
+      "id": "user-disabled",
+      "username": "disabled.fake",
+      "disabled": true,
+      "resolvedRoleSlugs": ["atlas-admin-team"],
+      "roleResolutionStatus": "resolved"
+    },
+    "unresolvedReviewer": {
+      "id": "user-unresolved",
+      "username": "unresolved.fake",
+      "disabled": false,
+      "resolvedRoleSlugs": ["atlas-admin-team"],
+      "roleResolutionStatus": "unavailable"
+    }
+  },
+  "audit": {
+    "id": "audit-fake-001",
+    "workflowStatus": "Draft",
+    "assignments": {
+      "assigned": [
+        {
+          "id": "user-analyst",
+          "username": "analyst.fake"
+        }
+      ],
+      "backup": [
+        {
+          "id": "user-backup",
+          "username": "backup.fake"
+        }
+      ],
+      "developer": [
+        {
+          "id": "user-developer",
+          "username": "developer.fake"
+        }
+      ]
+    }
+  },
+  "request": {
+    "id": 9001,
+    "revisionId": 7001,
+    "selectedApprover": {
+      "id": "user-reviewer",
+      "username": "reviewer.fake"
+    }
+  },
+  "reviewSession": {
+    "id": 8001,
+    "status": "Draft",
+    "reviewerUserId": "user-reviewer"
+  },
+  "inboxItem": {
+    "id": 6001,
+    "recipientUserId": "user-other-admin",
+    "requestId": 9001
+  }
+}

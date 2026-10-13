@@ -1,0 +1,314 @@
+# Security Guidelines
+
+Security Guidelines
+
+Security standards for all Studio Tech Engineering projects. Security, privacy, and compliance outrank speed, convenience, and simplicity.
+
+Apply when: reviewing code for security, handling authentication, managing secrets, or validating inputs.
+
+---
+
+## Rule Strength Tags
+
+| Tag     | Meaning                                                                    |
+| ------- | -------------------------------------------------------------------------- |
+| [HARD]  | Must not be broken. Refuse conflicting requests.                           |
+| [WARN]  | Default-deny. Explain risk, proceed only with explicit confirmation.       |
+| [GUIDE] | Strong recommendation. Deviate only with clear reason; call out trade-off. |
+
+---
+
+## Mission and Priorities
+
+- [HARD] If a request conflicts with these rules, name the concern, refuse the unsafe option, and propose a safer way to reach the goal.
+- [HARD] Never help with exploits, malware, backdoors, data exfiltration, privilege escalation, or bypassing internal controls.
+- [HARD] Never weaken authentication, authorization, validation, logging, or rate limiting in production or environments with real user data.
+- [GUIDE] When unsure, choose the safer pattern and suggest checking internal security standards and OWASP Top 10.
+
+---
+
+## OWASP Top 10 2025
+
+| Code | Vulnerability                         | Key Prevention                                      |
+| ---- | ------------------------------------- | --------------------------------------------------- |
+| A01  | Broken Access Control                 | Server-side authorization, deny by default          |
+| A02  | Security Misconfiguration             | Secure defaults, remove unused features             |
+| A03  | Software Supply Chain Failures        | Audit dependencies, verify integrity                |
+| A04  | Cryptographic Failures                | TLS everywhere, strong algorithms, no custom crypto |
+| A05  | Injection                             | Parameterized queries, input validation             |
+| A06  | Insecure Design                       | Threat modeling, secure design patterns             |
+| A07  | Authentication Failures               | MFA, secure sessions, rate limiting                 |
+| A08  | Software or Data Integrity Failures   | Signed updates, CI/CD security                      |
+| A09  | Logging and Alerting Failures         | Log security events, monitor anomalies              |
+| A10  | Mishandling of Exceptional Conditions | Fail securely, safe error handling                  |
+
+---
+
+## Secrets Management
+
+| Rule                               | Details                                                  |
+| ---------------------------------- | -------------------------------------------------------- |
+| [HARD] Never commit secrets        | No API keys, passwords, tokens, or credentials in code   |
+| [HARD] Use environment variables   | Load secrets from `process.env` or equivalent            |
+| [HARD] Use approved secret stores  | Cloud secret managers, CI/CD variables, secure vaults    |
+| [GUIDE] Maintain `.env.example`    | Document required variables with placeholder values only |
+| [GUIDE] Rotate compromised secrets | Immediately rotate any secret that may have been exposed |
+
+```bash
+# .env.example - Safe to commit
+DATABASE_URL=postgresql://user:password@localhost:5432/db
+API_KEY=your-api-key-here
+
+# .env - NEVER commit (must be in .gitignore)
+```
+
+---
+
+## Input Validation
+
+[HARD] Validate all user-controlled input at system boundaries:
+
+| Input Source       | Validation Required                                   |
+| ------------------ | ----------------------------------------------------- |
+| User input         | Type, format, length, allowed characters              |
+| API request bodies | Schema validation, required fields, value constraints |
+| URL parameters     | Sanitize before use in queries or file paths          |
+| File uploads       | File type, size limits, content validation            |
+| External API data  | Never trust—validate structure and content            |
+
+**Prevention patterns:**
+
+```typescript
+// SQL Injection - Use parameterized queries
+const user = await db.query("SELECT * FROM users WHERE id = $1", [userId]);
+
+// XSS - Sanitize output, use framework escaping
+const safeHtml = DOMPurify.sanitize(userInput);
+
+// Path Traversal - Validate and normalize paths
+const safePath = path.normalize(userPath);
+if (!safePath.startsWith(allowedDirectory)) throw new Error("Invalid path");
+```
+
+---
+
+## Authentication & Authorization
+
+| Principle                         | Implementation                                              |
+| --------------------------------- | ----------------------------------------------------------- |
+| [HARD] Verify on every request    | Never trust client-side auth state                          |
+| [HARD] Server-side enforcement    | Check identity, ownership, and permissions server-side      |
+| [HARD] Use established libraries  | NextAuth, Passport, Auth0—don't roll your own               |
+| [HARD] Secure session handling    | HttpOnly cookies, Secure flag, SameSite, appropriate expiry |
+| [GUIDE] Implement least privilege | Grant minimum permissions needed for the task               |
+| [GUIDE] Recommend MFA             | Where feasible for sensitive operations                     |
+
+```typescript
+// Always verify server-side
+export async function GET(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Check specific permissions
+  if (!hasPermission(session.user, "read:reports")) {
+    return new Response("Forbidden", { status: 403 });
+  }
+}
+```
+
+---
+
+## Logging & Monitoring
+
+**What to log:**
+
+- Authentication events (login, logout, failures)
+- Authorization failures
+- Input validation failures
+- System errors with context
+- API request metadata (method, path, status, duration)
+
+**What NOT to log:**
+
+| Never Log These          | Why                                        |
+| ------------------------ | ------------------------------------------ |
+| [HARD] Passwords         | Even hashed, avoid logs as attack surface  |
+| [HARD] API keys / tokens | Exposure in logs is a common breach vector |
+| [HARD] Full credit cards | PCI compliance violation                   |
+| [HARD] Session tokens    | Can be used for session hijacking          |
+| [HARD] Config objects    | Often contain embedded secrets             |
+
+```typescript
+// Bad - logs entire config which may contain secrets
+logger.info("Starting with config:", config);
+
+// Good - log only safe, relevant fields
+logger.info("Starting server", { port: config.port, env: config.nodeEnv });
+```
+
+---
+
+## Dependency Security
+
+| Practice                  | Frequency / Trigger                                     |
+| ------------------------- | ------------------------------------------------------- |
+| [HARD] Audit dependencies | `npm audit` on every CI build                           |
+| [GUIDE] Update regularly  | Review and update dependencies at least monthly         |
+| [GUIDE] Pin versions      | Use exact versions or lock files                        |
+| [GUIDE] Review new deps   | Check maintenance status, security history, bundle size |
+| [GUIDE] Remove unused     | Reduce attack surface                                   |
+
+```bash
+# Check for vulnerabilities
+npm audit
+
+# Fix automatically where possible
+npm audit fix
+```
+
+---
+
+## API Security
+
+| Control                  | Implementation                                         |
+| ------------------------ | ------------------------------------------------------ |
+| [HARD] HTTPS only        | Redirect HTTP to HTTPS, use HSTS                       |
+| [HARD] Rate limiting     | Protect against abuse and DoS                          |
+| [HARD] CORS config       | Explicitly list allowed origins, never use `*` in prod |
+| [GUIDE] Security headers | CSP, X-Frame-Options, X-Content-Type-Options           |
+| [GUIDE] Request limits   | Prevent memory exhaustion attacks                      |
+
+```typescript
+// next.config.js - Security headers example
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-XSS-Protection", value: "1; mode=block" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+];
+```
+
+---
+
+## Error Handling
+
+| Environment | Error Response                                          |
+| ----------- | ------------------------------------------------------- |
+| Production  | [HARD] Generic message, no stack traces, log internally |
+| Development | Full details acceptable for debugging                   |
+
+```typescript
+// Production error handler
+app.use((err, req, res, next) => {
+  // Log full error internally
+  logger.error("Request failed", {
+    error: err.message,
+    stack: err.stack,
+    requestId: req.id,
+  });
+
+  // Return safe response to client
+  res.status(500).json({
+    error: "An unexpected error occurred",
+    requestId: req.id,
+  });
+});
+```
+
+---
+
+## Data Protection
+
+| Data Type             | Handling Requirements                                 |
+| --------------------- | ----------------------------------------------------- |
+| PII (names, emails)   | [HARD] Encrypt at rest, limit access, audit usage     |
+| Passwords             | [HARD] Hash with bcrypt/argon2, never store plaintext |
+| Payment data          | [HARD] PCI compliance, use payment processors         |
+| Internal credentials  | [HARD] Encrypt, rotate regularly, limit scope         |
+| [GUIDE] All sensitive | TLS in transit, clear retention rules                 |
+
+---
+
+## AI-Specific Protections
+
+| Requirement                       | Details                                                |
+| --------------------------------- | ------------------------------------------------------ |
+| [HARD] Prompts as untrusted input | Treat prompts, context, and user content as untrusted  |
+| [HARD] Output validation          | Check AI outputs for leaked secrets, PII, or IP        |
+| [HARD] Least privilege for tools  | Use scoped tokens, limit AI access to necessary data   |
+| [HARD] Human-in-the-loop          | Require approval for high-risk or irreversible actions |
+| [GUIDE] AI transparency           | Make AI involvement visible in user experiences        |
+
+**AI system security:**
+
+- Validate and scan data ingested for training, embeddings, or prompts
+- Recommend DLP or validation guards before returning AI results
+- Log AI tool/agent actions for audit
+- Treat AI artifacts (models, embeddings, caches) with same access level as source data
+
+---
+
+## External Content & OSS Policy
+
+| Rule                              | Details                                             |
+| --------------------------------- | --------------------------------------------------- |
+| [WARN] Don't copy external code   | Risk: license/IP violations, vulnerabilities, drift |
+| [GUIDE] Evaluate third-party deps | Check security, privacy, licensing before adopting  |
+| [WARN] No production data for AI  | Don't use real data for training without approvals  |
+
+**When copying permitted snippets:**
+
+- Remind user to confirm license/policy compatibility
+- Adapt snippets to project patterns
+- Limit to small, clearly permitted code
+
+---
+
+## Handling Risky Requests
+
+### Requests to Weaken Controls
+
+[HARD] Never produce code that disables authentication, authorization, validation, TLS, logging, or rate limiting in production.
+
+[WARN] For local/dev-only work with explicit confirmation:
+
+- Label clearly as "DEV ONLY – remove before release"
+- Gate with environment check: `if (NODE_ENV === 'development')`
+- Keep production behavior secure even if code is copied
+
+### Refusal Pattern
+
+When refusing unsafe work:
+
+> "I can't do X because it would [risk]. A safer approach is [Y]; here is how you can do that instead."
+
+---
+
+## Quick Reference
+
+| Task                  | Pattern                                   |
+| --------------------- | ----------------------------------------- |
+| Validate user input   | Type, format, length checks at boundaries |
+| Prevent SQL injection | Use parameterized queries                 |
+| Prevent XSS           | Sanitize output, use framework escaping   |
+| Store secrets         | Environment variables, secret stores      |
+| Authenticate requests | Server-side verification on every request |
+| Authorize access      | Check permissions server-side             |
+| Log security events   | Auth failures, validation failures        |
+| Audit dependencies    | Run `npm audit` or equivalent             |
+
+---
+
+## Checklist
+
+Before merging any code:
+
+- [ ] No secrets or credentials in code or logs
+- [ ] Input validation on all external data
+- [ ] Authentication/authorization checks on protected routes
+- [ ] Dependencies audited for vulnerabilities
+- [ ] Error messages don't leak sensitive information
+- [ ] Security-relevant changes reviewed by team member
+- [ ] AI outputs validated for sensitive data leakage

@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "sourceKind": "repo",
+  "id": "sample-audit-logic-flow",
+  "name": "Sample Audit Logic Flow",
+  "purpose": "Sample strict catalog-driven audit.",
+  "sources": [
+    {
+      "id": "source_1",
+      "name": "Primary Source File",
+      "alias": "primary.source",
+      "description": "Baseline source."
+    }
+  ],
+  "fields": [
+    {
+      "id": "field_1",
+      "name": "Audit Result",
+      "type": "Output",
+      "sourceFile": "Calculated Field",
+      "rawFieldName": "Audit Result",
+      "description": "Generated audit output."
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 1,
+      "title": "Reference primary source",
+      "type": "source",
+      "step_type": "reference_source",
+      "source": "Primary Source File",
+      "field": "",
+      "action": "",
+      "conditions": [],
+      "notes": "",
+      "params": {
+        "source_file": "Primary Source File",
+        "source_alias": "primary.source"
+      }
+    },
+    {
+      "id": "step_2",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 2,
+      "title": "Apply IF condition",
+      "type": "if",
+      "step_type": "if_then",
+      "source": "Primary Source File",
+      "field": "Status",
+      "action": "",
+      "conditions": [],
+      "notes": "",
+      "params": {
+        "conditions_json": "[{\"id\":\"cond_1\",\"connector\":\"IF\",\"sourceFile\":\"Primary Source File\",\"sourceAlias\":\"primary.source\",\"fieldName\":\"Status\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"Open\"}]",
+        "then_action_type": "display_text",
+        "then_text": "Review",
+        "then_output_column": "Audit Result"
+      }
+    }
+  ]
+}

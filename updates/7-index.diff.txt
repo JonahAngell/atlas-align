@@ -1,0 +1,15 @@
+diff --git a/index.html b/index.html
+index ea231c2ec116639c47418a0c23c08889187d83bf..04ea76eb1740a6601bb0446af62909454c68c315 100644
+--- a/index.html
++++ b/index.html
+@@ -305,6 +305,10 @@
+ <script src="./js/14-catalog-driven-builder.js"></script>
+ <script src="./js/15-visual-ui-upgrades.js"></script>
+ <script src="./js/16-page-shell.js"></script>
++<script src="./js/17-source-database.js"></script>
++<script src="./js/18-audit-database.js"></script>
++<script src="./js/19-audit-version-history.js"></script>
++<script src="./js/20-database-only-audits.js"></script>
+ <script src="./js/06-events-bootstrap.js"></script>
+ </body>
+ </html>

@@ -1,0 +1,45 @@
+/* ATLAS-SOURCE-UNIT:u0947:BEGIN */
+.requirements-field-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  padding: 0.22rem 0.55rem;
+  color: var(--text);
+  background: color-mix(
+    in srgb,
+    var(--requirements-field-color) 18%,
+    var(--surface)
+  );
+  border: 1px solid
+    color-mix(in srgb, var(--requirements-field-color) 54%, var(--border));
+  border-left: 4px solid var(--requirements-field-color);
+  border-radius: 999px;
+  overflow-wrap: anywhere;
+}
+/* ATLAS-SOURCE-UNIT:u0947:END */
+/* ATLAS-SOURCE-UNIT:u0948:BEGIN */
+.requirements-field-pill.calculated-field-pill {
+  border-style: dotted;
+  border-left-style: solid;
+}
+.requirements-field-pill.source-pill {
+  --source-color: var(--requirements-field-color);
+  border-left: 4px solid var(--requirements-field-color) !important;
+  border-radius: 999px !important;
+}
+/* ATLAS-SOURCE-UNIT:u0948:END */
+/* ATLAS-SOURCE-UNIT:u0949:BEGIN */
+.requirements-field-pill-badge {
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+/* ATLAS-SOURCE-UNIT:u0949:END */
+/* ATLAS-SOURCE-UNIT:u0950:BEGIN */
+@media (forced-colors: active) {
+  .requirements-field-pill {
+    border: 2px solid CanvasText;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0950:END */

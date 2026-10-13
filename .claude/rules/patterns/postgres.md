@@ -1,0 +1,130 @@
+---
+paths:
+  - "**/*.sql"
+  - "**/migrations/**/*"
+---
+
+# PostgreSQL
+
+Opinionated PostgreSQL schema design with consistent naming and ORM-friendly patterns
+
+Opinionated PostgreSQL schema design conventions for consistent, ORM-friendly databases. These standards prioritize explicitness, maintainability, and safe defaults over convenience.
+
+Apply when: designing PostgreSQL schemas, creating tables, writing migrations, or reviewing database changes.
+
+---
+
+## Naming Conventions
+
+Use snake_case throughout. Tables are singular.
+
+| Element      | Pattern                 | Example                                              |
+| ------------ | ----------------------- | ---------------------------------------------------- |
+| Tables       | Singular, snake_case    | `user`, `order_item`                                 |
+| Columns      | snake_case              | `first_name`, `created_at`                           |
+| Primary keys | `{table}_id`            | `user.user_id`                                       |
+| Foreign keys | `{referenced_table}_id` | `order.user_id`                                      |
+| Indexes      | `ix_{table}_{columns}`  | `ix_user_email` (naming only; strategy out of scope) |
+| Constraints  | `{type}_{table}_{desc}` | `pk_user`, `fk_order_user_id`, `uq_user_email`       |
+
+---
+
+## Star Schema Prefixes
+
+For analytics/data warehouse schemas only. OLTP tables use standard naming.
+
+| Table Type       | Prefix | Example                             |
+| ---------------- | ------ | ----------------------------------- |
+| Fact tables      | `f_`   | `f_sales`, `f_order`                |
+| Dimension tables | `d_`   | `d_customer`, `d_product`, `d_time` |
+
+---
+
+## Cascade Constraints
+
+**Default:** `ON DELETE RESTRICT ON UPDATE NO ACTION`
+
+Always specify explicitly. No CASCADE deletes - delete bottom-up in application code. Requires explicit deletion order but prevents accidental data loss.
+
+| Relationship     | ON DELETE | ON UPDATE | Rationale                         |
+| ---------------- | --------- | --------- | --------------------------------- |
+| Default          | RESTRICT  | NO ACTION | Safe default for all FKs          |
+| Parent-child     | RESTRICT  | NO ACTION | Delete children first (bottom-up) |
+| Lookup/reference | RESTRICT  | NO ACTION | Prevent deleting codes in use     |
+
+---
+
+## Schema Design
+
+1. **3NF Priority** - Normalize to Third Normal Form; denormalize only with documented justification
+2. **Lookup Tables over Enums** - Use reference tables instead of PostgreSQL ENUMs (easier migrations, ORM-friendly)
+3. **UUID Primary Keys** - Prefer `gen_random_uuid()` for distributed systems; use BIGSERIAL when performance or human-readability is critical
+
+### Lookup Table Pattern
+
+```sql
+CREATE TABLE order_status (
+    order_status_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code            VARCHAR(50) NOT NULL UNIQUE,
+    display_name    VARCHAR(100) NOT NULL,
+    sort_order      INT DEFAULT 0
+);
+```
+
+---
+
+## Audit Columns
+
+Standard audit column patterns:
+
+| Column     | Type                 | Required | Notes                                 |
+| ---------- | -------------------- | -------- | ------------------------------------- |
+| created_at | TIMESTAMPTZ NOT NULL | Always   | DEFAULT now()                         |
+| updated_at | TIMESTAMPTZ NOT NULL | Always   | Updated via trigger or app            |
+| created_by | UUID                 | If users | Canonical name; FK only if user table |
+| updated_by | UUID                 | If users | Canonical name; FK only if user table |
+
+---
+
+## Migrations
+
+**Tool:** dbmate (used by Launch). Patterns apply to Flyway, Alembic, etc.
+
+**Naming:** `YYYYMMDDHHMMSS_description.sql` (e.g., `20260203120000_create_user.sql`)
+
+**Rules:**
+
+- One logical change per migration
+- Always include rollback (`-- migrate:down`)
+- Test rollback before merging
+
+---
+
+## Quick Reference
+
+| Task                   | Pattern                                  |
+| ---------------------- | ---------------------------------------- |
+| Name a table           | Singular, snake_case: `order_item`       |
+| Name a PK              | `{table}_id`: `order_item_id`            |
+| Name a FK              | `{referenced}_id`: `user_id`             |
+| Name an index          | `ix_{table}_{cols}`: `ix_user_email`     |
+| Name a constraint      | `{type}_{table}_{desc}`: `uq_user_email` |
+| Default cascade        | `ON DELETE RESTRICT ON UPDATE NO ACTION` |
+| Fact table prefix      | `f_`: `f_sales`                          |
+| Dimension table prefix | `d_`: `d_customer`                       |
+| Migration file         | `YYYYMMDDHHMMSS_desc.sql`                |
+
+---
+
+## Checklist
+
+- [ ] Tables use singular, snake_case names
+- [ ] Primary keys named `{table}_id` (UUID or BIGSERIAL)
+- [ ] Foreign keys named `{referenced_table}_id`
+- [ ] All FKs specify `ON DELETE RESTRICT ON UPDATE NO ACTION` explicitly
+- [ ] No PostgreSQL ENUMs - use lookup tables instead
+- [ ] All tables have `created_at`, `updated_at` columns
+- [ ] Tables with user data have `created_by`, `updated_by` columns
+- [ ] Schema is in 3NF (or denormalization is documented)
+- [ ] Migration includes rollback (`-- migrate:down`)
+- [ ] Star schema tables use `f_`/`d_` prefixes

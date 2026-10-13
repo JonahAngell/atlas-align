@@ -1,0 +1,662 @@
+=== File: ./audit-overview.html ===
+<section class="page" data-page="overview" id="page-overview">
+  <h1>Audit Overview</h1>
+  <div class="subtitle">
+    Define the audit, load saved/repo work, and manage the active flow.
+  </div>
+  <div class="layout2">
+    <section class="card">
+      <div class="section-title">
+        <strong>Audit setup</strong
+        ><span class="badge blue">Current Audit</span>
+      </div>
+      <div class="toolbar">
+        <button
+          class="btn secondary small"
+          id="duplicateAuditBtn"
+          type="button"
+        >
+          Duplicate Audit
+        </button>
+      </div>
+      <label>
+        Audit Name
+        <input id="auditName" placeholder="Placeholder" />
+      </label>
+      <label>
+        Audit Description
+        <textarea
+          id="auditPurpose"
+          placeholder="Describe what this audit validates..."
+        >
+        </textarea>
+      </label>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <strong>Progress</strong
+        ><span class="badge blue" id="overviewProgressBadge">Draft</span>
+      </div>
+      <div class="package">
+        <span>Sources selected</span><strong id="overviewSourceCount">0</strong>
+      </div>
+      <div class="package">
+        <span>Fields available</span><strong id="overviewFieldCount">0</strong>
+      </div>
+      <div class="package">
+        <span>Logic steps</span><strong id="overviewStepCount">0</strong>
+      </div>
+    </section>
+  </div>
+  <section class="card assignment-card">
+    <div class="section-title">
+      <strong>Audit Assignments</strong
+      ><span class="badge blue">Revisioned metadata</span>
+    </div>
+    <p class="hint">
+      Choose a recent ATLAS Align user or search the full Disney directory, then
+      assign each employee as Assigned, Backup, or Developer.
+    </p>
+    <div class="assignment-columns">
+      <div>
+        <h3>Assigned Analysts</h3>
+        <div class="assignment-selected" id="assignmentAssignedSelected"></div>
+        <input
+          aria-label="Search assigned analysts"
+          class="input full-input"
+          id="assignmentAssignedSearch"
+          placeholder="Search recent ATLAS users"
+        />
+        <button
+          class="btn secondary small"
+          data-search-all-assignment-users="assigned"
+          type="button"
+        >
+          Search all Disney users
+        </button>
+        <div
+          aria-live="polite"
+          class="assignment-results"
+          id="assignmentAssignedResults"
+        ></div>
+      </div>
+      <div>
+        <h3>Backup Analysts</h3>
+        <div class="assignment-selected" id="assignmentBackupSelected"></div>
+        <input
+          aria-label="Search backup analysts"
+          class="input full-input"
+          id="assignmentBackupSearch"
+          placeholder="Search recent ATLAS users"
+        />
+        <button
+          class="btn secondary small"
+          data-search-all-assignment-users="backup"
+          type="button"
+        >
+          Search all Disney users
+        </button>
+        <div
+          aria-live="polite"
+          class="assignment-results"
+          id="assignmentBackupResults"
+        ></div>
+      </div>
+      <div>
+        <h3>Developers</h3>
+        <div class="assignment-selected" id="assignmentDeveloperSelected"></div>
+        <input
+          aria-label="Search developers"
+          class="input full-input"
+          id="assignmentDeveloperSearch"
+          placeholder="Search recent ATLAS users"
+        />
+        <button
+          class="btn secondary small"
+          data-search-all-assignment-users="developer"
+          type="button"
+        >
+          Search all Disney users
+        </button>
+        <div
+          aria-live="polite"
+          class="assignment-results"
+          id="assignmentDeveloperResults"
+        ></div>
+      </div>
+    </div>
+  </section>
+</section>
+
+
+=== File: ./combined_css.txt ===
+
+
+=== File: ./group-landing.html ===
+<section class="page" data-page="group" id="page-group">
+  <h1>Group Landing Page</h1>
+  <div class="subtitle"></div>
+  <div class="grid cards">
+    <div class="card metric-card">
+      <div class="small">Source files</div>
+      <div class="metric" id="metricSourceFiles">--</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Vanity labels</div>
+      <div class="metric" id="metricVanityLabels">--</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Source aliases</div>
+      <div class="metric" id="metricSourceAliases">--</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Validation</div>
+      <div class="metric">Live</div>
+    </div>
+  </div>
+  <div class="layout2">
+    <section class="card">
+      <div class="section-title">
+        <strong>Current audit snapshot</strong
+        ><button
+          class="btn secondary small"
+          onclick="showSection('overview')"
+          type="button"
+        >
+          Open Overview
+        </button>
+      </div>
+      <div class="snapshot-list" id="groupAuditSnapshot"></div>
+    </section>
+    <section class="card">
+      <strong>Recently active local audits</strong>
+      <div class="package-list" id="groupSavedAuditList">
+        <p class="hint">
+          Saved audits will appear here after local saves are loaded.
+        </p>
+      </div>
+    </section>
+  </div>
+</section>
+
+
+=== File: ./logic-builder.html ===
+<section class="page" data-page="steps" id="page-steps">
+  <h1>Logic Builder</h1>
+  <div class="subtitle">
+    Build structured audit steps with standardized wording, visual field
+    picking, drag/drop reordering, and nested IF / ELSE support.
+  </div>
+  <div class="logic-screen">
+    <div class="layout2 logic-builder-layout">
+      <section class="card logic-rules-card">
+        <div class="section-title logic-section-title">
+          <div>
+            <strong>Rules</strong>
+            <div class="small">
+              Drag rule cards to reorder. Use Indent / Outdent for nested IF /
+              ELSE structure.
+            </div>
+          </div>
+          <div class="toolbar compact-toolbar logic-builder-toolbar">
+            <button
+              aria-label="Toggle field display mode"
+              class="btn secondary small icon-button field-display-mode-button"
+              id="fieldDisplayModeBtn"
+              title="Switch to vanity labels"
+              type="button"
+            >
+              Aa
+            </button>
+            <button
+              aria-expanded="false"
+              aria-haspopup="menu"
+              class="btn primary small new-rule-menu-button"
+              id="addStepBtn"
+              type="button"
+            >
+              + New Rule
+            </button>
+          </div>
+        </div>
+        <div class="steps-workspace logic-list" id="stepsList"></div>
+      </section>
+      <aside class="card live-output-card">
+        <div class="section-title">
+          <strong>Logic Step Editor</strong>
+          <span class="badge blue" id="selectedRuleBadge">Selected rule</span>
+        </div>
+        <div class="live-output-pane hint" id="selectedStepDetails">
+          Select a rule to edit its criteria and preview the live standardised
+          output.
+        </div>
+        <div class="callout warning logic-builder-note" style="height: 96px">
+          <strong>Editing pane</strong><br />Changes in this pane update the
+          selected step and refresh the generated standardised output.
+        </div>
+        <div class="chipbar">
+          <span class="chip">Reference</span><span class="chip">Join</span
+          ><span class="chip">Union</span><span class="chip">IF / THEN</span
+          ><span class="chip" style="height: 128.333px; width: 267.312px"
+            >Create Column</span
+          >
+        </div>
+      </aside>
+    </div>
+    <section class="card logic-table-preview-card">
+      <button
+        class="btn secondary small"
+        onclick="showSection('preview')"
+        type="button"
+      >
+        Open Requirements Preview
+      </button>
+    </section>
+  </div>
+</section>
+
+
+=== File: ./my-audits.html ===
+<section class="page active" data-page="my-audits" id="page-my-audits">
+  <h1>Audits</h1>
+  <div class="subtitle">Review audits</div>
+  <div class="grid cards my-audits-metrics">
+    <div class="card metric-card">
+      <div class="small">Assigned</div>
+      <div class="metric" id="myAuditsMetricAssigned">0</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Backup</div>
+      <div class="metric" id="myAuditsMetricBackup">0</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Developer</div>
+      <div class="metric" id="myAuditsMetricDeveloper">0</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">Other</div>
+      <div class="metric" id="myAuditsMetricOther">0</div>
+    </div>
+    <div class="card metric-card">
+      <div class="small">All</div>
+      <div class="metric" id="myAuditsMetricAll">0</div>
+    </div>
+  </div>
+  <div class="card my-audits-card">
+    <div class="toolbar my-audits-toolbar">
+      <div aria-label="Audit role filters" class="my-audits-filters">
+        <button
+          aria-pressed="true"
+          class="btn secondary active"
+          data-my-audits-role="assigned"
+          type="button"
+        >
+          Assigned
+        </button>
+        <button
+          aria-pressed="false"
+          class="btn secondary"
+          data-my-audits-role="backup"
+          type="button"
+        >
+          Backup
+        </button>
+        <button
+          aria-pressed="false"
+          class="btn secondary"
+          data-my-audits-role="developer"
+          type="button"
+        >
+          Developer
+        </button>
+        <button
+          aria-pressed="false"
+          class="btn secondary"
+          data-my-audits-role="other"
+          type="button"
+        >
+          Other
+        </button>
+        <button
+          aria-pressed="false"
+          class="btn secondary"
+          data-my-audits-role="all"
+          type="button"
+        >
+          All
+        </button>
+      </div>
+
+      <input
+        aria-label="Search audits"
+        class="input my-audits-search"
+        id="myAuditsSearch"
+        placeholder="Search audits and assignments"
+        type="search"
+      />
+
+      <button class="btn secondary" id="refreshLibraryBtn" type="button">
+        Refresh
+      </button>
+      <button class="btn primary" id="newAuditBtn" type="button">
+        New Audit
+      </button>
+      <label class="btn secondary import-label">
+        Import JSON
+        <input
+          accept=".json,application/json"
+          id="importCurrentFile"
+          type="file"
+        />
+      </label>
+    </div>
+    <div
+      aria-label="Audit results"
+      class="tablewrap my-audits-table-scroll"
+      tabindex="0"
+    >
+      <table class="my-audits-table">
+        <thead>
+          <tr>
+            <th>Audit</th>
+            <th>Role</th>
+            <th>Assigned Analysts</th>
+            <th>Backup Analysts</th>
+            <th>Developers</th>
+            <th>Updated</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="myAuditsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div
+      aria-live="polite"
+      class="my-audits-state"
+      id="myAuditsState"
+      role="status"
+    >
+      Loading database audits…
+    </div>
+    <label class="hidden-backing-select"
+      >Audit Library
+      <select id="auditLibrarySelect">
+        <option value="">Loading audit library…</option>
+      </select>
+    </label>
+
+    <!-- <details>
+        <summary>Browse Audit Library</summary>
+        <div class="visual-library-picker contacts-library" id="auditLibraryVisual"></div>
+        <p aria-live="polite" class="hint audit-library-status" id="repoLibraryStatus">
+          <span data-audit-library-status-text="">Database audit library has not loaded yet.</span>
+          <span data-audit-loading-spinner="" hidden=""></span>
+        </p>
+      </details> -->
+  </div>
+</section>
+
+
+=== File: ./publication-preview.html ===
+<section class="page" data-page="save" id="page-save">
+  <h1>Publication Preview</h1>
+  <div class="subtitle"></div>
+  <div class="layout2">
+    <section class="card" id="savePanel">
+      <div class="section-title">
+        <strong>Save / Export</strong
+        ><button
+          aria-label="Save / Export tutorial"
+          class="btn ghost small tutorial-inline-button"
+          data-start-tutorial="saveExport"
+          id="saveTutorialBtn"
+          title="Save / Export tutorial"
+          type="button"
+        >
+          ?
+        </button>
+      </div>
+      <p class="hint">
+        Save audits locally, export the current audit, or export/import saved
+        audit bundles.
+      </p>
+      <button class="btn primary full" id="saveFlowBtn" type="button">
+        Save Current Audit Locally
+      </button>
+      <label
+        >Load Saved Audit<select id="flowSelect">
+          <option value="">No saved audits yet</option>
+        </select></label
+      >
+      <div class="toolbar">
+        <button class="btn secondary small" id="loadFlowBtn" type="button">
+          Load Saved Audit</button
+        ><button class="btn danger small" id="deleteFlowBtn" type="button">
+          Delete Saved Audit
+        </button>
+      </div>
+      <p class="hint" id="saveStatus">No saved audit selected.</p>
+      <p class="hint" id="autosaveStatus">
+        Autosave restores your last local draft when possible.
+      </p>
+      <button class="btn secondary full" id="clearAutosaveBtn" type="button">
+        Clear Autosaved Draft</button
+      ><button class="btn danger full" id="resetLocalDataBtn" type="button">
+        Clear All Saved Data
+      </button>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <strong>Package contents</strong
+        ><span class="badge blue">Mock publication</span>
+      </div>
+      <div class="package">
+        <span>Current Audit JSON</span
+        ><button class="btn secondary small" id="downloadDocBtn" type="button">
+          Download JSON
+        </button>
+      </div>
+      <div class="package">
+        <span>Logic Table CSV</span
+        ><button class="btn secondary small" id="downloadCsvBtn" type="button">
+          Download CSV
+        </button>
+      </div>
+      <div class="package">
+        <span>Excel Table View</span
+        ><button
+          class="btn secondary small"
+          id="downloadExcelBtn"
+          type="button"
+        >
+          Download Excel
+        </button>
+      </div>
+      <div class="package">
+        <span>Qtest Excel Template</span
+        ><button
+          class="btn secondary small"
+          id="downloadQtestExcelBtn"
+          type="button"
+        >
+          Download Qtest Excel
+        </button>
+      </div>
+      <div class="package">
+        <span>Confluence HTML</span
+        ><button class="btn secondary small" id="downloadHtmlBtn" type="button">
+          Download HTML
+        </button>
+      </div>
+      <div class="package">
+        <span>Clipboard HTML</span
+        ><button class="btn secondary small" id="copyHtmlBtn" type="button">
+          Copy HTML
+        </button>
+      </div>
+      <div class="package">
+        <span>Markdown</span
+        ><button class="btn secondary small" id="copyMarkdownBtn" type="button">
+          Copy Markdown
+        </button>
+      </div>
+      <div class="section-title package-heading">
+        <strong>Saved Audit Bundle</strong>
+      </div>
+      <div class="toolbar">
+        <button class="btn secondary small" id="exportAllBtn" type="button">
+          Export All Saved Audits</button
+        ><label class="btn secondary small import-label"
+          >Import Saved Audits<input
+            accept=".json"
+            id="importAllFile"
+            type="file"
+        /></label>
+      </div>
+    </section>
+  </div>
+</section>
+
+
+=== File: ./readiness-review.html ===
+<section class="page" data-page="review" id="page-review">
+  <h1>Readiness &amp; Review</h1>
+  <div class="subtitle"></div>
+  <div class="layout2">
+    <section class="card validation-shell">
+      <div class="section-title">
+        <strong>Validation</strong><span class="badge blue">Live</span>
+      </div>
+      <div id="validationPanel"></div>
+    </section>
+    <section class="card status-panel">
+      <div class="section-title">
+        <strong>Status</strong
+        ><button
+          class="btn secondary small"
+          onclick="renderAll()"
+          type="button"
+        >
+          Refresh
+        </button>
+      </div>
+      <div id="status"></div>
+    </section>
+  </div>
+</section>
+
+
+=== File: ./requirements-preview.html ===
+<section class="page" data-page="preview" id="page-preview">
+  <h1>Requirements Preview</h1>
+  <div class="subtitle">Live preview of the generated requirement output.</div>
+  <div class="tabs">
+    <button class="tab active" data-preview-tab="table" type="button">
+      Standard Table
+    </button>
+  </div>
+  <select aria-hidden="true" class="visually-hidden" id="previewStyle">
+    <option selected="" value="table">Standard Table</option>
+  </select>
+  <label class="check export-option"
+    ><input checked="" id="includeNotesToggle" type="checkbox" /> Include notes
+    in preview/export</label
+  >
+  <label class="check export-option"
+    ><input id="completeStatementsToggle" type="checkbox" /> View as complete
+    statements</label
+  >
+  <section class="card logic-preview-panel">
+    <div class="section-title">
+      <strong>Audit Logic Preview</strong
+      ><button
+        class="btn secondary small"
+        onclick="renderPreview()"
+        type="button"
+      >
+        Refresh Preview
+      </button>
+    </div>
+    <div id="logicPreview"></div>
+  </section>
+</section>
+
+
+=== File: ./sources.html ===
+<section class="page" data-page="fields" id="page-fields">
+  <h1>Sources</h1>
+  <div class="subtitle">
+    Search source files, select source fields, and inspect the selected source
+    structure.
+  </div>
+  <div class="field-picker-summary" id="fieldPickerSummary"></div>
+  <div class="layout3">
+    <section class="card source-field-browser-panel">
+      <div class="section-title">
+        <strong>Source Library</strong>
+        <div class="toolbar compact-toolbar source-library-toolbar">
+          <button
+            aria-label="Replace Source Library CSV"
+            class="btn secondary small"
+            hidden
+            id="replaceSourceLibraryBtn"
+            title="Import the 33-column ATLAS Field Library CSV"
+            type="button"
+          >
+            Import Source Library CSV
+          </button>
+          <input
+            accept=".csv,text/csv"
+            class="visually-hidden"
+            id="replaceSourceLibraryFile"
+            type="file"
+          />
+          <button
+            aria-label="Fields tutorial"
+            class="btn ghost small tutorial-inline-button"
+            data-start-tutorial="fields"
+            id="fieldsTutorialBtn"
+            title="Fields tutorial"
+            type="button"
+          >
+            ?
+          </button>
+        </div>
+      </div>
+      <p class="hint">
+        Search by source file, alias, raw field name, or vanity label. Select
+        source files for this audit; reference steps are generated
+        automatically.
+      </p>
+      <div
+        aria-live="polite"
+        class="source-library-import-status"
+        id="sourceLibraryImportStatus"
+      >
+        Checking source-library import access...
+      </div>
+      <input
+        class="input full-input"
+        id="sourceFieldSearch"
+        placeholder="Search filename, alias, field name, or vanity label..."
+        autocomplete="off"
+      />
+      <div class="source-library-tabs" id="sourceLibraryTabs"></div>
+      <div
+        class="source-field-browser source-library-inline"
+        id="sourceFieldBrowser"
+      ></div>
+    </section>
+    <section class="card">
+      <div class="section-title">
+        <strong>Selected Sources &amp; Fields</strong
+        ><span class="badge blue" id="selectedSourceBadge">0</span>
+      </div>
+      <div id="sourcesList"></div>
+      <div class="visually-hidden" id="fieldsList"></div>
+    </section>
+  </div>
+</section>
+
+

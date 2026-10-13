@@ -1,0 +1,61 @@
+INSERT INTO
+  atlas_audit_review_items (
+    review_session_id,
+    section_key,
+    item_type,
+    stable_item_key,
+    canonical_object_key,
+    identity_version,
+    display_label,
+    semantic_fingerprint,
+    canonical_order,
+    parent_item_key,
+    linked_item_key,
+    is_direct,
+    severity,
+    is_deleted,
+    change_type,
+    change_reason_codes,
+    change_summary,
+    prior_object_summary,
+    submitted_object_summary
+  )
+VALUES
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $6,
+    $7,
+    $8,
+    $9,
+    $10,
+    $11,
+    $12,
+    $13,
+    $14,
+    $15,
+    $16::jsonb,
+    $17,
+    $18::jsonb,
+    $19::jsonb
+  )
+ON CONFLICT (review_session_id, section_key, stable_item_key) DO UPDATE
+SET
+  canonical_object_key = EXCLUDED.canonical_object_key,
+  identity_version = EXCLUDED.identity_version,
+  display_label = EXCLUDED.display_label,
+  semantic_fingerprint = EXCLUDED.semantic_fingerprint,
+  canonical_order = EXCLUDED.canonical_order,
+  parent_item_key = EXCLUDED.parent_item_key,
+  linked_item_key = EXCLUDED.linked_item_key,
+  is_direct = EXCLUDED.is_direct,
+  severity = EXCLUDED.severity,
+  is_deleted = EXCLUDED.is_deleted,
+  change_type = EXCLUDED.change_type,
+  change_reason_codes = EXCLUDED.change_reason_codes,
+  change_summary = EXCLUDED.change_summary,
+  prior_object_summary = EXCLUDED.prior_object_summary,
+  submitted_object_summary = EXCLUDED.submitted_object_summary

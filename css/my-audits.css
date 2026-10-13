@@ -1,0 +1,595 @@
+/* ATLAS-SOURCE-UNIT:u0224:BEGIN */ /* Audit Library alignment fix */
+#auditLibraryVisual,
+#auditLibraryVisual * {
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0224:END */
+/* ATLAS-SOURCE-UNIT:u0225:BEGIN */
+#auditLibraryVisual .contacts-menu-header,
+#auditLibraryVisual .audit-library-search-row {
+  align-items: center;
+  justify-items: stretch;
+}
+
+/* ATLAS-SOURCE-UNIT:u0225:END */
+/* ATLAS-SOURCE-UNIT:u0226:BEGIN */
+#auditLibraryVisual .audit-library-shell {
+  padding: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0226:END */
+/* ATLAS-SOURCE-UNIT:u0227:BEGIN */
+#auditLibraryVisual .contacts-list,
+#auditLibraryVisual .audit-library-list {
+  padding-left: 0 !important;
+  padding-right: 1.35rem !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0227:END */
+/* ATLAS-SOURCE-UNIT:u0228:BEGIN */
+#auditLibraryVisual .contacts-letter-header,
+#auditLibraryVisual .audit-letter-header {
+  margin-left: 0 !important;
+  padding-left: 0.55rem !important;
+  text-align: left !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0228:END */
+/* ATLAS-SOURCE-UNIT:u0229:BEGIN */
+#auditLibraryVisual .contacts-row.audit-contact-row {
+  width: 100%;
+  display: block !important;
+  justify-content: flex-start !important;
+  justify-items: start !important;
+  align-items: flex-start !important;
+  margin: 0 !important;
+  padding: 0.62rem 0.72rem !important;
+  border-radius: 0 !important;
+  text-align: left !important;
+  background: transparent !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0229:END */
+/* ATLAS-SOURCE-UNIT:u0230:BEGIN */
+#auditLibraryVisual .contacts-row.audit-contact-row:hover {
+  background: rgba(77, 111, 169, 0.08) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0230:END */
+/* ATLAS-SOURCE-UNIT:u0231:BEGIN */
+#auditLibraryVisual .audit-contact-content {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0231:END */
+/* ATLAS-SOURCE-UNIT:u0232:BEGIN */
+#auditLibraryVisual .contacts-title,
+#auditLibraryVisual .audit-contact-title {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left !important;
+  line-height: 1.22;
+}
+
+/* ATLAS-SOURCE-UNIT:u0232:END */
+/* ATLAS-SOURCE-UNIT:u0233:BEGIN */
+#auditLibraryVisual .contacts-detail,
+#auditLibraryVisual .audit-contact-detail {
+  display: block;
+  width: 100%;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  text-align: left !important;
+  line-height: 1.3;
+}
+
+/* ATLAS-SOURCE-UNIT:u0233:END */
+/* ATLAS-SOURCE-UNIT:u0234:BEGIN */
+#auditLibraryVisual .contacts-empty,
+#auditLibraryVisual .audit-contacts-empty {
+  margin: 0.75rem;
+  text-align: left !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0234:END */
+/* ATLAS-SOURCE-UNIT:u0404:BEGIN */ /* Database audit library loading indicator */
+.audit-library-status {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+/* ATLAS-SOURCE-UNIT:u0404:END */
+/* ATLAS-SOURCE-UNIT:u0405:BEGIN */
+.audit-loading-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: atlas-audit-library-spin 0.75s linear infinite;
+}
+/* ATLAS-SOURCE-UNIT:u0405:END */
+/* ATLAS-SOURCE-UNIT:u0407:BEGIN */
+@keyframes atlas-audit-library-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0407:END */
+/* ATLAS-SOURCE-UNIT:u0409:BEGIN */ /* Viewport-aware contact library panes
+   Keeps Audit Library and Source Library in bounded internal scroll boxes. */
+#page-my-audits,
+#page-fields {
+  height: calc(100vh - 76px - 56px);
+  min-height: 520px;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0409:END */
+/* ATLAS-SOURCE-UNIT:u0410:BEGIN */ /* My Audits page: let the Audit Library card consume remaining page height. */
+#page-my-audits.page.active {
+  height: auto;
+  min-height: 0;
+  display: block;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  overflow: visible;
+}
+
+/* ATLAS-SOURCE-UNIT:u0410:END */
+/* ATLAS-SOURCE-UNIT:u0411:BEGIN */
+#page-my-audits > h1,
+#page-my-audits > .subtitle,
+#page-my-audits > .grid.cards {
+  min-height: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0411:END */
+/* ATLAS-SOURCE-UNIT:u0412:BEGIN */
+#page-my-audits .library-card {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0412:END */
+/* ATLAS-SOURCE-UNIT:u0413:BEGIN */
+#page-my-audits .my-audits-metrics .metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  font-weight: 650;
+}
+#page-my-audits .my-audits-metrics .metric-card:hover {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+#page-my-audits .my-audits-metrics .metric-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+#page-my-audits .my-audits-metrics .metric-card:disabled:hover {
+  border-color: var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u0413:END */
+/* ATLAS-SOURCE-UNIT:u0414:BEGIN */
+#page-my-audits .my-audits-metrics .metric-card.active,
+#page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  border-color: var(--primary2);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+/* ATLAS-SOURCE-UNIT:u0414:END */
+/* ATLAS-SOURCE-UNIT:u0415:BEGIN */
+#page-my-audits .my-audits-metrics {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0415:END */
+/* ATLAS-SOURCE-UNIT:u0416:BEGIN */
+@media (max-width: 900px) {
+  #page-my-audits .my-audits-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0416:END */
+/* ATLAS-SOURCE-UNIT:u0417:BEGIN */
+#page-my-audits .my-audits-toolbar {
+  justify-content: flex-start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0417:END */
+/* ATLAS-SOURCE-UNIT:u0418:BEGIN */
+#page-my-audits .my-audits-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0418:END */
+/* ATLAS-SOURCE-UNIT:u0419:BEGIN */
+#page-my-audits .import-label {
+  margin-bottom: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0419:END */
+/* ATLAS-SOURCE-UNIT:u0420:BEGIN */
+@media (max-width: 700px) {
+  #page-my-audits .my-audits-toolbar-actions {
+    margin-left: 0;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0420:END */
+/* ATLAS-SOURCE-UNIT:u0421:BEGIN */
+#page-my-audits .my-audits-search {
+  min-width: min(340px, 100%);
+}
+
+/* ATLAS-SOURCE-UNIT:u0421:END */
+/* ATLAS-SOURCE-UNIT:u0422:BEGIN */
+@media (max-width: 560px) {
+  #page-my-audits .my-audits-search {
+    min-width: 100%;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0422:END */
+/* ATLAS-SOURCE-UNIT:u0423:BEGIN */
+.my-audits-state {
+  padding: 1.1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* ATLAS-SOURCE-UNIT:u0423:END */
+/* ATLAS-SOURCE-UNIT:u0424:BEGIN */
+.my-audits-state.error {
+  color: var(--danger);
+}
+
+/* ATLAS-SOURCE-UNIT:u0424:END */
+/* ATLAS-SOURCE-UNIT:u0425:BEGIN */
+#page-my-audits .my-audits-metrics .metric-card:focus-visible,
+.assignment-result-action:focus-visible,
+.assignment-chip button:focus-visible,
+.current-user-profile:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0425:END */
+/* ATLAS-SOURCE-UNIT:u0428:BEGIN */
+.role-badge {
+  background: var(--accent2);
+  color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u0428:END */
+/* ATLAS-SOURCE-UNIT:u0429:BEGIN */
+#page-my-audits .my-audits-table-scroll {
+  width: 100%;
+  max-height: min(58vh, 620px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0429:END */
+/* ATLAS-SOURCE-UNIT:u0430:BEGIN */
+#page-my-audits .my-audits-table {
+  min-width: 900px;
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0430:END */
+/* ATLAS-SOURCE-UNIT:u0431:BEGIN */
+#page-my-audits .my-audits-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface2);
+}
+
+/* ATLAS-SOURCE-UNIT:u0431:END */
+/* ATLAS-SOURCE-UNIT:u0432:BEGIN */
+#page-my-audits .my-audits-table td strong,
+#page-my-audits .my-audits-table td small {
+  display: block;
+}
+
+/* ATLAS-SOURCE-UNIT:u0432:END */
+/* ATLAS-SOURCE-UNIT:u0433:BEGIN */
+#page-my-audits .my-audits-table td small {
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+/* ATLAS-SOURCE-UNIT:u0433:END */
+/* ATLAS-SOURCE-UNIT:u0434:BEGIN */
+@media (max-width: 560px) {
+  #page-my-audits .my-audits-table-scroll {
+    max-height: 62vh;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0434:END */
+/* ATLAS-SOURCE-UNIT:u0435:BEGIN */
+body.dark #page-my-audits .my-audits-metrics .metric-card.active,
+body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 18%, var(--surface));
+}
+
+/* ATLAS-SOURCE-UNIT:u0435:END */
+/* ATLAS-SOURCE-UNIT:u0441:BEGIN */ /* The visible Audit Library contact picker is the scalable region.
+   The hidden #auditLibrarySelect should not be used for layout sizing. */
+#page-my-audits #auditLibraryVisual {
+  min-height: 0;
+  max-height: none;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u0441:END */
+/* ATLAS-SOURCE-UNIT:u0460:BEGIN */ /* Both visible contact libraries keep the shell as the bounded sub-box. */
+#page-my-audits #auditLibraryVisual .contacts-list-shell,
+#page-fields #sourceFieldBrowser .contacts-list-shell {
+  height: 100%;
+  min-height: 0;
+  max-height: none !important;
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u0460:END */
+/* ATLAS-SOURCE-UNIT:u0461:BEGIN */ /* The inner contacts-list is the only vertical scrolling region. */
+#page-my-audits #auditLibraryVisual .contacts-list,
+#page-fields #sourceFieldBrowser .contacts-list {
+  height: 100%;
+  min-height: 0;
+  max-height: none !important;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0461:END */
+/* ATLAS-SOURCE-UNIT:u0658:BEGIN */ /* My Audits Audit Library responsive header and search layout */
+#page-my-audits .library-card {
+  gap: 0.8rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0658:END */
+/* ATLAS-SOURCE-UNIT:u0659:BEGIN */
+.audit-library-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0659:END */
+/* ATLAS-SOURCE-UNIT:u0660:BEGIN */
+.audit-library-heading-block {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0660:END */
+/* ATLAS-SOURCE-UNIT:u0661:BEGIN */
+.audit-library-heading {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+/* ATLAS-SOURCE-UNIT:u0661:END */
+/* ATLAS-SOURCE-UNIT:u0662:BEGIN */
+.audit-library-subheading {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+/* ATLAS-SOURCE-UNIT:u0662:END */
+/* ATLAS-SOURCE-UNIT:u0663:BEGIN */
+.audit-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0663:END */
+/* ATLAS-SOURCE-UNIT:u0664:BEGIN */
+.audit-library-actions .btn,
+.audit-library-actions .import-label {
+  width: auto;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u0664:END */
+/* ATLAS-SOURCE-UNIT:u0665:BEGIN */
+.audit-library-search-label {
+  display: block;
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0665:END */
+/* ATLAS-SOURCE-UNIT:u0666:BEGIN */
+.audit-library-search-label input {
+  width: 100%;
+}
+
+/* ATLAS-SOURCE-UNIT:u0666:END */
+/* ATLAS-SOURCE-UNIT:u0667:BEGIN */
+.audit-library-footer-actions {
+  justify-content: flex-start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0667:END */
+/* ATLAS-SOURCE-UNIT:u0668:BEGIN */
+#page-my-audits #auditLibraryVisual > .audit-library-search-row {
+  display: none !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0668:END */
+/* ATLAS-SOURCE-UNIT:u0669:BEGIN */
+@media (max-width: 760px) {
+  .audit-library-header {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-library-actions {
+    justify-content: flex-start;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0669:END */
+/* ATLAS-SOURCE-UNIT:u0670:BEGIN */
+@media (max-width: 520px) {
+  .audit-library-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    width: 100%;
+  }
+
+  .audit-library-actions .btn,
+  .audit-library-actions .import-label {
+    width: 100%;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0670:END */ /* ATLAS-SOURCE-UNIT:u0936:BEGIN */
+.my-audits-status-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.audit-status-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.28rem 0.62rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1.25;
+  white-space: normal;
+}
+.audit-status-pill-draft {
+  color: #374151;
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.audit-status-pill-requirement-gathering {
+  color: #713f12;
+  background: #fef3c7;
+  border-color: #d97706;
+}
+.audit-status-pill-ready-for-review {
+  color: #1e3a8a;
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+.audit-status-pill-complete {
+  color: #14532d;
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+body.dark .audit-status-pill-draft {
+  color: #f3f4f6;
+  background: #374151;
+  border-color: #9ca3af;
+}
+body.dark .audit-status-pill-requirement-gathering {
+  color: #fef3c7;
+  background: #713f12;
+  border-color: #f59e0b;
+}
+body.dark .audit-status-pill-ready-for-review {
+  color: #dbeafe;
+  background: #1e3a8a;
+  border-color: #60a5fa;
+}
+body.dark .audit-status-pill-complete {
+  color: #dcfce7;
+  background: #14532d;
+  border-color: #4ade80;
+}
+/* ATLAS-SOURCE-UNIT:u0936:END */ /* ATLAS-SOURCE-UNIT:u0937:BEGIN */
+.audit-publish-menu {
+  position: relative;
+  display: inline-block;
+}
+/* ATLAS-SOURCE-UNIT:u0937:END */ /* ATLAS-SOURCE-UNIT:u0938:BEGIN */
+.audit-publish-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+/* ATLAS-SOURCE-UNIT:u0938:END */ /* ATLAS-SOURCE-UNIT:u0939:BEGIN */
+.audit-publish-menu > summary::-webkit-details-marker {
+  display: none;
+}
+/* ATLAS-SOURCE-UNIT:u0939:END */ /* ATLAS-SOURCE-UNIT:u0940:BEGIN */
+.audit-publish-menu-panel {
+  position: fixed;
+  z-index: 1000;
+  min-width: min(13rem, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  padding: 0.4rem;
+  display: grid;
+  gap: 0.25rem;
+  overflow-y: auto;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow);
+}
+.audit-publish-menu:not([open]) > .audit-publish-menu-panel {
+  display: none;
+}
+.audit-publish-menu > summary:focus-visible,
+.audit-publish-menu-panel .btn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 55%, transparent);
+  outline-offset: 2px;
+}
+/* ATLAS-SOURCE-UNIT:u0940:END */ /* ATLAS-SOURCE-UNIT:u0941:BEGIN */
+.audit-publish-menu-panel .btn {
+  justify-content: flex-start;
+  white-space: nowrap;
+}
+/* ATLAS-SOURCE-UNIT:u0941:END */ /* ATLAS-SOURCE-UNIT:u0942:BEGIN */
+@media (max-width: 760px) {
+  .my-audits-status-filter {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0942:END */

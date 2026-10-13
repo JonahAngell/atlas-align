@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>ATLAS Align - Audit Logic Builder</title>
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside
+        aria-label="ATLAS Align navigation"
+        class="app-sidebar"
+        id="sidebar"
+      >
+        <div class="brand">
+          <div class="brandtext">
+            ATLAS ALIGN <span class="app-version" data-atlas-app-version></span>
+          </div>
+          <button
+            aria-controls="sidebar"
+            aria-expanded="true"
+            aria-label="Collapse navigation"
+            class="toggle"
+            id="collapseNavBtn"
+            title="Collapse navigation"
+            type="button"
+          >
+            <span data-atlas-icon="menu"></span>
+          </button>
+        </div>
+        <nav class="nav">
+          <div class="navgroup">Workspace</div>
+          <button class="navitem active" data-section="my-audits" type="button">
+            <span class="navicon" data-atlas-icon="my-audits"></span
+            ><span class="navtext">My Audits</span>
+          </button>
+          <button class="navitem" data-section="inbox" type="button">
+            <span class="navicon" data-atlas-icon="inbox"></span
+            ><span class="navtext">Inbox</span>
+          </button>
+          <button
+            class="navitem"
+            data-section="recently-deleted-publications"
+            type="button"
+            hidden
+          >
+            <span class="navicon" data-atlas-icon="deleted-publications"></span
+            ><span class="navtext">Deleted Publications</span>
+          </button>
+          <button class="navitem" data-section="history" type="button">
+            <span class="navicon" data-atlas-icon="history"></span
+            ><span class="navtext">History</span>
+          </button>
+          <div class="navgroup">Current Audit</div>
+          <button class="navitem" data-section="overview" type="button">
+            <span class="navicon" data-atlas-icon="overview"></span
+            ><span class="navtext">Audit Overview</span>
+          </button>
+          <button class="navitem" data-section="fields" type="button">
+            <span class="navicon" data-atlas-icon="sources"></span
+            ><span class="navtext">Sources</span>
+          </button>
+          <button class="navitem" data-section="steps" type="button">
+            <span class="navicon" data-atlas-icon="logic-builder"></span
+            ><span class="navtext">Logic Builder</span>
+          </button>
+          <button class="navitem" data-section="display-fields" type="button">
+            <span class="navicon" data-atlas-icon="display-fields"></span
+            ><span class="navtext">Display Fields</span>
+          </button>
+          <button class="navitem" data-section="preview" type="button">
+            <span class="navicon" data-atlas-icon="requirements-preview"></span
+            ><span class="navtext">Requirements Preview</span>
+          </button>
+          <button class="navitem" data-section="review" type="button">
+            <span class="navicon" data-atlas-icon="readiness-review"></span
+            ><span class="navtext">Readiness &amp; Review</span>
+          </button>
+          <button class="navitem" data-section="save" type="button">
+            <span class="navicon" data-atlas-icon="publication-preview"></span
+            ><span class="navtext">Publication Preview</span>
+          </button>
+        </nav>
+      </aside>
+      <button
+        aria-label="Close navigation"
+        class="nav-backdrop"
+        hidden
+        id="navBackdrop"
+        type="button"
+      ></button>
+      <div aria-label="Global app controls" class="floating-utility-controls">
+        <!-- <a aria-label="Request a feature or report a bug" class="btn danger icon-button" href="mailto:jonah.angell@disney.com?subject=ATLAS%20Align%20Bugfix%2FFeature%20Request&body=I%20would%20like%20to%20request%20the%20following%3A%0A%5B%20%5D%20Bugfix%0A%5B%20%5D%20Feature%20Request%0A%28check%20one%20of%20the%20above%29%0A%0AFor%20the%20ATLAS%20Align%20app.%0A%0ADescribe%20your%20issue%20here%3A%0A%28Include%20screenshots%20if%20available%29%0A%0AIf%20you%20have%20any%20questions%2C%20please%20contact%20jonah.angell%40disney.com%20directly." title="Request a feature or report a bug">
+          <span data-atlas-icon="feedback"></span>
+        </a> -->
+        <!-- <button aria-label="Open site-wide tutorial" class="btn ghost help-button" data-start-tutorial="global" id="helpBtn" title="Open tutorial" type="button">?</button> -->
+        <!-- <button class="btn ghost" id="themeBtn" title="Dark Mode" type="button">⏾</button> -->
+      </div>
+      <main class="main" id="main">
+        <header class="topbar">
+          <button
+            aria-controls="sidebar"
+            aria-expanded="false"
+            aria-label="Open navigation"
+            class="nav-menu-button"
+            id="openNavBtn"
+            title="Open navigation"
+            type="button"
+          >
+            <span data-atlas-icon="menu"></span>
+          </button>
+          <div class="topbar-primary">
+            <div
+              aria-label="Current audit selector"
+              class="topbar-audit-switcher"
+            >
+              <label for="activeAuditSelect">Current audit</label
+              ><select id="activeAuditSelect">
+                <option value="">No audit selected</option></select
+              ><button
+                aria-label="Switch audit"
+                class="btn primary small confirm-audit-button"
+                id="confirmActiveAuditBtn"
+                title="Switch audit"
+                type="button"
+              >
+                Switch
+              </button>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div
+              aria-label="Audit workflow navigation"
+              class="flow-nav-controls"
+              hidden=""
+              id="flowNavControls"
+            >
+              <button
+                class="btn secondary small flow-nav-back"
+                hidden=""
+                id="flowBackBtn"
+                type="button"
+              ></button
+              ><button
+                class="btn primary small flow-nav-next"
+                hidden=""
+                id="flowNextBtn"
+                type="button"
+              ></button>
+            </div>
+            <button
+              class="topbar-inbox-button"
+              id="atlasTopbarInbox"
+              type="button"
+              aria-label="Inbox, count unavailable"
+            >
+              <span
+                class="topbar-inbox-icon"
+                data-atlas-icon="inbox"
+                aria-hidden="true"
+              ></span
+              ><span
+                class="topbar-inbox-badge"
+                id="atlasTopbarInboxBadge"
+                hidden
+              ></span>
+            </button>
+            <div
+              aria-live="polite"
+              class="user current-user-profile"
+              id="currentUserProfile"
+              tabindex="0"
+            >
+              Loading profile…
+            </div>
+          </div>
+        </header>
+        <div class="content"><div id="page-sections-root"></div></div>
+      </main>
+    </div>
+    <script src="./js/00-icons.js"></script>
+    <script src="./js/00-html-partials-loader.js"></script>
+    <script src="./js/00-config-utils.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/00-exceljs-loader.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/01-state-dom.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/02-hierarchy.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/02-logic-rendering.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/03-capture-actions.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/04-persistence.js" data-atlas-boot type="text/plain"></script>
+    <script src="./tutorials/tutorial-global.js" data-atlas-boot type="text/plain"></script>
+    <script src="./tutorials/tutorial-audit-library.js" data-atlas-boot type="text/plain"></script>
+    <script src="./tutorials/tutorial-fields.js" data-atlas-boot type="text/plain"></script>
+    <script src="./tutorials/tutorial-logic-builder.js" data-atlas-boot type="text/plain"></script>
+    <script src="./tutorials/tutorial-save-export.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/05-tutorials.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/07-phrase-catalog.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/08-step-templates-validation.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/09-workbook-import.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/10-field-picker.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/11-repo-library.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/12-export-foundation.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/13-catalog-field-browser.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/14-catalog-driven-builder.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15a-audit-library-ui.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15b-source-library-ui.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15c-source-field-picker.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15d-logic-rules-list.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15e-logic-step-editor.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15f-join-picker.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15g-visual-ui-events.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15h-visual-picker.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15i-source-replace.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/15j-logic-text-import.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/16-page-shell.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/16a-user-impersonation.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/17-source-database.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/18-audit-database.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/19-audit-version-history.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/19a-audit-history-browser.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/20-database-only-audits.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/24-audit-workflow-ui.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/27-audit-review-mode.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/26-recently-deleted-publications.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/25-inbox.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/21-display-fields.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/22-audit-issue-engine.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/23-atlas-audit-issues.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/28-validation-runner.js" data-atlas-boot type="text/plain"></script>
+    <script src="./js/06-events-bootstrap.js" data-atlas-boot type="text/plain"></script>
+  </body>
+</html>

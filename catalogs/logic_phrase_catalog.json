@@ -1,0 +1,344 @@
+{
+  "version": 16,
+  "description": "Shared phrase catalog for SWAT Audit Documentation Builder wording.",
+  "auto_note_prefixes": [
+    "A LEFT JOIN keeps every record",
+    "A RIGHT JOIN keeps every record",
+    "An INNER JOIN keeps only records",
+    "A FULL OUTER JOIN keeps every record",
+    "A FULL OUTER JOIN keeps records",
+    "This join combines two files",
+    "This join compares file 1",
+    "Union stacks records from file",
+    "A UNION stacks records from file",
+    "This step stacks records from two files",
+    "ELSE explains what should happen",
+    "ELSE applies when",
+    "This step combines records from two files"
+  ],
+  "notes": {
+    "join": {
+      "LEFT JOIN": "A LEFT JOIN keeps every record from file 1 ({left_alias}) and adds matching details from file 2 ({right_alias}) when a match is found. Rows in file 2 ({right_alias}) will not be kept if the keys {keys} do not match. As a result, rows from file 1 ({left_alias}) may contain NULL values if no match is found in file 2 ({right_alias}).",
+      "RIGHT JOIN": "A RIGHT JOIN keeps every record from file 2 ({right_alias}) and adds matching details from file 1 ({left_alias}) when a match is found. Rows in file 1 ({left_alias}) will not be kept if the keys {keys} do not match. As a result, rows from file 2 ({right_alias}) may contain NULL values if no match is found in file 1 ({left_alias}).",
+      "INNER JOIN": "An INNER JOIN keeps only records where file 1 ({left_alias}) and file 2 ({right_alias}) both have matching keys {keys}. Rows from either file will not be kept if the keys do not match.",
+      "FULL OUTER JOIN": "A FULL OUTER JOIN keeps every record from file 1 ({left_alias}) and every record from file 2 ({right_alias}). Matching records are combined when the keys {keys} match. As a result, rows from either file may contain NULL values for the other file columns if no match is found.",
+      "DEFAULT": "This join compares file 1 ({left_alias}) to file 2 ({right_alias}) using keys {keys}."
+    },
+    "union": "A UNION stacks records from file 1 ({left_source}) and file 2 ({right_source}) into one combined file ({output_source}). Records are not matched on keys; the rows from both files are kept together in the combined output. Use this when both files represent the same type of record and should be reviewed together.",
+    "else": {
+      "default": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "context": {
+        "intro": "ELSE applies when the preceding IF condition ({step_number}) is not met.",
+        "literal_label": "lit.",
+        "opposite_literal": "(IF {opposite_condition}.)",
+        "not_literal": "(NOT ({original_condition}).)",
+        "opposite_plain": "ELSE applies when the preceding IF condition ({step_number}) is not met.\nlit.\n(IF {opposite_condition}.)",
+        "not_plain": "ELSE applies when the preceding IF condition ({step_number}) is not met.\nlit.\n(NOT ({original_condition}).)",
+        "no_condition": "ELSE applies when the preceding IF condition ({step_number}) is not met."
+      }
+    }
+  },
+  "format_field": {
+    "text_modifiers": {
+      "trim_leading": "Remove leading spaces",
+      "trim_trailing": "Remove trailing spaces",
+      "replace_template": "replace {from_label} with {to_label}",
+      "spaces_label": "spaces",
+      "character_label": "character \"{value}\""
+    },
+    "suffix_template": ", {phrase}"
+  },
+  "list_format": {
+    "two_item_template": "{first} or {second}",
+    "many_item_template": "{items}, or {last}"
+  },
+  "placeholders": {
+    "file_1": "[file 1]",
+    "file_2": "[file 2]",
+    "combined_file": "[combined file]",
+    "file_1_key": "[file 1 key]",
+    "file_2_key": "[file 2 key]",
+    "left_source": "[left source]",
+    "right_source": "[right source]",
+    "left_key": "[left key]",
+    "right_key": "[right key]",
+    "positive_whole_number": "[positive whole number]",
+    "error_message_column": "Error Message"
+  },
+  "developer_logic": {
+    "labels": {
+      "excel": "Excel:",
+      "sql_server": "SQL Server:"
+    },
+    "else_step": "ELSE (Step {step_number})",
+    "join": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" on \"{left_field}\" to \"{right_alias}\" on \"{right_field}\".",
+    "kept_rows": {
+      "left": "all rows from the left source and matching rows from the right source",
+      "right": "all rows from the right source and matching rows from the left source",
+      "full": "all rows from both sources",
+      "inner": "only rows that match in both sources"
+    },
+    "functions": {
+      "trim": "TRIM",
+      "ltrim": "LTRIM",
+      "rtrim": "RTRIM",
+      "replace": "REPLACE"
+    }
+  },
+  "analyst_logic": {
+    "reference_source": {
+      "with_alias": "Reference source file {source_file} as {source_alias}:",
+      "without_alias": "Reference source file {source_file}:"
+    },
+    "format_field": {
+      "default": "Format {table_column} as {format}{format_suffix}."
+    },
+    "split_field": {
+      "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}."
+    },
+    "sort_records": {
+      "default": "Sort records by {table_column} in {sort_direction} order."
+    },
+    "remove_duplicates": {
+      "default": "If {table_column} value appears more than once in the column, {duplicate_action}."
+    },
+    "create_column": {
+      "default": "Create new column {column_name}.",
+      "blank": "Create new blank column {column_name}.",
+      "static_value": "Create new column {column_name} and set value to {static_value}.",
+      "source_field": "Create new column {column_name} using {table_column}.",
+      "expression": "Create new column {column_name} using expression: {expression}.",
+      "concatenate_fields": "Create new column {column_name} by concatenating {first_column} and {second_column}.",
+      "concatenate_expression": "Create new column {column_name} by combining: {expression}.",
+      "first_characters": "Create new column {column_name} using the first {character_count} characters of {table_column}.",
+      "character_count": "Create new column {column_name} using the character count of {table_column}.",
+      "source_field_calculation": "Create new column {column_name} using {calculation}.",
+      "substring": "Create new column {target_column} using the {position} {character_count} characters of {source_column}.",
+      "string_length": "Create new column {target_column} and set its value to the character length of {source_column}."
+    },
+    "math": {
+      "add_first": "adding {operand} to column {source_field}",
+      "subtract_first": "subtracting {operand} from column {source_field}",
+      "multiply_first": "multiplying column {source_field} by {operand}",
+      "divide_first": "dividing column {source_field} by {operand}",
+      "add_next": "adding {operand}",
+      "subtract_next": "subtracting {operand}",
+      "multiply_next": "multiplying the result by {operand}",
+      "divide_next": "dividing the result by {operand}",
+      "plus": "plus",
+      "minus": "minus",
+      "times": "times",
+      "divided_by": "divided by"
+    },
+    "rounding": {
+      "wrapper": ", then round {direction} {target}",
+      "nearest_whole_number": "the nearest whole number",
+      "one_decimal_place": "{count} decimal place",
+      "many_decimal_places": "{count} decimal places",
+      "down": "down to",
+      "up": "up to",
+      "nearest": "to"
+    },
+    "blank_comparison": {
+      "value": "blank/null",
+      "is_blank": "is blank/null",
+      "is_not_blank": "is not blank/null"
+    },
+    "union_sources": {
+      "default": "UNION file {left_source} and file {right_source}, reference as file {output_source}"
+    },
+    "join": {
+      "header": "Join {left_column} and {right_column}.",
+      "condition": "",
+      "default": "Join {left_column} and {right_column}."
+    },
+    "filter_rows": {
+      "default": "IF {table_column} {operator}{compare_value}, THEN {filter_action}."
+    },
+    "flag_records": {
+      "condition": "IF {table_column} {operator}{compare_value},",
+      "display_text": "THEN display text response {message} in column {output_column}.",
+      "do_not_display": "THEN do NOT display record."
+    },
+    "if_then": {
+      "condition_line": "{connector} {condition_text}",
+      "condition_group_with_action": "{condition_group} THEN {then_action}.",
+      "condition_group_without_action": "{condition_group}:",
+      "then_display_text": "display text response {message} in new column {output_column}",
+      "then_set_column_value": "set {target_column} value to {value_column} value",
+      "then_do_not_display": "do not display record",
+      "then_freeform": "{action}",
+      "then_display_text_line": "THEN display text response {message} in new column {output_column}.",
+      "then_set_column_value_line": "THEN set {target_column} value to {value_column} value.",
+      "then_do_not_display_line": "THEN do not display record.",
+      "then_freeform_line": "THEN {action}.",
+      "then_set_column_calculation": "set {target_column} value to {calculation}",
+      "substring": "set {target_column} value to the {position} {character_count} characters of {source_column}",
+      "string_length": "set {target_column} value to the character length of {source_column}"
+    },
+    "else": {
+      "default": "ELSE:",
+      "display_text": "ELSE display text response {message} in new column {output_column}.",
+      "set_column_value": "ELSE set {target_column} value to {value_column} value.",
+      "do_not_display": "ELSE do not display record.",
+      "freeform": "ELSE {action}.",
+      "string_transform": "ELSE {phrase}."
+    },
+    "conditions": {
+      "group_no_populated_first_available": "no {check_column} is populated for any row that shares the same first available value between {first_group_column} and {second_group_column}",
+      "group_any_populated_first_available": "any {check_column} is populated for a row that shares the same first available value between {first_group_column} and {second_group_column}",
+      "first_available_compare": "the first available value between {first_column} and {second_column} {operator} {compare_value}",
+      "first_available_value": "first available value between {columns}",
+      "group_all_values_compare": "all {check_column} values are {operator}{compare_value} for rows that share the same {group_column}"
+    }
+  },
+  "app_config": {
+    "html": {
+      "header_bg": "#d9eaf7"
+    },
+    "colors": {
+      "palette": [
+        "#fdd0ec",
+        "#b3f5ff",
+        "#abf5d1",
+        "#fffae6",
+        "#c0b6f2",
+        "#e6fcff",
+        "#ffd9c2",
+        "#d8f3dc",
+        "#dbeafe",
+        "#fde68a"
+      ],
+      "default_source_color": "#ffffff"
+    },
+    "sources": {
+      "calculated_field_source": "Calculated Field"
+    },
+    "step_types": {
+      "split_field": "split_field",
+      "union_sources": "union_sources"
+    },
+    "columns": {
+      "audit": [
+        {
+          "key": "display_order",
+          "label": "Display Order"
+        },
+        {
+          "key": "source_file",
+          "label": "Source File"
+        },
+        {
+          "key": "column_data",
+          "label": "Field Name"
+        },
+        {
+          "key": "vanity_label",
+          "label": "Vanity Label"
+        }
+      ],
+      "source": [
+        {
+          "key": "row_number",
+          "label": "#"
+        },
+        {
+          "key": "source_file",
+          "label": "Source File"
+        },
+        {
+          "key": "column_data",
+          "label": "Field Name"
+        },
+        {
+          "key": "vanity_label",
+          "label": "Vanity Label"
+        },
+        {
+          "key": "formatting",
+          "label": "Formatting"
+        },
+        {
+          "key": "displayed",
+          "label": "Displayed"
+        },
+        {
+          "key": "used_in_audit",
+          "label": "Used In Logic"
+        }
+      ],
+      "logic": ["Step", "Analyst Logic", "Developer Logic", "Notes"]
+    },
+    "logic_options": {
+      "format_options": [
+        "eight digits with leading zeroes",
+        "date format MM/DD/YYYY",
+        "text",
+        "number"
+      ],
+      "join_types": [
+        "INNER JOIN",
+        "LEFT JOIN",
+        "RIGHT JOIN",
+        "FULL OUTER JOIN"
+      ],
+      "operators": [
+        "is equal to",
+        "is not equal to",
+        "contains",
+        "does not contain",
+        "is blank",
+        "is not blank",
+        "is greater than",
+        "is less than"
+      ],
+      "operator_sets": {
+        "values": [
+          "is equal to",
+          "is not equal to",
+          "contains",
+          "does not contain",
+          "starts with",
+          "ends with"
+        ],
+        "field": [
+          "is equal to",
+          "is not equal to",
+          "is greater than",
+          "is greater than or equal to",
+          "is less than",
+          "is less than or equal to"
+        ],
+        "expression": [
+          "matches expression",
+          "does not match expression"
+        ]
+      },
+      "filter_actions": ["Keep matching rows", "Exclude matching rows"],
+      "sort_directions": ["Ascending", "Descending"],
+      "duplicate_actions": [
+        "Keep first record",
+        "Keep last record",
+        "Drop all duplicated records"
+      ],
+      "create_value_modes": [
+        "Static value",
+        "Source field value",
+        "Expression / calculation",
+        "String transformation",
+        "Concatenate fields"
+      ],
+      "error_output_actions": ["Display text response", "Do not display record"]
+    },
+    "visual_field_picker": {
+      "mode_single_label": "Single Field",
+      "mode_first_available_label": "First Available Value",
+      "mode_toggle_label": "Selection Mode",
+      "first_available_action_label": "Use First Available Value",
+      "first_available_selected_count": "{count} selected for First Available Value",
+      "first_available_hint": "First Available Value uses the first populated value from the selected fields, in the order selected.",
+      "field_picker_subtitle": "Search grouped source-table fields. Use Single Field for one field, or First Available Value to select multiple fields.",
+      "field_picker_empty": "No fields found."
+    }
+  }
+}

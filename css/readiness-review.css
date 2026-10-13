@@ -1,0 +1,38 @@
+/* ATLAS-SOURCE-UNIT:u0905:BEGIN */
+.review-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+  gap: 20px;
+} /* ATLAS-SOURCE-UNIT:u0905:END */ /* ATLAS-SOURCE-UNIT:u0906:BEGIN */
+.readiness-issue-summary {
+  font-weight: 700;
+} /* ATLAS-SOURCE-UNIT:u0906:END */ /* ATLAS-SOURCE-UNIT:u0907:BEGIN */
+.readiness-category-status {
+  color: var(--muted, #667085);
+} /* ATLAS-SOURCE-UNIT:u0907:END */ /* ATLAS-SOURCE-UNIT:u0908:BEGIN */
+.readiness-issue-list .atlas-audit-issue-card__actions {
+  display: flex;
+} /* ATLAS-SOURCE-UNIT:u0908:END */ /* ATLAS-SOURCE-UNIT:u0909:BEGIN */
+@media (max-width: 900px) {
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0909:END */ /* ATLAS-SOURCE-UNIT:u0910:BEGIN */
+
+.readiness-issues-shell {
+  min-width: 0;
+}
+/* ATLAS-SOURCE-UNIT:u0910:END */ /* ATLAS-SOURCE-UNIT:u0911:BEGIN */
+.readiness-issue-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 18px;
+}
+/* ATLAS-SOURCE-UNIT:u0911:END */ /* ATLAS-SOURCE-UNIT:u0912:BEGIN */
+.readiness-issue-list {
+  display: grid;
+  gap: 18px;
+}
+/* ATLAS-SOURCE-UNIT:u0912:END */

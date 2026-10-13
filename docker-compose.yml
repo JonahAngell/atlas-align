@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: atlas
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas-local-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d atlas"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "5432:5432"
+    volumes:
+      - atlas-local-db:/var/lib/postgresql/data
+      - ./.launch/migrations:/atlas-migrations:ro
+      - ./local-db/init-local-db.sh:/docker-entrypoint-initdb.d/10-init-local-db.sh:ro
+      - ./local-db/seed.sql:/docker-entrypoint-initdb.d/20-seed.sql:ro
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PORT: "8080"
+      DATABASE_URL: postgresql://atlas:atlas-local-only@db:5432/atlas
+      STUDIOSHARE_DB_URL: postgresql://atlas:atlas-local-only@db:5432/atlas
+      ATLAS_APP_ENV: local
+      DEV_USER_ID: local-user-1
+      ATLAS_USER_IMPERSONATION_ENABLED: "true"
+      ATLAS_WORKFLOW_READS_ENABLED: "true"
+      ATLAS_WORKFLOW_HISTORY_ENABLED: "true"
+      ATLAS_WORKFLOW_RESTORATION_ENABLED: "true"
+      ATLAS_WORKFLOW_SUBMISSION_ENABLED: "true"
+      ATLAS_WORKFLOW_DECISIONS_ENABLED: "true"
+      ATLAS_WORKFLOW_PUBLICATION_ENABLED: "true"
+      ATLAS_WORKFLOW_UNLOCK_ENABLED: "true"
+      ATLAS_WORKFLOW_PUBLICATION_DELETION_ENABLED: "true"
+      SP_TENANT_ID: ${SP_TENANT_ID:-}
+      SP_CLIENT_ID: ${SP_CLIENT_ID:-}
+      SP_CLIENT_SECRET: ${SP_CLIENT_SECRET:-}
+      SP_HOST: ${SP_HOST:-}
+      SP_SITE: ${SP_SITE:-}
+      SP_FOLDER: ${SP_FOLDER:-}
+      SP_FILE: ${SP_FILE:-}
+      SP_SHEET: ${SP_SHEET:-}
+      SP_CACHE_SECONDS: ${SP_CACHE_SECONDS:-300}
+    ports:
+      - "8081:8080"
+
+volumes:
+  atlas-local-db:

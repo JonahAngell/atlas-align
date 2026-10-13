@@ -1,0 +1,2991 @@
+diff --git a/COPILOT_AGENT_UPDATE_REQUEST_INSTRUCTIONS.md b/COPILOT_AGENT_UPDATE_REQUEST_INSTRUCTIONS.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..1a41d712595a153ff46fea6bf5a5daf6e15738ab
+--- /dev/null
++++ b/COPILOT_AGENT_UPDATE_REQUEST_INSTRUCTIONS.md
+@@ -0,0 +1,83 @@
++# Recommended Copilot Agent Instructions for Update Requests
++
++Add the following section to the agent instructions. It is designed to standardize request intake without forcing unnecessary questions or blocking straightforward work.
++
++## Update Request Intake and Formatting
++
++When helping the user prepare a code update request, format the request using the headings in `FEATURE_REQUEST_TEMPLATE.md`.
++
++For a complex, cross-file, business-rule, database, import/export, or architectural update, use the complete template. For a narrow and low-risk update, use the condensed template.
++
++Preserve all facts supplied by the user. Do not invent requirements, affected files, selectors, functions, business rules, acceptance criteria, or test results. Clearly label any recommendation as a recommendation rather than an established requirement.
++
++A well-formed update request should identify, when applicable:
++
++- Request type and title
++- Goal and business context
++- Current behavior and problem
++- Desired behavior and expected user flow
++- Objective acceptance criteria
++- In-scope and out-of-scope work
++- Likely affected files and protected files
++- Related functions, selectors, routes, tables, or components
++- Data inputs, outputs, source-of-truth fields, and edge-case handling
++- UI states, responsive behavior, overflow behavior, and accessibility expectations
++- Technical constraints and regression protections
++- Validation commands and test scenarios
++- Authoritative attached files and reference materials
++- Preferred deliverable format
++
++If information is missing, classify it as either blocking or non-blocking.
++
++- Ask concise follow-up questions only for blocking gaps that prevent a safe or accurate implementation.
++- Do not repeat a question the user has already answered.
++- Do not ask the user to reconfirm facts already present in uploaded files or project documentation.
++- For non-blocking gaps, proceed using the smallest reasonable assumption, disclose the assumption, and avoid expanding scope.
++- If the user specifically requests a best-effort implementation without questions, proceed with documented assumptions unless doing so would risk data loss, a security issue, an irreversible migration, or a materially incorrect business rule.
++
++Before implementation, restate the accepted scope in a short Implementation Contract containing:
++
++1. Goal
++2. Files expected to change
++3. Behaviors that must remain unchanged
++4. Acceptance criteria
++5. Deliverable format
++6. Blocking assumptions, if any
++
++Use the most recently attached files as the authoritative implementation source. Do not substitute archived, prior-conversation, generated, SharePoint, or repository-history versions unless the user explicitly directs you to use them. Project documentation and SharePoint sources may explain architecture and conventions, but they must not silently replace the current attached source files.
++
++For CSS changes in ATLAS Align:
++
++- Treat split files under `css/` as editable source.
++- Do not make source changes directly in generated root `styles.css`.
++- Identify the appropriate split CSS file and relevant source-unit placement.
++- Run or validate the CSS build workflow documented in `PROJECT_CONTEXT.md`.
++- Include generated `styles.css` and `css/manifest.json` in the deliverable only when they changed.
++
++For code delivery:
++
++- If the user already selected ZIP or patch delivery, use that format without asking again.
++- If no format was selected and both formats are feasible, ask one concise delivery-format question before implementation only when the choice materially changes the work.
++- Prefer full replacement files in a ZIP when patch application could fail because of version drift.
++- Include only files modified for the current request, plus required generated artifacts.
++- Never include unrelated, historical, or unchanged files merely to make the package appear complete.
++
++Before delivery:
++
++- Validate syntax.
++- Review imports and dependencies.
++- Validate file paths, references, and load order.
++- Check for obvious runtime and regression risks.
++- Run available, relevant tests and build checks.
++- Never claim a test was run if it was not run.
++- Identify assumptions, limitations, and any validation that could not be completed.
++
++Present the delivery response in this order:
++
++1. What changed
++2. Why it changed
++3. Modified files
++4. Validation performed and results
++5. Assumptions or limitations
++6. Downloadable deliverable
++7. Application and verification steps
+diff --git a/FEATURE_REQUEST_TEMPLATE.md b/FEATURE_REQUEST_TEMPLATE.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..15f13e26c7e434a65d768bd65905995c63dc93e1
+--- /dev/null
++++ b/FEATURE_REQUEST_TEMPLATE.md
+@@ -0,0 +1,316 @@
++# ATLAS Align Update Request Template
++
++> Use this template when requesting a feature, bug fix, UI adjustment, refactor, performance improvement, or data-processing change. Complete every relevant section. Enter `Not applicable` when a section does not apply rather than deleting it.
++
++## 1. Request Type
++
++Select one:
++
++- [ ] New feature
++- [ ] Bug fix
++- [ ] UI or CSS adjustment
++- [ ] Performance improvement
++- [ ] Database or API change
++- [ ] Refactor
++- [ ] Export or import change
++- [ ] Audit logic or business-rule change
++- [ ] Documentation only
++- [ ] Other: 
++
++## 2. Request Title
++
++**Title:**  
++Provide a short, specific name for the update.
++
++## 3. Goal
++
++Describe the outcome this update must achieve.
++
++**Goal:**  
++
++## 4. Business Context
++
++Explain why the change is needed, who uses it, and what workflow it supports.
++
++**Users or roles affected:**  
++
++**Workflow affected:**  
++
++**Business reason:**  
++
++## 5. Current Behavior
++
++Describe exactly what happens now.
++
++**Current behavior:**  
++
++**Where it occurs:**  
++
++**Frequency:**  
++- [ ] Always
++- [ ] Intermittently
++- [ ] Under specific conditions described below
++
++**Conditions or trigger:**  
++
++## 6. Problem
++
++Explain why the current behavior is incorrect, incomplete, inefficient, or confusing.
++
++**Problem statement:**  
++
++**Business or technical impact:**  
++
++## 7. Desired Behavior
++
++Describe exactly what should happen after the update.
++
++**Desired behavior:**  
++
++**Expected user flow:**
++1. 
++2. 
++3. 
++
++## 8. Acceptance Criteria
++
++List objective, testable conditions. Each item should describe one observable result.
++
++- [ ] 
++- [ ] 
++- [ ] 
++
++## 9. Scope
++
++### In Scope
++
++- 
++- 
++
++### Out of Scope
++
++- 
++- 
++
++## 10. Files and Components
++
++**Files likely involved:**
++- 
++- 
++
++**Files that must not be changed:**
++- 
++- 
++
++**Related functions, selectors, routes, tables, or components:**
++- 
++- 
++
++**Entry point or load order considerations:**  
++
++## 11. Data and Business Rules
++
++Complete this section for audit logic, database, API, import, export, and transformation updates.
++
++**Inputs:**  
++
++**Outputs:**  
++
++**Business rules:**
++1. 
++2. 
++3. 
++
++**Null, blank, duplicate, or invalid-value handling:**  
++
++**Source-of-truth system or field:**  
++
++**SAP, Workday, or other system comparison behavior:**  
++
++**Example input:**  
++
++**Expected output:**  
++
++## 12. UI and CSS Requirements
++
++Complete this section for visual or interaction changes.
++
++**Affected page or panel:**  
++
++**Affected element, selector, or component:**  
++
++**Desktop behavior:**  
++
++**Responsive or mobile behavior:**  
++
++**Overflow and scrolling behavior:**  
++
++**Loading, empty, error, disabled, and focus states:**  
++
++**Accessibility requirements:**  
++
++**Screenshot or recording attached:**
++- [ ] Yes
++- [ ] No
++
++**For split CSS:**
++- Editable source file under `css/`: 
++- Relevant `ATLAS-SOURCE-UNIT` ID, if known: 
++- Root `styles.css` must be rebuilt: [ ] Yes [ ] No [ ] Unknown
++
++## 13. Technical Constraints
++
++- Preserve existing application architecture and folder structure.
++- Preserve current naming conventions and coding style.
++- Make the smallest change necessary.
++- Do not introduce unrelated refactoring or dependency changes.
++- Do not modify files outside the declared scope without explaining why they are required.
++- Additional constraints:
++  - 
++  - 
++
++## 14. Compatibility and Regression Protection
++
++**Existing behavior that must remain unchanged:**
++- 
++- 
++
++**Related workflows to regression-test:**
++- 
++- 
++
++**Browser, device, environment, or deployment constraints:**  
++
++## 15. Error Handling
++
++**Expected behavior when the operation fails:**  
++
++**User-facing error message requirements:**  
++
++**Logging or diagnostic requirements:**  
++
++## 16. Validation and Testing
++
++**Required validation:**
++- [ ] Syntax validation
++- [ ] Import and dependency review
++- [ ] File-path and reference validation
++- [ ] Browser runtime review
++- [ ] Responsive-layout review
++- [ ] CSS build check
++- [ ] Database migration review
++- [ ] API request and response review
++- [ ] Import or export validation
++- [ ] Existing automated tests
++- [ ] New automated tests
++- [ ] Manual test steps
++
++**Specific test cases:**
++1. 
++2. 
++3. 
++
++**Commands that should succeed:**
++
++```text
++Insert applicable commands, such as npm test or node build-css.mjs --check.
++```
++
++## 17. Reference Materials
++
++**Authoritative files attached:**
++- 
++- 
++
++**Project documentation attached:**
++- [ ] `PROJECT_CONTEXT.md`
++- [ ] `PROJECT_TREE.txt`
++- [ ] Current source files
++- [ ] Screenshot or recording
++- [ ] Error log or browser console output
++- [ ] Git diff or patch that introduced the issue
++- [ ] Other: 
++
++**Knowledge source or SharePoint location to consult:**  
++
++**Important source-version instruction:**  
++Use only the files attached to this request unless this request explicitly identifies another authoritative source. Do not use archived or historical file versions as implementation inputs.
++
++## 18. Assumptions and Open Questions
++
++**Known assumptions:**
++- 
++- 
++
++**Questions that must be resolved before implementation:**
++- 
++- 
++
++If no blocking questions remain, state: `No known blocking questions.`
++
++## 19. Requested Deliverable
++
++Select one:
++
++- [ ] Full replacement files in a ZIP package
++- [ ] Single patch file
++- [ ] Modified files only in a ZIP package
++- [ ] Analysis and implementation plan only
++- [ ] Documentation update only
++- [ ] Other: 
++
++**Preferred package name:**  
++
++## 20. Delivery Summary Requirements
++
++Before providing the deliverable, include:
++
++1. A concise summary of what changed.
++2. Why each change was necessary.
++3. A complete list of modified files.
++4. Validation and tests performed.
++5. Assumptions made.
++6. Known limitations or follow-up risks.
++7. Exact steps to apply and verify the update.
++
++---
++
++# Condensed Template for Small Updates
++
++Use this shorter version only for narrowly scoped, low-risk changes.
++
++## Request
++
++**Type:**  
++
++**Title:**  
++
++**Goal:**  
++
++**Problem:**  
++
++**Current behavior:**  
++
++**Desired behavior:**  
++
++**Acceptance criteria:**
++- [ ] 
++- [ ] 
++
++**Files likely involved:**
++- 
++
++**Files that must not change:**
++- 
++
++**Constraints:**
++- Make the smallest necessary change.
++- Preserve unrelated behavior and styling.
++- Use only the currently attached files.
++
++**References attached:**
++- 
++
++**Requested deliverable:**  
++
++**Validation required:**  
+diff --git a/PROJECT_CONTEXT.md b/PROJECT_CONTEXT.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..abbf69e95ab447014ca75d882baad995a3571d89
+--- /dev/null
++++ b/PROJECT_CONTEXT.md
+@@ -0,0 +1,1435 @@
++# PROJECT_CONTEXT.md
++
++> **Maintenance note:** Update this document whenever architecture, file responsibilities, version, priorities, or public function names change. Function inventories are generated from named function declarations and named arrow/function expressions; anonymous callbacks are intentionally omitted.
++
++## Application Overview
++
++**Application Name:** ATLAS Align  
++**Current Version:** v2.8
++
++### Purpose
++Business users document audit requirements using logic rows.
++
++### Technology
++- HTML
++- CSS
++- JavaScript
++- Express
++- PostgreSQL
++
++### Architecture
++- Frontend: `public/` conceptually, with the current source snapshot exposing browser assets at the project root and in `js/`, `css/`, and `sections/`.
++- Backend: `server.js` and `src/`.
++- Database: PostgreSQL, with migrations under `.launch/migrations/`.
++- Deployment: Docker and StudioShare Launch configuration.
++
++### Known Technical Debt
++- Source Library modal requires refactor
++- Audit Builder rendering performance
++- Logic row virtualization
++
++### Current Priorities
++1. Database migration
++2. Version control
++3. Requirements management
++
++### Coding Standards
++- No jQuery
++- Vanilla JS only
++- Async/await preferred
++- Avoid global state
++
++## Functional Map
++
++- **Audit Library:** Locate, create, load, persist, and version audits.
++- **Audit Overview:** Maintain audit identity, purpose, ownership, and related metadata.
++- **Source Library:** Browse database-backed sources, tables, aliases, and fields.
++- **Logic Builder:** Create hierarchical logic rows, joins, comparisons, transformations, and output actions.
++- **Requirements Preview:** Render analyst and developer logic in nested or complete-statement form.
++- **Readiness Review:** Validate audit completeness and identify logic issues before publication.
++- **Publication and Export:** Save revisions and export requirements or workbook outputs.
++- **User Profiles:** Persist user identity and preferences.
++- **Tutorial System:** Provide page-specific guided walkthroughs.
++
++## File Inventory
++
++### Scope and exclusions
++This inventory documents the current application source and configuration files found in the supplied bundles. It intentionally excludes `.git/` internals, `node_modules/`, generated ZIP archives, temporary Office files, aggregate `combined_*.txt` files, vendored minified code, and historical `updates/*.diff.txt` patches because those are repository metadata, dependencies, generated artifacts, or update history rather than maintainable application source.
++
++## Root Application and Configuration Files
++
++### `.dockerignore`
++
++**Purpose:** Excludes local and unnecessary files from Docker build context.
++
++### `.env.example`
++
++**Purpose:** Documents required and optional environment variables without containing production secrets.
++
++### `.gitignore`
++
++**Purpose:** Excludes generated, local, and sensitive files from source control.
++
++### `.stylelintrc.json`
++
++**Purpose:** Configures CSS linting rules.
++
++### `Dockerfile`
++
++**Purpose:** Defines the production container image and application startup command.
++
++### `README.md`
++
++**Purpose:** Provides project documentation.
++
++### `audit-index.json`
++
++**Purpose:** Indexes bundled audit definitions available to the application.
++
++#### build-css.mjs
++  
++**Purpose:** Builds the generated root `styles.css` file from ordered, individually managed CSS source units stored under `css/`. It validates source-unit markers, discovers and registers new top-level CSS rules, preserves cascade order through `css/manifest.json`, validates the generated CSS structure, and writes files atomically.
++
++**Inputs:**
++- `css/manifest.json`, which defines the ordered list of CSS unit IDs and their owning split CSS files.
++- Every `css/*.css` source file referenced by the manifest, configured in `manifest.files`, or present in the `css/` directory.
++
++**Outputs:**
++- Root `styles.css`, generated by concatenating CSS unit contents in manifest order.
++- Updated `css/manifest.json` when units are discovered, moved, or explicitly removed.
++- Updated split CSS files when previously unmarked top-level CSS is assigned a source-unit ID and wrapped in `ATLAS-SOURCE-UNIT` markers.
++
++**Supported command-line options:**
++- `--check`: Validates and previews the build without writing any files.
++- `--no-discover`: Fails if unmarked CSS is found instead of assigning it a new unit ID.
++- `--accept-deletions`: Confirms that manifest entries whose source units are missing may be removed from the manifest.
++
++**Named functions:**
++- readJson()
++- safeProjectPath()
++- stripCommentsAndWhitespace()
++- validateCssStructure()
++- splitTopLevelUnits()
++- parseSourceFile()
++- nextUnitNumber()
++- insertManifestUnit()
++- inferPlacement()
++- atomicWrite()
++- sourceFor()
++
++### `docker-compose.yml`
++
++**Purpose:** Defines the local multi-container application environment and service wiring.
++
++### `index.html`
++
++**Purpose:** Main browser entry point. Loads the application shell, stylesheets, HTML partial loader, and ordered JavaScript modules.
++
++### `package-lock.json`
++
++**Purpose:** Locks the exact npm dependency graph for reproducible installations.
++
++### `package.json`
++
++**Purpose:** Defines npm metadata, scripts, runtime dependencies, and development dependencies.
++
++### `server.js`
++
++**Purpose:** Express application entry point. Configures middleware, API routes, static hosting, authorization, database-backed repositories, and startup behavior.
++
++**Named functions:**
++- `cookieValue()`
++- `getCurrentUser()`
++- `requireCurrentUser()`
++- `normalizedRoleSlugs()`
++- `canReplaceSourceLibrary()`
++- `requireSourceLibraryAdmin()`
++- `listValue()`
++- `compactValues()`
++- `sourceLibraryFromRows()`
++
++### `styles.css`
++
++**Purpose:** All avatar variants inherit the same image crop used by the topbar profile.
++
++## Deployment and Authorization
++
++### `.launch/config`
++
++**Purpose:** Supporting project file for config.
++
++### `.launch/opa/authz.rego`
++
++**Purpose:** Defines Open Policy Agent authorization policy.
++
++### `.launch/opa/authz.rego.txt`
++
++**Purpose:** Supporting project file for authz.rego.txt.
++
++## Database Migrations
++
++### `.launch/migrations/20260820112100_create_atlas_field_library.sql`
++
++**Purpose:** Defines a database migration for the PostgreSQL-backed application.
++
++### `.launch/migrations/20260820150000_add_import_user_identity.sql`
++
++**Purpose:** Defines a database migration for the PostgreSQL-backed application.
++
++### `.launch/migrations/20260820200000_create_audit_version_tables.sql`
++
++**Purpose:** Defines a database migration for the PostgreSQL-backed application.
++
++### `.launch/migrations/20260826131500_create_atlas_user_profiles.sql`
++
++**Purpose:** Defines a database migration for the PostgreSQL-backed application.
++
++## Catalog Data
++
++### `catalogs/source-fields.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `catalogs/source-file-index.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `catalogs/source-table-aliases.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `catalogs/vanity-labels.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++## Bundled Audit Definitions
++
++### `audits/Currency_Accuracy_Outside_North_America.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/active-employees-in-sap-not-wd.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/core-connector-worker-idoc.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/currency-accuracy-outside-north.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/currency-accuracy.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/dcl-it210.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/dcl-loa-90-day.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/diesi-sapl---infotypes-missing.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/global-names.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/infotype-errors.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/midweek-rehire-status.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/pa-to-psa.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/rehire-status-compare.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/sample-audit-logic-flow.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/security-groups-assigned-to-vac.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/service-dates.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/system-security-role-assignment.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### `audits/work-contract-comparison.json`
++
++**Purpose:** Stores structured application configuration or catalog data used at runtime.
++
++### Modular CSS
++
++#### CSS architecture and cascade contract
++
++The split files under `css/` are the editable CSS sources. The root `styles.css` file is generated output and should not be edited directly. Individual top-level CSS rules and at-rules are tracked as ordered source units using paired comments such as `ATLAS-SOURCE-UNIT:u0001:BEGIN` and `ATLAS-SOURCE-UNIT:u0001:END`. The unit's physical file indicates feature ownership, while its position in `css/manifest.json` controls final cascade order. Units from different files may therefore be interleaved in generated `styles.css`.
++
++Because later emitted rules can override earlier rules, moving a rule between files does not by itself determine precedence. Preserve or deliberately update its manifest position when changing ownership. New unmarked top-level rules are discovered by the build script and must have an unambiguous insertion location. Place them next to an existing marked unit, add an `ATLAS-INSERT-AFTER:u####` or `ATLAS-INSERT-BEFORE:u####` directive, use `ATLAS-INSERT:END`, or configure a default insertion location in the manifest.
++
++#### css/global.css
++  
++**Purpose:** Owns application-wide design tokens and shared presentation rules. This includes light and dark theme variables, resets, shell and navigation layout, topbar and profile display, shared typography, cards, buttons, forms, tables, statuses, badges, generic modal and picker primitives, tutorial overlays, shared responsive rules, cross-page utilities, and reusable source/field token styling. Feature files may depend on the custom properties and base components defined here.
++
++**Use for:** A selector or visual primitive used across multiple pages, the application shell, shared controls, global accessibility behavior, or theme-level behavior.
++
++#### css/audit-overview.css
++  
++**Purpose:** Owns Audit Overview assignment UI styling, including assignment columns, selected-user chips, avatars, directory search results, result labels, and assignment actions.
++
++**Use for:** Selectors specific to audit metadata, ownership, contributor, reviewer, or assignment experiences on the Audit Overview page.
++
++#### css/group-landing.css
++  
++**Purpose:** Reserved feature stylesheet for the group landing or dashboard page. It is currently empty in the supplied CSS snapshot, so the page inherits its presentation from shared rules in `css/global.css`.
++
++**Use for:** New selectors that apply only to the group landing or dashboard and should not affect other pages.
++
++#### css/logic-builder.css
++  
++**Purpose:** Owns the Logic Builder workspace and its specialized interactions. It covers the rules list, variable-height rule cards, hierarchy and collapse controls, selected-step editor, IF/THEN tabs, condition and action builders, logic text wrapping, source and field pickers used by rules, join and union pickers with Venn visuals, new-rule and rule-action menus, logic issue remediation UI, calculated-field math controls, created-field indicators, linked inverse steps, page-specific scrolling, responsive behavior, and overflow containment.
++
++**Use for:** Selectors scoped to `#page-steps`, logic rules, step editing, validation/remediation surfaces launched from the builder, or builder-only picker behavior.
++
++#### css/my-audits.css
++  
++**Purpose:** Owns the My Audits and Audit Library experience. It covers the audit contact/list presentation, search and filter controls, metrics, create/import actions, database loading state and spinner, table presentation, viewport-aware scrolling, responsive headers, role badges, and focus treatment for audit-library actions.
++
++**Use for:** Selectors specific to `#page-my-audits`, the visible Audit Library, audit search/filter behavior, audit tables, or audit-loading presentation.
++
++#### css/publication-preview.css
++  
++**Purpose:** Owns Publication Preview and save/export presentation. The supplied snapshot currently contains the package-heading divider used to separate publication or export package sections.
++
++**Use for:** Selectors specific to the publication, packaging, save, or export preview page.
++
++#### css/readiness-review.css
++  
++**Purpose:** Reserved feature stylesheet for the Readiness Review page. It is currently empty in the supplied CSS snapshot, so the page uses shared rules from `css/global.css`.
++
++**Use for:** New selectors specific to readiness checks, validation summaries, or review-only layouts that are not reused by the Logic Builder.
++
++#### css/requirements-preview.css
++  
++**Purpose:** Reserved feature stylesheet for the Requirements Preview page. It is currently empty in the supplied CSS snapshot, so preview tables and shared presentation are inherited from `css/global.css` and other existing shared units.
++
++**Use for:** New selectors specific to analyst/developer requirements preview layouts, statement-mode controls, or preview-only tables.
++
++#### css/sources.css
++  
++**Purpose:** Owns the Sources and Fields experience. It covers Source Library dialogs and embedded lists, contact-style source browsing, selected-source cards and metadata, source color controls, source and field tables, source replacement workflows, CSV import status, field-detail panes, viewport-aware scrolling, alphabet navigation, inclusion badges, source actions, source-name wrapping, and responsive source layouts. Some legacy alignment rules that touch Logic Builder-related elements remain here because unit ownership reflects the current split history.
++
++**Use for:** Selectors specific to `#page-fields`, Source Library browsing, selected sources, field tables, source replacement, or source import behavior.
++
++#### css/manifest.json
++  
++**Purpose:** Defines the authoritative CSS build order. Each entry maps a stable source-unit ID to the split CSS file containing that unit. The manifest also records its schema version, the next available unit number, the generated output filename through `source`, and optional per-file insertion defaults.
++
++**Important behavior:** The manifest order, not alphabetical file order, determines the rule order in generated `styles.css`. Do not manually renumber existing unit IDs. Let `build-css.mjs` assign IDs to newly discovered rules.
++
++#### styles.css
++  
++**Purpose:** Generated browser stylesheet assembled from the ordered units in `css/manifest.json`. It is the deployable compatibility artifact consumed by the application and must be regenerated after changes to split CSS files.
++
++**Editing rule:** Do not make source changes directly in `styles.css`; those changes can be overwritten by the next build. Edit the appropriate `css/*.css` file and rebuild instead.
++
++#### How to build the CSS
++
++**Prerequisites:**
++- Run the command from the project root, where `build-css.mjs`, `styles.css`, and the `css/` directory are siblings.
++- Use a Node.js environment that supports ECMAScript modules and the `node:` built-in import specifiers used by the script.
++
++**Recommended workflow:**
++
++1. Edit the appropriate split stylesheet under `css/`.
++2. Preview validation and discovery without writing files:
++
++```bash
++node build-css.mjs --check
++```
++
++3. Review any reported missing units, newly discovered units, insertion placements, or structural errors.
++4. Build and write the generated output:
++
++```bash
++node build-css.mjs
++```
++
++5. Review changes to the edited split CSS file, `css/manifest.json`, and root `styles.css` before committing them together.
++6. Run a strict verification that no unmarked CSS remains:
++
++```bash
++node build-css.mjs --check --no-discover
++```
++
++**Deletion workflow:** If a marked CSS unit was intentionally removed from its split source file, first preview the confirmed deletion without writing:
++
++```bash
++node build-css.mjs --check --accept-deletions
++```
++
++Then apply the deletion to the manifest and generated stylesheet:
++
++```bash
++node build-css.mjs --accept-deletions
++```
++
++Do not use `--accept-deletions` merely to bypass an unexpected missing-unit error. Restore the missing marked unit or investigate the manifest mismatch unless deletion was intentional.
++
++**Expected success output:** A normal build reports that `styles.css` was built from the ordered source units. Check mode reports that the CSS check passed and states how many units would be emitted. If new unmarked rules were found, the script reports the assigned IDs and their placements.
++
++**Build safety behavior:** The script rejects unknown options, unsafe paths, missing source files, invalid or duplicate unit IDs, mismatched or orphaned markers, ambiguous insertion locations, unbalanced CSS syntax, duplicate output emission, and generated output that still contains source-management markers. Writes use temporary files followed by rename operations.
++
++## HTML Page Partials
++
++### `sections/audit-overview.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/group-landing.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/logic-builder.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/my-audits.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/publication-preview.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/readiness-review.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/requirements-preview.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++### `sections/sources.html`
++
++**Purpose:** Provides the HTML structure and controls for this application area.
++
++## Browser JavaScript Modules
++
++### `js/.gitkeep`
++
++**Purpose:** Supporting project file for .gitkeep.
++
++### `js/00-config-utils.js`
++
++**Purpose:** 00-config-utils.js Core application constants and low-level utility helpers used by the browser-only ATLAS Align app. This file should stay dependency-free because many later scripts rely on these helpers during startup.
++
++**Named functions:**
++- `downloadBlob()`
++- `downloadJson()`
++- `stepTypeLabel()`
++- `conditionText()`
++- `firstLetter()`
++- `alphaSortItems()`
++- `alphaLetters()`
++- `$()`
++- `esc()`
++- `uid()`
++- `today()`
++- `csvEscape()`
++
++### `js/00-exceljs-loader.js`
++
++**Purpose:** Lazy-loads ExcelJS only when an Excel feature is first requested.
++
++**Named functions:**
++- `atlasEnsureExcelJs()`
++
++### `js/00-html-partials-loader.js`
++
++**Purpose:** Loads the page HTML partials before the existing application scripts execute. Synchronous loading is intentional in this first-pass source-organization refactor: 01-state-dom.js caches DOM references at script evaluation time, and 06-events-bootstrap.js invokes init() immediately when it is evaluated.
++
++**Named functions:**
++- `loadHtmlPartialsBeforeApplicationBootstrap()`
++
++### `js/01-state-dom.js`
++
++**Purpose:** 01-state-dom.js Global state, cached DOM references, status/theme helpers, field-display helpers, and navigation helpers. Later modules read and mutate this shared state directly.
++
++**Named functions:**
++- `defaultAudit()`
++- `status()`
++- `themeMode()`
++- `setTheme()`
++- `hasSelectedAudit()`
++- `markAuditSelected()`
++- `clearAuditSelection()`
++- `auditSnapshot()`
++- `updateActiveAuditBaseline()`
++- `auditHasUnsavedChanges()`
++- `fieldDisplayMode()`
++- `findFieldDisplayCandidate()`
++- `fieldDisplayParts()`
++- `fieldDisplayName()`
++- `setFieldDisplayMode()`
++- `toggleFieldDisplayMode()`
++- `pageForSection()`
++- `showSection()`
++
++### `js/02-hierarchy.js`
++
++**Purpose:** 02-hierarchy.js Hierarchy and step-ordering utilities for Logic Builder steps. This file owns parent/child relationships, grouped ordering, step numbering, and child-step creation.
++
++**Named functions:**
++- `normalizeHierarchyFields()`
++- `atlasStepOrderGroup()`
++- `atlasStepOrderGroupLabel()`
++- `atlasStepOrderGroupShortLabel()`
++- `atlasOrderedSiblings()`
++- `atlasParentKeysForStepOrder()`
++- `atlasNormalizeStepOrderGroups()`
++- `atlasMovableSiblingsForStep()`
++- `atlasCanMoveStepUp()`
++- `atlasCanMoveStepDown()`
++- `atlasMoveStepWithinGroup()`
++- `stepById()`
++- `childrenOf()`
++- `isDescendantOf()`
++- `parentOptionsForStep()`
++- `branchTypeOptions()`
++- `stepLevel()`
++- `branchLabel()`
++- `hierarchicalStepEntries()`
++- `stepNumberFor()`
++- `setStepParent()`
++- `makeChildOfPrevious()`
++- `outdentStep()`
++- `addChildStep()`
++- `visit()`
++
++### `js/02-logic-rendering.js`
++
++**Purpose:** 02-logic-rendering.js Base render pipeline and preview rendering. Later visual modules override several functions from this file, but renderAll remains the central render coordinator.
++
++**Named functions:**
++- `noteText()`
++- `orderedSteps()`
++- `previewRows()`
++- `isCompleteStatementsPreviewMode()`
++- `completeStatementStepType()`
++- `completeStatementHasIndependentAction()`
++- `completeStatementStripIf()`
++- `completeStatementContextFragment()`
++- `completeStatementConditionContext()`
++- `completeStatementNotes()`
++- `completeStatementAnalystLogic()`
++- `completeStatementPreviewRows()`
++- `atlasActivePage()`
++- `atlasInvalidatePages()`
++- `atlasMarkAllPagesDirty()`
++- `atlasRenderPage()`
++- `atlasRenderActivePage()`
++- `atlasIsPreviewVisible()`
++- `atlasRenderPreviewWhenUseful()`
++- `atlasInvalidateSourceMutation()`
++- `atlasInvalidateStepMutation()`
++- `atlasMeasure()`
++- `atlasWrapWithPerf()`
++- `atlasPerformanceWrappedFunction()`
++- `atlasFlushRequestedRender()`
++- `atlasRequestRender()`
++- `atlasRequestStructuralStepRender()`
++- `parseSourceMathOperations()`
++- `atlasIsZeroMathOperand()`
++- `atlasDecimalPlacesValue()`
++- `renderAll()`
++- `renderHeader()`
++- `renderColorPalette()`
++- `renderSources()`
++- `renderFields()`
++- `sourceColorForText()`
++- `renderDefaultLogicPillToken()`
++- `renderLogicWithPills()`
++- `renderNoSelectedStepContent()`
++- `renderDefaultSelectedStepContent()`
++- `renderSelectedStep()`
++- `renderPreview()`
++- `renderFlowSelect()`
++- `joinTypeDisplayName()`
++- `parseDeveloperSourceMathOperations()`
++- `excelStructuredReference()`
++- `sqlBracketIdentifier()`
++- `sqlMathOperand()`
++- `unwrapSingleExpression()`
++- `buildSequentialMathExpression()`
++- `conditionCompareMathOperations()`
++- `mathOperandDeveloperExpression()`
++- `conditionFieldDeveloperExpression()`
++- `buildConditionCompareMathExpression()`
++- `developerOperatorSymbol()`
++- `developerConditionRightExpression()`
++- `developerConditionExpression()`
++- `ifThenDeveloperLogic()`
++- `sourceFieldRoundingMode()`
++- `sourceFieldDecimalPlaces()`
++- `applyExcelRounding()`
++- `applySqlServerRounding()`
++- `createColumnSourceFieldDeveloperLogic()`
++- `developerLogic()`
++- `joinKeptRowsDescription()`
++- `atlasRawMathValue()`
++- `atlasParseRawMathOperations()`
++- `atlasNormalizeMathOperation()`
++- `atlasSerializeMathOperations()`
++- `parseSourceMathOperationsCanonical()`
++- `atlasMathOperationsFromContainer()`
++- `atlasFindFieldRecord()`
++- `atlasLooksLikeIdentifierField()`
++- `atlasIsNumericField()`
++- `atlasMathOperandField()`
++- `atlasValidateMathOperations()`
++- `atlasBuildMathDeveloperExpression()`
++- `createColumnSourceFieldDeveloperLogicMath()`
++- `thenCalculationDeveloperLogic()`
++- `developerLogicWithThenMath()`
++- `atlasStringTransformDeveloperExpression()`
++- `atlasStringTransformDeveloperLogic()`
++- `developerLogicWithStringTransform()`
++- `completeStatementHasIndependentStringAction()`
++- `conditionJoin()`
++- `wrapped()`
++
++### `js/03-capture-actions.js`
++
++**Purpose:** 03-capture-actions.js Capture, step creation, duplication, and basic export helpers. Capture reads current DOM controls back into state before save/export/autosave operations.
++
++**Named functions:**
++- `capture()`
++- `addStep()`
++- `selectedStep()`
++- `duplicateStep()`
++- `exportCurrent()`
++- `exportCsv()`
++- `markdown()`
++- `copyMarkdown()`
++- `markdownWithDeveloperLogic()`
++- `clean()`
++
++### `js/04-persistence.js`
++
++**Purpose:** 04-persistence.js IndexedDB persistence layer for saved audits, autosave, import/export bundles, and active audit switching support.
++
++**Named functions:**
++- `openDb()`
++- `dbAll()`
++- `dbPut()`
++- `dbGet()`
++- `dbDelete()`
++- `refreshSaved()`
++- `saveFlow()`
++- `saveCurrentAuditForSwitch()`
++- `loadFlow()`
++- `deleteFlow()`
++- `exportAll()`
++- `importAll()`
++- `scheduleAutosave()`
++- `saveAutosave()`
++- `restoreAutosave()`
++- `clearAutosave()`
++- `deleteAtlasDatabase()`
++- `clearAtlasBrowserStorage()`
++- `resetLocalAppData()`
++- `refreshDatabaseAudits()`
++- `saveDatabaseAudit()`
++- `saveDatabaseAuditForSwitch()`
++- `loadDatabaseAuditFromSelect()`
++- `archiveDatabaseAudit()`
++- `exportDatabaseAuditIndex()`
++- `importJsonAuditsToDatabase()`
++- `saveRecoveryDraftOnly()`
++
++### `js/05-tutorials.js`
++
++**Purpose:** 05-tutorials.js Tutorial overlay engine. This file resolves tutorial definitions, positions guided cards, and handles tutorial navigation controls.
++
++**Named functions:**
++- `normalizeTutorialName()`
++- `normalizeTutorialStep()`
++- `tutorialSteps()`
++- `sectionForTutorialSelector()`
++- `tutorialPageFor()`
++- `showSectionForTutorial()`
++- `startTutorial()`
++- `endTutorial()`
++- `renderTutorialBody()`
++- `tutorialCardPosition()`
++- `renderTutorialActions()`
++- `runTutorialAction()`
++- `getTutorialRect()`
++- `moveTutorial()`
++- `renderTutorial()`
++- `scheduleTutorialRender()`
++- `positionTutorial()`
++- `handleTutorialControlClick()`
++
++### `js/06-events-bootstrap.js`
++
++**Purpose:** 06-events-bootstrap.js Application event bootstrap. This file wires top-level buttons, input/change listeners, navigation, import controls, and startup initialization.
++
++**Named functions:**
++- `on()`
++- `shouldSkipBaseBodyEditEvent()`
++- `bindEvents()`
++- `init()`
++
++### `js/07-phrase-catalog.js`
++
++**Purpose:** 07-phrase-catalog.js Phrase catalog loading, formatting helpers, and analyst/developer logic generation for standardized audit language.
++
++**Named functions:**
++- `initPhraseCatalog()`
++- `validateCatalogShape()`
++- `getCatalogValue()`
++- `phraseTemplate()`
++- `renderPhraseFromTemplate()`
++- `renderCatalogPhrase()`
++- `catalogArray()`
++- `quotePhraseValue()`
++- `sourceAliasFor()`
++- `tableColumnPlain()`
++- `formattedValueList()`
++- `conditionCompareMathOperationsForPhrase()`
++- `compareMathOperatorWord()`
++- `compareMathOperandPlain()`
++- `conditionCompareFieldPlain()`
++- `conditionValuePlain()`
++- `conditionToPlain()`
++- `parseStepConditions()`
++- `inverseConditionOperator()`
++- `inverseConditionConnector()`
++- `invertGuidedCondition()`
++- `invertedConditionsForStep()`
++- `conditionGroupPlain()`
++- `ensureIfThenPrefix()`
++- `thenActionPlain()`
++- `elseActionPlain()`
++- `createColumnPhrasePath()`
++- `phraseIsUnionJoinType()`
++- `atlasRoundingTargetText()`
++- `atlasRoundingDirectionText()`
++- `atlasReadableSourceFieldName()`
++- `atlasSourceMathOperationPhrase()`
++- `atlasJoinReadableList()`
++- `atlasSourceFieldMathPhrase()`
++- `analystLogic()`
++- `noteText()`
++- `atlasSourceMathOperationPhraseCanonical()`
++- `atlasMathRoundingPhrase()`
++- `thenActionPlainWithMath()`
++- `analystLogicWithStructuredMath()`
++- `atlasStringTransformAnalystValues()`
++- `atlasStringTransformAnalystPhrase()`
++- `thenActionPlainWithStringTransform()`
++- `elseActionPlainWithStringTransform()`
++- `analystLogicWithStringTransform()`
++
++### `js/08-step-templates-validation.js`
++
++**Purpose:** 08-step-templates-validation.js Legacy step-template helpers and validation-panel logic. Template UI may be hidden, but validation still evaluates audit completeness and step consistency.
++
++**Named functions:**
++- `renderStepTemplateOptions()`
++- `insertSelectedStepTemplate()`
++- `atlasKnownFieldOptionValues()`
++- `validateAudit()`
++- `renderValidationPanel()`
++- `validateAuditWithMath()`
++- `addMathIssues()`
++
++### `js/09-workbook-import.js`
++
++**Purpose:** 09-workbook-import.js Workbook import parser for audit sheets, source aliases, vanity labels, and imported logic-step rows using ExcelJS workbook structures.
++
++**Named functions:**
++- `normalizeHeader()`
++- `rowValues()`
++- `worksheetHeaders()`
++- `worksheetToObjects()`
++- `classifyWorksheet()`
++- `detectWorkbookStructure()`
++- `parseVanityLabels()`
++- `parseSourceAliases()`
++- `parseLogicSteps()`
++- `auditSheetToFields()`
++- `sourceAliasFor()`
++- `parseStepType()`
++- `numberToParentNumber()`
++- `branchTypeFromAnalystLogic()`
++- `logicRowsToSteps()`
++- `loadAuditFromWorkbook()`
++- `renderWorkbookStatus()`
++- `renderWorkbookAuditSelector()`
++- `importWorkbookFile()`
++- `workbookFieldOptions()`
++- `parseLogicStepsWithParamsJson()`
++- `logicRowsToStepsWithParamsJson()`
++- `has()`
++
++### `js/10-field-picker.js`
++
++**Purpose:** Canonical source identity resolver. Resolves legacy names and aliases against the catalog while preserving the stable key, physical file name, and display alias as separate values.
++
++**Named functions:**
++- `atlasResolveSourceIdentity()`
++- `atlasNormalizeAuditSourceIdentity()`
++- `sourceCatalogEntries()`
++- `selectedSourceDetail()`
++- `fieldsForSource()`
++- `sourceOptionsHtml()`
++- `fieldOptionsHtml()`
++- `nextSourceColor()`
++- `atlasSourceMutationKey()`
++- `atlasAddSourceState()`
++- `atlasRemoveSourceState()`
++- `atlasCommitSourceMutationFallback()`
++- `addSourceFileToAudit()`
++- `removeSourceFileFromAudit()`
++- `referenceStepForSource()`
++- `syncAutoReferenceSteps()`
++- `applyLibraryFieldToSelectedStep()`
++- `allFieldOptions()`
++- `refreshFieldPickerOptions()`
++- `applyFieldPickerAttributes()`
++- `renderFieldPickerPanel()`
++- `atlasMarkFieldPickerDirty()`
++- `atlasEnsureFieldPickerOptions()`
++- `clean()`
++- `byAnyIdentity()`
++
++### `js/11-repo-library.js`
++
++**Purpose:** 11-repo-library.js Repository-backed audit/source library loading and active audit switching. Fetches JSON catalog assets and normalizes loaded audits.
++
++**Named functions:**
++- `fetchJsonGracefully()`
++- `sourceCatalogKey()`
++- `sourceCatalogDisplayName()`
++- `sourceCatalogSubtitle()`
++- `loadSourceFileDetail()`
++- `loadSourceFileLibrary()`
++- `loadRepoLibrary()`
++- `renderRepoLibraryStatus()`
++- `getAuditLibraryItems()`
++- `normalizeAssignmentUser()`
++- `normalizeAssignmentUsers()`
++- `normalizeAuditAssignments()`
++- `normalizeLoadedAudit()`
++- `loadSelectedLibraryAudit()`
++- `confirmAuditSwitchSaveBehavior()`
++- `switchActiveAudit()`
++
++### `js/12-export-foundation.js`
++
++**Purpose:** 12-export-foundation.js Export utilities for current audit outputs, including Excel, HTML, clipboard HTML, and qTest template generation.
++
++**Named functions:**
++- `auditExportRows()`
++- `safeFileName()`
++- `exportAuditExcel()`
++- `auditHtmlDocument()`
++- `exportAuditHtml()`
++- `copyAuditHtml()`
++- `cloneExcelStyle()`
++- `loadQtestTemplateWorkbook()`
++- `qtestTestTypeForRow()`
++- `qtestSourceRuleForRow()`
++- `qtestScenarioForRow()`
++- `qtestDefaultActionSteps()`
++- `qtestAtlasExpectedOutcomeForRow()`
++- `qtestSourceExpectedOutcomeForRow()`
++- `qtestRowsFromLogicSteps()`
++- `copyRowStyle()`
++- `resetQtestUatSampleContent()`
++- `populateQtestUatSheet()`
++- `keepOnlyQtestSheets()`
++- `exportQtestExcel()`
++
++### `js/13-catalog-field-browser.js`
++
++**Purpose:** 13-catalog-field-browser.js Enhanced source/field browser rendering with catalog metadata search and selected source actions.
++
++**Named functions:**
++- `atlasCatalogTextValue()`
++- `atlasCatalogListHtml()`
++- `atlasCatalogMetaLine()`
++- `atlasCatalogFieldSearchText()`
++- `sourceSearchText()`
++- `atlasCatalogSourceMetadataHtml()`
++- `atlasCatalogFieldMetadataHtml()`
++- `getSourceFieldBrowserModel()`
++- `sourceFieldBrowserMatchesSearch()`
++- `bindCatalogFieldBrowserEvents()`
++- `renderAllWithCatalogFieldBrowser()`
++
++### `js/14-catalog-driven-builder.js`
++
++**Purpose:** 14-catalog-driven-builder.js Catalog-driven step normalization and base guided-builder rendering for each supported Logic Builder step type.
++
++**Named functions:**
++- `isUnionJoinType()`
++- `legacyTypeFromStepType()`
++- `normalizeCatalogStep()`
++- `defaultGuidedCondition()`
++- `optionsHtml()`
++- `fieldInput()`
++- `sourceInput()`
++- `sourceAliasHidden()`
++- `valuesToLines()`
++- `atlasWriteLiveEditorConditions()`
++- `renderGuidedBuilder()`
++- `renderCreateModeInputs()`
++- `compareMathOperationsForCondition()`
++- `compareMathOperatorOptions()`
++- `renderCompareMathOperationRow()`
++- `renderCompareMathEditor()`
++- `renderConditionRow()`
++- `renderThenActionBuilder()`
++- `renderStepsCatalogDrivenBase()`
++- `captureCatalogDriven()`
++- `atlasConditionSummaries()`
++- `atlasCloneInverseConditionsForTarget()`
++- `atlasSourceForInverseStep()`
++- `atlasInverseElseSortOrder()`
++- `syncInverseElseStepsForSource()`
++- `createInverseElseStepForIf()`
++- `createOrUpdateElseStep()`
++- `renderStepsAuditWorkspace()`
++- `normalizeCatalogStepWithMath()`
++- `atlasNumericFieldOptionsHtml()`
++- `atlasMathOperatorOptions()`
++- `atlasMathEditorHtml()`
++- `atlasMathOperationRowHtml()`
++- `renderCreateModeInputsWithMath()`
++- `atlasPositiveWholeNumber()`
++- `atlasStringTransformConfig()`
++- `atlasValidateStringTransform()`
++- `atlasStringTransformFieldReferences()`
++- `atlasLogicFieldReferences()`
++- `atlasRegisterStringTransformResult()`
++- `normalizeCatalogStepWithStringTransform()`
++- `renderCreateModeInputsWithStringTransform()`
++- `get()`
++- `add()`
++
++### `js/15a-audit-library-ui.js`
++
++**Purpose:** 15a-audit-library-ui.js Split from 15-visual-ui-upgrades.js. Base visual UI state, picker behavior, condition rendering, and rule rendering layer. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `pickerSourceOptions()`
++- `pickerFieldOptions()`
++- `renderMiniPickerTrigger()`
++- `visualConditionRow()`
++- `valuesToLines()`
++- `renderConditionPickerTrigger()`
++- `renderMiniPicker()`
++- `moveManualStep()`
++- `renderStepsVisualCollapsible()`
++- `renderStepTypePills()`
++- `renderStepCard()`
++
++### `js/15b-source-library-ui.js`
++
++**Purpose:** 15b-source-library-ui.js Split from 15-visual-ui-upgrades.js. Audit/source contacts-style browser refinements and selected-source rendering/actions. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `sourceSystem()`
++- `selectedSourceSet()`
++- `sourceMatchesSearch()`
++- `firstLetter()`
++- `alphaSortItems()`
++- `alphaLetters()`
++- `scrollContactsLetter()`
++- `allAuditLibraryItems()`
++- `renderAuditLibraryContacts()`
++- `filteredSourceEntries()`
++- `atlasSourceUsageState()`
++- `atlasSourceLibraryPill()`
++- `atlasSourceLibraryTabsHtml()`
++- `renderSourceFieldBrowserAuditAwareInline()`
++- `fieldRowsForSource()`
++- `renderSelectedSourceColorControl()`
++- `renderSelectedSourceTable()`
++- `renderCombinedSelectedSources()`
++- `renderFieldsMergedIntoSources()`
++- `atlasCommitAuditSourceChange()`
++- `atlasSourceActionFromControl()`
++- `atlasSourceKeyFromControl()`
++- `atlasSourceUsageStateWithStringTransform()`
++
++### `js/15c-source-field-picker.js`
++
++**Purpose:** 15c-source-field-picker.js Split from 15-visual-ui-upgrades.js. Logic Builder live-editor and table-preview foundation. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `stepTypeLabel()`
++- `renderLiveSourceOptions()`
++- `renderLiveFieldOptions()`
++- `conditionsForLiveEditor()`
++- `writeLiveConditions()`
++- `renderLiveCriteriaEditor()`
++- `renderSelectedStepLiveOutput()`
++- `renderLogicTablePreviewRows()`
++- `renderStepsMockupAligned()`
++- `renderLogicRuleCard()`
++
++### `js/15d-logic-rules-list.js`
++
++**Purpose:** 15d-logic-rules-list.js Split from 15-visual-ui-upgrades.js. Selected-step editor redesign and editor-aware picker commit behavior. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `atlasStepTypeLabel()`
++- `atlasSelectOptions()`
++- `atlasVisibleStepEntries()`
++- `atlasEditorValue()`
++- `atlasCaptureGuidedFields()`
++- `atlasRefreshLogicRuleCard()`
++- `atlasCommitLiveEditor()`
++- `atlasRenderParentOptions()`
++- `atlasRenderBranchEditor()`
++- `atlasRenderStepEditor()`
++- `renderSelectedStepEditorPane()`
++- `renderLogicTablePreviewRows()`
++- `atlasRenderHiddenPreserveFields()`
++- `renderLogicRuleCard()`
++- `renderStepsEditorRedesign()`
++- `setPickerTargetValueEditorAware()`
++- `atlasCaptureGuidedFieldsWithMath()`
++- `get()`
++
++### `js/15e-logic-step-editor.js`
++
++**Purpose:** 15e-logic-step-editor.js Split from 15-visual-ui-upgrades.js. Compact rule cards, selected-source picker restrictions, hierarchy actions, and rule menus. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `atlasSelectedAuditSources()`
++- `atlasNormalizedSourceIdentity()`
++- `atlasSourceIdentityCandidates()`
++- `atlasResolveSelectedSource()`
++- `atlasSourceStableKey()`
++- `atlasEnsureAuditSourceColors()`
++- `atlasSelectedSourceColor()`
++- `atlasSelectedSourceAlias()`
++- `atlasSourceOptionsHtml()`
++- `atlasFieldOptionsHtml()`
++- `atlasIsCustomField()`
++- `atlasSourceAwareMiniPickerTrigger()`
++- `atlasSourceAwareConditionPickerTrigger()`
++- `atlasSelectedSourceVisualInput()`
++- `atlasSelectedFieldVisualInput()`
++- `pickerSourceOptions()`
++- `pickerFieldOptions()`
++- `atlasSortedPickerItems()`
++- `renderMiniPicker()`
++- `atlasFieldMatchForSource()`
++- `atlasSourceMatchForValue()`
++- `atlasRenderLogicWithSourceAndFieldPills()`
++- `atlasActionAvailability()`
++- `atlasAddStepAfter()`
++- `atlasDuplicateStepById()`
++- `renderLogicRuleCard()`
++- `atlasRenderFieldSortControl()`
++- `renderSelectedStepEditorPaneCompact()`
++- `renderGuidedBuilderSelectedSourcesOnly()`
++- `atlasCloseRuleMenus()`
++- `atlasSelectedSourceOptionsHtmlForGuidedBuilders()`
++- `atlasSelectedFieldOptionsHtmlForGuidedBuilders()`
++- `atlasInheritedReferenceSourceForStep()`
++- `atlasNormalizeReferenceSubstep()`
++- `atlasAddReferenceChildStep()`
++- `parentOptionsForStepReferenceJoinGuard()`
++- `setStepParentReferenceJoinGuard()`
++- `atlasCommitLiveEditorReferenceContext()`
++- `syncAutoReferenceStepsWithDescendantCleanup()`
++- `atlasSelectedAuditSourcesWithCalculatedFields()`
++- `atlasCommitLiveEditorDeterministic()`
++
++### `js/15f-join-picker.js`
++
++**Purpose:** 15f-join-picker.js Split from 15-visual-ui-upgrades.js. JOIN type picker, JOIN developer logic, and Venn visualization refinements. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `atlasJoinTypeDisplayName()`
++- `atlasJoinKeptRowsDescription()`
++- `atlasJoinSourceLabel()`
++- `atlasJoinDeveloperLogic()`
++- `atlasRenderJoinTypePickerButton()`
++- `renderGuidedBuilderWithJoinVenn()`
++- `atlasOpenJoinPicker()`
++- `atlasRenderJoinPickerModal()`
++- `atlasConfirmJoinPicker()`
++- `renderLogicTablePreviewRowsWithDeveloperLogic()`
++- `atlasJoinIncludedRegionMarkup()`
++- `atlasJoinVennSvg()`
++- `atlasRenderJoinPickerModalOverlapRefinement()`
++
++### `js/15g-visual-ui-events.js`
++
++**Purpose:** 15g-visual-ui-events.js Split from 15-visual-ui-upgrades.js. IF/THEN condition/action usability refinements, stable picker search, ELSE handling, and final resize/event refinements. IMPORTANT: classic browser script; preserve the 15a-15g load order.
++
++**Named functions:**
++- `atlasConditionValues()`
++- `atlasConditionValueRows()`
++- `atlasConditionValueInputs()`
++- `atlasUniqueConditionValues()`
++- `atlasUpdateConditionValueHidden()`
++- `atlasConditionValueIsDuplicate()`
++- `atlasCommitConditionValueInput()`
++- `atlasFocusNextConditionValue()`
++- `renderConditionRowUsability()`
++- `atlasRenderThenActionBuilder()`
++- `renderGuidedBuilderUsability()`
++- `atlasRenderStepEditorUsability()`
++- `renderSelectedStepUsabilityPane()`
++- `atlasOperatorOptionsForValueMode()`
++- `renderConditionRowFollowUp()`
++- `atlasRenderIfThenTabbedBuilder()`
++- `renderGuidedBuilderFollowUp()`
++- `renderSelectedStepFollowUpPane()`
++- `atlasSyncRulesHeightToEditor()`
++- `renderStepsFollowUp()`
++- `atlasMiniPickerResultsHtml()`
++- `renderMiniPickerStableSearch()`
++- `atlasRefreshMiniPickerResults()`
++- `atlasMarkLogicIssuesDirty()`
++- `atlasLogicIssuesCached()`
++- `atlasNewRuleTypeOptions()`
++- `atlasDefaultSourceForNewRule()`
++- `atlasNewRuleStepLabel()`
++- `atlasReindexManualRules()`
++- `atlasCreateRuleOfType()`
++- `atlasRuleTypeDescription()`
++- `atlasCloseNewRuleTypeMenu()`
++- `atlasOpenNewRuleTypeMenu()`
++- `atlasToggleNewRuleTypeMenu()`
++- `atlasLinkedInverseForSource()`
++- `atlasMigrateLegacyInverseStep()`
++- `syncInverseElseStepsForSource()`
++- `createInverseElseStepForIf()`
++- `atlasConditionConnectorValue()`
++- `atlasConditionRowsForEditor()`
++- `atlasConditionConnectorConflict()`
++- `atlasStepForConditionEditor()`
++- `atlasDefaultConditionForConnector()`
++- `atlasWriteConditionList()`
++- `atlasRefreshConditionSurfaces()`
++- `atlasCommitLiveEditorWithLinkedInverse()`
++- `renderStepsWithLinkedInverse()`
++- `renderConditionRowWithMath()`
++- `atlasRenderThenActionBuilderWithMath()`
++- `atlasSyncMathEditor()`
++- `atlasRenderThenActionBuilderWithStringTransform()`
++- `atlasStringTransformIssuesForAudit()`
++- `atlasLogicIssuesWithStringTransform()`
++- `atlasPickerEntries()`
++- `atlasPickerReferenceSource()`
++- `atlasPickerCreatedSource()`
++- `commitPickerSelection()`
++- `atlasCreatedFieldEntries()`
++- `atlasUnifiedFieldEntries()`
++- `atlasPickerScope()`
++- `atlasSetPickerTargetValueCommitBeforeRender()`
++- `atlasCreatedPickerHtml()`
++- `atlasRemoveSourceControl()`
++- `atlasCreatedRefs()`
++- `atlasCreatedFieldIssuesForAudit()`
++
++### `js/16-page-shell.js`
++
++**Purpose:** 16-page-shell.js Page shell enhancements for dashboard metrics, topbar audit switching, navigation lock state, flow navigation, and field display toggle rendering.
++
++**Named functions:**
++- `setText()`
++- `updateDashboardMetrics()`
++- `renderPageShellStatus()`
++- `renderAllWithPageShell()`
++- `refreshSavedWithPageShell()`
++- `topbarAuditOptions()`
++- `activePageName()`
++- `renderTopbarAuditSwitcherVisibility()`
++- `pendingActiveAuditValue()`
++- `renderActiveAuditSelect()`
++- `renderFieldDisplayModeButton()`
++- `updateNavigationLockState()`
++- `activeAuditFlowPage()`
++- `renderFlowNavControls()`
++- `atlasOptionHtml()`
++- `atlasGroupedAuditOptionsHtml()`
++- `renderActiveAuditSelectFinal()`
++- `topbarDatabaseAuditOptions()`
++- `updateDatabaseOnlyMetrics()`
++- `atlasUserInitials()`
++- `atlasDisplayUser()`
++- `atlasUserMatches()`
++- `atlasAuditMembership()`
++- `renderCurrentUserProfile()`
++- `atlasAssignmentNames()`
++- `atlasAuditSearchText()`
++- `renderMyAudits()`
++- `atlasRenderAssignmentAvatar()`
++- `renderAssignmentEditor()`
++- `renderAssignmentSearchResults()`
++- `renderPageShellStatusWithAssignments()`
++- `atlasUserProfileKey()`
++- `atlasCacheAssignmentProfiles()`
++- `atlasResolvedAssignmentUser()`
++- `atlasMergeAssignmentUsers()`
++- `atlasLoadRecentAssignmentUsers()`
++- `atlasSearchAllDirectoryUsers()`
++- `atlasAssignedUsersForHydration()`
++- `atlasHydrateAssignedUserProfiles()`
++
++### `js/17-source-database.js`
++
++**Purpose:** 17-source-database.js Database-backed source-library API integration and administrator CSV replacement.
++
++**Named functions:**
++- `atlasApiJson()`
++- `atlasFetchSourceLibrary()`
++- `atlasLoadSourceLibraryAccess()`
++- `atlasFormatCsvError()`
++- `atlasReplaceSourceLibraryCsv()`
++- `atlasInitSourceDatabase()`
++
++### `js/18-audit-database.js`
++
++**Purpose:** Durable database audit persistence. IndexedDB remains local crash recovery only.
++
++**Named functions:**
++- `atlasAuditApi()`
++- `atlasApplyLoadedAudit()`
++- `atlasLoadCurrentUser()`
++- `atlasSearchUsers()`
++- `atlasSetAuditLibraryLoading()`
++- `atlasSetAuditLibraryStatus()`
++- `atlasRefreshDatabaseAudits()`
++- `atlasLoadDatabaseAudit()`
++- `atlasSaveCurrentAudit()`
++- `atlasIsDatabaseAuditDirty()`
++- `atlasSaveIfDirty()`
++- `atlasNavigateToSection()`
++- `atlasSaveOnPageHide()`
++- `atlasAuditDocumentsFromJson()`
++- `atlasImportAuditDocuments()`
++- `atlasImportAuditDocument()`
++- `atlasImportAuditJsonFile()`
++- `atlasArchiveCurrentAudit()`
++- `atlasInitAuditDatabase()`
++- `atlasSearchCachedUsers()`
++- `atlasSearchDirectoryProfiles()`
++- `atlasResolveUserProfiles()`
++- `atlasApplyLoadedAuditWithProfileHydration()`
++
++### `js/19-audit-version-history.js`
++
++**Purpose:** Audit-level and step-level immutable revision history UI.
++
++**Named functions:**
++- `atlasHistoryClose()`
++- `atlasJsonLines()`
++- `atlasSimpleDiff()`
++- `atlasShowHistoryModal()`
++- `atlasOpenAuditHistory()`
++- `atlasViewAuditRevision()`
++- `atlasRestoreAuditRevision()`
++- `atlasOpenStepHistory()`
++- `atlasCompareStepRevision()`
++- `atlasRestoreStepRevision()`
++- `atlasOpenConflictDialog()`
++
++### `js/20-database-only-audits.js`
++
++**Purpose:** Final database-only audit library compatibility overrides.
++
++**Named functions:**
++- `allDatabaseAuditLibraryItems()`
++
++## Backend Modules
++
++### `src/audit-authorization.js`
++
++**Purpose:** Central audit authorization policy. All authenticated users are allowed in phase 1.
++
++**Named functions:**
++- `auditAccessForUser()`
++- `requireAuditCapability()`
++
++### `src/audit-repository.js`
++
++**Purpose:** Supporting project file for audit-repository.js.
++
++**Named functions:**
++- `stableValue()`
++- `canonicalJson()`
++- `documentHash()`
++- `cleanText()`
++- `normalizeAssignmentUser()`
++- `normalizeAssignmentUsers()`
++- `normalizeAssignments()`
++- `userFields()`
++- `validateAudit()`
++- `listAudits()`
++- `getAudit()`
++- `insertStepRevision()`
++- `saveAudit()`
++- `listAuditRevisions()`
++- `getAuditRevision()`
++- `restoreAuditRevision()`
++- `listStepRevisions()`
++- `getStepRevision()`
++- `restoreStepRevision()`
++- `archiveAudit()`
++- `importAudit()`
++
++### `src/field-library.js`
++
++**Purpose:** Supporting project file for field-library.js.
++
++**Named functions:**
++- `stripBom()`
++- `parseAndValidateCsv()`
++- `replaceFieldLibrary()`
++
++### `src/schema.js`
++
++**Purpose:** Supporting project file for schema.js.
++
++**Named functions:**
++- `quoteIdentifier()`
++
++### `src/user-profile-repository.js`
++
++**Purpose:** Supporting project file for user-profile-repository.js.
++
++**Named functions:**
++- `cleanText()`
++- `minimalUserProfile()`
++- `upsertUserProfiles()`
++- `searchUserProfiles()`
++- `cachedProfilesForIdentities()`
++
++### `src/user-profile-routes.js`
++
++**Purpose:** Supporting project file for user-profile-routes.js.
++
++**Named functions:**
++- `accessToken()`
++- `studioShareJson()`
++- `createUserProfileRouter()`
++
++## Automated Tests
++
++### `test/schema.test.js`
++
++**Purpose:** Supporting project file for schema.test.js.
++
++**Named functions:**
++- `csv()`
++
++## Developer Tools
++
++### `tools/analyze-css-cascade.mjs`
++
++**Purpose:** Provides a Node.js build or analysis utility.
++
++**Named functions:**
++- `readJson()`
++- `safeProjectPath()`
++- `lineForOffset()`
++- `normalizeWhitespace()`
++- `normalizeSelector()`
++- `splitSelectors()`
++- `normalizeProperty()`
++- `normalizeValue()`
++- `formatAtRuleContext()`
++- `markerEndPattern()`
++- `extractUnits()`
++- `parseUnit()`
++- `buildDeclarationIndex()`
++- `canOverride()`
++- `analyzeUnit()`
++- `sourceLineFor()`
++- `uniqueReplacementIds()`
++- `buildDiagnostics()`
++- `printDiagnostic()`
++
++## Tutorial Definitions
++
++### `tutorials/tutorial-audit-library.js`
++
++**Purpose:** Supporting project file for tutorial-audit-library.js.
++
++**Named functions:**
++- No named functions detected. The file may contain data, immediately invoked setup logic, or anonymous callbacks only.
++
++### `tutorials/tutorial-fields.js`
++
++**Purpose:** Supporting project file for tutorial-fields.js.
++
++**Named functions:**
++- No named functions detected. The file may contain data, immediately invoked setup logic, or anonymous callbacks only.
++
++### `tutorials/tutorial-global.js`
++
++**Purpose:** Supporting project file for tutorial-global.js.
++
++**Named functions:**
++- No named functions detected. The file may contain data, immediately invoked setup logic, or anonymous callbacks only.
++
++### `tutorials/tutorial-logic-builder.js`
++
++**Purpose:** Supporting project file for tutorial-logic-builder.js.
++
++**Named functions:**
++- No named functions detected. The file may contain data, immediately invoked setup logic, or anonymous callbacks only.
++
++### `tutorials/tutorial-save-export.js`
++
++**Purpose:** Supporting project file for tutorial-save-export.js.
++
++**Named functions:**
++- No named functions detected. The file may contain data, immediately invoked setup logic, or anonymous callbacks only.
++
++## Dependency and Load-Order Notes
++
++- Browser modules rely on ordered script loading and a shared global runtime. Earlier numbered files establish utilities and state used by later modules.
++- `00-html-partials-loader.js` loads page partials before modules cache DOM references and bootstrap the application.
++- Database-backed source, audit, revision, and profile behavior spans `server.js`, `src/`, and `.launch/migrations/`.
++- CSS is edited in feature-oriented files under `css/`; `css/manifest.json` preserves unit-level cascade order across those files, and `node build-css.mjs` generates root `styles.css`.
++
++## Update Checklist
++
++When making a code change, update this file if the change affects any of the following:
++- Application version or technology stack
++- Directory structure or file responsibility
++- Database schema or migration sequence
++- New, removed, or renamed JavaScript functions
++- Current priorities or known technical debt
++- Coding standards or architectural constraints
+diff --git a/PROJECT_TREE.txt b/PROJECT_TREE.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..775211d0de3d03b7820b0428199e25b0a67d01f4
+--- /dev/null
++++ b/PROJECT_TREE.txt
+@@ -0,0 +1,153 @@
++.
++├── .launch
++│   ├── migrations
++│   │   ├── 20260820112100_create_atlas_field_library.sql
++│   │   ├── 20260820150000_add_import_user_identity.sql
++│   │   ├── 20260820200000_create_audit_version_tables.sql
++│   │   └── 20260826131500_create_atlas_user_profiles.sql
++│   ├── opa
++│   │   ├── authz.rego
++│   │   └── authz.rego.txt
++│   └── config
++├── .vscode
++│   └── tasks.json
++├── audits
++│   ├── Currency_Accuracy_Outside_North_America.json
++│   ├── active-employees-in-sap-not-wd.json
++│   ├── core-connector-worker-idoc.json
++│   ├── currency-accuracy-outside-north.json
++│   ├── currency-accuracy.json
++│   ├── dcl-it210.json
++│   ├── dcl-loa-90-day.json
++│   ├── diesi-sapl---infotypes-missing.json
++│   ├── global-names.json
++│   ├── infotype-errors.json
++│   ├── midweek-rehire-status.json
++│   ├── pa-to-psa.json
++│   ├── rehire-status-compare.json
++│   ├── sample-audit-logic-flow.json
++│   ├── security-groups-assigned-to-vac.json
++│   ├── service-dates.json
++│   ├── system-security-role-assignment.json
++│   └── work-contract-comparison.json
++├── catalogs
++│   ├── source-fields.json
++│   ├── source-file-index.json
++│   ├── source-table-aliases.json
++│   └── vanity-labels.json
++├── css
++│   ├── audit-overview.css
++│   ├── global.css
++│   ├── group-landing.css
++│   ├── logic-builder.css
++│   ├── manifest.json
++│   ├── my-audits.css
++│   ├── publication-preview.css
++│   ├── readiness-review.css
++│   ├── requirements-preview.css
++│   └── sources.css
++├── docs
++│   ├── ATLAS Field Library.csv
++│   └── sample_field_table.html
++├── js
++│   ├── .gitkeep
++│   ├── 00-config-utils.js
++│   ├── 00-exceljs-loader.js
++│   ├── 00-html-partials-loader.js
++│   ├── 01-state-dom.js
++│   ├── 02-hierarchy.js
++│   ├── 02-logic-rendering.js
++│   ├── 03-capture-actions.js
++│   ├── 04-persistence.js
++│   ├── 05-tutorials.js
++│   ├── 06-events-bootstrap.js
++│   ├── 07-phrase-catalog.js
++│   ├── 08-step-templates-validation.js
++│   ├── 09-workbook-import.js
++│   ├── 10-field-picker.js
++│   ├── 11-repo-library.js
++│   ├── 12-export-foundation.js
++│   ├── 13-catalog-field-browser.js
++│   ├── 14-catalog-driven-builder.js
++│   ├── 15-visual-ui-upgrades.js
++│   ├── 15a-audit-library-ui.js
++│   ├── 15b-source-library-ui.js
++│   ├── 15c-source-field-picker.js
++│   ├── 15d-logic-rules-list.js
++│   ├── 15e-logic-step-editor.js
++│   ├── 15f-join-picker.js
++│   ├── 15g-visual-ui-events.js
++│   ├── 16-page-shell.js
++│   ├── 17-source-database.js
++│   ├── 18-audit-database.js
++│   ├── 19-audit-version-history.js
++│   └── 20-database-only-audits.js
++├── local-db
++│   ├── init-local-db.sh
++│   └── seed.sql
++├── logs
++│   ├── Trace-20260825T165449.json
++│   ├── Trace-20260826T213057.json
++│   ├── Trace-20260827T112531.json
++│   ├── Trace-20260827T165919.json
++│   ├── atlas-align-db-08202026131900.log
++│   └── atlas-align-db-08202026171700.log
++├── public
++│   ├── app.js
++│   ├── index.html
++│   └── styles.css
++├── sections
++│   ├── audit-overview.html
++│   ├── group-landing.html
++│   ├── logic-builder.html
++│   ├── my-audits.html
++│   ├── publication-preview.html
++│   ├── readiness-review.html
++│   ├── requirements-preview.html
++│   └── sources.html
++├── src
++│   ├── audit-authorization.js
++│   ├── audit-repository.js
++│   ├── field-library.js
++│   ├── schema.js
++│   ├── user-profile-repository.js
++│   └── user-profile-routes.js
++├── test
++│   └── schema.test.js
++├── tools
++│   └── analyze-css-cascade.mjs
++├── tutorials
++│   ├── tutorial-audit-library.js
++│   ├── tutorial-fields.js
++│   ├── tutorial-global.js
++│   ├── tutorial-logic-builder.js
++│   └── tutorial-save-export.js
++├── updates
++├── vendor
++│   ├── exceljs.LICENSE.txt
++│   └── exceljs.min.js
++├── .dockerignore
++├── .dockerignore.txt
++├── .env.example
++├── .env.example.txt
++├── .gitignore
++├── .gitignore.txt
++├── .stylelintrc.json
++├── Dockerfile
++├── Dockerfile.txt
++├── PROJECT_CONTEXT.md
++├── PROJECT_TREE.txt
++├── README-local.md
++├── README.md
++├── audit-index.json
++├── build-css.mjs
++├── build-css.mjs.txt
++├── docker-compose.yml
++├── index.html
++├── logic_phrase_catalog.json
++├── package-lock.json
++├── package.json
++├── server.js
++└── styles.css
++
++20 directories, 131 files
+diff --git a/build-css.mjs.txt b/build-css.mjs.txt
+index ec9aa4ebf876463b0b4f745ea64c6f73a816dbf3..c6b005635b3ef08f6b6b420ec8dc227e9727e65e 100644
+--- a/build-css.mjs.txt
++++ b/build-css.mjs.txt
+@@ -11,23 +11,30 @@ const checkOnly = args.has("--check");
+ const noDiscover = args.has("--no-discover");
+ const acceptDeletions = args.has("--accept-deletions");
+ const knownArgs = new Set(["--check", "--no-discover", "--accept-deletions"]);
+-for (const arg of args) if (!knownArgs.has(arg)) throw new Error(`Unknown option: ${arg}`);
++for (const arg of args)
++  if (!knownArgs.has(arg)) throw new Error(`Unknown option: ${arg}`);
+ 
+ const BEGIN_RE = /\/\*\s*ATLAS-SOURCE-UNIT:(u\d+):BEGIN\s*\*\//g;
+ const END_RE = /\/\*\s*ATLAS-SOURCE-UNIT:(u\d+):END\s*\*\//g;
+-const INSERT_RE = /\/\*\s*ATLAS-INSERT-(AFTER|BEFORE):(u\d+)\s*\*\/|\/\*\s*ATLAS-INSERT:END\s*\*\//i;
++const INSERT_RE =
++  /\/\*\s*ATLAS-INSERT-(AFTER|BEFORE):(u\d+)\s*\*\/|\/\*\s*ATLAS-INSERT:END\s*\*\//i;
+ 
+ function readJson(file) {
+   return JSON.parse(fs.readFileSync(file, "utf8"));
+ }
+ 
+ function safeProjectPath(relativeFile) {
+-  if (typeof relativeFile !== "string" || !relativeFile.startsWith("css/") || !relativeFile.endsWith(".css")) {
++  if (
++    typeof relativeFile !== "string" ||
++    !relativeFile.startsWith("css/") ||
++    !relativeFile.endsWith(".css")
++  ) {
+     throw new Error(`Invalid CSS source path in manifest: ${relativeFile}`);
+   }
+   const absolute = path.resolve(root, relativeFile);
+   const expectedRoot = `${path.resolve(cssRoot)}${path.sep}`;
+-  if (!absolute.startsWith(expectedRoot)) throw new Error(`CSS source path escapes css/: ${relativeFile}`);
++  if (!absolute.startsWith(expectedRoot))
++    throw new Error(`CSS source path escapes css/: ${relativeFile}`);
+   return absolute;
+ }
+ 
+@@ -41,20 +48,34 @@ function validateCssStructure(source, label) {
+   let comment = false;
+   for (let i = 0; i < source.length; i += 1) {
+     if (comment) {
+-      if (source[i] === "*" && source[i + 1] === "/") { comment = false; i += 1; }
++      if (source[i] === "*" && source[i + 1] === "/") {
++        comment = false;
++        i += 1;
++      }
+       continue;
+     }
+     if (quote) {
+-      if (source[i] === "\\") { i += 1; continue; }
++      if (source[i] === "\\") {
++        i += 1;
++        continue;
++      }
+       if (source[i] === quote) quote = null;
+       continue;
+     }
+-    if (source[i] === "/" && source[i + 1] === "*") { comment = true; i += 1; continue; }
+-    if (source[i] === '"' || source[i] === "'") { quote = source[i]; continue; }
++    if (source[i] === "/" && source[i + 1] === "*") {
++      comment = true;
++      i += 1;
++      continue;
++    }
++    if (source[i] === '"' || source[i] === "'") {
++      quote = source[i];
++      continue;
++    }
+     if (source[i] === "{") depth += 1;
+     if (source[i] === "}") {
+       depth -= 1;
+-      if (depth < 0) throw new Error(`${label} has an unmatched closing brace.`);
++      if (depth < 0)
++        throw new Error(`${label} has an unmatched closing brace.`);
+     }
+   }
+   if (comment) throw new Error(`${label} has an unterminated comment.`);
+@@ -70,20 +91,34 @@ function splitTopLevelUnits(source, label) {
+   let comment = false;
+   for (let i = 0; i < source.length; i += 1) {
+     if (comment) {
+-      if (source[i] === "*" && source[i + 1] === "/") { comment = false; i += 1; }
++      if (source[i] === "*" && source[i + 1] === "/") {
++        comment = false;
++        i += 1;
++      }
+       continue;
+     }
+     if (quote) {
+-      if (source[i] === "\\") { i += 1; continue; }
++      if (source[i] === "\\") {
++        i += 1;
++        continue;
++      }
+       if (source[i] === quote) quote = null;
+       continue;
+     }
+-    if (source[i] === "/" && source[i + 1] === "*") { comment = true; i += 1; continue; }
+-    if (source[i] === '"' || source[i] === "'") { quote = source[i]; continue; }
++    if (source[i] === "/" && source[i + 1] === "*") {
++      comment = true;
++      i += 1;
++      continue;
++    }
++    if (source[i] === '"' || source[i] === "'") {
++      quote = source[i];
++      continue;
++    }
+     if (source[i] === "{") depth += 1;
+     else if (source[i] === "}") {
+       depth -= 1;
+-      if (depth < 0) throw new Error(`${label} has an unmatched closing brace.`);
++      if (depth < 0)
++        throw new Error(`${label} has an unmatched closing brace.`);
+       if (depth === 0) {
+         let end = i + 1;
+         while (end < source.length && /\s/.test(source[end])) end += 1;
+@@ -100,7 +135,8 @@ function splitTopLevelUnits(source, label) {
+     }
+   }
+   if (comment || quote || depth !== 0) validateCssStructure(source, label);
+-  if (start < source.length) units.push({ start, end: source.length, text: source.slice(start) });
++  if (start < source.length)
++    units.push({ start, end: source.length, text: source.slice(start) });
+   return units.filter((unit) => stripCommentsAndWhitespace(unit.text) !== "");
+ }
+ 
+@@ -113,17 +149,36 @@ function parseSourceFile(relativeFile, source) {
+     const id = match[1];
+     END_RE.lastIndex = BEGIN_RE.lastIndex;
+     const endMatch = END_RE.exec(source);
+-    if (!endMatch || endMatch[1] !== id) throw new Error(`Missing or mismatched ${id} end marker in ${relativeFile}.`);
+-    const duplicateEnd = source.slice(BEGIN_RE.lastIndex, endMatch.index).match(/ATLAS-SOURCE-UNIT:u\d+:END/);
+-    if (duplicateEnd) throw new Error(`Unexpected source-unit end marker inside ${id} in ${relativeFile}.`);
+-    tokens.push({ type: "existing", id, file: relativeFile, start: match.index, end: END_RE.lastIndex, content: source.slice(BEGIN_RE.lastIndex, endMatch.index) });
++    if (!endMatch || endMatch[1] !== id)
++      throw new Error(
++        `Missing or mismatched ${id} end marker in ${relativeFile}.`,
++      );
++    const duplicateEnd = source
++      .slice(BEGIN_RE.lastIndex, endMatch.index)
++      .match(/ATLAS-SOURCE-UNIT:u\d+:END/);
++    if (duplicateEnd)
++      throw new Error(
++        `Unexpected source-unit end marker inside ${id} in ${relativeFile}.`,
++      );
++    tokens.push({
++      type: "existing",
++      id,
++      file: relativeFile,
++      start: match.index,
++      end: END_RE.lastIndex,
++      content: source.slice(BEGIN_RE.lastIndex, endMatch.index),
++    });
+     occupied.push([match.index, END_RE.lastIndex]);
+     BEGIN_RE.lastIndex = END_RE.lastIndex;
+   }
+ 
+   END_RE.lastIndex = 0;
+   while ((match = END_RE.exec(source))) {
+-    if (!occupied.some(([start, end]) => match.index >= start && match.index < end)) {
++    if (
++      !occupied.some(
++        ([start, end]) => match.index >= start && match.index < end,
++      )
++    ) {
+       throw new Error(`Orphan ${match[1]} end marker in ${relativeFile}.`);
+     }
+   }
+@@ -131,10 +186,20 @@ function parseSourceFile(relativeFile, source) {
+   let cursor = 0;
+   const outside = [];
+   for (const item of tokens) {
+-    if (cursor < item.start) outside.push({ start: cursor, end: item.start, text: source.slice(cursor, item.start) });
++    if (cursor < item.start)
++      outside.push({
++        start: cursor,
++        end: item.start,
++        text: source.slice(cursor, item.start),
++      });
+     cursor = item.end;
+   }
+-  if (cursor < source.length) outside.push({ start: cursor, end: source.length, text: source.slice(cursor) });
++  if (cursor < source.length)
++    outside.push({
++      start: cursor,
++      end: source.length,
++      text: source.slice(cursor),
++    });
+ 
+   const newUnits = [];
+   for (const segment of outside) {
+@@ -142,43 +207,68 @@ function parseSourceFile(relativeFile, source) {
+       const absoluteStart = segment.start + unit.start;
+       const absoluteEnd = segment.start + unit.end;
+       const before = source.slice(0, absoluteStart);
+-      const directiveMatches = [...before.matchAll(new RegExp(INSERT_RE.source, "gi"))];
++      const directiveMatches = [
++        ...before.matchAll(new RegExp(INSERT_RE.source, "gi")),
++      ];
+       const lastDirective = directiveMatches.at(-1);
+       let directive = null;
+-      if (lastDirective && stripCommentsAndWhitespace(before.slice(lastDirective.index + lastDirective[0].length)) === "") {
++      if (
++        lastDirective &&
++        stripCommentsAndWhitespace(
++          before.slice(lastDirective.index + lastDirective[0].length),
++        ) === ""
++      ) {
+         directive = lastDirective[0].includes("ATLAS-INSERT:END")
+           ? { type: "end" }
+           : { type: lastDirective[1].toLowerCase(), id: lastDirective[2] };
+       }
+-      newUnits.push({ type: "new", file: relativeFile, start: absoluteStart, end: absoluteEnd, content: unit.text.replace(new RegExp(INSERT_RE.source, "gi"), ""), directive });
++      newUnits.push({
++        type: "new",
++        file: relativeFile,
++        start: absoluteStart,
++        end: absoluteEnd,
++        content: unit.text.replace(new RegExp(INSERT_RE.source, "gi"), ""),
++        directive,
++      });
+     }
+   }
+   return { relativeFile, source, existing: tokens, newUnits };
+ }
+ 
+ function nextUnitNumber(manifest) {
+-  const numbers = manifest.units.map(({ id }) => Number.parseInt(String(id).slice(1), 10)).filter(Number.isFinite);
++  const numbers = manifest.units
++    .map(({ id }) => Number.parseInt(String(id).slice(1), 10))
++    .filter(Number.isFinite);
+   return Math.max(0, ...numbers, Number(manifest.nextUnitNumber || 1) - 1) + 1;
+ }
+ 
+ function insertManifestUnit(units, entry, placement) {
+-  if (placement.type === "end") { units.push(entry); return; }
++  if (placement.type === "end") {
++    units.push(entry);
++    return;
++  }
+   const index = units.findIndex(({ id }) => id === placement.id);
+-  if (index < 0) throw new Error(`Insertion anchor ${placement.id} does not exist.`);
++  if (index < 0)
++    throw new Error(`Insertion anchor ${placement.id} does not exist.`);
+   units.splice(placement.type === "before" ? index : index + 1, 0, entry);
+ }
+ 
+ function inferPlacement(parsed, newUnit, manifest) {
+   if (newUnit.directive) return newUnit.directive;
+-  const previous = parsed.existing.filter((item) => item.end <= newUnit.start).at(-1);
++  const previous = parsed.existing
++    .filter((item) => item.end <= newUnit.start)
++    .at(-1);
+   if (previous) return { type: "after", id: previous.id };
+   const next = parsed.existing.find((item) => item.start >= newUnit.end);
+   if (next) return { type: "before", id: next.id };
+   const configured = manifest.files?.[parsed.relativeFile]?.defaultInsert;
+   if (configured === "end") return { type: "end" };
+   const configuredMatch = /^(before|after):(u\d+)$/i.exec(configured || "");
+-  if (configuredMatch) return { type: configuredMatch[1].toLowerCase(), id: configuredMatch[2] };
+-  throw new Error(`Cannot place new CSS in ${parsed.relativeFile}. Add /* ATLAS-INSERT-AFTER:u#### */, /* ATLAS-INSERT-BEFORE:u#### */, or configure manifest.files["${parsed.relativeFile}"].defaultInsert.`);
++  if (configuredMatch)
++    return { type: configuredMatch[1].toLowerCase(), id: configuredMatch[2] };
++  throw new Error(
++    `Cannot place new CSS in ${parsed.relativeFile}. Add /* ATLAS-INSERT-AFTER:u#### */, /* ATLAS-INSERT-BEFORE:u#### */, or configure manifest.files["${parsed.relativeFile}"].defaultInsert.`,
++  );
+ }
+ 
+ function atomicWrite(file, content) {
+@@ -188,37 +278,51 @@ function atomicWrite(file, content) {
+ }
+ 
+ const manifest = readJson(manifestPath);
+-if (!Array.isArray(manifest.units)) throw new Error("manifest.units must be an array.");
++if (!Array.isArray(manifest.units))
++  throw new Error("manifest.units must be an array.");
+ const manifestIds = new Set();
+ for (const unit of manifest.units) {
+   if (!/^u\d+$/.test(unit.id)) throw new Error(`Invalid unit id: ${unit.id}`);
+-  if (manifestIds.has(unit.id)) throw new Error(`Duplicate manifest unit id: ${unit.id}`);
++  if (manifestIds.has(unit.id))
++    throw new Error(`Duplicate manifest unit id: ${unit.id}`);
+   manifestIds.add(unit.id);
+   safeProjectPath(unit.file);
+ }
+ 
+ const sourceFiles = new Set(manifest.units.map(({ file }) => file));
+-if (manifest.files) for (const file of Object.keys(manifest.files)) sourceFiles.add(file);
+-for (const name of fs.readdirSync(cssRoot)) if (name.endsWith(".css")) sourceFiles.add(`css/${name}`);
++if (manifest.files)
++  for (const file of Object.keys(manifest.files)) sourceFiles.add(file);
++for (const name of fs.readdirSync(cssRoot))
++  if (name.endsWith(".css")) sourceFiles.add(`css/${name}`);
+ 
+ const parsedFiles = new Map();
+ const foundUnits = new Map();
+ for (const relativeFile of [...sourceFiles].sort()) {
+   const absolute = safeProjectPath(relativeFile);
+-  if (!fs.existsSync(absolute)) throw new Error(`Missing CSS source file: ${relativeFile}`);
+-  const parsed = parseSourceFile(relativeFile, fs.readFileSync(absolute, "utf8"));
++  if (!fs.existsSync(absolute))
++    throw new Error(`Missing CSS source file: ${relativeFile}`);
++  const parsed = parseSourceFile(
++    relativeFile,
++    fs.readFileSync(absolute, "utf8"),
++  );
+   parsedFiles.set(relativeFile, parsed);
+   for (const item of parsed.existing) {
+-    if (foundUnits.has(item.id)) throw new Error(`Duplicate source unit ${item.id} in ${foundUnits.get(item.id).file} and ${relativeFile}.`);
++    if (foundUnits.has(item.id))
++      throw new Error(
++        `Duplicate source unit ${item.id} in ${foundUnits.get(item.id).file} and ${relativeFile}.`,
++      );
+     foundUnits.set(item.id, item);
+   }
+ }
+ 
+ const missing = manifest.units.filter(({ id }) => !foundUnits.has(id));
+ if (missing.length && !acceptDeletions) {
+-  throw new Error(`Manifest units missing from source files: ${missing.map(({ id }) => id).join(", ")}. Re-run with --accept-deletions to confirm removal.`);
++  throw new Error(
++    `Manifest units missing from source files: ${missing.map(({ id }) => id).join(", ")}. Re-run with --accept-deletions to confirm removal.`,
++  );
+ }
+-if (missing.length) manifest.units = manifest.units.filter(({ id }) => foundUnits.has(id));
++if (missing.length)
++  manifest.units = manifest.units.filter(({ id }) => foundUnits.has(id));
+ 
+ for (const unit of manifest.units) {
+   const found = foundUnits.get(unit.id);
+@@ -230,14 +334,28 @@ let nextNumber = nextUnitNumber(manifest);
+ for (const parsed of parsedFiles.values()) {
+   const orderedNew = [...parsed.newUnits].sort((a, b) => a.start - b.start);
+   for (const newUnit of orderedNew) {
+-    if (noDiscover) throw new Error(`Unmarked CSS detected in ${parsed.relativeFile}. Remove --no-discover or add source-unit markers.`);
++    if (noDiscover)
++      throw new Error(
++        `Unmarked CSS detected in ${parsed.relativeFile}. Remove --no-discover or add source-unit markers.`,
++      );
+     const id = `u${String(nextNumber).padStart(4, "0")}`;
+     nextNumber += 1;
+     const placement = inferPlacement(parsed, newUnit, manifest);
+-    insertManifestUnit(manifest.units, { id, file: parsed.relativeFile }, placement);
++    insertManifestUnit(
++      manifest.units,
++      { id, file: parsed.relativeFile },
++      placement,
++    );
+     newUnit.id = id;
+     discovered.push({ id, file: parsed.relativeFile, placement });
+-    parsed.existing.push({ type: "existing", id, file: parsed.relativeFile, start: newUnit.start, end: newUnit.end, content: newUnit.content });
++    parsed.existing.push({
++      type: "existing",
++      id,
++      file: parsed.relativeFile,
++      start: newUnit.start,
++      end: newUnit.end,
++      content: newUnit.content,
++    });
+   }
+ }
+ manifest.schemaVersion = Math.max(2, Number(manifest.schemaVersion || 1));
+@@ -255,44 +373,69 @@ for (const parsed of parsedFiles.values()) {
+ }
+ 
+ const sourceCache = new Map();
+-for (const [relativeFile, rewritten] of rewrittenSources) sourceCache.set(relativeFile, rewritten);
++for (const [relativeFile, rewritten] of rewrittenSources)
++  sourceCache.set(relativeFile, rewritten);
+ function sourceFor(relativeFile) {
+-  if (!sourceCache.has(relativeFile)) sourceCache.set(relativeFile, fs.readFileSync(safeProjectPath(relativeFile), "utf8"));
++  if (!sourceCache.has(relativeFile))
++    sourceCache.set(
++      relativeFile,
++      fs.readFileSync(safeProjectPath(relativeFile), "utf8"),
++    );
+   return sourceCache.get(relativeFile);
+ }
+ 
+ const emitted = new Set();
+-const output = manifest.units.map(({ id, file }) => {
+-  if (emitted.has(id)) throw new Error(`Unit ${id} would be emitted more than once.`);
+-  emitted.add(id);
+-  const source = sourceFor(file);
+-  const begin = `/* ATLAS-SOURCE-UNIT:${id}:BEGIN */`;
+-  const end = `/* ATLAS-SOURCE-UNIT:${id}:END */`;
+-  const start = source.indexOf(begin);
+-  if (start < 0) throw new Error(`Missing ${id} begin marker in ${file}.`);
+-  const contentStart = start + begin.length;
+-  const finish = source.indexOf(end, contentStart);
+-  if (finish < 0) throw new Error(`Missing ${id} end marker in ${file}.`);
+-  if (source.indexOf(begin, contentStart) >= 0) throw new Error(`Duplicate ${id} begin marker in ${file}.`);
+-  return source.slice(contentStart, finish);
+-}).join("");
++const output = manifest.units
++  .map(({ id, file }) => {
++    if (emitted.has(id))
++      throw new Error(`Unit ${id} would be emitted more than once.`);
++    emitted.add(id);
++    const source = sourceFor(file);
++    const begin = `/* ATLAS-SOURCE-UNIT:${id}:BEGIN */`;
++    const end = `/* ATLAS-SOURCE-UNIT:${id}:END */`;
++    const start = source.indexOf(begin);
++    if (start < 0) throw new Error(`Missing ${id} begin marker in ${file}.`);
++    const contentStart = start + begin.length;
++    const finish = source.indexOf(end, contentStart);
++    if (finish < 0) throw new Error(`Missing ${id} end marker in ${file}.`);
++    if (source.indexOf(begin, contentStart) >= 0)
++      throw new Error(`Duplicate ${id} begin marker in ${file}.`);
++    return source.slice(contentStart, finish);
++  })
++  .join("");
+ 
+ validateCssStructure(output, manifest.source || "styles.css");
+-if (/ATLAS-SOURCE-UNIT:/.test(output)) throw new Error("Generated stylesheet contains source-management markers.");
++if (/ATLAS-SOURCE-UNIT:/.test(output))
++  throw new Error("Generated stylesheet contains source-management markers.");
+ 
+ if (checkOnly) {
+-  console.log(`CSS check passed. ${manifest.units.length} units would be emitted.`);
++  console.log(
++    `CSS check passed. ${manifest.units.length} units would be emitted.`,
++  );
+   if (discovered.length) {
+     console.log(`Discovered ${discovered.length} new CSS unit(s):`);
+-    for (const item of discovered) console.log(`  ${item.id}  ${item.file}  ${item.placement.type}${item.placement.id ? `:${item.placement.id}` : ""}`);
++    for (const item of discovered)
++      console.log(
++        `  ${item.id}  ${item.file}  ${item.placement.type}${item.placement.id ? `:${item.placement.id}` : ""}`,
++      );
+   }
+-  if (missing.length) console.log(`Would remove ${missing.length} confirmed missing unit(s).`);
++  if (missing.length)
++    console.log(`Would remove ${missing.length} confirmed missing unit(s).`);
+   process.exit(0);
+ }
+ 
+-for (const [relativeFile, contents] of rewrittenSources) atomicWrite(safeProjectPath(relativeFile), contents);
++for (const [relativeFile, contents] of rewrittenSources)
++  atomicWrite(safeProjectPath(relativeFile), contents);
+ atomicWrite(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+ atomicWrite(path.join(root, manifest.source || "styles.css"), output);
+-console.log(`Built ${manifest.source || "styles.css"} from ${manifest.units.length} ordered source units.`);
+-if (discovered.length) console.log(`Discovered, marked, and registered ${discovered.length} new CSS unit(s).`);
+-if (missing.length) console.log(`Removed ${missing.length} confirmed missing unit(s) from the manifest.`);
++console.log(
++  `Built ${manifest.source || "styles.css"} from ${manifest.units.length} ordered source units.`,
++);
++if (discovered.length)
++  console.log(
++    `Discovered, marked, and registered ${discovered.length} new CSS unit(s).`,
++  );
++if (missing.length)
++  console.log(
++    `Removed ${missing.length} confirmed missing unit(s) from the manifest.`,
++  );
+diff --git a/combined_code.txt b/combined_code.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..bc3282be1d6f7d7f3acbfe1c17d47a8a54edd95d
+Binary files /dev/null and b/combined_code.txt differ
+diff --git a/js/06-events-bootstrap.js b/js/06-events-bootstrap.js
+index e33863fa68da0a80770ffdf110e469e22d2b74e8..ffa93dcc8d8d858de1878bcf9bbcd6da438e43f8 100644
+--- a/js/06-events-bootstrap.js
++++ b/js/06-events-bootstrap.js
+@@ -26,26 +26,27 @@ function on(id, eventName, handler) {
+  */
+ function shouldSkipBaseBodyEditEvent(event) {
+   const skipSelector = [
+-    "[data-live-editor-step-id]",
+-    "#completeStatementsToggle",
+-    "#includeNotesToggle",
+-    "#previewStyle",
+-    "[data-preview-tab]",
+-    ".visual-picker-modal-backdrop",
+-    ".join-picker-backdrop",
+-    ".source-replace-backdrop",
+-    ".field-replace-backdrop",
+-    ".condition-repair-backdrop",
+-    ".logic-issue-panel",
+-    ".logic-issues-backdrop",
+-    ".new-rule-menu-panel",
+-    ".tutorial-card",
+-    ".tutorial-overlay",
+-    ".modal",
+-  ].join(", ");
++    '[data-live-editor-step-id]',
++    '#completeStatementsToggle',
++    '#includeNotesToggle',
++    '#previewStyle',
++    '[data-preview-tab]',
++    '.visual-picker-modal-backdrop',
++    '.join-picker-backdrop',
++    '.source-replace-backdrop',
++    '.field-replace-backdrop',
++    '.condition-repair-backdrop',
++    '.logic-issue-panel',
++    '.logic-issues-backdrop',
++    '.new-rule-menu-panel',
++    '.tutorial-card',
++    '.tutorial-overlay',
++    '.modal',
++  ].join(', ');
+   return !!event.target.closest?.(skipSelector);
+ }
+ 
++
+ // -----------------------------------------------------------------------------
+ // Top-level event bindings
+ // -----------------------------------------------------------------------------
+@@ -53,218 +54,143 @@ function shouldSkipBaseBodyEditEvent(event) {
+  * Registers all top-level UI event handlers.
+  */
+ function bindEvents() {
+-  if (e.completeStatements)
+-    e.completeStatements.checked = state.previewStatementMode === "complete";
+-  document.querySelectorAll(".rail-item, .navitem").forEach((button) => {
++  if (e.completeStatements) e.completeStatements.checked = state.previewStatementMode === 'complete';
++  document.querySelectorAll('.rail-item, .navitem').forEach((button) => {
+     button.onclick = (event) => {
+-      if (button.classList.contains("is-locked")) {
++      if (button.classList.contains('is-locked')) {
+         event.preventDefault();
+         return;
+       }
+-      atlasNavigateToSection(button.dataset.section).catch((err) =>
+-        status(`Navigation save failed: ${err.message}`, "bad"),
+-      );
++      atlasNavigateToSection(button.dataset.section).catch((err) => status(`Navigation save failed: ${err.message}`, 'bad'));
+     };
+   });
+ 
+-  on("createAuditBtn", "click", () => {
+-    const name = prompt("Name the new audit:", "New Audit Logic Flow");
++  on('createAuditBtn', 'click', () => {
++    const name = prompt('Name the new audit:', 'New Audit Logic Flow');
+     if (!name) return;
+     state.audit = defaultAudit();
+     state.audit.name = name;
+     state.selectedStepId = null;
+     state.activeAuditValue = `draft:${state.audit.id}`;
+     markAuditSelected();
+-    atlasMarkAllPagesDirty?.();
+-    showSection("overview");
+-    atlasRenderActivePage?.({ force: true });
++    renderAll();
++    showSection('overview');
+     scheduleAutosave();
+     updateActiveAuditBaseline();
+     renderActiveAuditSelect?.();
+   });
+-  on("renameAuditBtn", "click", () => {
+-    const name = prompt("Rename active audit:", state.audit.name);
++  on('renameAuditBtn', 'click', () => {
++    const name = prompt('Rename active audit:', state.audit.name);
+     if (!name) return;
+     state.audit.name = name;
+-    atlasInvalidatePages?.([
+-      "my-audits",
+-      "overview",
+-      "preview",
+-      "review",
+-      "save",
+-    ]);
+-    atlasRenderActivePage?.({ force: true });
++    renderAll();
+     scheduleAutosave();
+   });
+-  on("auditVersionHistoryBtn", "click", () =>
+-    atlasOpenAuditHistory?.().catch((err) => status(err.message, "bad")),
+-  );
+-  on("stepVersionHistoryBtn", "click", () =>
+-    atlasOpenStepHistory?.().catch((err) => status(err.message, "bad")),
+-  );
+-  on("duplicateAuditBtn", "click", () => {
++  on('auditVersionHistoryBtn', 'click', () => atlasOpenAuditHistory?.().catch((err) => status(err.message, 'bad')));
++  on('stepVersionHistoryBtn', 'click', () => atlasOpenStepHistory?.().catch((err) => status(err.message, 'bad')));
++  on('duplicateAuditBtn', 'click', () => {
+     capture();
+     const clone = structuredClone(state.audit);
+-    clone.id = uid("audit");
++    clone.id = uid('audit');
+     clone.name = `${clone.name} Copy`;
+-    clone.steps = clone.steps.map((step) => ({
+-      ...step,
+-      id: step.autoGeneratedReference
+-        ? `reference_${uid("source")}`
+-        : uid("step"),
+-      parentId: null,
+-    }));
++    clone.steps = clone.steps.map((step) => ({ ...step, id: step.autoGeneratedReference ? `reference_${uid('source')}` : uid('step'), parentId: null }));
+     state.audit = clone;
+     state.selectedStepId = state.audit.steps[0]?.id || null;
+     state.activeAuditValue = `draft:${state.audit.id}`;
+     markAuditSelected();
+-    atlasMarkAllPagesDirty?.();
+-    showSection("overview");
+-    atlasRenderActivePage?.({ force: true });
++    renderAll();
++    showSection('overview');
+     scheduleAutosave();
+     updateActiveAuditBaseline();
+     renderActiveAuditSelect?.();
+   });
+-  on("newAuditBtn", "click", () => {
+-    if (
+-      confirm(
+-        "Start a new audit logic flow? Unsaved changes remain in autosave until cleared.",
+-      )
+-    ) {
++  on('newAuditBtn', 'click', () => {
++    if (confirm('Start a new audit logic flow? Unsaved changes remain in autosave until cleared.')) {
+       state.audit = defaultAudit();
+       state.selectedStepId = null;
+       state.activeAuditValue = `draft:${state.audit.id}`;
+       markAuditSelected();
+-      atlasMarkAllPagesDirty?.();
+-      showSection("overview");
+-      atlasRenderActivePage?.({ force: true });
++      renderAll();
++      showSection('overview');
+       scheduleAutosave();
+       updateActiveAuditBaseline();
+       renderActiveAuditSelect?.();
+     }
+   });
+ 
+-  on("exportCurrentBtn", "click", exportCurrent);
+-  on("downloadDocBtn", "click", exportCurrent);
+-  on("downloadCsvBtn", "click", exportCsv);
+-  on("downloadExcelBtn", "click", () =>
+-    exportAuditExcel().catch((err) =>
+-      status(`Excel export failed: ${err.message}`, "bad"),
+-    ),
+-  );
+-  on("downloadQtestExcelBtn", "click", () =>
+-    exportQtestExcel().catch((err) =>
+-      status(`Qtest Excel export failed: ${err.message}`, "bad"),
+-    ),
+-  );
+-  on("downloadHtmlBtn", "click", exportAuditHtml);
+-  on("copyHtmlBtn", "click", () => copyAuditHtml());
+-  on("copyMarkdownBtn", "click", copyMarkdown);
+-  on("completeStatementsToggle", "change", () => {
+-    state.previewStatementMode = e.completeStatements?.checked
+-      ? "complete"
+-      : "nested";
+-    localStorage.setItem(
+-      "atlasAlignPreviewStatementMode",
+-      state.previewStatementMode,
+-    );
++  on('exportCurrentBtn', 'click', exportCurrent);
++  on('downloadDocBtn', 'click', exportCurrent);
++  on('downloadCsvBtn', 'click', exportCsv);
++  on('downloadExcelBtn', 'click', () => exportAuditExcel().catch((err) => status(`Excel export failed: ${err.message}`, 'bad')));
++  on('downloadQtestExcelBtn', 'click', () => exportQtestExcel().catch((err) => status(`Qtest Excel export failed: ${err.message}`, 'bad')));
++  on('downloadHtmlBtn', 'click', exportAuditHtml);
++  on('copyHtmlBtn', 'click', () => copyAuditHtml());
++  on('copyMarkdownBtn', 'click', copyMarkdown);
++  on('completeStatementsToggle', 'change', () => {
++    state.previewStatementMode = e.completeStatements?.checked ? 'complete' : 'nested';
++    localStorage.setItem('atlasAlignPreviewStatementMode', state.previewStatementMode);
+     atlasRequestRender?.({ preview: true });
+   });
+-  on("includeNotesToggle", "change", () =>
+-    atlasRequestRender?.({ preview: true }),
+-  );
+-  on("previewStyle", "change", () => atlasRequestRender?.({ preview: true }));
+-  on("addStepBtn", "click", (event) => atlasToggleNewRuleTypeMenu?.(event));
+-  on("loadLibraryAuditBtn", "click", () =>
+-    loadSelectedLibraryAudit().catch((err) =>
+-      status(`Audit library load failed: ${err.message}`, "bad"),
+-    ),
+-  );
+-  on("refreshLibraryBtn", "click", () =>
+-    loadRepoLibrary().catch((err) =>
+-      status(`Database audit refresh failed: ${err.message}`, "bad"),
+-    ),
+-  );
+-  on("saveFlowBtn", "click", () =>
+-    saveFlow().catch((err) => status(err.message, "bad")),
+-  );
++  on('includeNotesToggle', 'change', () => atlasRequestRender?.({ preview: true }));
++  on('previewStyle', 'change', () => atlasRequestRender?.({ preview: true }));
++  on('addStepBtn', 'click', (event) => atlasToggleNewRuleTypeMenu?.(event));
++  on('loadLibraryAuditBtn', 'click', () => loadSelectedLibraryAudit().catch((err) => status(`Audit library load failed: ${err.message}`, 'bad')));
++  on('refreshLibraryBtn', 'click', () => loadRepoLibrary().catch((err) => status(`Database audit refresh failed: ${err.message}`, 'bad')));
++  on('saveFlowBtn', 'click', () => saveFlow().catch((err) => status(err.message, 'bad')));
+   if (!document.__atlasSaveShortcutBound) {
+-    document.addEventListener("keydown", (event) => {
+-      const isSaveShortcut =
+-        String(event.key || "").toLowerCase() === "s" &&
+-        (event.ctrlKey || event.metaKey) &&
+-        !event.altKey;
++    document.addEventListener('keydown', (event) => {
++      const isSaveShortcut = String(event.key || '').toLowerCase() === 's'
++        && (event.ctrlKey || event.metaKey)
++        && !event.altKey;
+       if (!isSaveShortcut) return;
+       event.preventDefault();
+-      if (!hasSelectedAudit?.())
+-        return status("Select or create an audit before saving.", "warn");
+-      atlasSaveIfDirty("keyboard shortcut").catch((err) =>
+-        status(err.message, "bad"),
+-      );
++      if (!hasSelectedAudit?.()) return status('Select or create an audit before saving.', 'warn');
++      atlasSaveIfDirty('keyboard shortcut').catch((err) => status(err.message, 'bad'));
+     });
+     document.__atlasSaveShortcutBound = true;
+   }
+-  on("loadFlowBtn", "click", () =>
+-    loadFlow().catch((err) => status(err.message, "bad")),
+-  );
+-  on("deleteFlowBtn", "click", () =>
+-    deleteFlow().catch((err) => status(err.message, "bad")),
+-  );
+-  on("exportAllBtn", "click", exportAll);
+-  on("clearAutosaveBtn", "click", () => clearAutosave());
+-  on("resetLocalDataBtn", "click", () =>
+-    resetLocalAppData().catch((err) =>
+-      status(`Clear saved data failed: ${err.message}`, "bad"),
+-    ),
+-  );
+-  on("activeAuditSelect", "change", () => {
+-    state.pendingActiveAuditValue = $("activeAuditSelect")?.value || "";
++  on('loadFlowBtn', 'click', () => loadFlow().catch((err) => status(err.message, 'bad')));
++  on('deleteFlowBtn', 'click', () => deleteFlow().catch((err) => status(err.message, 'bad')));
++  on('exportAllBtn', 'click', exportAll);
++  on('clearAutosaveBtn', 'click', () => clearAutosave());
++  on('resetLocalDataBtn', 'click', () => resetLocalAppData().catch((err) => status(`Clear saved data failed: ${err.message}`, 'bad')));
++  on('activeAuditSelect', 'change', () => {
++    state.pendingActiveAuditValue = $('activeAuditSelect')?.value || '';
+     renderActiveAuditSelect?.();
+   });
+-  on("confirmActiveAuditBtn", "click", () => {
+-    const value =
+-      state.pendingActiveAuditValue || $("activeAuditSelect")?.value || "";
++  on('confirmActiveAuditBtn', 'click', () => {
++    const value = state.pendingActiveAuditValue || $('activeAuditSelect')?.value || '';
+     if (!value || value === state.activeAuditValue) {
+       renderActiveAuditSelect?.();
+       return;
+     }
+-    switchActiveAudit(value)
+-      .then(() => {
+-        state.pendingActiveAuditValue = "";
+-        renderActiveAuditSelect?.();
+-      })
+-      .catch((err) => {
+-        status(`Audit switch failed: ${err.message}`, "bad");
+-        renderActiveAuditSelect?.();
+-      });
++    switchActiveAudit(value).then(() => {
++      state.pendingActiveAuditValue = '';
++      renderActiveAuditSelect?.();
++    }).catch((err) => {
++      status(`Audit switch failed: ${err.message}`, 'bad');
++      renderActiveAuditSelect?.();
++    });
+   });
+-  on("fieldDisplayModeBtn", "click", () => {
++  on('fieldDisplayModeBtn', 'click', () => {
+     toggleFieldDisplayMode?.();
+     renderFieldDisplayModeButton?.();
+   });
+-  on("themeBtn", "click", () =>
+-    setTheme(themeMode() === "dark" ? "light" : "dark"),
+-  );
+-  on("helpBtn", "click", () => startTutorial("global"));
+-  on("auditTutorialBtn", "click", () => startTutorial("audit"));
+-  on("fieldsTutorialBtn", "click", () => startTutorial("fields"));
+-  on("stepsTutorialBtn", "click", () => startTutorial("steps"));
+-  on("saveTutorialBtn", "click", () => startTutorial("save"));
++  on('themeBtn', 'click', () => setTheme(themeMode() === 'dark' ? 'light' : 'dark'));
++  on('helpBtn', 'click', () => startTutorial('global'));
++  on('auditTutorialBtn', 'click', () => startTutorial('audit'));
++  on('fieldsTutorialBtn', 'click', () => startTutorial('fields'));
++  on('stepsTutorialBtn', 'click', () => startTutorial('steps'));
++  on('saveTutorialBtn', 'click', () => startTutorial('save'));
+ 
+-  const importAllFile = $("importAllFile");
++  const importAllFile = $('importAllFile');
+   if (importAllFile) {
+     importAllFile.onchange = async (event) => {
+       const file = event.target.files[0];
+-      try {
+-        if (file) await atlasImportAuditJsonFile(file);
+-      } catch (err) {
+-        status(`Audit import failed: ${err.message}`, "bad");
+-      } finally {
+-        event.target.value = "";
+-      }
++      try { if (file) await atlasImportAuditJsonFile(file); } catch (err) { status(`Audit import failed: ${err.message}`, 'bad'); } finally { event.target.value = ''; }
+     };
+   }
+-  const importCurrentFile = $("importCurrentFile");
++  const importCurrentFile = $('importCurrentFile');
+   if (importCurrentFile) {
+     importCurrentFile.onchange = async (event) => {
+       const file = event.target.files[0];
+@@ -272,40 +198,29 @@ function bindEvents() {
+         if (!file) return;
+         const result = await atlasImportAuditJsonFile(file);
+         const first = result.imported?.[0];
+-        if (first?.audit?.id) {
+-          await atlasLoadDatabaseAudit(first.audit.id);
+-          showSection("overview");
+-        }
+-      } catch (err) {
+-        status(`Audit import failed: ${err.message}`, "bad");
+-      } finally {
+-        event.target.value = "";
+-      }
++        if (first?.audit?.id) { await atlasLoadDatabaseAudit(first.audit.id); showSection('overview'); }
++      } catch (err) { status(`Audit import failed: ${err.message}`, 'bad'); }
++      finally { event.target.value = ''; }
+     };
+   }
+ 
+-  document.body.addEventListener("input", (event) => {
++  document.body.addEventListener('input', (event) => {
+     if (shouldSkipBaseBodyEditEvent(event)) return;
+     capture();
+     atlasRequestRender?.({ preview: true });
+     scheduleAutosave();
+   });
+-  document.body.addEventListener("change", (event) => {
+-    if (event.target.closest("#activeAuditSelect, #auditLibrarySelect")) return;
++  document.body.addEventListener('change', (event) => {
++    if (event.target.closest('#activeAuditSelect, #auditLibrarySelect')) return;
+     if (shouldSkipBaseBodyEditEvent(event)) return;
+     capture();
+-    atlasRequestRender?.({
+-      selectedStep: true,
+-      preview: true,
+-      logicTable: true,
+-      validation: true,
+-    });
++    atlasRequestRender?.({ selectedStep: true, preview: true, logicTable: true, validation: true });
+     scheduleAutosave();
+   });
+-  document.body.addEventListener("click", (event) => {
+-    const card = event.target.closest(".step-card");
+-    if (event.target.matches("[data-select-step]") && card) {
+-      if (typeof atlasSelectStepWithoutListRender === "function") {
++  document.body.addEventListener('click', (event) => {
++    const card = event.target.closest('.step-card');
++    if (event.target.matches('[data-select-step]') && card) {
++      if (typeof atlasSelectStepWithoutListRender === 'function') {
+         atlasSelectStepWithoutListRender(card.dataset.id);
+       } else {
+         state.selectedStepId = card.dataset.id;
+@@ -313,64 +228,45 @@ function bindEvents() {
+         renderSelectedStep();
+       }
+     }
+-    if (event.target.matches("[data-add-child-step]") && card) {
++    if (event.target.matches('[data-add-child-step]') && card) {
+       capture();
+-      const parentStep = state.audit.steps.find(
+-        (item) => item.id === card.dataset.id,
+-      );
+-      if (parentStep?.autoGeneratedReference)
+-        return status(
+-          "Generated reference steps cannot have child logic steps.",
+-          "warn",
+-        );
++      const parentStep = state.audit.steps.find((item) => item.id === card.dataset.id);
++      if (parentStep?.autoGeneratedReference) return status('Generated reference steps cannot have child logic steps.', 'warn');
+       if (parentStep) addChildStep(parentStep);
+       return;
+     }
+-    if (event.target.matches("[data-delete-step]") && card) {
++    if (event.target.matches('[data-delete-step]') && card) {
+       capture();
+-      const step = state.audit.steps.find(
+-        (item) => item.id === card.dataset.id,
+-      );
+-      if (step?.autoGeneratedReference)
+-        return status(
+-          "Generated reference steps are removed by removing the source file.",
+-          "warn",
+-        );
+-      state.audit.steps = state.audit.steps.filter(
+-        (item) => item.id !== card.dataset.id,
+-      );
++      const step = state.audit.steps.find((item) => item.id === card.dataset.id);
++      if (step?.autoGeneratedReference) return status('Generated reference steps are removed by removing the source file.', 'warn');
++      state.audit.steps = state.audit.steps.filter((item) => item.id !== card.dataset.id);
+       atlasRequestStructuralStepRender?.();
+       scheduleAutosave();
+     }
+-    if (event.target.matches("[data-indent]") && card) {
++    if (event.target.matches('[data-indent]') && card) {
+       capture();
+-      const step = state.audit.steps.find(
+-        (item) => item.id === card.dataset.id,
+-      );
+-      if (step?.autoGeneratedReference)
+-        return status("Generated reference steps cannot be nested.", "warn");
+-      if (!makeChildOfPrevious(step))
+-        status("This step cannot be nested under the previous step.", "warn");
++      const step = state.audit.steps.find((item) => item.id === card.dataset.id);
++      if (step?.autoGeneratedReference) return status('Generated reference steps cannot be nested.', 'warn');
++      if (!makeChildOfPrevious(step)) status('This step cannot be nested under the previous step.', 'warn');
+       atlasRequestStructuralStepRender?.();
+       scheduleAutosave();
+     }
+-    if (event.target.matches("[data-outdent]") && card) {
++    if (event.target.matches('[data-outdent]') && card) {
+       capture();
+-      const step = state.audit.steps.find(
+-        (item) => item.id === card.dataset.id,
+-      );
+-      if (!outdentStep(step)) status("This step is already top-level.", "warn");
++      const step = state.audit.steps.find((item) => item.id === card.dataset.id);
++      if (!outdentStep(step)) status('This step is already top-level.', 'warn');
+       atlasRequestStructuralStepRender?.();
+       scheduleAutosave();
+     }
+   });
+-  window.addEventListener("resize", positionTutorial);
++  window.addEventListener('resize', positionTutorial);
+   if (!window.__atlasPageHideSaveBound) {
+-    window.addEventListener("pagehide", atlasSaveOnPageHide);
++    window.addEventListener('pagehide', atlasSaveOnPageHide);
+     window.__atlasPageHideSaveBound = true;
+   }
+ }
+ 
++
+ // -----------------------------------------------------------------------------
+ // Startup sequence
+ // -----------------------------------------------------------------------------
+@@ -378,35 +274,22 @@ function bindEvents() {
+  * Initializes theme, catalogs, events, autosave restore, and the initial render.
+  */
+ async function init() {
+-  performance.mark?.("atlas.startup.start");
+-  setTheme(localStorage.getItem("atlasAlignTheme") || "light");
+-  bindEvents();
+-  bindCatalogFieldBrowserEvents?.();
+-  showSection("my-audits");
+-
++  setTheme(localStorage.getItem('atlasAlignTheme') || 'light');
+   await initPhraseCatalog?.();
+   await atlasInitSourceDatabase?.();
+   await atlasInitAuditDatabase?.();
+-  await atlasLoadCurrentUser?.();
+-  await loadRepoLibrary?.({ render: false, refreshAudits: false });
++  await loadRepoLibrary?.();
+   renderStepTemplateOptions?.();
+-
++  bindEvents();
++  bindCatalogFieldBrowserEvents?.();
+   const restored = await restoreAutosave().catch(() => false);
+   if (!restored) state.selectedStepId = state.audit.steps[0]?.id || null;
+   syncAutoReferenceSteps?.();
+-  atlasMarkAllPagesDirty?.();
+-  atlasRenderPage?.("my-audits", { force: true });
++  renderAll();
++  await refreshSaved();
++  showSection(localStorage.getItem('atlasAlignActiveSection') || 'my-audits');
+   updateNavigationLockState?.();
+   renderFlowNavControls?.();
+-  performance.mark?.("atlas.startup.interactive");
+-  performance.measure?.(
+-    "atlas.startup",
+-    "atlas.startup.start",
+-    "atlas.startup.interactive",
+-  );
+-  status(
+-    "Ready. Select source files, build logic steps, and export the audit.",
+-    "ok",
+-  );
++  status('Ready. Select source files, build logic steps, and export the audit.', 'ok');
+ }
+ init();

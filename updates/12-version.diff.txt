@@ -1,0 +1,519 @@
+diff --git a/Dockerfile.txt b/Dockerfile.txt
+index 40ebb7a5a4499915a32cd6b68bc156d31f985857..4a9769b478ad9b1d3ec54129f5f5dcd4df5e2fc4 100644
+--- a/Dockerfile.txt
++++ b/Dockerfile.txt
+@@ -23,11 +23,11 @@ COPY index.html styles.css ./
+ COPY js ./js
+ COPY vendor ./vendor
+ COPY tutorials ./tutorials
++COPY vendor ./vendor
+ 
+-# Repository-backed audit and supporting catalogs
+-COPY audit-index.json ./
+-COPY audits ./audits
++# Supporting source catalogs
+ COPY catalogs ./catalogs
++COPY logic_phrase_catalog.json ./
+ 
+ ENV NODE_ENV=production
+ EXPOSE 8080
+diff --git a/index.html b/index.html
+index 04ea76eb1740a6601bb0446af62909454c68c315..13b180b1d0d96f15fbe1b6c052150b460cf3475f 100644
+--- a/index.html
++++ b/index.html
+@@ -11,7 +11,7 @@
+ <div class="app-shell">
+   <aside class="app-sidebar" id="sidebar" aria-label="ATLAS Align navigation">
+     <div class="brand">
+-      <div class="brandtext">ATLAS ALIGN <span class="app-version">v1.2.5</span></div>
++      <div class="brandtext">ATLAS ALIGN <span class="app-version">v1.5</span></div>
+       <button id="collapseNavBtn" class="toggle" type="button" title="Collapse navigation">☰</button>
+     </div>
+     <nav class="nav">
+diff --git a/updates/1-spinner.diff.txt b/updates/1-spinner.diff.txt
+deleted file mode 100644
+index 0e3aded4637a6baaa0ff516d546a7a0360165d46..0000000000000000000000000000000000000000
+--- a/updates/1-spinner.diff.txt
++++ /dev/null
+@@ -1,145 +0,0 @@
+-diff --git a/index.html b/index.html
+-index 892a51834a890b596a5d96bc5efaa859b14d5a67..ea231c2ec116639c47418a0c23c08889187d83bf 100644
+---- a/index.html
+-+++ b/index.html
+-@@ -74,7 +74,7 @@
+-         <h1>My Audits</h1>
+-         <div class="subtitle">Audits available from your repo library, browser saves, and workbook imports.</div>
+-         <div class="grid cards">
+--          
+-+          <div class="card metric-card"><div class="small">Repo audits</div><div class="metric" id="metricRepoAudits">--</div></div>
+-           <div class="card metric-card"><div class="small">Saved audits</div><div class="metric" id="metricSavedAudits">--</div></div>
+-         </div>
+- 
+-@@ -132,7 +132,10 @@
+-                   Refresh Library
+-               </button>
+-           </div>
+--          <p id="repoLibraryStatus" class="hint">Database audit library has not loaded yet.</p>
+-+          <p id="repoLibraryStatus" class="hint audit-library-status" aria-live="polite">
+-+            <span data-audit-library-status-text>Database audit library has not loaded yet.</span>
+-+            <span class="audit-loading-spinner" data-audit-loading-spinner role="status" aria-label="Loading database audits"></span>
+-+          </p>
+-         </div>
+-       </section>
+- 
+-@@ -140,12 +143,12 @@
+-         <h1>Group Landing Page</h1>
+-         <div class="subtitle">Portfolio-style view for the audit documentation library.</div>
+-         <div class="grid cards"><div class="card metric-card"><div class="small">Source files</div><div class="metric" id="metricSourceFiles">--</div></div><div class="card metric-card"><div class="small">Vanity labels</div><div class="metric" id="metricVanityLabels">--</div></div><div class="card metric-card"><div class="small">Source aliases</div><div class="metric" id="metricSourceAliases">--</div></div><div class="card metric-card"><div class="small">Validation</div><div class="metric">Live</div></div></div>
+--        <div class="layout2"><section class="card"><div class="section-title"><strong>Current audit snapshot</strong><button class="btn secondary small" type="button" onclick="showSection('overview')">Open Overview</button></div><div id="groupAuditSnapshot" class="snapshot-list"></div></section><section class="card"><strong>Recently updated database audits</strong><div id="groupSavedAuditList" class="package-list"><p class="hint">Database audits will appear here after loading.</p></div></section></div>
+-+        <div class="layout2"><section class="card"><div class="section-title"><strong>Current audit snapshot</strong><button class="btn secondary small" type="button" onclick="showSection('overview')">Open Overview</button></div><div id="groupAuditSnapshot" class="snapshot-list"></div></section><section class="card"><strong>Recently active local audits</strong><div id="groupSavedAuditList" class="package-list"><p class="hint">Saved audits will appear here after local saves are loaded.</p></div></section></div>
+-       </section>
+- 
+-       <section class="page" id="page-overview" data-page="overview">
+-         <h1>Audit Overview</h1>
+--        <div class="subtitle">Define the audit, load database work, and manage the active flow.</div>
+-+        <div class="subtitle">Define the audit, load saved/repo work, and manage the active flow.</div>
+-         <div class="layout2">
+-           <section class="card">
+-             <div class="section-title"><strong>Audit setup</strong><span class="badge blue">Current Audit</span></div>
+-@@ -252,11 +255,11 @@
+- 
+-       <section class="page" id="page-save" data-page="save">
+-         <h1>Publication Preview</h1>
+--        <div class="subtitle">Save to the database, export current requirements, or import audit JSON into the database.</div>
+-+        <div class="subtitle">Save locally, export current requirements, or package saved audit bundles.</div>
+-         <div class="layout2">
+-           <section class="card" id="savePanel">
+-             <div class="section-title"><strong>Save / Export</strong><button id="saveTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Save / Export tutorial" aria-label="Save / Export tutorial" data-start-tutorial="saveExport">?</button></div>
+--            <p class="hint">Save audits to PostgreSQL, export the current audit, or import JSON audits into PostgreSQL. IndexedDB is used only for crash recovery.</p>
+-+            <p class="hint">Save audits locally, export the current audit, or export/import saved audit bundles.</p>
+-             <button id="saveFlowBtn" class="btn primary full" type="button">Save Current Audit Locally</button>
+-             <label>Load Saved Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
+-             <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Saved Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Delete Saved Audit</button></div>
+-@@ -271,8 +274,8 @@
+-             <div class="package"><span>Confluence HTML</span><button id="downloadHtmlBtn" class="btn secondary small" type="button">Download HTML</button></div>
+-             <div class="package"><span>Clipboard HTML</span><button id="copyHtmlBtn" class="btn secondary small" type="button">Copy HTML</button></div>
+-             <div class="package"><span>Markdown</span><button id="copyMarkdownBtn" class="btn secondary small" type="button">Copy Markdown</button></div>
+--            <div class="section-title package-heading"><strong>Database Audit Transfer</strong></div>
+--            <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export Database Audit Index</button><label class="btn secondary small import-label">Import Audit JSON to Database<input id="importAllFile" type="file" accept=".json"></label></div><div id="auditImportSummary" class="audit-import-summary hint" role="status" aria-live="polite"></div>
+-+            <div class="section-title package-heading"><strong>Saved Audit Bundle</strong></div>
+-+            <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export All Saved Audits</button><label class="btn secondary small import-label">Import Saved Audits<input id="importAllFile" type="file" accept=".json"></label></div>
+-           </section>
+-         </div>
+-       </section>
+-@@ -302,10 +305,6 @@
+- <script src="./js/14-catalog-driven-builder.js"></script>
+- <script src="./js/15-visual-ui-upgrades.js"></script>
+- <script src="./js/16-page-shell.js"></script>
+--<script src="./js/17-source-database.js"></script>
+--<script src="./js/18-audit-database.js"></script>
+--<script src="./js/19-audit-version-history.js"></script>
+--<script src="./js/20-database-only-audits.js"></script>
+- <script src="./js/06-events-bootstrap.js"></script>
+- </body>
+- </html>
+-diff --git a/js/11-repo-library.js b/js/11-repo-library.js
+-index 99e1508a8247cd2a50e5211c8b9ae588bc03eedc..eacbba375e29940c3cb915ad2a6d8d6a3b284af3 100644
+---- a/js/11-repo-library.js
+-+++ b/js/11-repo-library.js
+-@@ -164,10 +164,10 @@ async function loadRepoLibrary() {
+-  * Renders repository library load status.
+-  */
+- function renderRepoLibraryStatus() {
+--  const target = $('repoLibraryStatus');
+-+  const target = document.querySelector('[data-audit-library-status-text]');
+-   if (!target) return;
+-   if (!repoLibraryState.loaded) {
+--    target.textContent = 'Library data has not loaded yet.';
+-+    target.textContent = 'Database audit library has not loaded yet.';
+-     return;
+-   }
+-   const warningText = repoLibraryState.warnings.length ? ` ${repoLibraryState.warnings.length} warning(s).` : '';
+-diff --git a/js/18-audit-database.js b/js/18-audit-database.js
+-index da1f41f98217d2d74d5354b37ad3da2fafd9365a..9b3ac9a4ff1a476e2061e1f263642e9be5ad8baf 100644
+---- a/js/18-audit-database.js
+-+++ b/js/18-audit-database.js
+-@@ -12,10 +12,28 @@ function atlasApplyLoadedAudit(payload, source='database') {
+-   state.auditPersistence={ auditId:state.audit.id, revisionId:payload.revision?.id || null, revisionNumber:payload.revision?.number || 0, access:payload.access || null, saving:false, conflict:null };
+-   markAuditSelected(); updateActiveAuditBaseline(); renderAll(); renderActiveAuditSelect?.();
+- }
+-+function atlasSetAuditLibraryLoading(loading) {
+-+  const spinner = document.querySelector('[data-audit-loading-spinner]');
+-+  if (spinner) spinner.hidden = !loading;
+-+}
+-+function atlasSetAuditLibraryStatus(message) {
+-+  const text = document.querySelector('[data-audit-library-status-text]');
+-+  if (text) text.textContent = message;
+-+}
+- async function atlasRefreshDatabaseAudits() {
+--  const payload=await atlasAuditApi('/api/audits');
+--  state.databaseAudits=Array.isArray(payload.audits)?payload.audits:[];
+--  return state.databaseAudits;
+-+  atlasSetAuditLibraryLoading(true);
+-+  atlasSetAuditLibraryStatus('Database audit library has not loaded yet.');
+-+  try {
+-+    const payload=await atlasAuditApi('/api/audits');
+-+    state.databaseAudits=Array.isArray(payload.audits)?payload.audits:[];
+-+    atlasSetAuditLibraryStatus(`Loaded ${state.databaseAudits.length} database audit(s).`);
+-+    return state.databaseAudits;
+-+  } catch (error) {
+-+    atlasSetAuditLibraryStatus('The database audit library could not be loaded.');
+-+    throw error;
+-+  } finally {
+-+    atlasSetAuditLibraryLoading(false);
+-+  }
+- }
+- async function atlasLoadDatabaseAudit(id) {
+-   const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(id)}`);
+-diff --git a/styles.css b/styles.css
+-index 65eeb0a5c1bf696c052c221dda6f751ccbb020be..f226ce13c7a1c8f1ed25b7ef7cdf8436274bbd79 100644
+---- a/styles.css
+-+++ b/styles.css
+-@@ -4844,3 +4844,11 @@ Final layout contract
+- 
+- .audit-import-summary{margin-top:.75rem;padding:.65rem .75rem;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+- .audit-import-summary:empty{display:none}
+-+
+-+
+-+/* Database audit library loading indicator */
+-+.audit-library-status { display:flex; align-items:center; gap:.45rem; }
+-+.audit-loading-spinner { width:.9rem; height:.9rem; flex:0 0 auto; border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:atlas-audit-library-spin .75s linear infinite; }
+-+.audit-loading-spinner[hidden] { display:none !important; }
+-+@keyframes atlas-audit-library-spin { to { transform:rotate(360deg); } }
+-+@media (prefers-reduced-motion: reduce) { .audit-loading-spinner { animation-duration:1.5s; } }
+diff --git a/updates/2-index.diff.txt b/updates/2-index.diff.txt
+deleted file mode 100644
+index 5870778bf6e968d6b351cc9e4866825279348d78..0000000000000000000000000000000000000000
+--- a/updates/2-index.diff.txt
++++ /dev/null
+@@ -1,15 +0,0 @@
+-diff --git a/index.html b/index.html
+-index ea231c2ec116639c47418a0c23c08889187d83bf..04ea76eb1740a6601bb0446af62909454c68c315 100644
+---- a/index.html
+-+++ b/index.html
+-@@ -305,6 +305,10 @@
+- <script src="./js/14-catalog-driven-builder.js"></script>
+- <script src="./js/15-visual-ui-upgrades.js"></script>
+- <script src="./js/16-page-shell.js"></script>
+-+<script src="./js/17-source-database.js"></script>
+-+<script src="./js/18-audit-database.js"></script>
+-+<script src="./js/19-audit-version-history.js"></script>
+-+<script src="./js/20-database-only-audits.js"></script>
+- <script src="./js/06-events-bootstrap.js"></script>
+- </body>
+- </html>
+diff --git a/updates/3-save.diff.txt b/updates/3-save.diff.txt
+deleted file mode 100644
+index 3578144c941ee9908277403befd5fb080f5689a7..0000000000000000000000000000000000000000
+--- a/updates/3-save.diff.txt
++++ /dev/null
+@@ -1,226 +0,0 @@
+-diff --git a/js/06-events-bootstrap.js b/js/06-events-bootstrap.js
+-index d90525aea5cdb2ac95c1d5961bbe8c3db4e37bf1..ffa93dcc8d8d858de1878bcf9bbcd6da438e43f8 100644
+---- a/js/06-events-bootstrap.js
+-+++ b/js/06-events-bootstrap.js
+-@@ -61,7 +61,7 @@ function bindEvents() {
+-         event.preventDefault();
+-         return;
+-       }
+--      showSection(button.dataset.section);
+-+      atlasNavigateToSection(button.dataset.section).catch((err) => status(`Navigation save failed: ${err.message}`, 'bad'));
+-     };
+-   });
+- 
+-@@ -142,25 +142,11 @@ function bindEvents() {
+-       const isSaveShortcut = String(event.key || '').toLowerCase() === 's'
+-         && (event.ctrlKey || event.metaKey)
+-         && !event.altKey;
+--
+-       if (!isSaveShortcut) return;
+--
+-       event.preventDefault();
+--
+--      if (!hasSelectedAudit?.()) {
+--        status('Select or create an audit before saving locally.', 'warn');
+--        return;
+--      }
+--
+--      const saveButton = $('saveFlowBtn');
+--      if (saveButton) {
+--        saveButton.click();
+--        return;
+--      }
+--
+--      saveFlow().catch((err) => status(err.message, 'bad'));
+-+      if (!hasSelectedAudit?.()) return status('Select or create an audit before saving.', 'warn');
+-+      atlasSaveIfDirty('keyboard shortcut').catch((err) => status(err.message, 'bad'));
+-     });
+--
+-     document.__atlasSaveShortcutBound = true;
+-   }
+-   on('loadFlowBtn', 'click', () => loadFlow().catch((err) => status(err.message, 'bad')));
+-@@ -274,6 +260,10 @@ function bindEvents() {
+-     }
+-   });
+-   window.addEventListener('resize', positionTutorial);
+-+  if (!window.__atlasPageHideSaveBound) {
+-+    window.addEventListener('pagehide', atlasSaveOnPageHide);
+-+    window.__atlasPageHideSaveBound = true;
+-+  }
+- }
+- 
+- 
+-diff --git a/js/11-repo-library.js b/js/11-repo-library.js
+-index eacbba375e29940c3cb915ad2a6d8d6a3b284af3..ca3abb81e70fbab4edd0b0acca0a27049a5cc1b2 100644
+---- a/js/11-repo-library.js
+-+++ b/js/11-repo-library.js
+-@@ -229,8 +229,20 @@ async function loadSelectedLibraryAudit() {
+-   if (!value) return status('Select an audit from the Audit Library first.', 'warn');
+-   const [kind, ...idParts] = value.split(':');
+-   const id = idParts.join(':');
+--  if (kind === 'database') return atlasLoadDatabaseAudit(id);
+--  if (kind === 'workbook') return loadAuditFromWorkbook(id);
+-+  if (kind === 'database') {
+-+    if (state.auditPersistence?.auditId && state.auditPersistence.auditId !== id) {
+-+      const saved=await atlasSaveIfDirty('audit change');
+-+      if (!saved) return;
+-+    }
+-+    return atlasLoadDatabaseAudit(id);
+-+  }
+-+  if (kind === 'workbook') {
+-+    const saved=await atlasSaveIfDirty('audit change');
+-+    if (!saved) return;
+-+    const result=await loadAuditFromWorkbook(id);
+-+    showSection('overview');
+-+    return result;
+-+  }
+-   return status('Only database audits can be loaded from the Audit Library.', 'warn');
+- }
+- /**
+-@@ -253,19 +265,15 @@ async function confirmAuditSwitchSaveBehavior() {
+-  */
+- async function switchActiveAudit(value) {
+-   if (state.auditSwitchInProgress || !value || value === state.activeAuditValue) return renderActiveAuditSelect?.();
+--  const previousPage = document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
+--  capture?.();
+--  const behavior = await confirmAuditSwitchSaveBehavior();
+--  if (behavior === 'cancel') return renderActiveAuditSelect?.();
+--  if (behavior === 'save' && !(await saveCurrentAuditForSwitch())) return renderActiveAuditSelect?.();
+-   const [kind, ...idParts] = value.split(':');
+-   const id = idParts.join(':');
+-   state.auditSwitchInProgress = true;
+-   try {
+-+    const saved=await atlasSaveIfDirty('audit change');
+-+    if (!saved) return;
+-     if (kind === 'database') await atlasLoadDatabaseAudit(id);
+--    else if (kind === 'workbook') await loadAuditFromWorkbook(id);
+-+    else if (kind === 'workbook') { await loadAuditFromWorkbook(id); showSection('overview'); }
+-     else return status('Only database and workbook audits can be selected.', 'warn');
+--    showSection(previousPage);
+-   } finally {
+-     state.auditSwitchInProgress = false;
+-     renderActiveAuditSelect?.();
+-diff --git a/js/16-page-shell.js b/js/16-page-shell.js
+-index ce49b9a81848d2e50138db6f2c03eb69415a757e..1335ae5b5179618a722671e40a7ef8019670edd1 100644
+---- a/js/16-page-shell.js
+-+++ b/js/16-page-shell.js
+-@@ -293,7 +293,8 @@ function renderFlowNavControls() {
+- document.addEventListener('click', (event) => {
+-   const flowNav = event.target.closest('[data-flow-target]');
+-   if (flowNav) {
+--    showSection(flowNav.dataset.flowTarget);
+-+    event.preventDefault();
+-+    atlasNavigateToSection(flowNav.dataset.flowTarget).catch((err) => status(`Navigation save failed: ${err.message}`, 'bad'));
+-     renderActiveAuditSelect?.();
+-     renderFieldDisplayModeButton?.();
+-     return;
+-@@ -305,7 +306,8 @@ document.addEventListener('click', (event) => {
+-       event.stopPropagation();
+-       return;
+-     }
+--    showSection(nav.dataset.section);
+-+    event.preventDefault();
+-+    atlasNavigateToSection(nav.dataset.section).catch((err) => status(`Navigation save failed: ${err.message}`, 'bad'));
+-     renderActiveAuditSelect?.();
+-     renderFieldDisplayModeButton?.();
+-     return;
+-diff --git a/js/18-audit-database.js b/js/18-audit-database.js
+-index 9b3ac9a4ff1a476e2061e1f263642e9be5ad8baf..deb343a3fdee1a3487b6b50af67c530a7902f32d 100644
+---- a/js/18-audit-database.js
+-+++ b/js/18-audit-database.js
+-@@ -10,7 +10,13 @@ function atlasApplyLoadedAudit(payload, source='database') {
+-   state.selectedStepId=state.audit.steps?.[0]?.id || null;
+-   state.activeAuditValue=`database:${state.audit.id}`;
+-   state.auditPersistence={ auditId:state.audit.id, revisionId:payload.revision?.id || null, revisionNumber:payload.revision?.number || 0, access:payload.access || null, saving:false, conflict:null };
+--  markAuditSelected(); updateActiveAuditBaseline(); renderAll(); renderActiveAuditSelect?.();
+-+  markAuditSelected();
+-+  // Render the loaded document before establishing the baseline. auditSnapshot() calls
+-+  // capture(), so taking the baseline first would copy stale Overview inputs over the
+-+  // database document (for example, "Untitled Audit" and an empty purpose).
+-+  renderAll();
+-+  updateActiveAuditBaseline();
+-+  renderActiveAuditSelect?.();
+- }
+- function atlasSetAuditLibraryLoading(loading) {
+-   const spinner = document.querySelector('[data-audit-loading-spinner]');
+-@@ -37,23 +43,67 @@ async function atlasRefreshDatabaseAudits() {
+- }
+- async function atlasLoadDatabaseAudit(id) {
+-   const payload=await atlasAuditApi(`/api/audits/${encodeURIComponent(id)}`);
+--  atlasApplyLoadedAudit(payload); scheduleAutosave(); return payload;
+-+  atlasApplyLoadedAudit(payload);
+-+  scheduleAutosave();
+-+  showSection('overview');
+-+  return payload;
+- }
+-+let atlasAuditSavePromise = null;
+- async function atlasSaveCurrentAudit(changeSummary='') {
+-+  if (atlasAuditSavePromise) return atlasAuditSavePromise;
+-+  atlasAuditSavePromise = (async () => {
+-+    capture?.();
+-+    state.auditPersistence.saving=true;
+-+    try {
+-+      const exists=state.auditPersistence.auditId===state.audit.id && state.auditPersistence.revisionId;
+-+      const payload=await atlasAuditApi(exists?`/api/audits/${encodeURIComponent(state.audit.id)}`:'/api/audits', {
+-+        method:exists?'PUT':'POST', body:JSON.stringify({ audit:structuredClone(state.audit), expectedRevisionId:exists?state.auditPersistence.revisionId:null, changeSummary:changeSummary || null })
+-+      });
+-+      atlasApplyLoadedAudit(payload);
+-+      await atlasRefreshDatabaseAudits();
+-+      await refreshSaved?.();
+-+      status(`Saved ${state.audit.name} as revision ${payload.revision.number}.`,'ok');
+-+      return true;
+-+    } catch(error) {
+-+      if(error.status===409) { state.auditPersistence.conflict={ currentRevisionId:error.currentRevisionId }; atlasOpenConflictDialog?.(error); return false; }
+-+      throw error;
+-+    } finally {
+-+      state.auditPersistence.saving=false;
+-+      atlasAuditSavePromise=null;
+-+    }
+-+  })();
+-+  return atlasAuditSavePromise;
+-+}
+-+function atlasIsDatabaseAuditDirty() {
+-+  return !!state.auditPersistence?.revisionId
+-+    && state.auditPersistence.auditId === state.audit.id
+-+    && auditHasUnsavedChanges();
+-+}
+-+async function atlasSaveIfDirty(reason='navigation') {
+-+  if (!atlasIsDatabaseAuditDirty()) return true;
+-+  return atlasSaveCurrentAudit(`Saved on ${reason}`);
+-+}
+-+async function atlasNavigateToSection(section) {
+-+  const target=pageForSection(section);
+-+  const current=document.querySelector('.page.active')?.dataset.page || '';
+-+  if (target===current) return;
+-+  if (current==='overview') {
+-+    const saved=await atlasSaveIfDirty('page navigation');
+-+    if (!saved) return;
+-+  }
+-+  showSection(target);
+-+}
+-+function atlasSaveOnPageHide() {
+-+  if (!atlasIsDatabaseAuditDirty()) return;
+-   capture?.();
+--  state.auditPersistence.saving=true;
+--  try {
+--    const exists=state.auditPersistence.auditId===state.audit.id && state.auditPersistence.revisionId;
+--    const payload=await atlasAuditApi(exists?`/api/audits/${encodeURIComponent(state.audit.id)}`:'/api/audits', {
+--      method:exists?'PUT':'POST', body:JSON.stringify({ audit:structuredClone(state.audit), expectedRevisionId:exists?state.auditPersistence.revisionId:null, changeSummary:changeSummary || null })
+--    });
+--    atlasApplyLoadedAudit(payload); await atlasRefreshDatabaseAudits(); await refreshSaved?.();
+--    status(`Saved ${state.audit.name} as revision ${payload.revision.number}.`,'ok'); return true;
+--  } catch(error) {
+--    if(error.status===409) { state.auditPersistence.conflict={ currentRevisionId:error.currentRevisionId }; atlasOpenConflictDialog?.(error); return false; }
+--    throw error;
+--  } finally { state.auditPersistence.saving=false; }
+-+  const auditId=state.auditPersistence.auditId;
+-+  const body=JSON.stringify({ audit:structuredClone(state.audit), expectedRevisionId:state.auditPersistence.revisionId, changeSummary:'Saved on window close' });
+-+  fetch(`/api/audits/${encodeURIComponent(auditId)}`, {
+-+    method:'PUT', credentials:'same-origin', keepalive:true,
+-+    headers:{ 'Content-Type':'application/json' }, body
+-+  }).catch(() => {});
+- }
+-+
+- function atlasAuditDocumentsFromJson(json) {
+-   const candidates = Array.isArray(json?.flows) ? json.flows : Array.isArray(json?.audits) ? json.audits : Array.isArray(json) ? json : [json];
+-   return candidates.map((item) => item?.audit || item).filter((item) => item && typeof item === 'object' && !Array.isArray(item));
+diff --git a/updates/4-style.diff.txt b/updates/4-style.diff.txt
+deleted file mode 100644
+index 191dcaa1c51a67cad1cc4bcb056ed8fda42b38cb..0000000000000000000000000000000000000000
+--- a/updates/4-style.diff.txt
++++ /dev/null
+@@ -1,77 +0,0 @@
+-diff --git a/styles.css b/styles.css
+-index f226ce13c7a1c8f1ed25b7ef7cdf8436274bbd79..6c5152c14065c12dd4233c2262f829bcc8fa49cc 100644
+---- a/styles.css
+-+++ b/styles.css
+-@@ -946,24 +946,6 @@ body.dark tr:hover td {
+-     border-radius: 12px;
+- }
+- 
+--
+--/* Duplicate source-reference support */
+--.duplicate-source-reference-card {
+--  position: relative;
+--}
+--.duplicate-source-reference-card small {
+--  display: block;
+--  margin-top: .12rem;
+--  color: var(--muted);
+--  line-height: 1.3;
+--}
+--.duplicate-source-reference-card [data-duplicate-source-reference] {
+--  white-space: nowrap;
+--}
+--.compact-action-menu-panel [data-copy-reference-substeps] {
+--  justify-content: flex-start;
+--  text-align: left;
+--}
+- .selected-source-main {
+-     justify-content: flex-start;
+-     display: flex;
+-@@ -4824,31 +4806,22 @@ Final layout contract
+-   color: #8c5c0c;
+- }
+- 
+--/* Database-backed Source Library administration */
+--#replaceSourceLibraryBtn[hidden] { display: none !important; }
+--#replaceSourceLibraryBtn { width: auto; white-space: nowrap; }
+--#replaceSourceLibraryBtn:disabled { opacity: .6; cursor: wait; }
+--@media(max-width: 700px) {
+--  #page-fields .section-title { align-items: flex-start; }
+--  #page-fields .section-title .compact-toolbar { justify-content: flex-start; }
+-+/* Sources page: vertically center Source Library pill content */
+-+#page-fields .source-library-list
+-+  .contacts-row.source-contact-row.source-library-pill {
+-+  align-items: center !important;
+- }
+- 
+-+#page-fields .source-library-list
+-+  .source-contact-main {
+-+  align-items: center !important;
+-+}
+- 
+--/* Audit and step revision history */
+--.audit-history-backdrop{position:fixed;inset:0;z-index:12000;background:rgba(15,23,42,.58);display:flex;align-items:center;justify-content:center;padding:24px}
+--.audit-history-modal{width:min(1180px,96vw);max-height:92vh;overflow:hidden;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+--.audit-history-modal>header{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border)}
+--.audit-history-modal h2{margin:0}.audit-history-content{padding:1rem 1.2rem;overflow:auto}.revision-table,.revision-diff{width:100%;border-collapse:collapse}.revision-table th,.revision-table td,.revision-diff th,.revision-diff td{padding:.65rem;border:1px solid var(--border);text-align:left;vertical-align:top}.revision-table th,.revision-diff th{background:var(--surface2)}
+--.revision-json,.revision-diff pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace}.revision-warning{border-left:4px solid var(--warn);padding:1rem;background:var(--surface2)}
+--@media(max-width:760px){.audit-history-backdrop{padding:8px}.audit-history-modal{width:100%;max-height:96vh}.revision-table,.revision-diff{font-size:.8rem}}
+--
+--.audit-import-summary{margin-top:.75rem;padding:.65rem .75rem;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
+--.audit-import-summary:empty{display:none}
+--
+--
+--/* Database audit library loading indicator */
+--.audit-library-status { display:flex; align-items:center; gap:.45rem; }
+--.audit-loading-spinner { width:.9rem; height:.9rem; flex:0 0 auto; border:2px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:atlas-audit-library-spin .75s linear infinite; }
+--.audit-loading-spinner[hidden] { display:none !important; }
+--@keyframes atlas-audit-library-spin { to { transform:rotate(360deg); } }
+--@media (prefers-reduced-motion: reduce) { .audit-loading-spinner { animation-duration:1.5s; } }
+-+#page-fields .source-library-list
+-+  .source-contact-text,
+-+#page-fields .source-library-list
+-+  .single-color-swatch,
+-+#page-fields .source-library-list
+-+  .source-action-button {
+-+  align-self: center;
+-+}

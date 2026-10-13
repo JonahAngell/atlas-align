@@ -1,0 +1,101 @@
+<section class="page" data-page="steps" id="page-steps">
+  <h1>Logic Builder</h1>
+  <div class="subtitle">
+    Build structured audit steps with standardized wording, visual field
+    picking, drag/drop reordering, and nested IF / ELSE support.
+  </div>
+  <div class="logic-screen">
+    <div
+      aria-label="Rules and step editor"
+      class="logic-pane-switch"
+      data-logic-pane-switch
+      role="tablist"
+    >
+      <button
+        aria-controls="logicRulesPanel"
+        aria-selected="true"
+        class="logic-pane-tab"
+        data-logic-pane-tab="rules"
+        id="logicPaneRulesTab"
+        role="tab"
+        type="button"
+      >
+        Rules
+      </button>
+      <button
+        aria-controls="logicStepPanel"
+        aria-selected="false"
+        class="logic-pane-tab"
+        data-logic-pane-tab="step"
+        id="logicPaneStepTab"
+        role="tab"
+        tabindex="-1"
+        type="button"
+      >
+        Step
+      </button>
+    </div>
+    <div class="layout2 logic-builder-layout">
+      <section
+        aria-labelledby="logicPaneRulesTab"
+        class="card logic-rules-card logic-pane is-logic-pane-active"
+        data-logic-pane="rules"
+        id="logicRulesPanel"
+        role="tabpanel"
+        tabindex="-1"
+      >
+        <div class="section-title logic-section-title">
+          <div>
+            <strong>Rules</strong>
+          </div>
+          <div class="toolbar compact-toolbar logic-builder-toolbar">
+            <button
+              aria-label="Display Vanity Label/Field Display Name"
+              aria-pressed="false"
+              class="field-display-mode-button"
+              id="fieldDisplayModeBtn"
+              title="Display Vanity Label/Field Display Name"
+              type="button"
+            >
+              Aa
+            </button>
+            <button
+              class="btn secondary small"
+              id="importLogicTextBtn"
+              type="button"
+            >
+              Import from text
+            </button>
+            <button
+              aria-expanded="false"
+              aria-haspopup="menu"
+              class="btn primary small new-rule-menu-button"
+              id="addStepBtn"
+              type="button"
+            >
+              + New Rule
+            </button>
+          </div>
+        </div>
+        <div class="steps-workspace logic-list" id="stepsList"></div>
+      </section>
+      <aside
+        aria-labelledby="logicPaneStepTab"
+        class="card live-output-card logic-pane"
+        data-logic-pane="step"
+        id="logicStepPanel"
+        role="tabpanel"
+        tabindex="-1"
+      >
+        <div class="section-title">
+          <strong>Logic Step Editor</strong>
+          <span class="badge blue" id="selectedRuleBadge">Selected rule</span>
+        </div>
+        <div class="live-output-pane hint" id="selectedStepDetails">
+          Select a rule to edit its criteria and preview the live standardised
+          output.
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

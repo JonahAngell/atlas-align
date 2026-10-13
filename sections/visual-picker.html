@@ -1,0 +1,104 @@
+<div id="atlas-visual-picker-root" class="atlas-visual-picker-root" hidden>
+  <div class="atlas-visual-picker-backdrop" data-atlas-picker-close></div>
+  <section
+    id="atlas-visual-picker-dialog"
+    class="atlas-visual-picker-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="atlas-visual-picker-title"
+    aria-describedby="atlas-visual-picker-guidance"
+    tabindex="-1"
+  >
+    <header class="atlas-visual-picker-header">
+      <div>
+        <h2 id="atlas-visual-picker-title">Select a field</h2>
+        <p id="atlas-visual-picker-guidance">
+          Search or browse the available options.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="atlas-visual-picker-close"
+        data-atlas-picker-close
+        aria-label="Close picker"
+      >
+        &times;
+      </button>
+    </header>
+    <div class="atlas-visual-picker-toolbar">
+      <label class="atlas-visual-picker-search-wrap">
+        <span class="sr-only">Search options</span>
+        <input
+          id="atlas-visual-picker-search"
+          class="atlas-visual-picker-search"
+          type="search"
+          autocomplete="off"
+          placeholder="Search"
+        />
+      </label>
+      <div
+        class="atlas-visual-picker-controls"
+        aria-label="Picker display controls"
+      >
+        <button
+          id="atlas-visual-picker-label-mode"
+          type="button"
+          class="atlas-visual-picker-control"
+          aria-label="Display Vanity Label/Field Display Name"
+          aria-pressed="false"
+          title="Display Vanity Label/Field Display Name"
+        >
+          Aa
+        </button>
+        <button
+          id="atlas-visual-picker-sort-source"
+          type="button"
+          class="atlas-visual-picker-control"
+          aria-pressed="true"
+        >
+          Sort by Source
+        </button>
+        <button
+          id="atlas-visual-picker-sort-alpha"
+          type="button"
+          class="atlas-visual-picker-control"
+          aria-pressed="false"
+        >
+          A-Z
+        </button>
+      </div>
+    </div>
+    <div
+      id="atlas-visual-picker-results"
+      class="atlas-visual-picker-results"
+      role="listbox"
+      aria-label="Available options"
+    ></div>
+    <p
+      id="atlas-visual-picker-empty"
+      class="atlas-visual-picker-empty"
+      role="status"
+      hidden
+    >
+      No matching options.
+    </p>
+    <footer
+      id="atlas-visual-picker-footer"
+      class="atlas-visual-picker-footer"
+      hidden
+    >
+      <p id="atlas-visual-picker-selection-count" aria-live="polite">
+        No items selected
+      </p>
+      <button
+        id="atlas-visual-picker-confirm"
+        class="btn primary"
+        type="button"
+        data-atlas-picker-confirm
+        disabled
+      >
+        Add selected
+      </button>
+    </footer>
+  </section>
+</div>

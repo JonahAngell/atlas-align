@@ -1,0 +1,44 @@
+<section
+  class="page"
+  data-page="recently-deleted-publications"
+  id="page-recently-deleted-publications"
+>
+  <div class="section-title">
+    <div>
+      <h1>Recently Deleted Publications</h1>
+      <p class="subtitle">
+        Administer publication lifecycle records separately from audit archive
+        and Deleted Items.
+      </p>
+    </div>
+    <button
+      class="btn secondary"
+      id="atlasDeletedPublicationsRefresh"
+      type="button"
+    >
+      Refresh
+    </button>
+  </div>
+  <div
+    id="atlasDeletedPublicationsStatus"
+    class="hint"
+    role="status"
+    aria-live="polite"
+  ></div>
+  <div class="recent-publication-layout">
+    <section class="card" aria-labelledby="atlasActivePublicationsHeading">
+      <h2 id="atlasActivePublicationsHeading">Active publications</h2>
+      <div
+        id="atlasActivePublicationsList"
+        class="recent-publication-list"
+      ></div>
+    </section>
+    <section class="card" aria-labelledby="atlasDeletedPublicationsHeading">
+      <h2 id="atlasDeletedPublicationsHeading">Recently Deleted</h2>
+      <div
+        id="atlasDeletedPublicationsList"
+        class="recent-publication-list"
+      ></div>
+    </section>
+  </div>
+</section>

@@ -1,0 +1,22 @@
+<section class="page" data-page="display-fields" id="page-display-fields">
+  <div class="pagehead">
+    <div>
+      <h1>Display Fields</h1>
+      <p class="subtitle">
+        Choose fields for final audit output. The switch controls Requirements
+        Preview and Exported Logic. Delete removes a field from this list. Used
+        in Logic is derived automatically.
+      </p>
+    </div>
+    <button class="btn primary" id="addDisplayFieldBtn" type="button">
+      + Add Field
+    </button>
+  </div>
+  <div class="card display-fields-card">
+    <div class="status" id="displayFieldsStatus" aria-live="polite">
+      Turn a field off to hide it from preview and export. Delete removes it
+      from this list.
+    </div>
+    <div id="displayFieldsTable"></div>
+  </div>
+</section>

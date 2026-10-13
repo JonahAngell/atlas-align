@@ -1,0 +1,2115 @@
+/* ATLAS-SOURCE-UNIT:u0045:BEGIN */ /* Modal stack and picker dialogs */
+.join-picker-backdrop,
+.source-replace-backdrop,
+.visual-picker-modal-backdrop.dynamic-mini-picker {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+/* ATLAS-SOURCE-UNIT:u0045:END */
+/* ATLAS-SOURCE-UNIT:u0047:BEGIN */
+.source-replace-backdrop {
+  z-index: 10050;
+  padding: 24px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0047:END */
+/* ATLAS-SOURCE-UNIT:u0050:BEGIN */
+.join-picker-modal,
+.source-replace-modal,
+.visual-picker-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+
+/* ATLAS-SOURCE-UNIT:u0050:END */
+/* ATLAS-SOURCE-UNIT:u0051:BEGIN */
+.join-picker-modal,
+.source-replace-modal {
+  width: min(920px, 96vw);
+  max-height: min(780px, 92vh);
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0051:END */
+/* ATLAS-SOURCE-UNIT:u0052:BEGIN */
+.source-replace-modal {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0052:END */
+/* ATLAS-SOURCE-UNIT:u0107:BEGIN */
+.tablewrap,
+.logic-table-wrap,
+.selected-source-table-wrap {
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0107:END */
+/* ATLAS-SOURCE-UNIT:u0119:BEGIN */
+.field-picker-summary {
+  margin-bottom: 0;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* ATLAS-SOURCE-UNIT:u0119:END */
+/* ATLAS-SOURCE-UNIT:u0120:BEGIN */
+.source-field-browser-panel {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0120:END */
+/* ATLAS-SOURCE-UNIT:u0121:BEGIN */
+.source-field-browser,
+.catalog-browser {
+  max-height: 440px;
+  overflow: auto;
+  display: grid;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0121:END */
+/* ATLAS-SOURCE-UNIT:u0122:BEGIN */
+.source-library-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.65rem 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0122:END */
+/* ATLAS-SOURCE-UNIT:u0123:BEGIN */
+.source-library-tab {
+  min-height: 34px;
+  color: #2e4266 !important;
+  background: #eef2f8 !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0123:END */
+/* ATLAS-SOURCE-UNIT:u0124:BEGIN */
+.source-library-tab.active {
+  color: #fff !important;
+  background: var(--primary) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0124:END */
+/* ATLAS-SOURCE-UNIT:u0125:BEGIN */
+.source-library-tab span {
+  display: inline-flex;
+  margin-left: 0.25rem;
+  padding: 0.05rem 0.35rem;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0125:END */
+/* ATLAS-SOURCE-UNIT:u0127:BEGIN */
+.contacts-list-shell {
+  position: relative;
+  min-height: 220px;
+  max-height: 340px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+/* ATLAS-SOURCE-UNIT:u0127:END */
+/* ATLAS-SOURCE-UNIT:u0128:BEGIN */
+.contacts-list {
+  height: 100%;
+  max-height: 340px;
+  overflow: auto;
+  padding: 0.35rem 1.55rem 0.35rem 0.35rem;
+  scroll-behavior: smooth;
+}
+/* ATLAS-SOURCE-UNIT:u0128:END */
+/* ATLAS-SOURCE-UNIT:u0130:BEGIN */
+.contacts-row {
+  width: 100%;
+  display: grid;
+  min-height: 0;
+  padding: 0.55rem 0.6rem;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--border) !important;
+  border-radius: 0;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0130:END */
+/* ATLAS-SOURCE-UNIT:u0131:BEGIN */
+.contacts-row:hover,
+.source-contact-row.selected {
+  background: rgba(77, 111, 169, 0.08) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0131:END */
+/* ATLAS-SOURCE-UNIT:u0132:BEGIN */
+.contacts-title {
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+/* ATLAS-SOURCE-UNIT:u0132:END */
+/* ATLAS-SOURCE-UNIT:u0133:BEGIN */
+.contacts-detail {
+  margin-top: 0.12rem;
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.25;
+}
+
+/* ATLAS-SOURCE-UNIT:u0133:END */
+/* ATLAS-SOURCE-UNIT:u0134:BEGIN */
+.source-contact-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0134:END */
+/* ATLAS-SOURCE-UNIT:u0135:BEGIN */
+.source-contact-row .contacts-row-main {
+  justify-content: flex-start;
+  align-items: flex-start;
+  display: grid;
+  min-height: 0;
+  padding: 0.55rem 0.6rem;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0135:END */
+/* ATLAS-SOURCE-UNIT:u0136:BEGIN */
+.selected-source-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0136:END */
+/* ATLAS-SOURCE-UNIT:u0137:BEGIN */
+.selected-source-compact-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0.55rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 8px solid var(--source-color, var(--primary));
+  border-radius: 12px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0137:END */
+/* ATLAS-SOURCE-UNIT:u0138:BEGIN */
+.selected-source-main {
+  justify-content: flex-start;
+  display: flex;
+  gap: 0.55rem;
+  min-height: 0;
+  padding: 0;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0138:END */
+/* ATLAS-SOURCE-UNIT:u0139:BEGIN */
+.selected-source-main small {
+  display: block;
+  color: var(--muted);
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+/* ATLAS-SOURCE-UNIT:u0139:END */
+/* ATLAS-SOURCE-UNIT:u0149:BEGIN */
+.selected-source-data-view {
+  display: grid;
+  gap: 0.65rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0149:END */
+/* ATLAS-SOURCE-UNIT:u0150:BEGIN */
+.selected-source-data-view h4 {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0150:END */
+/* ATLAS-SOURCE-UNIT:u0151:BEGIN */
+.selected-source-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0151:END */
+/* ATLAS-SOURCE-UNIT:u0152:BEGIN */
+.selected-source-table th:nth-child(2),
+.selected-source-table td:nth-child(2) {
+  min-width: 180px;
+  font-weight: 750;
+}
+
+/* ATLAS-SOURCE-UNIT:u0152:END */
+/* ATLAS-SOURCE-UNIT:u0153:BEGIN */
+.selected-source-table th:nth-child(3),
+.selected-source-table td:nth-child(3) {
+  min-width: 180px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0153:END */
+/* ATLAS-SOURCE-UNIT:u0173:BEGIN */
+@media (max-width: 700px) {
+  .grid.cards {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-menu-header,
+  .selected-source-compact-card {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-color-menu {
+    left: 0;
+    right: auto;
+  }
+
+  .inline-label {
+    display: grid;
+  }
+
+  .inline-label select {
+    width: 100%;
+  }
+
+  .package {
+    display: grid;
+  }
+  .contacts-list {
+    padding-right: 0.35rem;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0173:END */
+/* ATLAS-SOURCE-UNIT:u0174:BEGIN */ /* Logic Builder mockup alignment refinements */
+.app-sidebar,
+.nav,
+.navitem,
+.contacts-list,
+.contacts-row,
+.contacts-title,
+.contacts-detail,
+.rule-card,
+.logic-output-card,
+.live-output-pane,
+.live-criteria-editor,
+.logic-rule-body,
+.step-card-fields {
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0174:END */
+/* ATLAS-SOURCE-UNIT:u0177:BEGIN */
+.contacts-list {
+  padding-left: 0.35rem !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0177:END */
+/* ATLAS-SOURCE-UNIT:u0178:BEGIN */
+.contacts-row {
+  justify-items: start;
+  align-items: start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0178:END */
+/* ATLAS-SOURCE-UNIT:u0179:BEGIN */
+.contacts-row-main {
+  justify-items: start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0179:END */
+/* ATLAS-SOURCE-UNIT:u0212:BEGIN */
+.badge.blue,
+.btn.primary,
+.tab.active,
+.source-library-tab.active,
+.step-number {
+  color: #fff !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0212:END */
+/* ATLAS-SOURCE-UNIT:u0221:BEGIN */
+@media (max-width: 700px) {
+  .grid.cards {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-menu-header,
+  .selected-source-compact-card,
+  .live-criteria-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .compact-color-menu {
+    left: 0;
+    right: auto;
+  }
+
+  .inline-label {
+    display: grid;
+    align-items: start;
+  }
+
+  .inline-label select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .package {
+    display: grid;
+    justify-items: start;
+  }
+  .contacts-list {
+    padding-right: 0.35rem !important;
+  }
+
+  .logic-section-title {
+    display: grid;
+    justify-content: stretch;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0221:END */
+/* ATLAS-SOURCE-UNIT:u0269:BEGIN */
+.badge.blue,
+.btn.primary,
+.tab.active,
+.source-library-tab.active,
+.step-number {
+  color: #fff !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0269:END */
+/* ATLAS-SOURCE-UNIT:u0273:BEGIN */ /* Compact Rules list and selected-source picker refinements */
+.compact-logic-rule-card {
+  padding: 0.52rem 0.58rem !important;
+  gap: 0 !important;
+  margin: 0 0 0.42rem !important;
+  border-radius: 10px !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0273:END */
+/* ATLAS-SOURCE-UNIT:u0289:BEGIN */
+.selected-source-only-builder select option[data-source-file] {
+  color: var(--text);
+}
+
+/* ATLAS-SOURCE-UNIT:u0289:END */
+/* ATLAS-SOURCE-UNIT:u0403:BEGIN */ /* Copilot color accessibility patch */
+.btn.primary,
+.btn.primary *,
+.tab.active,
+.source-library-tab.active,
+.step-number,
+#myAuditsNewAuditBtn {
+  color: #fff !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0403:END */
+/* ATLAS-SOURCE-UNIT:u0440:BEGIN */
+.selected-source-main {
+  justify-content: flex-start;
+  display: flex;
+  color: #8c5c0c;
+}
+
+/* ATLAS-SOURCE-UNIT:u0440:END */
+/* ATLAS-SOURCE-UNIT:u0442:BEGIN */ /* Fields page: let the Source Library panel stretch with the viewport. */
+#page-fields.page.active {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u0442:END */
+/* ATLAS-SOURCE-UNIT:u0443:BEGIN */
+#page-fields > h1,
+#page-fields > .subtitle,
+#page-fields > #fieldPickerSummary {
+  min-height: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0443:END */
+/* ATLAS-SOURCE-UNIT:u0444:BEGIN */
+#page-fields .layout3 {
+  min-height: 0;
+  height: 100%;
+  align-items: stretch;
+}
+
+/* ATLAS-SOURCE-UNIT:u0444:END */
+/* ATLAS-SOURCE-UNIT:u0458:BEGIN */
+#page-fields .source-field-browser-panel {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u0458:END */
+/* ATLAS-SOURCE-UNIT:u0459:BEGIN */ /* Override base .source-field-browser max-height/overflow so the OUTER
+   Source Library container does not become the scroll box. */
+#page-fields #sourceFieldBrowser {
+  min-height: 0;
+  max-height: none !important;
+  overflow: hidden !important;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u0459:END */
+/* ATLAS-SOURCE-UNIT:u0462:BEGIN */ /* Consolidated contact-list shell and alphabet picker positioning */
+.contacts-list-shell {
+  --contacts-letter-index-width: 1.8rem;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u0462:END */
+/* ATLAS-SOURCE-UNIT:u0463:BEGIN */
+.contacts-list {
+  padding-right: calc(var(--contacts-letter-index-width) + 0.75rem) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0463:END */
+/* ATLAS-SOURCE-UNIT:u0466:BEGIN */ /* Fields page: viewport-aware selected source field-detail table */
+#page-fields .layout3 > .card:not(.source-field-browser-panel) {
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u0466:END */
+/* ATLAS-SOURCE-UNIT:u0467:BEGIN */
+#page-fields #sourcesList {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u0467:END */
+/* ATLAS-SOURCE-UNIT:u0468:BEGIN */ /* Default selected-source card list view remains scrollable. */
+#page-fields #sourcesList > .selected-source-list {
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding-right: 0.35rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0468:END */
+/* ATLAS-SOURCE-UNIT:u0469:BEGIN */ /* Secondary selected-source detail view fills the available pane height. */
+#page-fields #sourcesList .selected-source-data-view {
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0469:END */
+/* ATLAS-SOURCE-UNIT:u0470:BEGIN */ /* Header/meta/back button stay natural height. */
+#page-fields #sourcesList .selected-source-data-view > h4,
+#page-fields #sourcesList .selected-source-data-view > .hint,
+#page-fields
+  #sourcesList
+  .selected-source-data-view
+  > button[data-close-source-data] {
+  flex: 0 0 auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0470:END */
+/* ATLAS-SOURCE-UNIT:u0471:BEGIN */ /* Any source metadata blocks above the table should not consume the scrolling region. */
+#page-fields
+  #sourcesList
+  .selected-source-data-view
+  > :not(.selected-source-table-wrap) {
+  flex-shrink: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0471:END */
+/* ATLAS-SOURCE-UNIT:u0472:BEGIN */ /* The field table wrapper is the remaining-height scroll pane. */
+#page-fields #sourcesList .selected-source-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none !important;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0472:END */
+/* ATLAS-SOURCE-UNIT:u0473:BEGIN */ /* Preserve existing wide-table behavior inside the scroll pane. */
+#page-fields #sourcesList .selected-source-table {
+  min-width: 760px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0473:END */
+/* ATLAS-SOURCE-UNIT:u0517:BEGIN */ /* Sources pane action refinements */
+.source-contact-row .source-contact-main {
+  justify-content: flex-start;
+  display: grid;
+  min-width: 0;
+  padding: 0.55rem 0.6rem;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0517:END */
+/* ATLAS-SOURCE-UNIT:u0518:BEGIN */
+.source-action-button.danger,
+.selected-source-compact-card [data-remove-selected-source] {
+  background: var(--danger) !important;
+  color: #fff !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0518:END */
+/* ATLAS-SOURCE-UNIT:u0519:BEGIN */
+.selected-source-detail-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0519:END */
+/* ATLAS-SOURCE-UNIT:u0520:BEGIN */
+.selected-source-back-button {
+  width: 40px;
+  min-width: 40px;
+  padding-inline: 0 !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0520:END */
+/* ATLAS-SOURCE-UNIT:u0521:BEGIN */
+.selected-source-compact-card [data-replace-source] {
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u0521:END */
+/* ATLAS-SOURCE-UNIT:u0523:BEGIN */ /* Replace Source modal */
+.source-replace-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u0523:END */
+/* ATLAS-SOURCE-UNIT:u0524:BEGIN */
+.source-replace-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u0524:END */
+/* ATLAS-SOURCE-UNIT:u0525:BEGIN */
+.source-replace-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u0525:END */
+/* ATLAS-SOURCE-UNIT:u0526:BEGIN */
+.source-replace-popup-row {
+  display: grid;
+  gap: 0.4rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0526:END */
+/* ATLAS-SOURCE-UNIT:u0527:BEGIN */
+.source-replace-popup-trigger {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 36px;
+  color: var(--text) !important;
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0527:END */
+/* ATLAS-SOURCE-UNIT:u0528:BEGIN */
+.source-replace-popup-trigger strong {
+  color: var(--text) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0528:END */
+/* ATLAS-SOURCE-UNIT:u0529:BEGIN */
+.source-replace-mapping-table .source-replace-popup-trigger {
+  min-width: min(100%, 260px);
+}
+
+/* ATLAS-SOURCE-UNIT:u0529:END */
+/* ATLAS-SOURCE-UNIT:u0534:BEGIN */
+.join-source-field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0534:END */
+/* ATLAS-SOURCE-UNIT:u0535:BEGIN */
+.join-source-field-grid label {
+  min-width: 0;
+  margin-bottom: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0535:END */
+/* ATLAS-SOURCE-UNIT:u0536:BEGIN */
+@media (max-width: 700px) {
+  .join-source-field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0536:END */
+/* ATLAS-SOURCE-UNIT:u0630:BEGIN */ /* Restore tall Source Library source pills and explicit Use/Remove actions */
+.source-library-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0630:END */
+/* ATLAS-SOURCE-UNIT:u0631:BEGIN */
+.contacts-row.source-contact-row.source-library-pill {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 72px;
+  margin: 0 0 0.55rem;
+  padding: 0.6rem;
+  color: var(--text) !important;
+  background: var(--surface2) !important;
+  border: 1px solid var(--border) !important;
+  border-left: 8px solid var(--source-color, var(--primary)) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 8px 18px rgba(25, 39, 67, 0.06);
+}
+
+/* ATLAS-SOURCE-UNIT:u0631:END */
+/* ATLAS-SOURCE-UNIT:u0632:BEGIN */
+.contacts-row.source-contact-row.source-library-pill:hover,
+.contacts-row.source-contact-row.source-library-pill.selected {
+  background: color-mix(
+    in srgb,
+    var(--source-color, var(--primary)) 10%,
+    var(--surface)
+  ) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0632:END */
+/* ATLAS-SOURCE-UNIT:u0633:BEGIN */
+.source-contact-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 0;
+  padding: 0.2rem 0.1rem;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+/* ATLAS-SOURCE-UNIT:u0633:END */
+/* ATLAS-SOURCE-UNIT:u0634:BEGIN */
+.source-contact-text {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0634:END */
+/* ATLAS-SOURCE-UNIT:u0635:BEGIN */
+#page-fields .source-library-list .source-action-button {
+  min-width: 88px;
+  align-self: center;
+  white-space: nowrap;
+  color: #fff !important;
+}
+/* ATLAS-SOURCE-UNIT:u0635:END */
+/* ATLAS-SOURCE-UNIT:u0636:BEGIN */
+#page-fields .source-library-list .source-action-button.primary {
+  background: var(--primary) !important;
+}
+/* ATLAS-SOURCE-UNIT:u0636:END */
+/* ATLAS-SOURCE-UNIT:u0637:BEGIN */
+#page-fields .source-library-list .source-action-button.primary:hover {
+  background: var(--primary2) !important;
+}
+/* ATLAS-SOURCE-UNIT:u0637:END */
+/* ATLAS-SOURCE-UNIT:u0638:BEGIN */
+#page-fields .source-library-list .source-action-button.danger {
+  background: var(--danger) !important;
+}
+/* ATLAS-SOURCE-UNIT:u0638:END */
+/* ATLAS-SOURCE-UNIT:u0639:BEGIN */
+#page-fields .source-library-list .source-action-button.danger:hover {
+  background: var(--danger2) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0639:END */
+/* ATLAS-SOURCE-UNIT:u0640:BEGIN */ /* Default unselected Source Library sources to neutral grey until selected */
+.contacts-row.source-contact-row.source-library-pill:not(.selected) {
+  --source-color: #9ca3af;
+  background: color-mix(in srgb, #9ca3af 12%, var(--surface)) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0640:END */
+/* ATLAS-SOURCE-UNIT:u0641:BEGIN */
+.contacts-row.source-contact-row.source-library-pill:not(.selected):hover {
+  background: color-mix(in srgb, #9ca3af 18%, var(--surface)) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0641:END */
+/* ATLAS-SOURCE-UNIT:u0645:BEGIN */ /* Selected Sources & Fields horizontal source detail layout */
+.selected-source-data-view-horizontal {
+  gap: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0645:END */
+/* ATLAS-SOURCE-UNIT:u0646:BEGIN */
+.selected-source-header-row {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0 !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0646:END */
+/* ATLAS-SOURCE-UNIT:u0647:BEGIN */
+.selected-source-heading {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+/* ATLAS-SOURCE-UNIT:u0647:END */
+/* ATLAS-SOURCE-UNIT:u0648:BEGIN */
+.selected-source-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.55rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0648:END */
+/* ATLAS-SOURCE-UNIT:u0649:BEGIN */
+.selected-source-summary-item {
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.65rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ATLAS-SOURCE-UNIT:u0649:END */
+/* ATLAS-SOURCE-UNIT:u0650:BEGIN */
+.selected-source-summary-item span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ATLAS-SOURCE-UNIT:u0650:END */
+/* ATLAS-SOURCE-UNIT:u0651:BEGIN */
+.selected-source-summary-item strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u0651:END */
+/* ATLAS-SOURCE-UNIT:u0652:BEGIN */
+@media (max-width: 700px) {
+  .selected-source-header-row {
+    align-items: start;
+  }
+
+  .selected-source-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0652:END */
+/* ATLAS-SOURCE-UNIT:u0653:BEGIN */ /* Filename-first selected source labels */
+.selected-source-title-stack {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u0653:END */
+/* ATLAS-SOURCE-UNIT:u0654:BEGIN */
+.selected-source-filename {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text);
+  font-weight: 900;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u0654:END */
+/* ATLAS-SOURCE-UNIT:u0655:BEGIN */
+.selected-source-alias {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u0655:END */
+/* ATLAS-SOURCE-UNIT:u0656:BEGIN */
+.selected-source-header-row .selected-source-title-stack {
+  align-self: center;
+}
+
+/* ATLAS-SOURCE-UNIT:u0656:END */
+/* ATLAS-SOURCE-UNIT:u0657:BEGIN */
+.source-replace-popup-trigger .selected-source-alias {
+  margin-top: 0.1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u0657:END */
+/* ATLAS-SOURCE-UNIT:u0671:BEGIN */ /* -----------------------------------------------------------------------------
+   Final layout contract: variable-height cards, word-based wrapping, and stacks
+   ----------------------------------------------------------------------------- */
+.source-library-list,
+.selected-source-list,
+.selected-source-pill-row {
+  display: grid !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0671:END */
+/* ATLAS-SOURCE-UNIT:u0675:BEGIN */
+.compact-rule-grid,
+.source-contact-row,
+.contacts-row.source-contact-row.source-library-pill,
+.selected-source-compact-card,
+.source-contact-main,
+.selected-source-main {
+  align-items: start !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0675:END */
+/* ATLAS-SOURCE-UNIT:u0676:BEGIN */
+.contacts-row,
+.contacts-row.source-contact-row.source-library-pill,
+.selected-source-compact-card,
+.visual-picker-pill {
+  box-sizing: border-box !important;
+  min-height: 56px !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0676:END */
+/* ATLAS-SOURCE-UNIT:u0677:BEGIN */
+.source-contact-main,
+.selected-source-main {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 40px !important;
+  height: auto !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0677:END */
+/* ATLAS-SOURCE-UNIT:u0678:BEGIN */
+.source-contact-text,
+.source-contact-title,
+.source-contact-detail,
+.contacts-title,
+.contacts-detail,
+.selected-source-title-stack,
+.selected-source-filename,
+.selected-source-alias,
+.selected-source-main strong,
+.selected-source-main small,
+.selected-source-summary-item,
+.selected-source-summary-item strong,
+.selected-source-pill-row,
+.selected-source-meta-pill,
+.visual-picker-pill,
+.visual-picker-pill-main,
+.visual-picker-pill-detail {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-break: auto !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0678:END */
+/* ATLAS-SOURCE-UNIT:u0679:BEGIN */
+.logic-pill,
+.compact-rule-logic .logic-pill,
+.logic-rule-summary .logic-pill,
+.logic-output-text .logic-pill,
+.logic-output-box .logic-pill,
+.source-pill,
+.field-pill-token,
+.selected-source-meta-pill,
+.badge.selected-source-meta-pill {
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  line-break: auto !important;
+  flex-wrap: wrap !important;
+  vertical-align: baseline;
+}
+
+/* ATLAS-SOURCE-UNIT:u0679:END */
+/* ATLAS-SOURCE-UNIT:u0680:BEGIN */
+.source-action-button,
+.compact-status-badge,
+.compact-action-menu,
+.single-color-swatch,
+button[data-remove-selected-source],
+button[data-replace-source] {
+  flex-shrink: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u0680:END */
+/* ATLAS-SOURCE-UNIT:u0681:BEGIN */
+@media (max-width: 760px) {
+  .contacts-row.source-contact-row.source-library-pill,
+  .selected-source-compact-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .source-action-button,
+  button[data-remove-selected-source],
+  button[data-replace-source] {
+    justify-self: start !important;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u0681:END */
+/* ATLAS-SOURCE-UNIT:u0708:BEGIN */ /* Sources page: vertically center Source Library pill content */
+#page-fields
+  .source-library-list
+  .contacts-row.source-contact-row.source-library-pill {
+  align-items: center !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0708:END */
+/* ATLAS-SOURCE-UNIT:u0709:BEGIN */
+#page-fields .source-library-list .source-contact-main {
+  align-items: center !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0709:END */
+/* ATLAS-SOURCE-UNIT:u0710:BEGIN */
+#page-fields .source-library-list .source-contact-text,
+#page-fields .source-library-list .single-color-swatch,
+#page-fields .source-library-list .source-action-button {
+  align-self: center;
+}
+
+/* ATLAS-SOURCE-UNIT:u0710:END */
+/* ATLAS-SOURCE-UNIT:u0711:BEGIN */ /* -----------------------------------------------------------------------------
+Sources page UI update
+- Allow Source Library cards to grow with wrapped source names and metadata
+- Display selected-source metadata pills in a horizontal, wrapping row
+----------------------------------------------------------------------------- */
+#page-fields
+  .source-library-list
+  .contacts-row.source-contact-row.source-library-pill {
+  height: auto !important;
+  min-height: 72px !important;
+  max-height: none !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0711:END */
+/* ATLAS-SOURCE-UNIT:u0712:BEGIN */
+#page-fields .source-library-list .source-contact-main {
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-items: center !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0712:END */
+/* ATLAS-SOURCE-UNIT:u0713:BEGIN */
+#page-fields .source-library-list .source-contact-text,
+#page-fields .source-library-list .source-contact-title,
+#page-fields .source-library-list .source-contact-detail {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  text-overflow: clip !important;
+  overflow: visible !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u0713:END */
+/* ATLAS-SOURCE-UNIT:u0714:BEGIN */
+#page-fields .source-library-list .source-contact-title {
+  line-height: 1.25;
+}
+
+/* ATLAS-SOURCE-UNIT:u0714:END */
+/* ATLAS-SOURCE-UNIT:u0715:BEGIN */
+#page-fields .source-library-list .source-contact-detail {
+  line-height: 1.3;
+}
+
+/* ATLAS-SOURCE-UNIT:u0715:END */
+/* ATLAS-SOURCE-UNIT:u0716:BEGIN */
+#page-fields #sourcesList .selected-source-pill-row {
+  display: flex !important;
+  flex-flow: row wrap !important;
+  align-items: flex-start !important;
+  align-content: flex-start !important;
+  gap: 0.4rem !important;
+  width: 100%;
+}
+
+/* ATLAS-SOURCE-UNIT:u0716:END */
+/* ATLAS-SOURCE-UNIT:u0717:BEGIN */
+#page-fields #sourcesList .selected-source-meta-pill,
+#page-fields #sourcesList .badge.selected-source-meta-pill {
+  display: inline-flex !important;
+  flex: 0 1 auto !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  align-items: center;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
+}
+/* ATLAS-SOURCE-UNIT:u0717:END */ /* ATLAS-SOURCE-UNIT:u0765:BEGIN */
+
+/* Embedded audit-aware Source Library */
+#page-fields .source-field-browser-panel {
+  grid-template-rows: auto auto auto auto auto minmax(0, 1fr);
+}
+/* ATLAS-SOURCE-UNIT:u0765:END */ /* ATLAS-SOURCE-UNIT:u0766:BEGIN */
+#page-fields #sourceFieldBrowser.source-library-inline {
+  min-height: 280px;
+  max-height: none !important;
+  overflow: hidden !important;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.55rem;
+}
+/* ATLAS-SOURCE-UNIT:u0766:END */ /* ATLAS-SOURCE-UNIT:u0767:BEGIN */
+.source-library-inline-summary {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+/* ATLAS-SOURCE-UNIT:u0767:END */ /* ATLAS-SOURCE-UNIT:u0768:BEGIN */
+.source-library-inline-results {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.15rem 0.25rem 0.25rem 0;
+  overflow-y: auto;
+  align-content: start;
+}
+/* ATLAS-SOURCE-UNIT:u0768:END */ /* ATLAS-SOURCE-UNIT:u0769:BEGIN */
+.audit-source-picker-pill {
+  display: grid;
+  grid-template-columns: auto minmax(180px, 1fr) minmax(160px, auto) auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--border);
+  border-left: 8px solid var(--source-pill-color);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.audit-source-picker-pill.available {
+  --source-pill-color: #9ca3af;
+}
+.audit-source-picker-pill.available:hover {
+  background: color-mix(in srgb, #9ca3af 10%, var(--surface));
+}
+/* ATLAS-SOURCE-UNIT:u0769:END */ /* ATLAS-SOURCE-UNIT:u0770:BEGIN */
+.audit-source-picker-pill.included {
+  background: color-mix(in srgb, var(--source-pill-color) 10%, var(--surface));
+}
+/* ATLAS-SOURCE-UNIT:u0770:END */ /* ATLAS-SOURCE-UNIT:u0771:BEGIN */
+.audit-source-picker-pill .source-color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--source-pill-color);
+}
+/* ATLAS-SOURCE-UNIT:u0771:END */ /* ATLAS-SOURCE-UNIT:u0772:BEGIN */
+.audit-source-picker-main {
+  display: grid;
+  width: 100%;
+  justify-self: stretch;
+  justify-content: start;
+  justify-items: start;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0;
+  text-align: left;
+  color: var(--text) !important;
+  background: transparent !important;
+  border: 0 !important;
+}
+/* ATLAS-SOURCE-UNIT:u0772:END */ /* ATLAS-SOURCE-UNIT:u0773:BEGIN */
+.audit-source-picker-main strong,
+.audit-source-picker-main span,
+.audit-source-picker-main small {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+/* ATLAS-SOURCE-UNIT:u0773:END */ /* ATLAS-SOURCE-UNIT:u0774:BEGIN */
+.audit-source-picker-main span,
+.audit-source-picker-main small {
+  color: var(--muted);
+}
+/* ATLAS-SOURCE-UNIT:u0774:END */ /* ATLAS-SOURCE-UNIT:u0775:BEGIN */
+.source-inclusion-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: flex-end;
+}
+.source-library-pill-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+/* ATLAS-SOURCE-UNIT:u0775:END */ /* ATLAS-SOURCE-UNIT:u0776:BEGIN */
+.source-inclusion-badge {
+  display: inline-flex;
+  padding: 0.18rem 0.42rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.68rem;
+  font-weight: 850;
+  background: var(--surface2);
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* ATLAS-SOURCE-UNIT:u0776:END */ /* ATLAS-SOURCE-UNIT:u0777:BEGIN */
+.source-inclusion-badge.included,
+.source-inclusion-badge.manual {
+  color: #1f6b46;
+  background: color-mix(in srgb, #2f855a 12%, var(--surface));
+  border-color: color-mix(in srgb, #2f855a 45%, var(--border));
+}
+/* ATLAS-SOURCE-UNIT:u0777:END */ /* ATLAS-SOURCE-UNIT:u0778:BEGIN */
+.source-inclusion-badge.logic {
+  color: #2e4266;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface));
+}
+/* ATLAS-SOURCE-UNIT:u0778:END */ /* ATLAS-SOURCE-UNIT:u0779:BEGIN */
+.source-inclusion-badge.display {
+  color: #7c4a03;
+  background: color-mix(in srgb, #d97706 12%, var(--surface));
+}
+/* ATLAS-SOURCE-UNIT:u0779:END */ /* ATLAS-SOURCE-UNIT:u0780:BEGIN */
+#page-fields .source-library-remove-button,
+#page-fields .source-library-action-button.danger {
+  color: #fff !important;
+  background: var(--danger, #b54b4b) !important;
+  border-color: var(--danger, #b54b4b) !important;
+}
+/* ATLAS-SOURCE-UNIT:u0780:END */ /* ATLAS-SOURCE-UNIT:u0781:BEGIN */
+#page-fields .source-library-remove-button:hover,
+#page-fields .source-library-remove-button:focus-visible {
+  background: var(--danger2, #963c3c) !important;
+  border-color: var(--danger2, #963c3c) !important;
+}
+/* ATLAS-SOURCE-UNIT:u0781:END */ /* ATLAS-SOURCE-UNIT:u0782:BEGIN */
+@media (max-width: 760px) {
+  .audit-source-picker-pill {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .source-inclusion-badges {
+    grid-column: 2 / -1;
+    justify-content: flex-start;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0782:END */
+
+/* ATLAS-SOURCE-UNIT:u0707:BEGIN */ /* Source Library CSV import */
+.source-library-toolbar {
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.source-library-import-status {
+  margin: 0 0 0.75rem;
+  padding: 0.55rem 0.7rem;
+  color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.source-library-import-status.is-enabled,
+.source-library-import-status.is-success {
+  color: var(--success, #166534);
+  border-color: color-mix(in srgb, var(--success, #16a34a) 40%, var(--border));
+}
+
+.source-library-import-status.is-uploading {
+  color: var(--primary);
+}
+
+.source-library-import-status.is-error {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 45%, var(--border));
+}
+
+@media (max-width: 700px) {
+  .source-library-toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0707:END */
+
+/* ATLAS-SOURCE-UNIT:u0959:BEGIN */
+.source-library-field-matches {
+  display: grid;
+  gap: 0.35rem;
+  width: 100%;
+  margin-top: 0.45rem;
+  text-align: left;
+}
+.source-library-field-match {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.35rem 0.45rem;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.source-library-field-match small {
+  color: var(--muted);
+  white-space: normal;
+}
+.selected-source-preview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+.source-preview-status {
+  display: inline-flex;
+  margin-top: 0.35rem;
+  padding: 0.22rem 0.5rem;
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, var(--border));
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.selected-source-field-detail td {
+  padding-top: 0;
+  background: var(--surface2);
+}
+.selected-source-field-detail .source-field-metadata {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.6rem 0;
+}
+@media (max-width: 700px) {
+  .selected-source-data-view .title-row {
+    align-items: flex-start;
+  }
+  .selected-source-preview-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0959:END *//* ATLAS-SOURCE-UNIT:u1190:BEGIN */
+
+.selected-source-detail-header {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1190:END *//* ATLAS-SOURCE-UNIT:u1191:BEGIN */.selected-source-detail-header .selected-source-title-stack {
+  flex: 1 1 16rem;
+  gap: 0.2rem;
+  min-width: min(100%, 16rem);
+}
+
+/* ATLAS-SOURCE-UNIT:u1191:END *//* ATLAS-SOURCE-UNIT:u1192:BEGIN */.selected-source-detail-header .selected-source-preview-actions {
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1192:END *//* ATLAS-SOURCE-UNIT:u1193:BEGIN */.selected-source-detail-header .selected-source-preview-actions .btn {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0.56rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 750;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1193:END *//* ATLAS-SOURCE-UNIT:u1194:BEGIN */.selected-source-detail-header .selected-source-preview-actions .btn.primary {
+  color: #fff;
+  background: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1194:END *//* ATLAS-SOURCE-UNIT:u1195:BEGIN */.selected-source-detail-header
+  .selected-source-preview-actions
+  .btn.primary:hover {
+  color: #fff;
+  background: var(--primary2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1195:END *//* ATLAS-SOURCE-UNIT:u1196:BEGIN */.selected-source-detail-header .selected-source-preview-actions .btn.secondary {
+  color: #2e4266;
+  background: #eef2f8;
+  border: 1px solid var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u1196:END *//* ATLAS-SOURCE-UNIT:u1197:BEGIN */body.dark
+  .selected-source-detail-header
+  .selected-source-preview-actions
+  .btn.secondary {
+  color: var(--text);
+  background: var(--surface2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1197:END *//* ATLAS-SOURCE-UNIT:u1198:BEGIN */#page-fields #sourcesList .selected-source-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+/* ATLAS-SOURCE-UNIT:u1198:END *//* ATLAS-SOURCE-UNIT:u1199:BEGIN */.selected-source-table th:nth-child(1),
+.selected-source-table td:nth-child(1) {
+  width: 4.5rem;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1199:END *//* ATLAS-SOURCE-UNIT:u1200:BEGIN */.selected-source-table th:nth-child(4),
+.selected-source-table td:nth-child(4),
+.selected-source-table th:nth-child(5),
+.selected-source-table td:nth-child(5),
+.selected-source-table th:nth-child(6),
+.selected-source-table td:nth-child(6) {
+  min-width: 140px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1200:END *//* ATLAS-SOURCE-UNIT:u1201:BEGIN */#page-fields .selected-source-table th button.selected-source-sort,
+#page-fields .selected-source-table th button.selected-source-sort:hover {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  width: 100%;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  line-height: 1.3;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: normal;
+  cursor: pointer;
+}
+
+/* ATLAS-SOURCE-UNIT:u1201:END *//* ATLAS-SOURCE-UNIT:u1202:BEGIN */#page-fields .selected-source-table th button.selected-source-sort:hover,
+#page-fields .selected-source-table th button.selected-source-sort.is-sorted {
+  color: var(--primary);
+  background: transparent;
+}
+
+/* ATLAS-SOURCE-UNIT:u1202:END *//* ATLAS-SOURCE-UNIT:u1203:BEGIN */#page-fields
+  .selected-source-table
+  th
+  button.selected-source-sort:focus-visible,
+.selected-source-field-row:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1203:END *//* ATLAS-SOURCE-UNIT:u1204:BEGIN */.selected-source-sort-indicator {
+  font-size: 0.72rem;
+  line-height: 1;
+}
+
+/* ATLAS-SOURCE-UNIT:u1204:END *//* ATLAS-SOURCE-UNIT:u1205:BEGIN */.selected-source-field-row {
+  cursor: pointer;
+}
+
+/* ATLAS-SOURCE-UNIT:u1205:END *//* ATLAS-SOURCE-UNIT:u1206:BEGIN */.selected-source-field-row.is-open td {
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+/* ATLAS-SOURCE-UNIT:u1206:END *//* ATLAS-SOURCE-UNIT:u1207:BEGIN */.selected-source-empty {
+  color: var(--muted);
+}
+
+/* ATLAS-SOURCE-UNIT:u1207:END *//* ATLAS-SOURCE-UNIT:u1208:BEGIN */.selected-source-field-detail-panel {
+  display: grid;
+  gap: 0.55rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1208:END *//* ATLAS-SOURCE-UNIT:u1209:BEGIN */.selected-source-field-detail-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1209:END *//* ATLAS-SOURCE-UNIT:u1210:BEGIN */.selected-source-field-detail-toolbar .btn {
+  min-height: 34px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.84rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1210:END *//* ATLAS-SOURCE-UNIT:u1211:BEGIN */.selected-source-field-detail .source-field-metadata {
+  padding-top: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1211:END *//* ATLAS-SOURCE-UNIT:u1212:BEGIN */.selected-source-empty-note {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1212:END *//* ATLAS-SOURCE-UNIT:u1213:BEGIN */@media (max-width: 700px) {
+  .selected-source-detail-header .selected-source-preview-actions {
+    width: 100%;
+  }
+
+  .selected-source-detail-header .selected-source-preview-actions .btn {
+    white-space: normal;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1213:END *//* ATLAS-SOURCE-UNIT:u1214:BEGIN */
+
+.selected-source-detail-header .selected-source-preview-actions .btn.secondary:hover,
+.selected-source-detail-header .selected-source-preview-actions .btn.secondary:focus-visible {
+  color: #2e4266 !important;
+  background: #e4ebf5 !important;
+  border-color: var(--border) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u1214:END *//* ATLAS-SOURCE-UNIT:u1215:BEGIN */body.dark .selected-source-detail-header .selected-source-preview-actions .btn.secondary:hover,
+body.dark .selected-source-detail-header .selected-source-preview-actions .btn.secondary:focus-visible {
+  color: var(--text) !important;
+  background: var(--surface2) !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u1215:END *//* ATLAS-SOURCE-UNIT:u1216:BEGIN */@media (max-width: 1100px) {
+  #page-fields.page.active:has(.selected-source-data-view) {
+    height: auto;
+    overflow: visible;
+  }
+
+  #page-fields .layout3:has(.selected-source-data-view) {
+    height: auto;
+    grid-template-rows: minmax(12rem, 16rem) auto;
+  }
+
+  #page-fields .layout3:has(.selected-source-data-view) > .card:not(.source-field-browser-panel),
+  #page-fields #sourcesList:has(.selected-source-data-view),
+  #page-fields #sourcesList .selected-source-data-view {
+    height: auto;
+    overflow: visible;
+  }
+
+  #page-fields #sourcesList .selected-source-table-wrap {
+    min-height: 18rem;
+    max-height: min(32rem, 62vh) !important;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1216:END *//* ATLAS-SOURCE-UNIT:u1217:BEGIN */#page-fields #sourcesList .selected-source-table th,
+#page-fields #sourcesList .selected-source-table td {
+  min-width: 0;
+  padding: 8px 10px;
+  overflow-wrap: break-word;
+  line-height: 1.35;
+}
+
+/* ATLAS-SOURCE-UNIT:u1217:END *//* ATLAS-SOURCE-UNIT:u1218:BEGIN */#page-fields #sourcesList .selected-source-table th:nth-child(1),
+#page-fields #sourcesList .selected-source-table td:nth-child(1) {
+  width: 3.25rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1218:END *//* ATLAS-SOURCE-UNIT:u1219:BEGIN */#page-fields #sourcesList .selected-source-table th:nth-child(2),
+#page-fields #sourcesList .selected-source-table td:nth-child(2),
+#page-fields #sourcesList .selected-source-table th:nth-child(3),
+#page-fields #sourcesList .selected-source-table td:nth-child(3) {
+  width: 22%;
+}
+
+/* ATLAS-SOURCE-UNIT:u1219:END *//* ATLAS-SOURCE-UNIT:u1220:BEGIN */#page-fields #sourcesList .selected-source-table th:nth-child(4),
+#page-fields #sourcesList .selected-source-table td:nth-child(4),
+#page-fields #sourcesList .selected-source-table th:nth-child(5),
+#page-fields #sourcesList .selected-source-table td:nth-child(5),
+#page-fields #sourcesList .selected-source-table th:nth-child(6),
+#page-fields #sourcesList .selected-source-table td:nth-child(6) {
+  width: 18%;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1220:END *//* ATLAS-SOURCE-UNIT:u1221:BEGIN */#page-fields #sourcesList .selected-source-field-row:not(.is-open):hover td {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+
+/* ATLAS-SOURCE-UNIT:u1221:END *//* ATLAS-SOURCE-UNIT:u1222:BEGIN */#page-fields #sourcesList .selected-source-field-detail td {
+  overflow-wrap: break-word;
+}/* ATLAS-SOURCE-UNIT:u1222:END *//* ATLAS-SOURCE-UNIT:u1229:BEGIN */
+
+#page-fields .source-field-browser-panel > .section-title {
+  flex-wrap: wrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1229:END *//* ATLAS-SOURCE-UNIT:u1230:BEGIN */.field-library-lightboard {
+  display: flex;
+  align-items: center;
+  flex: 1 1 16rem;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 2.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1230:END *//* ATLAS-SOURCE-UNIT:u1231:BEGIN */.field-library-lamps {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1231:END *//* ATLAS-SOURCE-UNIT:u1232:BEGIN */.field-library-lamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  padding: 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ATLAS-SOURCE-UNIT:u1232:END *//* ATLAS-SOURCE-UNIT:u1233:BEGIN */.field-library-lamp-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 150ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1233:END *//* ATLAS-SOURCE-UNIT:u1234:BEGIN */.field-library-lamp.is-lit {
+  color: var(--text);
+}
+
+/* ATLAS-SOURCE-UNIT:u1234:END *//* ATLAS-SOURCE-UNIT:u1235:BEGIN */.field-library-lamp.is-lit[data-lamp="live"] .field-library-lamp-dot {
+  background: var(--ok);
+}
+
+/* ATLAS-SOURCE-UNIT:u1235:END *//* ATLAS-SOURCE-UNIT:u1236:BEGIN */.field-library-lamp.is-lit[data-lamp="backup"] .field-library-lamp-dot {
+  background: var(--warn);
+}
+
+/* ATLAS-SOURCE-UNIT:u1236:END *//* ATLAS-SOURCE-UNIT:u1237:BEGIN */.field-library-lamp.is-lit[data-lamp="unavailable"] .field-library-lamp-dot {
+  background: var(--danger);
+}
+
+/* ATLAS-SOURCE-UNIT:u1237:END *//* ATLAS-SOURCE-UNIT:u1238:BEGIN */.field-library-lightboard-detail {
+  min-width: 0;
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+/* ATLAS-SOURCE-UNIT:u1238:END *//* ATLAS-SOURCE-UNIT:u1239:BEGIN */@media (prefers-reduced-motion: reduce) {
+  .field-library-lamp-dot {
+    transition: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1239:END *//* ATLAS-SOURCE-UNIT:u1251:BEGIN */
+
+.source-inclusion-badge.custom {
+  color: #7c4a03;
+  background: color-mix(in srgb, #d97706 12%, var(--surface));
+  border-color: color-mix(in srgb, #d97706 45%, var(--border));
+}
+
+/* ATLAS-SOURCE-UNIT:u1251:END *//* ATLAS-SOURCE-UNIT:u1252:BEGIN */.source-custom-creator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: default;
+}
+
+/* ATLAS-SOURCE-UNIT:u1252:END *//* ATLAS-SOURCE-UNIT:u1253:BEGIN */.source-custom-creator:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1253:END *//* ATLAS-SOURCE-UNIT:u1254:BEGIN */.source-custom-avatar {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  font-size: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1254:END *//* ATLAS-SOURCE-UNIT:u1255:BEGIN */.source-custom-creator-name {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: calc(100% + 0.35rem);
+  visibility: hidden;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1255:END *//* ATLAS-SOURCE-UNIT:u1256:BEGIN */.source-custom-creator:hover .source-custom-creator-name,
+.source-custom-creator:focus-visible .source-custom-creator-name {
+  visibility: visible;
+}
+
+/* ATLAS-SOURCE-UNIT:u1256:END *//* ATLAS-SOURCE-UNIT:u1257:BEGIN */.custom-source-dialog {
+  width: min(40rem, calc(100vw - 2rem));
+  max-height: min(42rem, calc(100vh - 2rem));
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ATLAS-SOURCE-UNIT:u1257:END *//* ATLAS-SOURCE-UNIT:u1258:BEGIN */.custom-source-dialog::backdrop {
+  background: color-mix(in srgb, var(--text) 40%, transparent);
+}
+
+/* ATLAS-SOURCE-UNIT:u1258:END *//* ATLAS-SOURCE-UNIT:u1259:BEGIN */.custom-source-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  max-height: min(42rem, calc(100vh - 2rem));
+  padding: 1.25rem;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1259:END *//* ATLAS-SOURCE-UNIT:u1260:BEGIN */.custom-source-header h2 {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1260:END *//* ATLAS-SOURCE-UNIT:u1261:BEGIN */.custom-source-header .hint,
+.custom-source-label .hint {
+  margin: 0.15rem 0 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1261:END *//* ATLAS-SOURCE-UNIT:u1262:BEGIN */.custom-source-label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1262:END *//* ATLAS-SOURCE-UNIT:u1263:BEGIN */.custom-source-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1263:END *//* ATLAS-SOURCE-UNIT:u1264:BEGIN */.custom-source-field {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1264:END *//* ATLAS-SOURCE-UNIT:u1265:BEGIN */.custom-source-field legend {
+  padding: 0 0.25rem;
+  font-weight: 800;
+}
+
+/* ATLAS-SOURCE-UNIT:u1265:END *//* ATLAS-SOURCE-UNIT:u1266:BEGIN */.custom-source-error {
+  margin: 0;
+  color: var(--danger);
+}
+
+/* ATLAS-SOURCE-UNIT:u1266:END *//* ATLAS-SOURCE-UNIT:u1267:BEGIN */.custom-source-error:empty {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1267:END *//* ATLAS-SOURCE-UNIT:u1268:BEGIN */.custom-source-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1268:END *//* ATLAS-SOURCE-UNIT:u1269:BEGIN */.custom-source-actions .btn,
+#addCustomSourceFieldBtn,
+.custom-source-field [data-remove-custom-field] {
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1269:END *//* ATLAS-SOURCE-UNIT:u1270:BEGIN */.custom-source-field [data-remove-custom-field]:disabled {
+  cursor: not-allowed;
+  color: var(--muted);
+  background: var(--surface2);
+  border-color: var(--border);
+}/* ATLAS-SOURCE-UNIT:u1270:END *//* ATLAS-SOURCE-UNIT:u1293:BEGIN */
+
+
+#page-fields .source-field-browser-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1293:END *//* ATLAS-SOURCE-UNIT:u1294:BEGIN */#page-fields .source-field-browser-panel > .section-title,
+#page-fields .source-field-browser-panel > .hint,
+#page-fields .source-library-import-status,
+#page-fields .source-library-tabs {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1294:END *//* ATLAS-SOURCE-UNIT:u1295:BEGIN */#page-fields .source-library-import-status[hidden] {
+  display: none !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u1295:END *//* ATLAS-SOURCE-UNIT:u1296:BEGIN */#page-fields #sourceFieldBrowser.source-library-inline {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1296:END *//* ATLAS-SOURCE-UNIT:u1297:BEGIN */#page-fields #sourceFieldSearch,
+#page-fields .source-library-tab,
+#page-fields #addCustomSourceBtn,
+#page-fields #replaceSourceLibraryBtn,
+#page-fields #fieldsTutorialBtn,
+#page-fields .source-library-pill-actions .btn,
+#page-fields .selected-source-compact-card button,
+#page-fields .source-library-field-match-more summary {
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1297:END *//* ATLAS-SOURCE-UNIT:u1298:BEGIN */#page-fields #fieldsTutorialBtn {
+  min-width: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1298:END *//* ATLAS-SOURCE-UNIT:u1299:BEGIN */.audit-source-picker-pill {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  gap: 0.35rem 0.5rem;
+  padding: 0.35rem 0.5rem 0.35rem 0.65rem;
+  transition: background-color 150ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1299:END *//* ATLAS-SOURCE-UNIT:u1300:BEGIN */.audit-source-picker-main {
+  display: flex;
+  align-items: center;
+  flex: 1 1 0;
+  gap: 0.55rem;
+  min-width: 0;
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1300:END *//* ATLAS-SOURCE-UNIT:u1301:BEGIN */.audit-source-picker-pill .source-color-dot {
+  flex: 0 0 auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1301:END *//* ATLAS-SOURCE-UNIT:u1302:BEGIN */.source-library-pill-copy {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u1302:END *//* ATLAS-SOURCE-UNIT:u1303:BEGIN */.source-library-pill-copy small {
+  color: var(--muted);
+}
+
+/* ATLAS-SOURCE-UNIT:u1303:END *//* ATLAS-SOURCE-UNIT:u1304:BEGIN */.source-inclusion-badges {
+  align-items: center;
+}
+
+/* ATLAS-SOURCE-UNIT:u1304:END *//* ATLAS-SOURCE-UNIT:u1305:BEGIN */.source-library-pill-actions {
+  display: flex;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+#page-fields .layout3,
+#page-fields .layout3 > .card,
+#page-fields #sourcesList,
+#page-fields #sourcesList .selected-source-data-view,
+#page-fields #sourcesList .selected-source-table-wrap,
+#page-fields #sourceFieldBrowser,
+#page-fields .source-library-inline-results {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#page-fields .source-library-inline-results {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ATLAS-SOURCE-UNIT:u1305:END *//* ATLAS-SOURCE-UNIT:u1306:BEGIN */.audit-source-picker-pill .source-library-field-matches {
+  flex: 1 0 100%;
+  margin-top: 0.15rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1306:END *//* ATLAS-SOURCE-UNIT:u1307:BEGIN */.source-library-match-names {
+  margin: 0.15rem 0 0;
+  padding-left: 1.1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1307:END *//* ATLAS-SOURCE-UNIT:u1308:BEGIN */.source-library-field-match-more summary {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1308:END *//* ATLAS-SOURCE-UNIT:u1309:BEGIN */#page-fields .audit-source-picker-main:focus-visible,
+#page-fields .source-library-action-button:focus-visible,
+#page-fields .source-library-tab:focus-visible,
+#page-fields #addCustomSourceBtn:focus-visible,
+#page-fields #replaceSourceLibraryBtn:focus-visible,
+#page-fields #fieldsTutorialBtn:focus-visible,
+#page-fields #sourceFieldSearch:focus-visible,
+#page-fields .source-library-field-match-more summary:focus-visible,
+#page-fields [data-replace-source]:focus-visible,
+#page-fields [data-remove-selected-source]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1309:END *//* ATLAS-SOURCE-UNIT:u1310:BEGIN */.field-library-lightboard[data-state="backup"] .field-library-lightboard-detail,
+.field-library-lightboard[data-state="unavailable"] .field-library-lightboard-detail {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+  flex: 1 1 12rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1310:END *//* ATLAS-SOURCE-UNIT:u1311:BEGIN */#page-fields #sourcesList .selected-source-table-wrap {
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1311:END *//* ATLAS-SOURCE-UNIT:u1312:BEGIN */#page-fields #sourcesList .selected-source-table {
+  width: max(100%, 48rem);
+  min-width: 48rem;
+  table-layout: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1312:END *//* ATLAS-SOURCE-UNIT:u1313:BEGIN */#page-fields .selected-source-table th button.selected-source-sort {
+  min-height: 44px;
+  padding: 0.35rem 0.15rem;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1313:END *//* ATLAS-SOURCE-UNIT:u1314:BEGIN */@media (max-width: 760px) {
+  #page-fields {
+    height: auto;
+    min-height: 0;
+  }
+
+  #page-fields.page.active {
+    display: block;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  #page-fields .layout3,
+  #page-fields .layout3:has(.selected-source-data-view) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    height: auto;
+    align-items: start;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  #page-fields .source-field-browser-panel,
+  #page-fields .layout3 > .card:not(.source-field-browser-panel),
+  #page-fields .layout3:has(.selected-source-data-view) > .card:not(.source-field-browser-panel),
+  #page-fields #sourcesList,
+  #page-fields #sourcesList:has(.selected-source-data-view),
+  #page-fields #sourcesList .selected-source-data-view,
+  #page-fields #sourceFieldBrowser,
+  #page-fields #sourceFieldBrowser.source-library-inline {
+    height: auto;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  #page-fields .source-field-browser-panel > .section-title {
+    align-items: center;
+  }
+
+  #page-fields .field-library-lightboard {
+    flex: 1 1 100%;
+    order: 2;
+    min-height: 44px;
+  }
+
+  #page-fields .source-library-toolbar {
+    order: 1;
+    width: auto;
+    margin-left: auto;
+  }
+
+  #page-fields .source-library-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  #page-fields .source-library-tab {
+    flex: 0 0 auto;
+  }
+
+  #page-fields .source-library-inline-results,
+  #page-fields #sourcesList > .selected-source-list {
+    max-height: min(22rem, 50vh);
+    overflow: auto;
+  }
+
+  #page-fields #sourcesList .selected-source-table-wrap {
+    max-height: min(24rem, 60vh) !important;
+  }
+
+  #page-fields .selected-source-compact-card {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center !important;
+    gap: 0.5rem;
+  }
+
+  #page-fields .selected-source-main {
+    flex: 1 1 10rem;
+    align-items: center !important;
+    min-height: 44px;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1314:END *//* ATLAS-SOURCE-UNIT:u1315:BEGIN */@media (prefers-reduced-motion: reduce) {
+  .audit-source-picker-pill {
+    transition: none;
+  }
+}/* ATLAS-SOURCE-UNIT:u1315:END */

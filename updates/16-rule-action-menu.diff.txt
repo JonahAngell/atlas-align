@@ -1,0 +1,377 @@
+diff --git a/js/15-visual-ui-upgrades.js b/js/15-visual-ui-upgrades.js
+index 2b9690f5db2eb5404e3933d118cea7b2690407be..ced15d6c6b859dcd86da724faca56905164b29fd 100644
+--- a/js/15-visual-ui-upgrades.js
++++ b/js/15-visual-ui-upgrades.js
+@@ -1,9 +1,4 @@
+ let activeSourceLibraryTab = 'all';
+-function atlasSourceIdentity(source = {}) {
+-  return sourceCatalogKey(source) || String(source.sourceKey || source.name || source.alias || source.sourceFile || '').trim();
+-}
+-
+-
+ let visualPickerState = null;
+ const collapsedStepIds = new Set();
+ let draggedLogicStepId = '';
+@@ -40,7 +35,7 @@ renderAuditLibrarySelect = function renderAuditLibrarySelectVisual() {
+ };
+ 
+ function selectedSourceSet() {
+-  return new Set((state.audit.sources || []).map((source) => atlasSourceIdentity(source)));
++  return new Set((state.audit.sources || []).map((source) => source.name));
+ }
+ 
+ function sourceMatchesSearch(source, query) {
+@@ -60,7 +55,7 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserVisual() {
+     ['workday', 'Workday', allSources.filter((source) => sourceSystem(source) === 'workday')],
+     ['sap', 'SAP', allSources.filter((source) => sourceSystem(source) === 'sap')],
+     ['other', 'Other / Unknown', allSources.filter((source) => sourceSystem(source) === 'other')],
+-    ['selected', 'Selected', allSources.filter((source) => selected.has(atlasSourceIdentity(source)))],
++    ['selected', 'Selected', allSources.filter((source) => selected.has(source.sourceFile))],
+   ];
+   if (tabRoot) {
+     tabRoot.innerHTML = tabs.map(([key, label, items]) => `<button type="button" class="source-library-tab ${activeSourceLibraryTab === key ? 'active' : ''}" data-source-tab="${key}">${esc(label)} <span>${items.length}</span></button>`).join('');
+@@ -68,7 +63,7 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserVisual() {
+   const activeSources = (tabs.find(([key]) => key === activeSourceLibraryTab)?.[2] || allSources).filter((source) => sourceMatchesSearch(source, query));
+   panel.innerHTML = activeSources.length ? activeSources.map((source) => {
+     const system = sourceSystem(source);
+-    const isSelected = selected.has(atlasSourceIdentity(source));
++    const isSelected = selected.has(source.sourceFile);
+     const fields = query
+       ? (source.fields || []).filter((field) => `${field.fieldName} ${field.vanityLabel || ''} ${field.label || ''}`.toLowerCase().includes(query)).slice(0, 180)
+       : (source.fields || []).slice(0, 48);
+@@ -77,7 +72,7 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserVisual() {
+         <div><div class="visual-picker-group-title">${esc(source.sourceFile)}</div><div class="visual-picker-modal-subtitle">${esc(source.alias || source.sourceFile)} · ${system === 'sap' ? 'SAP' : system === 'workday' ? 'Workday' : 'Unknown source'}</div></div>
+         <div class="visual-picker-group-meta"><span class="visual-picker-group-count">${source.fields?.length || 0} fields</span>${isSelected ? '<span class="badge selected-badge">Selected</span>' : ''}</div>
+       </div>
+-      <div class="source-library-actions"><button type="button" class="${isSelected ? 'secondary' : ''} small" data-add-source-to-audit="${esc(atlasSourceIdentity(source))}">${isSelected ? 'Refresh Source Fields' : 'Use Source in Audit'}</button></div>
++      <div class="source-library-actions"><button type="button" class="${isSelected ? 'secondary' : ''} small" data-add-source-to-audit="${esc(source.sourceFile)}">${isSelected ? 'Refresh Source Fields' : 'Use Source in Audit'}</button></div>
+       <div class="visual-picker-pill-grid source-field-pill-grid">
+         ${fields.map((field) => {
+           const raw = field.fieldName || field.name || field.label || '';
+@@ -91,15 +86,15 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserVisual() {
+ };
+ 
+ function pickerSourceOptions() {
+-  return sourceCatalogEntries().map((source) => ({ sourceFile: atlasSourceIdentity(source), sourceTitle: source.sourceFile, sourceAlias: source.alias || source.sourceFile, fieldName: '', label: source.sourceFile, detail: source.alias || source.sourceFile, sourceColor: (state.audit.sources || []).find((item) => atlasSourceIdentity(item) === atlasSourceIdentity(source))?.color || '' }));
++  return sourceCatalogEntries().map((source) => ({ sourceFile: source.sourceFile, sourceAlias: source.alias || source.sourceFile, fieldName: '', label: source.sourceFile, detail: source.alias || source.sourceFile, sourceColor: (state.audit.sources || []).find((item) => item.name === source.sourceFile)?.color || '' }));
+ }
+ 
+ function pickerFieldOptions(sourceFile = '') {
+-  const sources = sourceFile ? sourceCatalogEntries().filter((source) => atlasSourceIdentity(source) === sourceFile || source.sourceFile === sourceFile) : sourceCatalogEntries();
++  const sources = sourceFile ? sourceCatalogEntries().filter((source) => source.sourceFile === sourceFile) : sourceCatalogEntries();
+   return sources.flatMap((source) => (source.fields || []).map((field) => {
+     const raw = field.fieldName || field.name || field.label || '';
+     const label = field.vanityLabel || field.label || raw;
+-    return { sourceFile: atlasSourceIdentity(source), sourceTitle: source.sourceFile, sourceAlias: source.alias || source.sourceFile, fieldName: raw, label, detail: raw, sourceColor: (state.audit.sources || []).find((item) => atlasSourceIdentity(item) === atlasSourceIdentity(source))?.color || '' };
++    return { sourceFile: source.sourceFile, sourceAlias: source.alias || source.sourceFile, fieldName: raw, label, detail: raw, sourceColor: (state.audit.sources || []).find((item) => item.name === source.sourceFile)?.color || '' };
+   }));
+ }
+ 
+@@ -107,7 +102,7 @@ function renderMiniPickerTrigger(kind, name, value, label, sourceFile = '') {
+   const detail = kind === 'source'
+     ? (sourceAliasFor?.(value) || '')
+     : sourceFile ? `${sourceFile}.${value || '[field]'}` : value || '';
+-  const color = kind === 'field' ? ((state.audit.sources || []).find((source) => atlasSourceIdentity(source) === sourceFile)?.color || '') : ((state.audit.sources || []).find((source) => source.name === value)?.color || '');
++  const color = kind === 'field' ? ((state.audit.sources || []).find((source) => source.name === sourceFile)?.color || '') : ((state.audit.sources || []).find((source) => source.name === value)?.color || '');
+   return `<div class="visual-picker-trigger-row mini-picker-trigger-row"><input type="hidden" data-param="${esc(name)}" value="${esc(value || '')}"><button type="button" class="visual-picker-trigger-button mini-picker-trigger" data-open-mini-picker="${kind}" data-param-name="${esc(name)}" data-picker-source="${esc(sourceFile || '')}"><span class="visual-picker-trigger-main">${color ? `<span class="source-color-dot" style="background:${esc(color)}"></span>` : ''}<strong>${esc(value || label || 'Choose...')}</strong>${detail ? `<span class="visual-picker-pill-detail">${esc(detail)}</span>` : ''}</span><span class="visual-picker-trigger-caret">⌄</span></button></div>`;
+ }
+ 
+@@ -262,6 +257,7 @@ document.addEventListener('toggle', (event) => {
+ }, true);
+ 
+ document.addEventListener('dragstart', (event) => {
++  if (event.target.closest('button, [data-rule-menu-panel], .step-collapse-button, input, select, textarea, a')) { event.preventDefault(); return; }
+   const card = event.target.closest('.visual-step-card');
+   if (!card) return;
+   draggedLogicStepId = card.dataset.id;
+@@ -352,7 +348,7 @@ function filteredSourceEntries() {
+   const query = ($('sourceFieldSearch')?.value || '').toLowerCase().trim();
+   const selected = selectedSourceSet();
+   return alphaSortItems(sourceCatalogEntries(), (source) => source.sourceFile).filter((source) => {
+-    if (tab === 'selected' && !selected.has(atlasSourceIdentity(source))) return false;
++    if (tab === 'selected' && !selected.has(source.sourceFile)) return false;
+     if (tab !== 'all' && tab !== 'selected' && sourceSystem(source) !== tab) return false;
+     return sourceMatchesSearch(source, query);
+   });
+@@ -369,12 +365,12 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserContacts() {
+     ['workday', 'Workday', allSources.filter((source) => sourceSystem(source) === 'workday')],
+     ['sap', 'SAP', allSources.filter((source) => sourceSystem(source) === 'sap')],
+     ['other', 'Other / Unknown', allSources.filter((source) => sourceSystem(source) === 'other')],
+-    ['selected', 'Selected', allSources.filter((source) => selected.has(atlasSourceIdentity(source)))],
++    ['selected', 'Selected', allSources.filter((source) => selected.has(source.sourceFile))],
+   ];
+   if (tabRoot) tabRoot.innerHTML = tabs.map(([key, label, items]) => `<button type="button" class="source-library-tab ${activeSourceLibraryTab === key ? 'active' : ''}" data-source-tab="${key}">${esc(label)} <span>${items.length}</span></button>`).join('');
+   const sources = filteredSourceEntries();
+   const letters = alphaLetters(sources, (source) => source.sourceFile);
+-  panel.innerHTML = `<div class="contacts-list-shell source-contacts-shell"><div class="contacts-list" data-contacts-list="source">${sources.length ? sources.map((source, idx) => { const letter = firstLetter(source.sourceFile); const prev = idx ? firstLetter(sources[idx - 1].sourceFile) : ''; const header = letter !== prev ? `<div class="contacts-letter-header" data-alpha-letter="${esc(letter)}">${esc(letter)}</div>` : ''; const isSelected = selected.has(atlasSourceIdentity(source)); return `${header}<div class="contacts-row source-contact-row ${isSelected ? 'selected' : ''}"><button type="button" class="contacts-row-main" data-source-detail-name="${esc(atlasSourceIdentity(source))}"><span class="contacts-title">${esc(source.sourceFile)}</span><span class="contacts-detail">${esc(source.alias || source.sourceFile)} · ${sourceSystem(source).toUpperCase()} · ${source.fields?.length || 0} fields</span></button><button type="button" class="small ${isSelected ? 'secondary' : ''}" data-add-source-to-audit="${esc(atlasSourceIdentity(source))}">${isSelected ? 'Refresh' : 'Use'}</button></div>`; }).join('') : '<p class="hint contacts-empty">No source files match the current search.</p>'}</div><div class="contacts-letter-index">${letters.map((letter) => `<button type="button" data-scroll-letter="${esc(letter)}" data-scroll-scope="source">${esc(letter)}</button>`).join('')}</div></div>`;
++  panel.innerHTML = `<div class="contacts-list-shell source-contacts-shell"><div class="contacts-list" data-contacts-list="source">${sources.length ? sources.map((source, idx) => { const letter = firstLetter(source.sourceFile); const prev = idx ? firstLetter(sources[idx - 1].sourceFile) : ''; const header = letter !== prev ? `<div class="contacts-letter-header" data-alpha-letter="${esc(letter)}">${esc(letter)}</div>` : ''; const isSelected = selected.has(source.sourceFile); return `${header}<div class="contacts-row source-contact-row ${isSelected ? 'selected' : ''}"><button type="button" class="contacts-row-main" data-source-detail-name="${esc(source.sourceFile)}"><span class="contacts-title">${esc(source.sourceFile)}</span><span class="contacts-detail">${esc(source.alias || source.sourceFile)} · ${sourceSystem(source).toUpperCase()} · ${source.fields?.length || 0} fields</span></button><button type="button" class="small ${isSelected ? 'secondary' : ''}" data-add-source-to-audit="${esc(source.sourceFile)}">${isSelected ? 'Refresh' : 'Use'}</button></div>`; }).join('') : '<p class="hint contacts-empty">No source files match the current search.</p>'}</div><div class="contacts-letter-index">${letters.map((letter) => `<button type="button" data-scroll-letter="${esc(letter)}" data-scroll-scope="source">${esc(letter)}</button>`).join('')}</div></div>`;
+ };
+ 
+ function fieldRowsForSource(sourceName) {
+@@ -941,16 +937,16 @@ document.addEventListener('click', (event) => {
+ let atlasFieldPickerSortMode = 'source';
+ 
+ function atlasSelectedAuditSources() {
+-  const selectedKeys = new Set((state.audit.sources || []).map((source) => atlasSourceIdentity(source)));
+-  return sourceCatalogEntries().filter((source) => selectedKeys.has(atlasSourceIdentity(source)));
++  const selectedNames = new Set((state.audit.sources || []).map((source) => source.name));
++  return sourceCatalogEntries().filter((source) => selectedNames.has(source.sourceFile));
+ }
+ 
+ function atlasSelectedSourceColor(sourceFile) {
+-  return (state.audit.sources || []).find((source) => atlasSourceIdentity(source) === sourceFile)?.color || SOURCE_COLOR_PALETTE?.[0] || '#4d6fa9';
++  return (state.audit.sources || []).find((source) => source.name === sourceFile)?.color || SOURCE_COLOR_PALETTE?.[0] || '#4d6fa9';
+ }
+ 
+ function atlasSelectedSourceAlias(sourceFile) {
+-  return (state.audit.sources || []).find((source) => atlasSourceIdentity(source) === sourceFile)?.alias || sourceAliasFor?.(sourceFile) || sourceFile;
++  return (state.audit.sources || []).find((source) => source.name === sourceFile)?.alias || sourceAliasFor?.(sourceFile) || sourceFile;
+ }
+ 
+ function atlasSourceOptionsHtml(selected = '') {
+@@ -960,7 +956,7 @@ function atlasSourceOptionsHtml(selected = '') {
+ }
+ 
+ function atlasFieldOptionsHtml(sourceFile = '', selected = '') {
+-  const sources = sourceFile ? atlasSelectedAuditSources().filter((source) => atlasSourceIdentity(source) === sourceFile || source.sourceFile === sourceFile) : atlasSelectedAuditSources();
++  const sources = sourceFile ? atlasSelectedAuditSources().filter((source) => source.sourceFile === sourceFile) : atlasSelectedAuditSources();
+   const fields = sources.flatMap((source) => (source.fields || []).map((field) => ({ source, field })));
+   if (!fields.length) return '<option value="">Select a selected source first...</option>';
+   return ['<option value="">Select field...</option>', ...fields.map(({ source, field }) => {
+@@ -990,12 +986,12 @@ function pickerSourceOptions() {
+     fieldName: '',
+     label: source.sourceFile,
+     detail: source.alias || source.sourceFile,
+-    sourceColor: atlasSelectedSourceColor(atlasSourceIdentity(source)),
++    sourceColor: atlasSelectedSourceColor(source.sourceFile),
+   }));
+ }
+ 
+ function pickerFieldOptions(sourceFile = '') {
+-  const sources = sourceFile ? atlasSelectedAuditSources().filter((source) => atlasSourceIdentity(source) === sourceFile || source.sourceFile === sourceFile) : atlasSelectedAuditSources();
++  const sources = sourceFile ? atlasSelectedAuditSources().filter((source) => source.sourceFile === sourceFile) : atlasSelectedAuditSources();
+   return sources.flatMap((source) => (source.fields || []).map((field) => {
+     const raw = field.fieldName || field.name || field.label || '';
+     const label = field.vanityLabel || field.label || raw;
+@@ -1005,7 +1001,7 @@ function pickerFieldOptions(sourceFile = '') {
+       fieldName: raw,
+       label,
+       detail: raw,
+-      sourceColor: atlasSelectedSourceColor(atlasSourceIdentity(source)),
++      sourceColor: atlasSelectedSourceColor(source.sourceFile),
+     };
+   }));
+ }
+@@ -1049,7 +1045,7 @@ function atlasSourceMatchForValue(value) {
+       const vanity = item.vanityLabel || item.label || raw;
+       return raw === normalized || vanity === normalized || `${source.sourceFile}.${raw}` === normalized || `${source.alias || source.sourceFile}.${raw}` === normalized;
+     });
+-    if (field) return { sourceFile: source.sourceFile, color: atlasSelectedSourceColor(atlasSourceIdentity(source)), kind: 'field' };
++    if (field) return { sourceFile: source.sourceFile, color: atlasSelectedSourceColor(source.sourceFile), kind: 'field' };
+   }
+   return null;
+ }
+@@ -1123,33 +1119,72 @@ function atlasDuplicateStepById(stepId) {
+   scheduleAutosave();
+ }
+ 
+-function renderLogicRuleCard(entry) {
+-  const step = entry.step;
+-  const selected = state.selectedStepId === step.id;
+-  const generated = !!step.autoGeneratedReference;
+-  const availability = atlasActionAvailability(step);
+-  const cardClass = `logic-rule-card compact-logic-rule-card step-card ${generated ? 'generated-reference-step' : 'visual-step-card'} ${selected ? 'selected' : ''}`;
+-  const draggable = generated ? '' : ' draggable="true"';
+-  const statusLabel = generated ? 'Generated' : 'Editable';
+-  const statusClass = generated ? 'blue' : 'green';
+-  return `<div class="${cardClass}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || '')}" style="--depth:${entry.level}"${draggable}>
+-    <div class="compact-rule-grid">
+-      <span class="drag-handle compact-dragger" title="Drag to reorder">⋮⋮</span>
+-      <span class="step-number compact-step-number">${esc(entry.number)}</span>
+-      <div class="compact-rule-logic" data-select-step>${renderLogicWithPills(analystLogic(step))}</div>
+-      <span class="badge ${statusClass} compact-status-badge">${statusLabel}</span>
+-      <details class="compact-action-menu"><summary title="Step actions" aria-label="Step actions">⋯</summary><div class="compact-action-menu-panel">
+-        <button type="button" data-select-step>Edit</button>
+-        ${availability.indent ? '<button type="button" data-indent>Indent</button>' : ''}
+-        ${availability.outdent ? '<button type="button" data-outdent>Outdent</button>' : ''}
+-        ${availability.addChild ? '<button type="button" data-add-child-step>Add Child</button>' : ''}
+-        ${availability.addAfter ? '<button type="button" data-add-step-after>Add Step After</button>' : ''}
+-        ${availability.duplicate ? '<button type="button" data-duplicate-logic-step>Duplicate</button>' : ''}
+-        ${availability.delete ? '<button type="button" class="danger-menu-action" data-delete-step>Delete</button>' : ''}
+-      </div></details>
+-    </div>
+-    ${atlasRenderHiddenPreserveFields(step)}
+-  </div>`;
++function atlasStepHasChildren(step) { return !!step && childrenOf(step.id).length > 0; }
++atlasVisibleStepEntries = function atlasVisibleStepEntriesWithCollapse() {
++  const hidden = new Set();
++  return hierarchicalStepEntries({ includeDisabled: true }).filter((entry) => {
++    const parentId = entry.step.parentId || null;
++    if (parentId && hidden.has(parentId)) { hidden.add(entry.step.id); return false; }
++    if (collapsedStepIds.has(entry.step.id)) hidden.add(entry.step.id);
++    return true;
++  });
++};
++function atlasRuleGroup(step) { return step?.autoGeneratedReference || step?.step_type === 'reference_source' ? 'reference' : `manual:${step?.parentId || 'root'}`; }
++function atlasRuleSiblings(step) { return step ? childrenOf(step.parentId || null).filter((candidate) => atlasRuleGroup(candidate) === atlasRuleGroup(step)).sort((x,y)=>(Number(x.sortOrder)||0)-(Number(y.sortOrder)||0)) : []; }
++function atlasCanMoveRule(step,direction) { const siblings=atlasRuleSiblings(step); const index=siblings.findIndex((x)=>x.id===step?.id); return index>=0 && (direction==='up'?index>0:index<siblings.length-1); }
++function atlasMoveRuleWithinGroup(stepId,direction) {
++  capture(); const step=state.audit.steps.find((x)=>x.id===stepId); if(!step || !atlasCanMoveRule(step,direction)) return false;
++  const siblings=atlasRuleSiblings(step), index=siblings.findIndex((x)=>x.id===stepId), destination=direction==='up'?index-1:index+1;
++  const reordered=siblings.slice(), moved=reordered.splice(index,1)[0]; reordered.splice(destination,0,moved); reordered.forEach((x,i)=>{x.sortOrder=i+1;});
++  state.selectedStepId=stepId; atlasCloseRuleMenus(); atlasRequestStructuralStepRender?.(); scheduleAutosave(); return true;
++}
++function atlasMenuItem(label,attr='',options={}) {
++  const enabled=options.enabled!==false, reason=options.reason||'', danger=!!options.danger;
++  return `<button type="button" role="menuitem"${danger||!enabled?` class="${danger?'danger-menu-action ':''}${!enabled?'is-disabled':''}"`:''}${attr?` ${attr}`:''}${enabled?'':` disabled aria-disabled="true" title="${esc(reason)}"`}>${esc(label)}</button>`;
++}
++function atlasCloseRuleMenus({exceptStepId='',returnFocus=false,focusStepId=''}={}) {
++  let focusId=focusStepId; document.querySelectorAll('[data-rule-menu-panel]').forEach((panel)=>{const id=panel.dataset.ruleMenuPanel||''; if(exceptStepId&&id===exceptStepId)return; if(!panel.hidden&&!focusId)focusId=id; panel.hidden=true;});
++  document.querySelectorAll('[data-rule-menu-toggle]').forEach((button)=>{if(!exceptStepId||button.dataset.ruleMenuToggle!==exceptStepId)button.setAttribute('aria-expanded','false');});
++  if(returnFocus&&focusId)document.querySelector(`[data-rule-menu-toggle="${CSS.escape(focusId)}"]`)?.focus();
++}
++function atlasReferenceDescendants(stepId){const out=[]; const visit=(id)=>childrenOf(id).forEach((child)=>{out.push(child);visit(child.id);}); visit(stepId); return out;}
++function atlasAddReferenceSubstep(stepId){
++  capture(); const ref=state.audit.steps.find((x)=>x.id===stepId&&x.autoGeneratedReference); if(!ref)return;
++  const key=ref.sourceKey||ref.sourceReferenceId||ref.source||ref.params?.source_key||ref.params?.source_file||'';
++  const child={id:uid('step'),enabled:true,parentId:ref.id,branchType:'then',sortOrder:childrenOf(ref.id).length+1,title:'Reference Source Substep',type:'if',step_type:'if_then',source:key,field:'',action:'',notes:'',conditions:[{id:uid('cond'),field:'',operator:'is equal to',value:''}],params:{source_file:key,source_key:key,conditions_json:'[]'}};
++  state.audit.steps.push(child);state.selectedStepId=child.id;atlasCloseRuleMenus();atlasRequestStructuralStepRender?.();scheduleAutosave();
++}
++function atlasCloneReferenceSubtree(sourceRef,targetRef){
++  const descendants=atlasReferenceDescendants(sourceRef.id); if(!descendants.length)return[]; const ids=new Map(descendants.map((x)=>[x.id,uid('step')]));
++  const key=targetRef.sourceKey||targetRef.sourceReferenceId||targetRef.source||targetRef.params?.source_key||targetRef.params?.source_file||'';
++  return descendants.map((step)=>{const copy=structuredClone(step);copy.id=ids.get(step.id);copy.parentId=step.parentId===sourceRef.id?targetRef.id:ids.get(step.parentId);copy.autoGeneratedReference=false;copy.source=key;copy.sourceKey=key;copy.conditions=(copy.conditions||[]).map((c)=>({...c,id:uid('cond'),sourceFile:key}));copy.params=copy.params&&typeof copy.params==='object'?copy.params:{};copy.params.source_file=key;copy.params.source_key=key;if(copy.params.conditions_json){try{copy.params.conditions_json=JSON.stringify(JSON.parse(copy.params.conditions_json).map((c)=>({...c,id:uid('cond'),sourceFile:key})));}catch(_e){copy.params.conditions_json='[]';}}return copy;});
++}
++function atlasCopyReferenceSubstepsPrompt(targetId){
++  const target=state.audit.steps.find((x)=>x.id===targetId&&x.autoGeneratedReference); if(!target)return;
++  const refs=state.audit.steps.filter((x)=>x.autoGeneratedReference&&x.id!==target.id&&atlasReferenceDescendants(x.id).length); if(!refs.length)return status?.('No other generated reference has substeps to copy.','warn');
++  const list=refs.map((x,i)=>`${i+1}. ${x.sourceAlias||x.sourceFile||x.source||x.id}`).join('\n'); const choice=Number.parseInt(prompt(`Copy substeps from which reference?\n${list}`,'1'),10)-1; if(!Number.isInteger(choice)||!refs[choice])return;
++  capture();const clones=atlasCloneReferenceSubtree(refs[choice],target);state.audit.steps.push(...clones);state.selectedStepId=clones[0]?.id||target.id;atlasCloseRuleMenus();atlasRequestStructuralStepRender?.();scheduleAutosave();
++}
++function atlasDuplicateSourceReferencePrompt(stepId){
++  const step=state.audit.steps.find((x)=>x.id===stepId&&x.autoGeneratedReference);if(!step)return;const key=step.sourceKey||step.sourceReferenceId||step.source||step.params?.source_key||step.params?.source_file||'';
++  const source=(state.audit.sources||[]).find((x)=>atlasSourceIdentity(x)===key||x.id===key||x.sourceKey===key);if(!source)return status?.('The selected source reference could not be found in Sources.','warn');
++  const alias=prompt('Name this additional source reference:',`${source.alias||source.sourceFile||source.name||'Source'} Copy`);if(!alias)return;const note=prompt('Why is this source referenced more than once?','');if(!String(note||'').trim())return status?.('Duplicate source references require an explanation.','warn');
++  capture();const id=uid('source'),duplicate=structuredClone(source);duplicate.id=id;duplicate.sourceReferenceId=id;duplicate.baseSourceKey=source.baseSourceKey||source.sourceKey||atlasSourceIdentity(source);duplicate.sourceKey=id;duplicate.name=id;duplicate.alias=String(alias).trim();duplicate.referenceNote=String(note).trim();duplicate.duplicatedFromSourceId=source.id||source.sourceReferenceId||atlasSourceIdentity(source);state.audit.sources.push(duplicate);syncAutoReferenceSteps?.();atlasCloseRuleMenus();atlasRequestRender?.({sources:true,steps:true,selectedStep:true,logicTable:true,preview:true,validation:true});scheduleAutosave();
++}
++function atlasRuleActionMenu(step){
++  const generated=!!step.autoGeneratedReference, number=stepNumberFor(step.id)||'', panelId=`rule-actions-${String(step.id).replace(/[^A-Za-z0-9_-]/g,'-')}`;
++  const up=atlasCanMoveRule(step,'up'),down=atlasCanMoveRule(step,'down');let actions;
++  if(generated){const canCopy=state.audit.steps.some((x)=>x.autoGeneratedReference&&x.id!==step.id&&atlasReferenceDescendants(x.id).length);actions=[atlasMenuItem('Move Up','data-move-step-up',{enabled:up,reason:'This reference is already first in the Reference group.'}),atlasMenuItem('Move Down','data-move-step-down',{enabled:down,reason:'This reference is already last in the Reference group.'}),atlasMenuItem('Add Substep','data-add-reference-substep'),atlasMenuItem('Copy Substeps',`data-copy-reference-substeps="${esc(step.id)}"`,{enabled:canCopy,reason:'No other generated reference has substeps to copy.'}),atlasMenuItem('Duplicate Source Reference',`data-duplicate-source-reference="${esc(step.id)}"`),atlasMenuItem('Indent','',{enabled:false,reason:'Generated references cannot be nested.'}),atlasMenuItem('Outdent','',{enabled:false,reason:'Generated references are always top-level.'}),atlasMenuItem('Delete','',{enabled:false,danger:true,reason:'Remove this reference by removing its source through the Sources pane.'})].join('');}
++  else{const earlier=state.audit.steps.some((x)=>x.id!==step.id&&!x.autoGeneratedReference&&(Number(x.sortOrder)||0)<(Number(step.sortOrder)||0));actions=[atlasMenuItem('Edit','data-select-step'),atlasMenuItem('Move Up','data-move-step-up',{enabled:up,reason:'This rule is already first in its hierarchy group.'}),atlasMenuItem('Move Down','data-move-step-down',{enabled:down,reason:'This rule is already last in its hierarchy group.'}),atlasMenuItem('Add Child','data-add-child-step'),atlasMenuItem('Add Step After','data-add-step-after'),atlasMenuItem('Indent','data-indent',{enabled:earlier,reason:'A compatible previous manual rule is required.'}),atlasMenuItem('Outdent','data-outdent',{enabled:!!step.parentId,reason:'This rule is already top-level.'}),atlasMenuItem('Duplicate','data-duplicate-logic-step'),atlasMenuItem('Delete','data-delete-step',{danger:true})].join('');}
++  return `<div class="compact-action-menu"><button type="button" class="btn secondary small icon-button" data-rule-menu-toggle="${esc(step.id)}" aria-haspopup="menu" aria-expanded="false" aria-controls="${esc(panelId)}" aria-label="Actions for rule ${esc(number||step.id)}">⋯</button><div id="${esc(panelId)}" class="compact-action-menu-panel" data-rule-menu-panel="${esc(step.id)}" role="menu" hidden>${actions}</div></div>`;
++}
++// Final active compact rule-card renderer. This is the single menu-owning renderer.
++function renderLogicRuleCard(entry){const step=entry.step,selected=state.selectedStepId===step.id,generated=!!step.autoGeneratedReference,hasChildren=atlasStepHasChildren(step),collapsed=collapsedStepIds.has(step.id);const classes=`logic-rule-card compact-logic-rule-card step-card ${generated?'generated-reference-step':'visual-step-card'} ${selected?'selected':''}`;return `<div class="${classes}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId||'')}" style="--depth:${entry.level}"${generated?'':' draggable="true"'}><div class="compact-rule-grid"><span class="drag-handle compact-dragger" title="Drag to reorder">⋮⋮</span>${hasChildren?`<button type="button" class="btn secondary small icon-button step-collapse-button" data-toggle-step-collapse="${esc(step.id)}" aria-expanded="${collapsed?'false':'true'}" aria-label="${collapsed?'Expand child rules':'Collapse child rules'}">${collapsed?'▸':'▾'}</button>`:'<span class="step-collapse-spacer"></span>'}<span class="step-number compact-step-number">${esc(entry.number)}</span><div class="compact-rule-logic" data-select-step>${renderLogicWithPills(analystLogic(step))}</div><span class="badge ${generated?'blue':'green'} compact-status-badge">${generated?'Generated':'Editable'}</span>${atlasRuleActionMenu(step)}</div>${atlasRenderHiddenPreserveFields(step)}</div>`;}
++if(!document.__atlasRuleMenuHandlersBound){
++ document.addEventListener('click',(event)=>{const toggle=event.target.closest('[data-rule-menu-toggle]');if(toggle){event.preventDefault();event.stopImmediatePropagation();const id=toggle.dataset.ruleMenuToggle||'',panel=document.querySelector(`[data-rule-menu-panel="${CSS.escape(id)}"]`),opening=!!panel?.hidden;atlasCloseRuleMenus({exceptStepId:opening?id:''});if(panel)panel.hidden=!opening;toggle.setAttribute('aria-expanded',opening?'true':'false');return;}const panel=event.target.closest('[data-rule-menu-panel]');if(!panel){atlasCloseRuleMenus();return;}const action=event.target.closest('button:not(:disabled)');if(!action)return;const id=panel.closest('.step-card')?.dataset.id||panel.dataset.ruleMenuPanel||'';if(action.matches('[data-move-step-up], [data-move-step-down], [data-add-step-after], [data-duplicate-logic-step], [data-add-reference-substep], [data-copy-reference-substeps], [data-duplicate-source-reference]')){event.preventDefault();event.stopImmediatePropagation();if(action.matches('[data-move-step-up]'))atlasMoveRuleWithinGroup(id,'up');else if(action.matches('[data-move-step-down]'))atlasMoveRuleWithinGroup(id,'down');else if(action.matches('[data-add-step-after]'))atlasAddStepAfter(id);else if(action.matches('[data-duplicate-logic-step]'))atlasDuplicateStepById(id);else if(action.matches('[data-add-reference-substep]'))atlasAddReferenceSubstep(id);else if(action.matches('[data-copy-reference-substeps]'))atlasCopyReferenceSubstepsPrompt(id);else atlasDuplicateSourceReferencePrompt(id);atlasCloseRuleMenus();return;}atlasCloseRuleMenus();},true);
++ document.addEventListener('keydown',(event)=>{if(event.key!=='Escape')return;const panel=[...document.querySelectorAll('[data-rule-menu-panel]')].find((x)=>!x.hidden);if(!panel)return;event.preventDefault();event.stopImmediatePropagation();atlasCloseRuleMenus({returnFocus:true,focusStepId:panel.dataset.ruleMenuPanel||''});},true);
++ document.addEventListener('click',(event)=>{const button=event.target.closest('[data-toggle-step-collapse]');if(!button)return;event.preventDefault();event.stopImmediatePropagation();const id=button.dataset.toggleStepCollapse||'';if(collapsedStepIds.has(id))collapsedStepIds.delete(id);else{collapsedStepIds.add(id);const descendants=new Set(atlasReferenceDescendants(id).map((x)=>x.id));if(descendants.has(state.selectedStepId))state.selectedStepId=id;}atlasCloseRuleMenus();renderSteps();},true);
++ document.__atlasRuleMenuHandlersBound=true;
+ }
+ 
+ function atlasRenderFieldSortControl() {
+diff --git a/styles.css b/styles.css
+index 2b4a003400605ae29e3506a303cbb1253d4a0de5..3c5d2567a7b476d51bae0ff8d1bfd719d40b3450 100644
+--- a/styles.css
++++ b/styles.css
+@@ -4936,89 +4936,13 @@ Sources page UI update
+   white-space: normal !important;
+   overflow-wrap: break-word !important;
+ }
+-
+-/* ATLAS Align 1.6: profile, personal audit queue, and assignments */
+-.topbar {
+-  height: auto;
+-  min-height: 76px;
+-  gap: 1rem;
+-}
+-.topbar-primary { min-width: 0; flex: 1 1 420px; }
+-.topbar-actions { display: flex; align-items: center; gap: .9rem; margin-left: auto; min-width: 0; }
+-.current-user-profile { display: flex; align-items: center; gap: .65rem; min-width: 0; padding: .35rem .5rem; border-radius: 10px; }
+-.profile-text { display: grid; min-width: 0; }
+-.profile-text strong, .profile-secondary { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+-.profile-secondary { color: var(--muted); font-size: .78rem; }
+-.profile-avatar { position: relative; overflow: hidden; flex: 0 0 36px; }
+-.profile-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+-#page-my-audits.page.active { height: auto; min-height: 0; overflow: visible; display: block; }
+-#page-my-audits .my-audits-metrics { grid-template-columns: repeat(4, minmax(0,1fr)); margin-bottom: 18px; }
+-
+-#page-my-audits .my-audits-toolbar { justify-content: flex-start; }
+-#page-my-audits #newAuditBtn { margin-left: auto; }
+-#page-my-audits .import-label { margin-bottom: 0; }
+-@media (max-width: 700px) {
+-  #page-my-audits #newAuditBtn {
+-    margin-left: 0;
+-  }
+-}
+-
+-#page-my-audits .my-audits-filters { display: flex; gap: .5rem; flex-wrap: wrap; }
+-#page-my-audits .my-audits-filters .active,
+-#page-my-audits .my-audits-filters [aria-pressed="true"] {
+-  color: #fff !important;
+-  background: var(--primary) !important;
+-  border-color: var(--primary2) !important;
+-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 28%, transparent);
+-  font-weight: 850;
+-}
+-#page-my-audits .my-audits-search { min-width: min(340px,100%); }
+-#page-my-audits .my-audits-table-scroll {
+-  width: 100%;
+-  max-height: min(58vh, 620px);
+-  overflow: auto;
+-  overscroll-behavior: contain;
+-  border: 1px solid var(--border);
+-  border-radius: 12px;
+-}
+-#page-my-audits .my-audits-table { min-width: 900px; margin: 0; }
+-#page-my-audits .my-audits-table thead th { position: sticky; top: 0; z-index: 2; background: var(--surface2); }
+-#page-my-audits .my-audits-table td strong,
+-#page-my-audits .my-audits-table td small { display: block; }
+-#page-my-audits .my-audits-table td small { color: var(--muted); margin-top: .2rem; }
+-.my-audits-state { padding: 1.1rem; text-align: center; color: var(--muted); }
+-.my-audits-state.error { color: var(--danger); }
+-.role-badge { background: var(--accent2); color: var(--primary); }
+-.assignment-card { margin-top: 18px; }
+-.assignment-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+-.assignment-selected { display: flex; flex-wrap: wrap; gap: .5rem; margin: .65rem 0; }
+-.assignment-chip { display: inline-flex; align-items: center; gap: .45rem; border: 1px solid var(--border); border-radius: 999px; padding: .25rem .5rem; background: var(--surface2); }
+-.assignment-chip button { border: 0; background: transparent; color: var(--danger); cursor: pointer; font-size: 1.1rem; }
+-.assignment-avatar { width: 28px; height: 28px; flex: 0 0 28px; font-size: .72rem; }
+-.assignment-results { display: grid; gap: .4rem; margin-top: .5rem; }
+-.assignment-results.error { color: var(--danger); }
+-.assignment-result { display: flex; align-items: center; gap: .55rem; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 9px; padding: .5rem; }
+-.assignment-result-user { display: flex; align-items: center; gap: .55rem; min-width: 0; flex: 1; }
+-.assignment-result-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+-.assignment-result-action { flex: 0 0 auto; }
+-.assignment-result-action:disabled { opacity: .55; cursor: not-allowed; }
+-.my-audits-filters button:focus-visible,
+-.assignment-result-action:focus-visible,
+-.assignment-chip button:focus-visible,
+-.current-user-profile:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+-body.dark #page-my-audits .my-audits-filters .active,
+-body.dark #page-my-audits .my-audits-filters [aria-pressed="true"] { color: #07111f !important; }
+-@media (max-width: 900px) {
+-  #page-my-audits .my-audits-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+-  .assignment-columns { grid-template-columns: 1fr; }
+-  .topbar { padding: 12px 18px; flex-wrap: wrap; }
+-  .topbar-actions { margin-left: 0; }
+-  .profile-secondary { display: none; }
+-}
+-@media (max-width: 560px) {
+-  .profile-text strong { display: none; }
+-  #page-my-audits .my-audits-search { min-width: 100%; }
+-  #page-my-audits .my-audits-table-scroll { max-height: 62vh; }
+-  .assignment-result { align-items: flex-start; flex-wrap: wrap; }
+-}
+-
++/* Logic Builder explicit rule action menu contract. */
++.compact-action-menu>[data-rule-menu-toggle]{width:34px;min-width:34px;height:34px;min-height:34px;padding:0!important;color:var(--text)!important;background:var(--surface2)!important;border:1px solid var(--border)!important;border-radius:999px}
++.compact-action-menu-panel{top:calc(100% + 6px);right:0;z-index:200;min-width:220px;max-height:min(420px,70vh);overflow-y:auto;color:var(--text);background:var(--surface)}
++.compact-action-menu-panel button:not(:disabled):hover,.compact-action-menu-panel button:not(:disabled):focus-visible{background:var(--surface2)!important}
++.compact-action-menu>[data-rule-menu-toggle]:focus-visible,.compact-action-menu-panel button:focus-visible,.step-collapse-button:focus-visible{outline:3px solid color-mix(in srgb,var(--primary) 55%,transparent);outline-offset:2px}
++.compact-action-menu-panel button:disabled,.compact-action-menu-panel .is-disabled{color:var(--muted)!important;opacity:.65!important;pointer-events:auto!important}
++.compact-action-menu-panel .danger-menu-action:not(:disabled){color:var(--danger)!important}
++.compact-logic-rule-card:focus-within{position:relative;z-index:3}
++body.dark .compact-action-menu-panel{color:var(--text);background:var(--surface);border-color:var(--border)}
++@media(max-width:700px){.compact-action-menu-panel{min-width:min(220px,calc(100vw - 48px));max-width:calc(100vw - 48px)}}

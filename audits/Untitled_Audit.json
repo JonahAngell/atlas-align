@@ -1,0 +1,447 @@
+{
+  "id": "audit_8df96aa2",
+  "name": "Untitled Audit",
+  "purpose": "Test",
+  "sources": [
+    {
+      "id": "source_bdc816d3",
+      "sourceKey": "wd.INT2128a",
+      "name": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "alias": "wd.INT2128a",
+      "color": "#fdd0ec",
+      "description": "Alias: wd.INT2128a",
+      "sourceMetadata": {
+        "sourceSystem": "Workday",
+        "sourceTitle": "[Maseke_Audit_001] - Worker Currency Audit",
+        "frequency": "daily",
+        "population": "Global - Active and Withdrawn",
+        "sourceFileFormat": "Comma Separated Value (.csv)",
+        "sourceOwner": ""
+      }
+    }
+  ],
+  "fields": [
+    {
+      "id": "field_defef3c4",
+      "name": "Compensation Plan",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Compensation Plan",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Compensation Plan"
+    },
+    {
+      "id": "field_cf8924c9",
+      "name": "Time Type",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Time Type",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Time Type"
+    },
+    {
+      "id": "field_f3c3995e",
+      "name": "Pay Rate Type",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Pay Rate Type",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Pay Rate Type"
+    },
+    {
+      "id": "field_9569d1c8",
+      "name": "Pay Group",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Pay Group",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Pay Group"
+    },
+    {
+      "id": "field_802ec56f",
+      "name": "Legal Last Name",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Legal Last Name",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Legal Last Name"
+    },
+    {
+      "id": "field_d96b69fc",
+      "name": "Hourly Rate - Amount",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Hourly Rate - Amount",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Hourly Rate - Amount"
+    },
+    {
+      "id": "field_affb5cb8",
+      "name": "Company Code",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Company",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Company"
+    },
+    {
+      "id": "field_fec7806c",
+      "name": "Collective Agreement",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Collective Agreement",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Collective Agreement"
+    },
+    {
+      "id": "field_04a63b7d",
+      "name": "Workday Position ID",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Position ID",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Position ID"
+    },
+    {
+      "id": "field_60a2499c",
+      "name": "Worker Active",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Worker Active",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Worker Active"
+    },
+    {
+      "id": "field_6f242232",
+      "name": "Exempt",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Exempt",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Exempt"
+    },
+    {
+      "id": "field_11214b51",
+      "name": "Plan Type",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Plan Type",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Plan Type"
+    },
+    {
+      "id": "field_2bb399cb",
+      "name": "Hourly Rate - Currency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Hourly Rate - Currency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Hourly Rate - Currency"
+    },
+    {
+      "id": "field_8ac7f4e3",
+      "name": "Local Currency - Wage Weekly",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Local Currency - Wage Weekly",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Local Currency - Wage Weekly"
+    },
+    {
+      "id": "field_a7482151",
+      "name": "DCL Qualifications",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "DCL Qualifications",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / DCL Qualifications"
+    },
+    {
+      "id": "field_cef52183",
+      "name": "Management Level",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Management Level",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Management Level"
+    },
+    {
+      "id": "field_000e8d3e",
+      "name": "Total Base Pay - Currency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "total Base Pay - Currency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / total Base Pay - Currency"
+    },
+    {
+      "id": "field_4bfc7de1",
+      "name": "Personnel Number",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "SAP PERNR",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / SAP PERNR"
+    },
+    {
+      "id": "field_a6006adb",
+      "name": "WD Employee ID",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Employee ID",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Employee ID"
+    },
+    {
+      "id": "field_5ef3c309",
+      "name": "Location Address - Country / Region",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Location Address - Country / Region",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Location Address - Country / Region"
+    },
+    {
+      "id": "field_f7549f36",
+      "name": "Legal First Name",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Legal First Name",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Legal First Name"
+    },
+    {
+      "id": "field_22bfc61c",
+      "name": "Employee Type",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Employee Type",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Employee Type"
+    },
+    {
+      "id": "field_37425da2",
+      "name": "Primary Compensation Basis - Currency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Primary Compensation Basis - Currency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Primary Compensation Basis - Currency"
+    },
+    {
+      "id": "field_12878456",
+      "name": "Primary Compensation Basis - Amount",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Primary Compensation Basis - Amount",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Primary Compensation Basis - Amount"
+    },
+    {
+      "id": "field_db3c35ec",
+      "name": "CF_LRV_Personnel Area Code",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "CF_LRV_Personnel Area Code",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / CF_LRV_Personnel Area Code"
+    },
+    {
+      "id": "field_cddf069f",
+      "name": "CF_LRV_Employee Contract Type",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "CF_LRV_Employee Contract Type",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / CF_LRV_Employee Contract Type"
+    },
+    {
+      "id": "field_3e48432e",
+      "name": "National ID",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "National ID",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / National ID"
+    },
+    {
+      "id": "field_11eb0623",
+      "name": "Local_Currency_Salary_Monthly",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Local_Currency_Salary_Monthly",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Local_Currency_Salary_Monthly"
+    },
+    {
+      "id": "field_5c00817b",
+      "name": "Worker has Additional Jobs",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Worker has Additional Jobs",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Worker has Additional Jobs"
+    },
+    {
+      "id": "field_d7f12000",
+      "name": "Total Base Pay Annualized in Reporting Currency - Currency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "total Base Pay Annualized in Reporting Currency - Currency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / total Base Pay Annualized in Reporting Currency - Currency"
+    },
+    {
+      "id": "field_43533042",
+      "name": "Frequency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Frequency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Frequency"
+    },
+    {
+      "id": "field_ee24f7fc",
+      "name": "Assignment",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "Assignment",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / Assignment"
+    },
+    {
+      "id": "field_987be6d5",
+      "name": "CF - CC total Base Pay - Amount Local Currency",
+      "type": "Source",
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "sourceAlias": "wd.INT2128a",
+      "rawFieldName": "CF - CC total Base Pay - Amount Local Currency",
+      "description": "[Maseke_Audit_001] - Worker Currency Audit / CF - CC total Base Pay - Amount Local Currency"
+    }
+  ],
+  "displayFields": [
+    {
+      "sourceKey": "wd.INT2128a",
+      "sourceFile": "[Maseke_Audit_001] - Worker Currency Audit",
+      "fieldName": "Assignment",
+      "displayed": true,
+      "order": 0
+    }
+  ],
+  "steps": [
+    {
+      "id": "reference_source_bdc816d3",
+      "enabled": true,
+      "autoGeneratedReference": true,
+      "locked": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 1,
+      "title": "Reference wd.INT2128a",
+      "type": "source",
+      "step_type": "reference_source",
+      "source": "wd.INT2128a",
+      "field": "",
+      "action": "",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "conditions": [],
+      "params": {
+        "source_file": "wd.INT2128a",
+        "source_alias": "wd.INT2128a"
+      }
+    },
+    {
+      "id": "step_2b84fd6e",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 2,
+      "title": "IF / THEN",
+      "type": "if",
+      "step_type": "if_then",
+      "source": "wd.INT2128a",
+      "field": "",
+      "action": "",
+      "notes": "",
+      "conditions": [
+        {
+          "id": "cond_0f4d2137",
+          "field": "Primary Compensation Basis - Currency",
+          "operator": "is equal to",
+          "value": "3"
+        }
+      ],
+      "params": {
+        "source_file": "wd.INT2128a",
+        "source_alias": "wd.INT2128a",
+        "conditions_json": "[{\"id\":\"cond_0f4d2137\",\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"[Maseke_Audit_001] - Worker Currency Audit\",\"sourceAlias\":\"wd.INT2128a\",\"fieldName\":\"Primary Compensation Basis - Currency\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"3\",\"compareSourceFile\":\"[Maseke_Audit_001] - Worker Currency Audit\",\"compareSourceAlias\":\"wd.INT2128a\",\"compareFieldName\":\"\",\"expression\":\"\",\"compareMathJson\":\"\"}]",
+        "then_action_type": "do_not_display",
+        "then_action": "Do not display matching records",
+        "then_value_source_file": "wd.INT2128a"
+      }
+    }
+  ],
+  "assignments": {
+    "assigned": [
+      {
+        "id": "6a7b5831c4db7ca87d40b5df",
+        "username": "jonah-angell",
+        "fullName": "Jonah Angell",
+        "email": "",
+        "avatar": "https://img.studioshare.wds.io/uYmkoamxE9BnQ1aipWE49fzVSv5vYZTvwIm3jq__-AM/rs:fill-down:400:400/czM6Ly9zcG4tc3R1ZGlvc2hhcmUtcHJkLXVzLXdlc3QtMi1pbWdwcm94eS9jb3JlLzZhN2I1ODMxYzRkYjdjYTg3ZDQwYjVkZS5qcGVn.jpeg"
+      }
+    ],
+    "backup": [
+      {
+        "id": "6a7b5831c4db7ca87d40b5df",
+        "username": "jonah-angell",
+        "fullName": "Jonah Angell",
+        "email": "",
+        "avatar": "https://img.studioshare.wds.io/uYmkoamxE9BnQ1aipWE49fzVSv5vYZTvwIm3jq__-AM/rs:fill-down:400:400/czM6Ly9zcG4tc3R1ZGlvc2hhcmUtcHJkLXVzLXdlc3QtMi1pbWdwcm94eS9jb3JlLzZhN2I1ODMxYzRkYjdjYTg3ZDQwYjVkZS5qcGVn.jpeg"
+      }
+    ],
+    "developer": [
+      {
+        "id": "6a7b5831c4db7ca87d40b5df",
+        "username": "jonah-angell",
+        "fullName": "Jonah Angell",
+        "email": "",
+        "avatar": "https://img.studioshare.wds.io/uYmkoamxE9BnQ1aipWE49fzVSv5vYZTvwIm3jq__-AM/rs:fill-down:400:400/czM6Ly9zcG4tc3R1ZGlvc2hhcmUtcHJkLXVzLXdlc3QtMi1pbWdwcm94eS9jb3JlLzZhN2I1ODMxYzRkYjdjYTg3ZDQwYjVkZS5qcGVn.jpeg"
+      }
+    ]
+  }
+}

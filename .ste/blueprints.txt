@@ -1,0 +1,10 @@
+core/contributing
+core/design-foundations
+core/security
+patterns/postgres
+patterns/react-composition
+patterns/zod-validation
+products/studioshare-launch
+stacks/nextjs
+stacks/react
+stacks/typescript

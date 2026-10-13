@@ -1,0 +1,29 @@
+{
+  "capturedAt": "2026-09-10T14:11:19.710Z",
+  "request": {
+    "method": "GET",
+    "path": "/api/me"
+  },
+  "response": {
+    "status": 200,
+    "ok": true,
+    "roles": [
+      "atlas-admin-team",
+      "atlas-align-admin",
+      "disney-employees",
+      "hris-infrastructure",
+      "public"
+    ],
+    "capabilities": {
+      "canReplaceSourceLibrary": false
+    },
+    "access": {
+      "canRead": true,
+      "canCreate": true,
+      "canEdit": true,
+      "canRestore": true,
+      "canArchive": true,
+      "canManageDeletedAudits": false
+    }
+  }
+}

@@ -1,0 +1,710 @@
+diff --git a/.dockerignore.txt b/.dockerignore.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..91c660a0616bcc2ead41a5283f1407387819b1de
+--- /dev/null
++++ b/.dockerignore.txt
+@@ -0,0 +1,7 @@
++node_modules
++.env
++.git
++.launch/config
++test
++README.md
++logs/
+\ No newline at end of file
+diff --git a/.launch/opa/authz.rego.txt b/.launch/opa/authz.rego.txt
+index ceffc1610f5980b42fa1cc6ce2053aafa299a2cc..e63a1ac52d82cc2d58d9d06e13d31d4ae09f963c 100644
+--- a/.launch/opa/authz.rego.txt
++++ b/.launch/opa/authz.rego.txt
+@@ -9,7 +9,6 @@ allow if {
+ 
+ allow if {
+   input.user.authenticated == true
+-  input.request.method == "GET"
+   not startswith(input.request.path, "/api/admin/")
+ }
+ 
+diff --git a/Dockerfile b/Dockerfile
+index 40ebb7a5a4499915a32cd6b68bc156d31f985857..86a15f21b7b7a2f5532592c126133bbb72ea7dd0 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -24,10 +24,9 @@ COPY js ./js
+ COPY vendor ./vendor
+ COPY tutorials ./tutorials
+ 
+-# Repository-backed audit and supporting catalogs
+-COPY audit-index.json ./
+-COPY audits ./audits
++# Supporting source catalogs
+ COPY catalogs ./catalogs
++COPY logic_phrase_catalog.json ./
+ 
+ ENV NODE_ENV=production
+ EXPOSE 8080
+diff --git a/Dockerfile.txt b/Dockerfile.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..40ebb7a5a4499915a32cd6b68bc156d31f985857
+--- /dev/null
++++ b/Dockerfile.txt
+@@ -0,0 +1,34 @@
++FROM node:22-alpine AS dependencies
++
++WORKDIR /app
++
++COPY package*.json ./
++RUN npm install --omit=dev
++
++FROM node:22-alpine AS runtime
++WORKDIR /app
++
++RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
++
++COPY --from=dependencies /app/node_modules ./node_modules
++
++# Server and package metadata
++COPY package.json server.js ./
++
++# Server-side source
++COPY src ./src
++
++# ATLAS Align browser application
++COPY index.html styles.css ./
++COPY js ./js
++COPY vendor ./vendor
++COPY tutorials ./tutorials
++
++# Repository-backed audit and supporting catalogs
++COPY audit-index.json ./
++COPY audits ./audits
++COPY catalogs ./catalogs
++
++ENV NODE_ENV=production
++EXPOSE 8080
++CMD ["node", "server.js"]
+diff --git a/index.html b/index.html
+index 0066436061e60064b2c115ed097c24dc93411f53..892a51834a890b596a5d96bc5efaa859b14d5a67 100644
+--- a/index.html
++++ b/index.html
+@@ -72,10 +72,10 @@
+     <div class="content">
+       <section class="page active" id="page-my-audits" data-page="my-audits">
+         <h1>My Audits</h1>
+-        <div class="subtitle">Audits available from the shared database, repository fallback, and workbook imports.</div>
++        <div class="subtitle">Audits available from your repo library, browser saves, and workbook imports.</div>
+         <div class="grid cards">
+-          <div class="card metric-card"><div class="small">Repo audits</div><div class="metric" id="metricRepoAudits">--</div></div>
+-          <div class="card metric-card"><div class="small">Database audits</div><div class="metric" id="metricSavedAudits">--</div></div>
++          
++          <div class="card metric-card"><div class="small">Saved audits</div><div class="metric" id="metricSavedAudits">--</div></div>
+         </div>
+ 
+         <div class="card library-card">
+@@ -132,7 +132,7 @@
+                   Refresh Library
+               </button>
+           </div>
+-          <p id="repoLibraryStatus" class="hint">Repo JSON library has not loaded yet.</p>
++          <p id="repoLibraryStatus" class="hint">Database audit library has not loaded yet.</p>
+         </div>
+       </section>
+ 
+@@ -140,17 +140,17 @@
+         <h1>Group Landing Page</h1>
+         <div class="subtitle">Portfolio-style view for the audit documentation library.</div>
+         <div class="grid cards"><div class="card metric-card"><div class="small">Source files</div><div class="metric" id="metricSourceFiles">--</div></div><div class="card metric-card"><div class="small">Vanity labels</div><div class="metric" id="metricVanityLabels">--</div></div><div class="card metric-card"><div class="small">Source aliases</div><div class="metric" id="metricSourceAliases">--</div></div><div class="card metric-card"><div class="small">Validation</div><div class="metric">Live</div></div></div>
+-        <div class="layout2"><section class="card"><div class="section-title"><strong>Current audit snapshot</strong><button class="btn secondary small" type="button" onclick="showSection('overview')">Open Overview</button></div><div id="groupAuditSnapshot" class="snapshot-list"></div></section><section class="card"><strong>Recently active local audits</strong><div id="groupSavedAuditList" class="package-list"><p class="hint">Saved audits will appear here after local saves are loaded.</p></div></section></div>
++        <div class="layout2"><section class="card"><div class="section-title"><strong>Current audit snapshot</strong><button class="btn secondary small" type="button" onclick="showSection('overview')">Open Overview</button></div><div id="groupAuditSnapshot" class="snapshot-list"></div></section><section class="card"><strong>Recently updated database audits</strong><div id="groupSavedAuditList" class="package-list"><p class="hint">Database audits will appear here after loading.</p></div></section></div>
+       </section>
+ 
+       <section class="page" id="page-overview" data-page="overview">
+         <h1>Audit Overview</h1>
+-        <div class="subtitle">Define the audit, load saved/repo work, and manage the active flow.</div>
++        <div class="subtitle">Define the audit, load database work, and manage the active flow.</div>
+         <div class="layout2">
+           <section class="card">
+             <div class="section-title"><strong>Audit setup</strong><span class="badge blue">Current Audit</span></div>
+             <div class="toolbar">
+-              <button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button><button id="auditVersionHistoryBtn" class="btn secondary small" type="button">Version History</button><span id="auditRevisionBadge" class="badge blue">Unsaved</span>
++              <button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button>
+             </div>
+             <label>
+               Audit Name
+@@ -213,7 +213,7 @@
+                             type="button"
+                             title="Switch to vanity labels"
+                             aria-label="Toggle field display mode">Aa</button>
+-                    <button id="stepVersionHistoryBtn" class="btn secondary small" type="button">Selected Step History</button><button id="addStepBtn" class="btn primary small new-rule-menu-button" type="button" aria-haspopup="menu" aria-expanded="false">+ New Rule</button>
++                    <button id="addStepBtn" class="btn primary small new-rule-menu-button" type="button" aria-haspopup="menu" aria-expanded="false">+ New Rule</button>
+                   </div>
+               </div>
+               <div id="stepsList" class="steps-workspace logic-list"></div>
+@@ -252,14 +252,14 @@
+ 
+       <section class="page" id="page-save" data-page="save">
+         <h1>Publication Preview</h1>
+-        <div class="subtitle">Save locally, export current requirements, or package saved audit bundles.</div>
++        <div class="subtitle">Save to the database, export current requirements, or import audit JSON into the database.</div>
+         <div class="layout2">
+           <section class="card" id="savePanel">
+             <div class="section-title"><strong>Save / Export</strong><button id="saveTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Save / Export tutorial" aria-label="Save / Export tutorial" data-start-tutorial="saveExport">?</button></div>
+-            <p class="hint">Save audits locally, export the current audit, or export/import saved audit bundles.</p>
+-            <button id="saveFlowBtn" class="btn primary full" type="button">Save Audit to Database</button>
+-            <label>Load Database Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
+-            <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Database Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Archive Database Audit</button></div>
++            <p class="hint">Save audits to PostgreSQL, export the current audit, or import JSON audits into PostgreSQL. IndexedDB is used only for crash recovery.</p>
++            <button id="saveFlowBtn" class="btn primary full" type="button">Save Current Audit Locally</button>
++            <label>Load Saved Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
++            <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Saved Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Delete Saved Audit</button></div>
+             <p id="saveStatus" class="hint">No saved audit selected.</p><p id="autosaveStatus" class="hint">Autosave restores your last local draft when possible.</p><button id="clearAutosaveBtn" class="btn secondary full" type="button">Clear Autosaved Draft</button><button id="resetLocalDataBtn" class="btn danger full" type="button">Clear All Saved Data</button>
+           </section>
+           <section class="card">
+@@ -271,8 +271,8 @@
+             <div class="package"><span>Confluence HTML</span><button id="downloadHtmlBtn" class="btn secondary small" type="button">Download HTML</button></div>
+             <div class="package"><span>Clipboard HTML</span><button id="copyHtmlBtn" class="btn secondary small" type="button">Copy HTML</button></div>
+             <div class="package"><span>Markdown</span><button id="copyMarkdownBtn" class="btn secondary small" type="button">Copy Markdown</button></div>
+-            <div class="section-title package-heading"><strong>Database Audit Bundle</strong></div>
+-            <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export All Saved Audits</button><label class="btn secondary small import-label">Import Saved Audits<input id="importAllFile" type="file" accept=".json"></label></div>
++            <div class="section-title package-heading"><strong>Database Audit Transfer</strong></div>
++            <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export Database Audit Index</button><label class="btn secondary small import-label">Import Audit JSON to Database<input id="importAllFile" type="file" accept=".json"></label></div><div id="auditImportSummary" class="audit-import-summary hint" role="status" aria-live="polite"></div>
+           </section>
+         </div>
+       </section>
+@@ -305,6 +305,7 @@
+ <script src="./js/17-source-database.js"></script>
+ <script src="./js/18-audit-database.js"></script>
+ <script src="./js/19-audit-version-history.js"></script>
++<script src="./js/20-database-only-audits.js"></script>
+ <script src="./js/06-events-bootstrap.js"></script>
+ </body>
+ </html>
+diff --git a/js/04-persistence.js b/js/04-persistence.js
+index de3e9540a4567b417c13aa439a92219d538e039f..8f07ad2772e61fce26cf47b39d14eb2e683d657f 100644
+--- a/js/04-persistence.js
++++ b/js/04-persistence.js
+@@ -355,21 +355,24 @@ async function resetLocalAppData() {
+ }
+ 
+ 
+-// Durable audit operations now use PostgreSQL; IndexedDB remains autosave/crash recovery only.
+-refreshSaved = async function refreshSavedDatabaseAudits() {
+-  if (typeof atlasRefreshDatabaseAudits === 'function') await atlasRefreshDatabaseAudits();
+-  state.savedFlows = (state.databaseAudits || []).map(audit => ({ id:audit.id, name:audit.name, updatedAt:audit.updatedAt, revisionNumber:audit.currentRevisionNumber }));
+-  if (e.flowSelect) e.flowSelect.innerHTML = state.savedFlows.length ? state.savedFlows.map(flow => `<option value="${esc(flow.id)}">${esc(flow.name)} — revision ${flow.revisionNumber}</option>`).join('') : '<option value="">No database audits yet</option>';
+-  if (e.saveStatus) e.saveStatus.textContent = `${state.savedFlows.length} audit${state.savedFlows.length===1?'':'s'} in the shared database.`;
++
++
++// PostgreSQL is the only durable audit store. IndexedDB remains crash recovery only.
++refreshSaved = async function refreshDatabaseAudits() {
++  await atlasRefreshDatabaseAudits?.();
++  state.savedFlows = [];
++  if (e.flowSelect) e.flowSelect.innerHTML = (state.databaseAudits || []).length ? state.databaseAudits.map((audit) => `<option value="${esc(audit.id)}">${esc(audit.name)} — revision ${audit.currentRevisionNumber || 0}</option>`).join('') : '<option value="">No database audits yet</option>';
++  if (e.saveStatus) e.saveStatus.textContent = `${(state.databaseAudits || []).length} audit${(state.databaseAudits || []).length === 1 ? '' : 's'} in the shared database.`;
+ };
+-saveFlow = async function saveFlowDatabase(){ return atlasSaveCurrentAudit?.(); };
+-saveCurrentAuditForSwitch = async function saveCurrentAuditForSwitchDatabase(){ return atlasSaveCurrentAudit?.('Saved before switching audits'); };
+-loadFlow = async function loadFlowDatabase(){ const id=e.flowSelect?.value;if(!id)return status('Select a database audit first.','warn');return atlasLoadDatabaseAudit(id); };
+-deleteFlow = async function archiveFlowDatabase(){ return atlasArchiveCurrentAudit?.(); };
+-importAll = async function importAllDatabase(file){ const json=JSON.parse(await file.text());const flows=Array.isArray(json.flows)?json.flows:(Array.isArray(json)?json:[{audit:json}]);for(const flow of flows)await atlasImportAuditDocument(flow.audit||flow,'Imported audit bundle');await refreshSaved();status(`Imported ${flows.length} audit(s) into the database.`,'ok'); };
+-const atlasLocalSaveAutosaveBase = saveAutosave;
+-saveAutosave = async function saveAutosaveWithDatabaseBase(){
+-  await atlasLocalSaveAutosaveBase();
++saveFlow = async function saveDatabaseAudit() { return atlasSaveCurrentAudit?.(); };
++saveCurrentAuditForSwitch = async function saveDatabaseAuditForSwitch() { return atlasSaveCurrentAudit?.('Saved before switching audits'); };
++loadFlow = async function loadDatabaseAuditFromSelect() { const id=e.flowSelect?.value; if(!id)return status('Select a database audit first.','warn'); return atlasLoadDatabaseAudit(id); };
++deleteFlow = async function archiveDatabaseAudit() { return atlasArchiveCurrentAudit?.(); };
++exportAll = async function exportDatabaseAuditIndex() { const payload=await atlasAuditApi('/api/audits'); downloadJson(`atlas_align_database_audit_index_${today()}.json`, payload); };
++importAll = async function importJsonAuditsToDatabase(file) { return atlasImportAuditJsonFile(file); };
++const atlasLocalAutosaveBase = saveAutosave;
++saveAutosave = async function saveRecoveryDraftOnly() {
++  await atlasLocalAutosaveBase();
+   const record=await dbGet(ATLAS_AUTOSAVE_ID);
+   if(record){record.databaseAuditId=state.auditPersistence?.auditId||null;record.baseRevisionId=state.auditPersistence?.revisionId||null;await dbPut(record);}
+ };
+diff --git a/js/06-events-bootstrap.js b/js/06-events-bootstrap.js
+index a7fb8a4ba0cd2af39d03c36625fb385b7f9aec56..d90525aea5cdb2ac95c1d5961bbe8c3db4e37bf1 100644
+--- a/js/06-events-bootstrap.js
++++ b/js/06-events-bootstrap.js
+@@ -135,7 +135,7 @@ function bindEvents() {
+   on('previewStyle', 'change', () => atlasRequestRender?.({ preview: true }));
+   on('addStepBtn', 'click', (event) => atlasToggleNewRuleTypeMenu?.(event));
+   on('loadLibraryAuditBtn', 'click', () => loadSelectedLibraryAudit().catch((err) => status(`Audit library load failed: ${err.message}`, 'bad')));
+-  on('refreshLibraryBtn', 'click', () => loadRepoLibrary().catch((err) => status(`Audit library refresh failed: ${err.message}`, 'bad')));
++  on('refreshLibraryBtn', 'click', () => loadRepoLibrary().catch((err) => status(`Database audit refresh failed: ${err.message}`, 'bad')));
+   on('saveFlowBtn', 'click', () => saveFlow().catch((err) => status(err.message, 'bad')));
+   if (!document.__atlasSaveShortcutBound) {
+     document.addEventListener('keydown', (event) => {
+@@ -199,28 +199,22 @@ function bindEvents() {
+ 
+   const importAllFile = $('importAllFile');
+   if (importAllFile) {
+-    importAllFile.onchange = (event) => {
++    importAllFile.onchange = async (event) => {
+       const file = event.target.files[0];
+-      if (file) importAll(file).catch((err) => status(err.message, 'bad'));
+-      event.target.value = '';
++      try { if (file) await atlasImportAuditJsonFile(file); } catch (err) { status(`Audit import failed: ${err.message}`, 'bad'); } finally { event.target.value = ''; }
+     };
+   }
+   const importCurrentFile = $('importCurrentFile');
+   if (importCurrentFile) {
+     importCurrentFile.onchange = async (event) => {
+       const file = event.target.files[0];
+-      if (!file) return;
+-      state.audit = JSON.parse(await file.text());
+-      state.audit.id = state.audit.id || uid('audit');
+-      state.activeAuditValue = `draft:${state.audit.id}`;
+-      markAuditSelected();
+-      syncAutoReferenceSteps?.();
+-      renderAll();
+-      showSection('overview');
+-      scheduleAutosave();
+-      updateActiveAuditBaseline();
+-      renderActiveAuditSelect?.();
+-      event.target.value = '';
++      try {
++        if (!file) return;
++        const result = await atlasImportAuditJsonFile(file);
++        const first = result.imported?.[0];
++        if (first?.audit?.id) { await atlasLoadDatabaseAudit(first.audit.id); showSection('overview'); }
++      } catch (err) { status(`Audit import failed: ${err.message}`, 'bad'); }
++      finally { event.target.value = ''; }
+     };
+   }
+ 
+diff --git a/js/11-repo-library.js b/js/11-repo-library.js
+index 5e0e251073fcd6810cb48842dacace8d7380bb1d..99e1508a8247cd2a50e5211c8b9ae588bc03eedc 100644
+--- a/js/11-repo-library.js
++++ b/js/11-repo-library.js
+@@ -140,14 +140,14 @@ async function loadRepoLibrary() {
+   repoLibraryState.loaded = false;
+   repoLibraryState.warnings = [];
+   repoLibraryState.sourceFileCache.clear();
+-  const index = await fetchJsonGracefully('audit-index.json', 'audit-index.json');
+-  repoLibraryState.index = index;
+-  repoLibraryState.audits = Array.isArray(index?.audits) ? index.audits : [];
+-  const vanity = await fetchJsonGracefully(index?.catalogs?.vanityLabels || 'catalogs/vanity-labels.json', 'vanity labels catalog');
+-  const aliases = await fetchJsonGracefully(index?.catalogs?.sourceAliases || 'catalogs/source-table-aliases.json', 'source aliases catalog');
++  repoLibraryState.index = null;
++  repoLibraryState.audits = [];
++  const vanity = await fetchJsonGracefully('catalogs/vanity-labels.json', 'vanity labels catalog');
++  const aliases = await fetchJsonGracefully('catalogs/source-table-aliases.json', 'source aliases catalog');
+   repoLibraryState.vanityLabels = Array.isArray(vanity?.items) ? vanity.items : (Array.isArray(vanity) ? vanity : []);
+   repoLibraryState.sourceAliases = Array.isArray(aliases?.items) ? aliases.items : (Array.isArray(aliases) ? aliases : []);
+-  await loadSourceFileLibrary(index || {});
++  await atlasRefreshDatabaseAudits?.();
++  await loadSourceFileLibrary({});
+   repoLibraryState.loaded = true;
+   state.repoLibrary = repoLibraryState;
+   renderAuditLibrarySelect?.();
+@@ -157,8 +157,6 @@ async function loadRepoLibrary() {
+   renderSourceFieldBrowser?.();
+   renderValidationPanel?.();
+ }
+-
+-
+ // -----------------------------------------------------------------------------
+ // Library rendering
+ // -----------------------------------------------------------------------------
+@@ -173,50 +171,26 @@ function renderRepoLibraryStatus() {
+     return;
+   }
+   const warningText = repoLibraryState.warnings.length ? ` ${repoLibraryState.warnings.length} warning(s).` : '';
+-  target.textContent = `Loaded ${repoLibraryState.audits.length} repo audit(s) and ${repoLibraryState.sourceFiles.length} database source file(s).${warningText}`;
++  target.textContent = `Loaded ${(state.databaseAudits || []).length} database audit(s) and ${repoLibraryState.sourceFiles.length} database source file(s).${warningText}`;
+ }
+ 
+ // Audit library rendering is owned by 15-visual-ui-upgrades.js.
+ // Shared option data is exposed through getAuditLibraryItems().
+ function getAuditLibraryItems() {
+-  const items = [];
+-
+-  (repoLibraryState?.audits || []).forEach((audit) => {
+-    items.push({
+-      value: `repo:${audit.id}`,
+-      title: audit.name || audit.id,
+-      detail: audit.description || audit.file || '',
+-      kind: 'Repo Audit',
+-      group: 'Repo Audits',
+-    });
+-  });
+-
+-  (state.savedFlows || []).forEach((flow) => {
+-    items.push({
+-      value: `local:${flow.id}`,
+-      title: flow.name || 'Saved audit',
+-      detail: flow.updatedAt ? `Saved ${new Date(flow.updatedAt).toLocaleString()}` : 'Saved in this browser',
+-      kind: 'Saved Audit',
+-      group: 'Local Saved Audits',
+-    });
+-  });
+-
++  const items = (state.databaseAudits || []).map((audit) => ({
++    value: `database:${audit.id}`,
++    title: audit.name || audit.id,
++    detail: `Revision ${audit.currentRevisionNumber || 0}${audit.updatedByUsername ? ` · ${audit.updatedByUsername}` : ''}`,
++    kind: 'Database Audit',
++    group: 'Database Audits'
++  }));
+   if (typeof workbookState !== 'undefined' && workbookState.loaded) {
+-    (workbookState.auditSheets || []).forEach((name) => {
+-      items.push({
+-        value: `workbook:${name}`,
+-        title: name,
+-        detail: 'Workbook audit sheet',
+-        kind: 'Workbook Import',
+-        group: 'Workbook Imports',
+-      });
+-    });
++    (workbookState.auditSheets || []).forEach((name) => items.push({
++      value: `workbook:${name}`, title: name, detail: 'Workbook audit sheet', kind: 'Workbook Import', group: 'Workbook Imports'
++    }));
+   }
+-
+   return items;
+ }
+-
+-
+ // -----------------------------------------------------------------------------
+ // Audit load normalization
+ // -----------------------------------------------------------------------------
+@@ -245,26 +219,7 @@ function normalizeLoadedAudit(audit, sourceKind = 'unknown') {
+   return normalized;
+ }
+ 
+-/**
+- * Loads a repository audit by id.
+- * @param {any} id - Element id or record id to look up.
+- */
+-async function loadRepoAuditById(id) {
+-  const entry = repoLibraryState.audits.find((audit) => audit.id === id);
+-  if (!entry) return status('Repo audit was not found in audit-index.json.', 'warn');
+-  const audit = await fetchJsonGracefully(entry.file, entry.name || entry.id);
+-  if (!audit) return status(`Could not load repo audit ${entry.name || id}.`, 'bad');
+-  state.audit = normalizeLoadedAudit(audit, 'repo');
+-  state.selectedStepId = state.audit.steps[0]?.id || null;
+-  state.activeAuditValue = `repo:${id}`;
+-  markAuditSelected();
+-  renderAll();
+-  showSection('overview');
+-  scheduleAutosave();
+-  status(`Loaded repo audit: ${state.audit.name}`, 'ok');
+-  updateActiveAuditBaseline();
+-  renderActiveAuditSelect?.();
+-}
++
+ 
+ /**
+  * Loads the selected audit from repo, local storage, or workbook.
+@@ -272,27 +227,12 @@ async function loadRepoAuditById(id) {
+ async function loadSelectedLibraryAudit() {
+   const value = $('auditLibrarySelect')?.value || '';
+   if (!value) return status('Select an audit from the Audit Library first.', 'warn');
+-  const [kind, id] = value.split(':');
+-  if (kind === 'repo') return loadRepoAuditById(id);
+-  if (kind === 'local') {
+-    const record = await dbGet(id);
+-    if (!record?.audit) return status('Local saved audit could not be found.', 'warn');
+-    state.audit = normalizeLoadedAudit(record.audit, 'local');
+-    state.selectedStepId = state.audit.steps[0]?.id || null;
+-    state.activeAuditValue = `local:${id}`;
+-    markAuditSelected();
+-    renderAll();
+-    showSection('overview');
+-    scheduleAutosave();
+-    status(`Loaded local saved audit: ${record.name}`, 'ok');
+-    updateActiveAuditBaseline();
+-    renderActiveAuditSelect?.();
+-    return;
+-  }
++  const [kind, ...idParts] = value.split(':');
++  const id = idParts.join(':');
++  if (kind === 'database') return atlasLoadDatabaseAudit(id);
+   if (kind === 'workbook') return loadAuditFromWorkbook(id);
++  return status('Only database audits can be loaded from the Audit Library.', 'warn');
+ }
+-
+-
+ /**
+  * Asks how to handle unsaved changes before switching audits.
+  */
+@@ -312,60 +252,20 @@ async function confirmAuditSwitchSaveBehavior() {
+  * @param {any} value - Value to process or assign.
+  */
+ async function switchActiveAudit(value) {
+-  if (state.auditSwitchInProgress) return;
+-  const select = $('activeAuditSelect');
+-  if (!value) {
+-    renderActiveAuditSelect?.();
+-    return;
+-  }
+-  if (value === state.activeAuditValue) {
+-    renderActiveAuditSelect?.();
+-    return;
+-  }
+-  const previousValue = state.activeAuditValue;
++  if (state.auditSwitchInProgress || !value || value === state.activeAuditValue) return renderActiveAuditSelect?.();
+   const previousPage = document.querySelector('.page.active')?.dataset.page || localStorage.getItem('atlasAlignActiveSection') || 'my-audits';
++  capture?.();
++  const behavior = await confirmAuditSwitchSaveBehavior();
++  if (behavior === 'cancel') return renderActiveAuditSelect?.();
++  if (behavior === 'save' && !(await saveCurrentAuditForSwitch())) return renderActiveAuditSelect?.();
++  const [kind, ...idParts] = value.split(':');
++  const id = idParts.join(':');
+   state.auditSwitchInProgress = true;
+   try {
+-    capture?.();
+-    const behavior = await confirmAuditSwitchSaveBehavior();
+-    if (behavior === 'cancel') {
+-      if (select) select.value = previousValue;
+-      return;
+-    }
+-    if (behavior === 'save') {
+-      const saved = await saveCurrentAuditForSwitch();
+-      if (!saved) {
+-        if (select) select.value = previousValue;
+-        return;
+-      }
+-    }
+-    const [kind, ...idParts] = value.split(':');
+-    const id = idParts.join(':');
+-    if (kind === 'repo') {
+-      await loadRepoAuditById(id);
+-    } else if (kind === 'local') {
+-      const record = await dbGet(id);
+-      if (!record?.audit) {
+-        status('Local saved audit could not be found.', 'warn');
+-        if (select) select.value = previousValue;
+-        return;
+-      }
+-      state.audit = normalizeLoadedAudit(record.audit, 'local');
+-      state.selectedStepId = state.audit.steps[0]?.id || null;
+-      state.activeAuditValue = value;
+-      markAuditSelected();
+-      renderAll();
+-      showSection(previousPage);
+-      scheduleAutosave();
+-      status(`Loaded local saved audit: ${record.name}`, 'ok');
+-    } else if (kind === 'workbook') {
+-      loadAuditFromWorkbook(id);
+-    }
+-    state.activeAuditValue = state.activeAuditValue || value;
+-    updateActiveAuditBaseline();
++    if (kind === 'database') await atlasLoadDatabaseAudit(id);
++    else if (kind === 'workbook') await loadAuditFromWorkbook(id);
++    else return status('Only database and workbook audits can be selected.', 'warn');
+     showSection(previousPage);
+-    renderActiveAuditSelect?.();
+-    renderFlowNavControls?.();
+   } finally {
+     state.auditSwitchInProgress = false;
+     renderActiveAuditSelect?.();
+@@ -373,18 +273,3 @@ async function switchActiveAudit(value) {
+ }
+ 
+ 
+-// Database audits are primary; repository JSON audits remain a migration fallback.
+-const atlasRepoLoadBase = loadRepoLibrary;
+-loadRepoLibrary = async function loadHybridLibrary(){
+-  await atlasRefreshDatabaseAudits?.();
+-  await atlasRepoLoadBase();
+-};
+-const atlasGetAuditItemsBase = getAuditLibraryItems;
+-getAuditLibraryItems = function getHybridAuditLibraryItems(){
+-  const databaseItems=(state.databaseAudits||[]).map(audit=>({value:`database:${audit.id}`,title:audit.name||audit.id,detail:`Revision ${audit.currentRevisionNumber} · ${audit.updatedByUsername||''}`,kind:'Database Audit',group:'Database Audits'}));
+-  return [...databaseItems,...atlasGetAuditItemsBase()];
+-};
+-const atlasLoadSelectedBase = loadSelectedLibraryAudit;
+-loadSelectedLibraryAudit = async function loadSelectedHybridAudit(){const value=$('auditLibrarySelect')?.value||'';if(value.startsWith('database:'))return atlasLoadDatabaseAudit(value.slice(9));return atlasLoadSelectedBase();};
+-const atlasSwitchBase = switchActiveAudit;
+-switchActiveAudit = async function switchHybridAudit(value){if(String(value).startsWith('database:')){if(state.auditSwitchInProgress)return;const previousPage=document.querySelector('.page.active')?.dataset.page||'my-audits';capture?.();const behavior=await confirmAuditSwitchSaveBehavior();if(behavior==='cancel')return;if(behavior==='save'&&!(await saveCurrentAuditForSwitch()))return;state.auditSwitchInProgress=true;try{await atlasLoadDatabaseAudit(value.slice(9));showSection(previousPage);}finally{state.auditSwitchInProgress=false;renderActiveAuditSelect?.();}return;}return atlasSwitchBase(value);};
+diff --git a/js/16-page-shell.js b/js/16-page-shell.js
+index 1c7712a4ff7fe80b8517975f9cab6b5004a7268b..ce49b9a81848d2e50138db6f2c03eb69415a757e 100644
+--- a/js/16-page-shell.js
++++ b/js/16-page-shell.js
+@@ -392,11 +392,23 @@ renderActiveAuditSelect = function renderActiveAuditSelectFinal() {
+ };
+ 
+ 
+-const atlasTopbarAuditOptionsBase = topbarAuditOptions;
+-topbarAuditOptions = function topbarAuditOptionsWithDatabase(){
+-  const base=atlasTopbarAuditOptionsBase().filter(option=>option.group!=='Local Saved Audits');
+-  const database=(state.databaseAudits||[]).map(audit=>({group:'Database Audits',value:`database:${audit.id}`,label:`${audit.name||audit.id} · r${audit.currentRevisionNumber}`}));
+-  return [...database,...base];
++
++
++// Database-only audit selectors and metrics.
++topbarAuditOptions = function topbarDatabaseAuditOptions() {
++  const options = (state.databaseAudits || []).map((audit) => ({ group: 'Database Audits', value: `database:${audit.id}`, label: `${audit.name || audit.id} · r${audit.currentRevisionNumber || 0}` }));
++  if (typeof workbookState !== 'undefined' && workbookState.loaded) (workbookState.auditSheets || []).forEach((name) => options.push({ group: 'Workbook Imports', value: `workbook:${name}`, label: name }));
++  if (hasSelectedAudit() && String(state.activeAuditValue || '').startsWith('draft:')) options.push({ group: 'Current Draft', value: state.activeAuditValue, label: state.audit.name || 'Unsaved Draft' });
++  return options;
++};
++const atlasDatabaseMetricsBase = updateDashboardMetrics;
++updateDashboardMetrics = function updateDatabaseOnlyMetrics() {
++  atlasDatabaseMetricsBase();
++  setText('metricSavedAudits', (state.databaseAudits || []).length.toLocaleString());
++  setText('auditRevisionBadge', state.auditPersistence?.revisionNumber ? `Revision ${state.auditPersistence.revisionNumber}` : 'Unsaved');
++  const savedList = $('groupSavedAuditList');
++  if (savedList) {
++    const audits = (state.databaseAudits || []).slice(0, 6);
++    savedList.innerHTML = audits.length ? audits.map((audit) => `<div class="package"><span>${esc(audit.name || audit.id)}</span><small>${esc(audit.updatedAt ? new Date(audit.updatedAt).toLocaleString() : '')}</small></div>`).join('') : '<p class="hint">No database audits yet.</p>';
++  }
+ };
+-const atlasUpdateDashboardMetricsBase = updateDashboardMetrics;
+-updateDashboardMetrics = function updateDashboardMetricsWithDatabase(){ atlasUpdateDashboardMetricsBase(); setText('metricSavedAudits',(state.databaseAudits||[]).length.toLocaleString()); setText('auditRevisionBadge',state.auditPersistence?.revisionNumber?`Revision ${state.auditPersistence.revisionNumber}`:'Unsaved'); };
+diff --git a/js/18-audit-database.js b/js/18-audit-database.js
+index efdcc93b7d9a71f505e1ccbedf9e531955327fd0..da1f41f98217d2d74d5354b37ad3da2fafd9365a 100644
+--- a/js/18-audit-database.js
++++ b/js/18-audit-database.js
+@@ -36,9 +36,30 @@ async function atlasSaveCurrentAudit(changeSummary='') {
+     throw error;
+   } finally { state.auditPersistence.saving=false; }
+ }
+-async function atlasImportAuditDocument(document, summary='Imported JSON audit') {
+-  const payload=await atlasAuditApi('/api/audits/import',{method:'POST',body:JSON.stringify({audit:document,changeSummary:summary})});
+-  await atlasRefreshDatabaseAudits(); return payload;
++function atlasAuditDocumentsFromJson(json) {
++  const candidates = Array.isArray(json?.flows) ? json.flows : Array.isArray(json?.audits) ? json.audits : Array.isArray(json) ? json : [json];
++  return candidates.map((item) => item?.audit || item).filter((item) => item && typeof item === 'object' && !Array.isArray(item));
++}
++async function atlasImportAuditDocuments(documents, summary='Imported JSON audit') {
++  const normalized = documents.map((document) => normalizeLoadedAudit(document, 'database-import'));
++  const payload = await atlasAuditApi('/api/audits/import', { method:'POST', body:JSON.stringify({ audits:normalized, changeSummary:summary }) });
++  await atlasRefreshDatabaseAudits(); await refreshSaved?.(); renderAuditLibrarySelect?.(); renderActiveAuditSelect?.(); updateDashboardMetrics?.();
++  return payload;
++}
++async function atlasImportAuditDocument(document, summary='Imported JSON audit') { return atlasImportAuditDocuments([document], summary); }
++async function atlasImportAuditJsonFile(file) {
++  const json = JSON.parse(await file.text());
++  const documents = atlasAuditDocumentsFromJson(json);
++  if (!documents.length) throw new Error('The selected JSON file does not contain an audit or saved audit bundle.');
++  const result = await atlasImportAuditDocuments(documents, `Imported from ${file.name}`);
++  const summary = $('auditImportSummary');
++  const imported = result.imported?.length || 0;
++  const skipped = result.skipped?.length || 0;
++  const failed = result.failed?.length || 0;
++  if (summary) summary.textContent = `Import complete: ${imported} imported, ${skipped} unchanged, ${failed} failed.`;
++  if (failed) status(`Imported ${imported} audit(s); ${failed} failed. Review the import summary.`, 'warn');
++  else status(`Imported ${imported} audit(s) into the database.`, 'ok');
++  return result;
+ }
+ async function atlasArchiveCurrentAudit() {
+   if(!state.auditPersistence.revisionId) throw new Error('Save this audit before archiving it.');
+diff --git a/js/20-database-only-audits.js b/js/20-database-only-audits.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..0fdf0d7447814bd5d00e54f5f22fbd3db462e39f
+--- /dev/null
++++ b/js/20-database-only-audits.js
+@@ -0,0 +1,20 @@
++/** Final database-only audit library compatibility overrides. */
++if (typeof allAuditLibraryItems === 'function') {
++  allAuditLibraryItems = function allDatabaseAuditLibraryItems() {
++    const items = (state.databaseAudits || []).map((audit) => ({
++      value: `database:${audit.id}`,
++      title: audit.name || audit.id,
++      detail: `Revision ${audit.currentRevisionNumber || 0}${audit.updatedByUsername ? ` · ${audit.updatedByUsername}` : ''}`,
++      kind: 'Database Audit'
++    }));
++    if (typeof workbookState !== 'undefined' && workbookState.loaded) {
++      (workbookState.auditSheets || []).forEach((name) => items.push({
++        value: `workbook:${name}`,
++        title: name,
++        detail: 'Workbook audit sheet',
++        kind: 'Workbook Import'
++      }));
++    }
++    return typeof alphaSortItems === 'function' ? alphaSortItems(items, (item) => item.title) : items;
++  };
++}
+diff --git a/server.js b/server.js
+index eacef12f1c4e94e2b84eed891d2393dec8a098ae..2bd6fb5baacb45447427826a21ff24c90dbff887 100644
+--- a/server.js
++++ b/server.js
+@@ -6,7 +6,7 @@ import pg from 'pg';
+ import { CsvValidationError, replaceFieldLibrary } from './src/field-library.js';
+ import { FIELD_LIBRARY_COLUMNS, FIELD_LIBRARY_TABLE, quoteIdentifier } from './src/schema.js';
+ import { auditAccessForUser, requireAuditCapability } from './src/audit-authorization.js';
+-import { listAudits, getAudit, saveAudit, listAuditRevisions, getAuditRevision, restoreAuditRevision, listStepRevisions, getStepRevision, restoreStepRevision, archiveAudit } from './src/audit-repository.js';
++import { listAudits, getAudit, saveAudit, listAuditRevisions, getAuditRevision, restoreAuditRevision, listStepRevisions, getStepRevision, restoreStepRevision, archiveAudit, importAudit } from './src/audit-repository.js';
+ 
+ 
+ const { Pool } = pg;
+@@ -65,15 +65,6 @@ app.use('/catalogs', express.static(path.join(__dirname, 'catalogs'), {
+   dotfiles: 'deny'
+ }));
+ 
+-app.use('/audits', express.static(path.join(__dirname, 'audits'), {
+-  index: false,
+-  dotfiles: 'deny'
+-}));
+-
+-app.get('/audit-index.json', (_req, res) => {
+-  res.sendFile(path.join(__dirname, 'audit-index.json'));
+-});
+-
+ function cookieValue(request, name) {
+   const cookies = String(request.headers.cookie || '').split(';');
+   for (const cookie of cookies) {
+@@ -209,12 +200,18 @@ app.post('/api/audits', requireCurrentUser, requireAuditCapability('canCreate'),
+   } catch (error) { res.status(error.status || 500).json({ error:error.message, currentRevisionId:error.currentRevisionId }); }
+ });
+ app.post('/api/audits/import', requireCurrentUser, requireAuditCapability('canCreate'), async (req, res) => {
+-  try {
+-    const documents = Array.isArray(req.body.audits) ? req.body.audits : [req.body.audit];
+-    const imported=[];
+-    for (const document of documents) imported.push(await saveAudit(pool, { document, expectedRevisionId:null, user:req.studioshareUser, changeType:'import', changeSummary:req.body.changeSummary || 'Imported repository JSON audit' }));
+-    res.status(201).json({ imported });
+-  } catch (error) { res.status(error.status || 500).json({ error:error.message, currentRevisionId:error.currentRevisionId }); }
++  const documents = Array.isArray(req.body.audits) ? req.body.audits : [req.body.audit];
++  const imported = []; const skipped = []; const failed = [];
++  for (let index = 0; index < documents.length; index += 1) {
++    try {
++      const result = await importAudit(pool, { document: documents[index], user: req.studioshareUser, changeSummary: req.body.changeSummary || 'Imported JSON audit' });
++      if (result.status === 'unchanged') skipped.push(result); else imported.push(result);
++    } catch (error) {
++      failed.push({ index, auditId: documents[index]?.id || null, error: error.message });
++    }
++  }
++  const statusCode = failed.length && !imported.length && !skipped.length ? 400 : 201;
++  res.status(statusCode).json({ imported, skipped, failed });
+ });
+ app.get('/api/audits/:auditId', requireCurrentUser, requireAuditCapability('canRead'), async (req, res) => {
+   try { const result=await getAudit(pool, req.params.auditId); if (!result) return res.status(404).json({ error:'Audit not found.' }); res.json({ ...result, access:auditAccessForUser(req.studioshareUser,result.audit) }); }
+diff --git a/src/audit-repository.js b/src/audit-repository.js
+index b12b27e42996fd1ceb12329dc4a2b9e5cb009647..bc309ae62ac34079974879a80c5808c006132e53 100644
+--- a/src/audit-repository.js
++++ b/src/audit-repository.js
+@@ -15,7 +15,7 @@ export function documentHash(value) { return createHash('sha256').update(canonic
+ function userFields(user) {
+   return [user?.id || null, user?.username || 'unknown', user?.fullName || null, user?.email || null];
+ }
+-function validateAudit(document) {
++export function validateAudit(document) {
+   if (!document || typeof document !== 'object' || Array.isArray(document)) throw Object.assign(new Error('Audit document must be a JSON object.'), { status: 400 });
+   if (!String(document.id || '').trim()) throw Object.assign(new Error('Audit id is required.'), { status: 400 });
+   if (!String(document.name || '').trim()) throw Object.assign(new Error('Audit name is required.'), { status: 400 });
+@@ -181,3 +181,13 @@ export async function archiveAudit(pool, auditId, expectedRevisionId, user) {
+   if (!result.rowCount) { const error = new Error('This audit has changed or is already archived.'); error.status=409; throw error; }
+   return { id: auditId, archived: true };
+ }
++
++
++export async function importAudit(pool, { document, user, changeSummary = 'Imported JSON audit' }) {
++  const normalized = validateAudit(structuredClone(document));
++  const current = await getAudit(pool, normalized.id);
++  const incomingHash = documentHash(normalized);
++  if (current && documentHash(current.audit) === incomingHash) return { status:'unchanged', auditId:normalized.id, revision:current.revision };
++  const result = await saveAudit(pool, { document:normalized, expectedRevisionId:current?.revision?.id ?? null, user, changeType:'import', changeSummary });
++  return { status:'imported', ...result };
++}
+diff --git a/styles.css b/styles.css
+index aa03aee49e561a8d5af069c6753048cc78a876c7..65eeb0a5c1bf696c052c221dda6f751ccbb020be 100644
+--- a/styles.css
++++ b/styles.css
+@@ -4841,3 +4841,6 @@ Final layout contract
+ .audit-history-modal h2{margin:0}.audit-history-content{padding:1rem 1.2rem;overflow:auto}.revision-table,.revision-diff{width:100%;border-collapse:collapse}.revision-table th,.revision-table td,.revision-diff th,.revision-diff td{padding:.65rem;border:1px solid var(--border);text-align:left;vertical-align:top}.revision-table th,.revision-diff th{background:var(--surface2)}
+ .revision-json,.revision-diff pre{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;font:12px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace}.revision-warning{border-left:4px solid var(--warn);padding:1rem;background:var(--surface2)}
+ @media(max-width:760px){.audit-history-backdrop{padding:8px}.audit-history-modal{width:100%;max-height:96vh}.revision-table,.revision-diff{font-size:.8rem}}
++
++.audit-import-summary{margin-top:.75rem;padding:.65rem .75rem;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
++.audit-import-summary:empty{display:none}

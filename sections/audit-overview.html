@@ -1,0 +1,137 @@
+<section class="page" data-page="overview" id="page-overview">
+  <h1>Audit Overview</h1>
+  <div class="subtitle">
+    Define the audit, load saved/repo work, and manage the active flow.
+  </div>
+  <div class="layout2">
+    <section class="card">
+      <div class="section-title">
+        <strong>Audit setup</strong
+        ><span class="badge blue">Current Audit</span>
+      </div>
+      <div class="toolbar">
+        <button
+          class="btn secondary small"
+          id="duplicateAuditBtn"
+          type="button"
+        >
+          Duplicate Audit
+        </button>
+        <button
+          class="btn danger small"
+          hidden
+          id="deleteAuditBtn"
+          type="button"
+        >
+          Delete Audit
+        </button>
+      </div>
+      <label>
+        Audit Name
+        <input id="auditName" placeholder="Placeholder" />
+      </label>
+      <label>
+        Audit Description
+        <textarea
+          id="auditPurpose"
+          placeholder="Describe what this audit validates..."
+        >
+        </textarea>
+      </label>
+      <label>
+        Status
+        <select id="auditStatus">
+          <option value="Draft">Draft</option>
+          <option value="Requirement Gathering">Requirement Gathering</option>
+          <option value="Ready for Review">Ready for Review</option>
+          <option value="Complete">Complete</option>
+        </select>
+      </label>
+      <p
+        aria-live="polite"
+        class="hint audit-status-message"
+        id="auditStatusMessage"
+      ></p>
+    </section>
+    <section
+      class="card"
+      id="atlasWorkflowCard"
+      aria-labelledby="atlasWorkflowHeading"
+    >
+      <div class="section-title">
+        <strong id="atlasWorkflowHeading">Audit workflow</strong
+        ><button
+          class="btn secondary small"
+          id="atlasWorkflowRefresh"
+          type="button"
+        >
+          Refresh
+        </button>
+      </div>
+      <div id="atlasWorkflowCardBody">
+        <p class="hint">Loading workflow…</p>
+      </div>
+    </section>
+    <div id="atlasWorkflowDialogHost"></div>
+    <section class="card">
+      <div class="section-title">
+        <strong>Progress</strong
+        ><span class="badge blue" id="overviewProgressBadge">Draft</span>
+      </div>
+      <div class="package">
+        <span>Sources selected</span><strong id="overviewSourceCount">0</strong>
+      </div>
+      <div class="package">
+        <span>Fields available</span><strong id="overviewFieldCount">0</strong>
+      </div>
+      <div class="package">
+        <span>Logic steps</span><strong id="overviewStepCount">0</strong>
+      </div>
+    </section>
+  </div>
+  <section class="card assignment-card">
+    <div class="section-title">
+      <strong>Audit Assignments</strong
+      ><span class="badge blue">Revisioned metadata</span>
+    </div>
+    <p class="hint">
+      Choose a recent ATLAS Align user or search the full Disney directory, then
+      assign each employee as Assigned, Backup, or Developer.
+    </p>
+    <div class="assignment-columns">
+      <div>
+        <h3>Assigned Analysts</h3>
+        <div class="assignment-selected" id="assignmentAssignedSelected"></div>
+        <button
+          class="btn secondary assignment-picker-trigger"
+          data-open-assignment-picker="assigned"
+          type="button"
+        >
+          Add Assigned Analyst
+        </button>
+      </div>
+      <div>
+        <h3>Backup Analysts</h3>
+        <div class="assignment-selected" id="assignmentBackupSelected"></div>
+        <button
+          class="btn secondary assignment-picker-trigger"
+          data-open-assignment-picker="backup"
+          type="button"
+        >
+          Add Backup Analyst
+        </button>
+      </div>
+      <div>
+        <h3>Developers</h3>
+        <div class="assignment-selected" id="assignmentDeveloperSelected"></div>
+        <button
+          class="btn secondary assignment-picker-trigger"
+          data-open-assignment-picker="developer"
+          type="button"
+        >
+          Add Developer
+        </button>
+      </div>
+    </div>
+  </section>
+</section>

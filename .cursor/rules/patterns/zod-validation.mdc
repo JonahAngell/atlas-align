@@ -1,0 +1,167 @@
+---
+description: Runtime type validation with Zod for external data sources and API responses
+alwaysApply: false
+globs:
+  - '**/*.ts'
+  - '**/*.tsx'
+---
+
+# Zod Validation
+
+Runtime type validation with Zod for external data sources, API responses, and user inputs.
+
+Apply when: validating API responses, parsing user input, handling form data, or working with external data sources.
+
+---
+
+## Core Principle
+
+Type assertions (`as`) only provide compile-time safety. External data requires runtime validation.
+
+| Approach           | Compile-time | Runtime | Use Case                    |
+|--------------------|--------------|---------|------------------------------|
+| Type assertion     | ✓            | ✗       | Never for external data      |
+| Zod validation     | ✓            | ✓       | API responses, user input    |
+
+---
+
+## Why Zod
+
+Zod is widely adopted, has excellent TypeScript inference, and provides a clean API. Alternatives include Valibot (smaller bundle) and Arktype (TypeScript-like syntax). TypeScript types are erased at compile time, so runtime validation always requires a separate schema definition regardless of library choice.
+
+---
+
+## Conventions
+
+### Naming
+
+| Entity         | Convention              | Example                      |
+|----------------|-------------------------|------------------------------|
+| Schema         | `PascalCase` + `Schema` | `UserSchema`, `ConfigSchema` |
+| Inferred type  | `PascalCase`            | `type User = z.infer<...>`   |
+| Schema file    | Matches domain          | `schemas/user.ts`            |
+
+### When to Validate
+
+| Boundary                | Validate? | Rationale                          |
+|-------------------------|-----------|------------------------------------|
+| API responses           | Always    | External data is never trusted     |
+| User/form input         | Always    | Untrusted by definition            |
+| Environment variables   | Always    | Validate at startup, fail fast     |
+| Function arguments      | No        | TypeScript handles internal calls  |
+| Database query results  | No        | Schema migrations handle integrity |
+
+### Parse vs SafeParse
+
+| Context                          | Method         | Rationale                              |
+|----------------------------------|----------------|----------------------------------------|
+| Request handlers / API routes    | `.safeParse()` | Return structured errors to callers    |
+| App startup (env, config)        | `.parse()`     | Fail fast, crash is appropriate        |
+| Data pipelines / batch jobs      | `.safeParse()` | Log and skip bad records               |
+
+---
+
+## API Response Validation
+
+```typescript
+// Bad - No runtime validation
+const fetchUser = async (id: string): Promise<User> => {
+  const response = await fetch(`/api/users/${id}`);
+  const data = await response.json();
+  return data as User; // DANGEROUS
+};
+
+// Good - Check HTTP status + Zod validation
+const fetchUser = async (id: string): Promise<User> => {
+  const response = await fetch(`/api/users/${id}`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  const data = await response.json();
+  return UserSchema.parse(data);
+};
+```
+
+---
+
+## Error Handling Strategy
+
+Use `.safeParse()` in request handlers to return structured errors. Never expose raw Zod errors to clients.
+
+```typescript
+const result = RequestSchema.safeParse(body);
+if (!result.success) {
+  // Log full error internally
+  logger.warn('Validation failed', { error: result.error.format() });
+  // Return safe summary to client
+  return Response.json(
+    { error: 'Invalid request', fields: result.error.flatten().fieldErrors },
+    { status: 400 },
+  );
+}
+```
+
+---
+
+## Schema as Single Source of Truth
+
+Derive types from schemas — never define both independently. This eliminates drift between runtime validation and compile-time types.
+
+```typescript
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+// Derive — never manually duplicate this type
+type User = z.infer<typeof UserSchema>;
+```
+
+---
+
+## Organization
+
+- Co-locate schema with the code that uses it by default
+- Extract to `schemas/` only when shared across multiple modules
+- Keep schema and inferred type in the same file
+
+```
+src/
+├── schemas/
+│   ├── user.ts      # UserSchema + User type (shared)
+│   └── api.ts       # API response schemas (shared)
+├── services/
+│   └── user.ts      # Uses UserSchema
+├── routes/
+│   └── users.ts     # Defines RequestSchema inline (local only)
+```
+
+---
+
+## Quick Reference
+
+| Task                    | Convention                                              |
+|-------------------------|---------------------------------------------------------|
+| Name a schema           | `PascalCaseSchema` (e.g., `UserSchema`)                 |
+| Derive a type           | `type T = z.infer<typeof TSchema>` — never duplicate    |
+| Validate API responses  | Always — `.parse()` or `.safeParse()`                   |
+| Validate internal calls | Don't — rely on TypeScript                              |
+| Handle errors in routes | `.safeParse()` + structured 400 response                |
+| Validate at startup     | `.parse()` — fail fast on bad config                    |
+| Expose Zod errors       | Never to clients — log internally, return safe summary  |
+
+---
+
+## Checklist
+
+- [ ] No type assertions (`as`) for external data
+- [ ] HTTP response status checked before parsing (`response.ok`)
+- [ ] Zod schemas for all API responses and user inputs
+- [ ] Types derived from schemas — not manually duplicated
+- [ ] `.safeParse()` in request handlers with structured error responses
+- [ ] `.parse()` for startup/config validation (fail fast)
+- [ ] Raw Zod errors never exposed to clients
+- [ ] Schema naming follows `PascalCaseSchema` convention

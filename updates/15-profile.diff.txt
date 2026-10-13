@@ -1,0 +1,823 @@
+diff --git a/index.html b/index.html
+index 13b180b1d0d96f15fbe1b6c052150b460cf3475f..69312a902bab5395e9cdf92364b7a63ae07b0a5e 100644
+--- a/index.html
++++ b/index.html
+@@ -1,314 +1,15 @@
+ <!doctype html>
+-<html lang="en">
+-<head>
+-  <meta charset="utf-8">
+-  <meta name="viewport" content="width=device-width, initial-scale=1">
+-  <title>ATLAS Align - Audit Logic Builder</title>
+-  <link rel="stylesheet" href="styles.css">
+-  <script src="./vendor/exceljs.min.js"></script>
+-</head>
+-<body>
+-<div class="app-shell">
+-  <aside class="app-sidebar" id="sidebar" aria-label="ATLAS Align navigation">
+-    <div class="brand">
+-      <div class="brandtext">ATLAS ALIGN <span class="app-version">v1.5</span></div>
+-      <button id="collapseNavBtn" class="toggle" type="button" title="Collapse navigation">☰</button>
+-    </div>
+-    <nav class="nav">
+-      <div class="navgroup">Workspace</div>
+-      <button class="navitem active" type="button" data-section="my-audits"><span class="navicon">◫</span><span class="navtext">My Audits</span></button>
+-      <button class="navitem" type="button" data-section="group"><span class="navicon">▦</span><span class="navtext">Group Landing</span></button>
+-      <div class="navgroup">Current Audit</div>
+-      <button class="navitem" type="button" data-section="overview"><span class="navicon">◎</span><span class="navtext">Audit Overview</span></button>
+-      <button class="navitem" type="button" data-section="fields"><span class="navicon">⌕</span><span class="navtext">Sources</span></button>
+-      <button class="navitem" type="button" data-section="steps"><span class="navicon">⇄</span><span class="navtext">Logic Builder</span></button>
+-      <button class="navitem" type="button" data-section="preview"><span class="navicon">▤</span><span class="navtext">Requirements Preview</span></button>
+-      <button class="navitem" type="button" data-section="review"><span class="navicon">✓</span><span class="navtext">Readiness & Review</span></button>
+-      <button class="navitem" type="button" data-section="save"><span class="navicon">⇧</span><span class="navtext">Publication Preview</span></button>
+-    </nav>
+-  </aside>
+-
+-  <div  class="floating-utility-controls" 
+-        aria-label="Global app controls">
+-    <button 
+-      id="helpBtn" 
+-      class="btn ghost help-button" 
+-      type="button" 
+-      title="Open tutorial" 
+-      aria-label="Open site-wide tutorial" 
+-      data-start-tutorial="global">
+-        ?
+-    </button>
+-    <button 
+-      id="themeBtn" 
+-      class="btn ghost"
+-      title="Dark Mode" 
+-      type="button">
+-        ⏾
+-    </button>
+-  </div>
+-
+-  <main class="main" id="main">
+-    <header class="topbar">
+-      <div>
+-      </div>
+-      <div class="topbar-audit-switcher" aria-label="Current audit selector">
+-        <label for="activeAuditSelect">Current audit</label>
+-        <select id="activeAuditSelect">
+-          <option value="">No audit selected</option>
+-        </select>
+-        <button id="confirmActiveAuditBtn"
+-                class="btn primary small confirm-audit-button"
+-                type="button"
+-                title="Switch audit"
+-                aria-label="Switch audit">Switch</button>
+-      </div>
+-      <div id="flowNavControls" class="flow-nav-controls" aria-label="Audit workflow navigation" hidden>
+-        <button id="flowBackBtn" class="btn secondary small flow-nav-back" type="button" hidden></button>
+-        <button id="flowNextBtn" class="btn primary small flow-nav-next" type="button" hidden></button>
+-      </div>
+-    </header>
+-
+-    <div class="content">
+-      <section class="page active" id="page-my-audits" data-page="my-audits">
+-        <h1>My Audits</h1>
+-        <div class="subtitle">Audits available from your repo library, browser saves, and workbook imports.</div>
+-        <div class="grid cards">
+-          <div class="card metric-card"><div class="small">Repo audits</div><div class="metric" id="metricRepoAudits">--</div></div>
+-          <div class="card metric-card"><div class="small">Saved audits</div><div class="metric" id="metricSavedAudits">--</div></div>
+-        </div>
+-
+-        <div class="card library-card">
+-          <div class="section-title">
+-            <strong>Audit Library</strong>
+-            <div class="toolbar compact-toolbar">
+-              <button class="btn secondary full import-label"
+-                      id="importCurrentFile">
+-                        Import JSON
+-              </button>
+-              <button 
+-                id="auditTutorialBtn" 
+-                class="btn ghost small tutorial-inline-button" 
+-                type="button" title="Audit Library tutorial" 
+-                aria-label="Audit Library tutorial" 
+-                data-start-tutorial="auditLibrary">
+-                ?
+-              </button>
+-              
+-              <button 
+-                id="newAuditBtn" 
+-                class="btn secondary small" 
+-                type="button">
+-                + New Audit
+-              </button>
+-            </div>
+-          </div>
+-
+-          <p class="hint">
+-              Search, load, or refresh audits. This uses the same library controls as Audit Overview.
+-          </p>
+-          <label class="hidden-backing-select">
+-            Audit Library
+-            <select id="auditLibrarySelect">
+-              <option value="">
+-                Loading audit library...
+-              </option>
+-            </select>
+-          </label>
+-
+-          <div 
+-            id="auditLibraryVisual" 
+-            class="visual-library-picker contacts-library">
+-          </div>
+-          <div>
+-            <p></p>
+-          </div>
+-          <div 
+-            class="toolbar compact-toolbar">
+-              <button 
+-                id="refreshLibraryBtn" 
+-                class="btn secondary" 
+-                type="button">
+-                  Refresh Library
+-              </button>
+-          </div>
+-          <p id="repoLibraryStatus" class="hint audit-library-status" aria-live="polite">
+-            <span data-audit-library-status-text>Database audit library has not loaded yet.</span>
+-            <span class="audit-loading-spinner" data-audit-loading-spinner role="status" aria-label="Loading database audits"></span>
+-          </p>
+-        </div>
+-      </section>
+-
+-      <section class="page" id="page-group" data-page="group">
+-        <h1>Group Landing Page</h1>
+-        <div class="subtitle">Portfolio-style view for the audit documentation library.</div>
+-        <div class="grid cards"><div class="card metric-card"><div class="small">Source files</div><div class="metric" id="metricSourceFiles">--</div></div><div class="card metric-card"><div class="small">Vanity labels</div><div class="metric" id="metricVanityLabels">--</div></div><div class="card metric-card"><div class="small">Source aliases</div><div class="metric" id="metricSourceAliases">--</div></div><div class="card metric-card"><div class="small">Validation</div><div class="metric">Live</div></div></div>
+-        <div class="layout2"><section class="card"><div class="section-title"><strong>Current audit snapshot</strong><button class="btn secondary small" type="button" onclick="showSection('overview')">Open Overview</button></div><div id="groupAuditSnapshot" class="snapshot-list"></div></section><section class="card"><strong>Recently active local audits</strong><div id="groupSavedAuditList" class="package-list"><p class="hint">Saved audits will appear here after local saves are loaded.</p></div></section></div>
+-      </section>
+-
+-      <section class="page" id="page-overview" data-page="overview">
+-        <h1>Audit Overview</h1>
+-        <div class="subtitle">Define the audit, load saved/repo work, and manage the active flow.</div>
+-        <div class="layout2">
+-          <section class="card">
+-            <div class="section-title"><strong>Audit setup</strong><span class="badge blue">Current Audit</span></div>
+-            <div class="toolbar">
+-              <button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button>
+-            </div>
+-            <label>
+-              Audit Name
+-              <input id="auditName" placeholder="Placeholder">
+-            </label>
+-            <label>
+-              Audit Description
+-              <textarea id="auditPurpose" placeholder="Describe what this audit validates...">
+-
+-              </textarea>
+-            </label>
+-          </section>
+-          <section class="card">
+-            <div class="section-title"><strong>Progress</strong><span class="badge blue" id="overviewProgressBadge">Draft</span></div>
+-            <div class="package"><span>Sources selected</span><strong id="overviewSourceCount">0</strong></div>
+-            <div class="package"><span>Fields available</span><strong id="overviewFieldCount">0</strong></div>
+-            <div class="package"><span>Logic steps</span><strong id="overviewStepCount">0</strong></div>
+-          </section>
+-        </div>
+-      </section>
+-
+-      <section class="page" id="page-fields" data-page="fields">
+-        <h1>Sources</h1>
+-        <div class="subtitle">Search source files, select source fields, and inspect the selected source structure.</div>
+-        <div id="fieldPickerSummary" class="field-picker-summary"></div>
+-        <div class="layout3">
+-          <section class="card source-field-browser-panel">
+-            <div class="section-title"><strong>Source Library</strong><div class="toolbar compact-toolbar"><button id="fieldsTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Fields tutorial" aria-label="Fields tutorial" data-start-tutorial="fields">?</button></div></div>
+-            <p class="hint">Search by source file, alias, raw field name, or vanity label. Select source files for this audit; reference steps are generated automatically.</p>
+-            <input id="sourceFieldSearch" class="input full-input" placeholder="Search filename, alias, field name, or vanity label...">
+-            <div class="source-library-tabs" id="sourceLibraryTabs"></div>
+-            <div id="sourceFieldBrowser" class="source-field-browser visual-source-library contacts-library"></div>
+-          </section>
+-          <section class="card">
+-            <div class="section-title"><strong>Selected Sources & Fields</strong><span class="badge blue" id="selectedSourceBadge">0</span></div>
+-            <div id="sourcesList"></div>
+-            <div id="fieldsList" class="visually-hidden"></div>
+-          </section>
+-        </div>
+-      </section>
+-
+-      <section class="page" id="page-steps" data-page="steps">
+-        <h1>Logic Builder</h1>
+-        <div class="subtitle">Build structured audit steps with standardized wording, visual field picking, drag/drop reordering, and nested IF / ELSE support.</div>
+-        <div class="tabs logic-tabs">
+-          <button class="tab active" type="button" data-logic-tab="business">Business Audit Logic</button>
+-          <button class="tab" type="button" data-logic-tab="application">Application Logic</button>
+-        </div>
+-        <div class="logic-screen">
+-          <div class="layout2 logic-builder-layout">
+-            <section class="card logic-rules-card">
+-              <div class="section-title logic-section-title">
+-                <div>
+-                  <strong>Rules</strong>
+-                  <div class="small">Drag rule cards to reorder. Use Indent / Outdent for nested IF / ELSE structure.</div>
+-                </div>
+-                <div class="toolbar compact-toolbar logic-builder-toolbar">
+-                    <button id="fieldDisplayModeBtn"
+-                            class="btn secondary small icon-button field-display-mode-button"
+-                            type="button"
+-                            title="Switch to vanity labels"
+-                            aria-label="Toggle field display mode">Aa</button>
+-                    <button id="addStepBtn" class="btn primary small new-rule-menu-button" type="button" aria-haspopup="menu" aria-expanded="false">+ New Rule</button>
+-                  </div>
+-              </div>
+-              <div id="stepsList" class="steps-workspace logic-list"></div>
+-            </section>
+-            <aside class="card live-output-card">
+-              <div class="section-title">
+-                <strong>Logic Step Editor</strong>
+-                <span class="badge blue" id="selectedRuleBadge">Selected rule</span>
+-              </div>
+-              <div id="selectedStepDetails" class="live-output-pane hint">Select a rule to edit its criteria and preview the live standardised output.</div>
+-              <div class="callout warning logic-builder-note"><strong>Editing pane</strong><br>Changes in this pane update the selected step and refresh the generated standardised output.</div>
+-              <div class="chipbar"><span class="chip">Reference</span><span class="chip">Join</span><span class="chip">Union</span><span class="chip">IF / THEN</span><span class="chip">Create Column</span></div>
+-            </aside>
+-          </div>
+-          <section class="card logic-table-preview-card">
+-            <button class="btn secondary small" type="button" onclick="showSection('preview')">Open Requirements Preview</button>
+-          </section>
+-        </div>
+-      </section>
+-
+-      <section class="page" id="page-preview" data-page="preview">
+-        <h1>Requirements Preview</h1>
+-        <div class="subtitle">Live preview of the generated requirement output.</div>
+-        <div class="tabs"><button class="tab active" type="button" data-preview-tab="table">Standard Table</button></div>
+-        <select id="previewStyle" class="visually-hidden" aria-hidden="true"><option value="table" selected>Standard Table</option></select>
+-        <label class="check export-option"><input id="includeNotesToggle" type="checkbox" checked> Include notes in preview/export</label>
+-        <label class="check export-option"><input id="completeStatementsToggle" type="checkbox"> View as complete statements</label>
+-        <section class="card logic-preview-panel"><div class="section-title"><strong>Audit Logic Preview</strong><button class="btn secondary small" type="button" onclick="renderPreview()">Refresh Preview</button></div><div id="logicPreview"></div></section>
+-      </section>
+-
+-      <section class="page" id="page-review" data-page="review">
+-        <h1>Readiness & Review</h1>
+-        <div class="subtitle">Automated completeness checks and status messages.</div>
+-        <div class="layout2"><section class="card validation-shell"><div class="section-title"><strong>Validation</strong><span class="badge blue">Live</span></div><div id="validationPanel"></div></section><section class="card status-panel"><div class="section-title"><strong>Status</strong><button class="btn secondary small" type="button" onclick="renderAll()">Refresh</button></div><div id="status"></div></section></div>
+-      </section>
+-
+-      <section class="page" id="page-save" data-page="save">
+-        <h1>Publication Preview</h1>
+-        <div class="subtitle">Save locally, export current requirements, or package saved audit bundles.</div>
+-        <div class="layout2">
+-          <section class="card" id="savePanel">
+-            <div class="section-title"><strong>Save / Export</strong><button id="saveTutorialBtn" class="btn ghost small tutorial-inline-button" type="button" title="Save / Export tutorial" aria-label="Save / Export tutorial" data-start-tutorial="saveExport">?</button></div>
+-            <p class="hint">Save audits locally, export the current audit, or export/import saved audit bundles.</p>
+-            <button id="saveFlowBtn" class="btn primary full" type="button">Save Current Audit Locally</button>
+-            <label>Load Saved Audit<select id="flowSelect"><option value="">No saved audits yet</option></select></label>
+-            <div class="toolbar"><button id="loadFlowBtn" class="btn secondary small" type="button">Load Saved Audit</button><button id="deleteFlowBtn" class="btn danger small" type="button">Delete Saved Audit</button></div>
+-            <p id="saveStatus" class="hint">No saved audit selected.</p><p id="autosaveStatus" class="hint">Autosave restores your last local draft when possible.</p><button id="clearAutosaveBtn" class="btn secondary full" type="button">Clear Autosaved Draft</button><button id="resetLocalDataBtn" class="btn danger full" type="button">Clear All Saved Data</button>
+-          </section>
+-          <section class="card">
+-            <div class="section-title"><strong>Package contents</strong><span class="badge blue">Mock publication</span></div>
+-            <div class="package"><span>Current Audit JSON</span><button id="downloadDocBtn" class="btn secondary small" type="button">Download JSON</button></div>
+-            <div class="package"><span>Logic Table CSV</span><button id="downloadCsvBtn" class="btn secondary small" type="button">Download CSV</button></div>
+-            <div class="package"><span>Excel Table View</span><button id="downloadExcelBtn" class="btn secondary small" type="button">Download Excel</button></div>
+-            <div class="package"><span>Qtest Excel Template</span><button id="downloadQtestExcelBtn" class="btn secondary small" type="button">Download Qtest Excel</button></div>
+-            <div class="package"><span>Confluence HTML</span><button id="downloadHtmlBtn" class="btn secondary small" type="button">Download HTML</button></div>
+-            <div class="package"><span>Clipboard HTML</span><button id="copyHtmlBtn" class="btn secondary small" type="button">Copy HTML</button></div>
+-            <div class="package"><span>Markdown</span><button id="copyMarkdownBtn" class="btn secondary small" type="button">Copy Markdown</button></div>
+-            <div class="section-title package-heading"><strong>Saved Audit Bundle</strong></div>
+-            <div class="toolbar"><button id="exportAllBtn" class="btn secondary small" type="button">Export All Saved Audits</button><label class="btn secondary small import-label">Import Saved Audits<input id="importAllFile" type="file" accept=".json"></label></div>
+-          </section>
+-        </div>
+-      </section>
+-    </div>
+-  </main>
+-</div>
+-
+-<script src="./js/00-config-utils.js"></script>
+-<script src="./js/01-state-dom.js"></script>
+-<script src="./js/02-hierarchy.js"></script>
+-<script src="./js/02-logic-rendering.js"></script>
+-<script src="./js/03-capture-actions.js"></script>
+-<script src="./js/04-persistence.js"></script>
+-<script src="./tutorials/tutorial-global.js"></script>
+-<script src="./tutorials/tutorial-audit-library.js"></script>
+-<script src="./tutorials/tutorial-fields.js"></script>
+-<script src="./tutorials/tutorial-logic-builder.js"></script>
+-<script src="./tutorials/tutorial-save-export.js"></script>
+-<script src="./js/05-tutorials.js"></script>
+-<script src="./js/07-phrase-catalog.js"></script>
+-<script src="./js/08-step-templates-validation.js"></script>
+-<script src="./js/09-workbook-import.js"></script>
+-<script src="./js/10-field-picker.js"></script>
+-<script src="./js/11-repo-library.js"></script>
+-<script src="./js/12-export-foundation.js"></script>
+-<script src="./js/13-catalog-field-browser.js"></script>
+-<script src="./js/14-catalog-driven-builder.js"></script>
+-<script src="./js/15-visual-ui-upgrades.js"></script>
+-<script src="./js/16-page-shell.js"></script>
+-<script src="./js/17-source-database.js"></script>
+-<script src="./js/18-audit-database.js"></script>
+-<script src="./js/19-audit-version-history.js"></script>
+-<script src="./js/20-database-only-audits.js"></script>
+-<script src="./js/06-events-bootstrap.js"></script>
+-</body>
+-</html>
++<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ATLAS Align - Audit Logic Builder</title><link rel="stylesheet" href="styles.css"><script src="./vendor/exceljs.min.js"></script></head>
++<body><div class="app-shell"><aside class="app-sidebar" id="sidebar" aria-label="ATLAS Align navigation"><div class="brand"><div class="brandtext">ATLAS ALIGN <span class="app-version">v1.6.0</span></div><button id="collapseNavBtn" class="toggle" type="button" title="Collapse navigation">☰</button></div><nav class="nav"><div class="navgroup">Workspace</div><button class="navitem active" type="button" data-section="my-audits"><span class="navicon">◫</span><span class="navtext">My Audits</span></button><button class="navitem" type="button" data-section="group"><span class="navicon">▦</span><span class="navtext">Group Landing</span></button><div class="navgroup">Current Audit</div><button class="navitem" type="button" data-section="overview"><span class="navicon">◎</span><span class="navtext">Audit Overview</span></button><button class="navitem" type="button" data-section="fields"><span class="navicon">⌕</span><span class="navtext">Sources</span></button><button class="navitem" type="button" data-section="steps"><span class="navicon">⇄</span><span class="navtext">Logic Builder</span></button><button class="navitem" type="button" data-section="preview"><span class="navicon">▤</span><span class="navtext">Requirements Preview</span></button><button class="navitem" type="button" data-section="review"><span class="navicon">✓</span><span class="navtext">Readiness & Review</span></button><button class="navitem" type="button" data-section="save"><span class="navicon">⇧</span><span class="navtext">Publication Preview</span></button></nav></aside>
++<div class="floating-utility-controls"><button id="helpBtn" class="btn ghost" type="button" aria-label="Open tutorial">?</button></div><main class="main" id="main"><header class="topbar"><div class="topbar-audit-switcher" aria-label="Current audit selector"><label for="activeAuditSelect">Current audit</label><select id="activeAuditSelect"><option value="">No audit selected</option></select><button id="confirmActiveAuditBtn" class="btn primary small" type="button">Switch</button></div><div class="topbar-actions"><div id="flowNavControls" class="flow-nav-controls" aria-label="Audit workflow navigation" hidden><button id="flowBackBtn" class="btn secondary small" type="button" hidden></button><button id="flowNextBtn" class="btn primary small" type="button" hidden></button></div><div id="currentUserProfile" class="user current-user-profile" tabindex="0" aria-live="polite">Loading profile…</div></div></header>
++<div class="content">
++<section class="page active" id="page-my-audits" data-page="my-audits"><h1>My Audits</h1><div class="subtitle">View audits where you are assigned, serving as backup, or part of the wider audit portfolio.</div><div class="grid cards my-audits-metrics"><div class="card metric-card"><div class="small">Assigned</div><div class="metric" id="myAuditsMetricAssigned">0</div></div><div class="card metric-card"><div class="small">Backup</div><div class="metric" id="myAuditsMetricBackup">0</div></div><div class="card metric-card"><div class="small">Other</div><div class="metric" id="myAuditsMetricOther">0</div></div><div class="card metric-card"><div class="small">All</div><div class="metric" id="myAuditsMetricAll">0</div></div></div><div class="card"><div class="toolbar my-audits-toolbar"><div class="my-audits-filters" aria-label="Audit role filters"><button class="btn secondary active" type="button" data-my-audits-role="assigned" aria-pressed="true">Assigned</button><button class="btn secondary" type="button" data-my-audits-role="backup" aria-pressed="false">Backup</button><button class="btn secondary" type="button" data-my-audits-role="other" aria-pressed="false">Other</button><button class="btn secondary" type="button" data-my-audits-role="all" aria-pressed="false">All</button></div><input id="myAuditsSearch" class="input my-audits-search" type="search" placeholder="Search audits and assignments" aria-label="Search audits"><button id="refreshLibraryBtn" class="btn secondary" type="button">Refresh</button><button id="newAuditBtn" class="btn primary" type="button">New Audit</button><label class="btn secondary import-label">Import JSON<input id="importCurrentFile" type="file" accept=".json,application/json"></label></div><div class="tablewrap"><table class="my-audits-table"><thead><tr><th>Audit</th><th>Role</th><th>Assigned Analysts</th><th>Backup Analysts</th><th>Updated</th><th>Action</th></tr></thead><tbody id="myAuditsTableBody"></tbody></table></div><div id="myAuditsState" class="my-audits-state" role="status" aria-live="polite">Loading database audits…</div><label class="hidden-backing-select">Audit Library<select id="auditLibrarySelect"><option value="">Loading audit library…</option></select></label><details><summary>Browse Audit Library</summary><div id="auditLibraryVisual" class="visual-library-picker contacts-library"></div><p id="repoLibraryStatus" class="hint"><span data-audit-library-status-text>Database audit library has not loaded yet.</span><span data-audit-loading-spinner hidden></span></p></details></div></section>
++<section class="page" id="page-group" data-page="group"><h1>Group Landing Page</h1><div class="grid cards"><div class="card"><div id="metricSourceFiles">--</div></div><div class="card"><div id="metricVanityLabels">--</div></div><div class="card"><div id="metricSourceAliases">--</div></div></div><div id="groupAuditSnapshot"></div><div id="groupSavedAuditList"></div></section>
++<section class="page" id="page-overview" data-page="overview"><h1>Audit Overview</h1><div class="subtitle">Define the audit and manage assignments.</div><div class="layout2"><section class="card"><div class="section-title"><strong>Audit setup</strong><button id="duplicateAuditBtn" class="btn secondary small" type="button">Duplicate Audit</button></div><label>Audit Name<input id="auditName"></label><label>Audit Description<textarea id="auditPurpose"></textarea></label></section><section class="card"><div class="section-title"><strong>Progress</strong><span id="overviewProgressBadge" class="badge blue">Draft</span></div><div class="package"><span>Sources selected</span><strong id="overviewSourceCount">0</strong></div><div class="package"><span>Fields available</span><strong id="overviewFieldCount">0</strong></div><div class="package"><span>Logic steps</span><strong id="overviewStepCount">0</strong></div></section></div><section class="card assignment-card"><div class="section-title"><strong>Audit Assignments</strong><span class="badge blue">Revisioned metadata</span></div><div class="assignment-columns"><div><h3>Assigned Analysts</h3><div id="assignmentAssignedSelected" class="assignment-selected"></div><input id="assignmentAssignedSearch" class="input full-input" placeholder="Search users" aria-label="Search assigned analysts"><div id="assignmentAssignedResults" class="assignment-results" aria-live="polite"></div></div><div><h3>Backup Analysts</h3><div id="assignmentBackupSelected" class="assignment-selected"></div><input id="assignmentBackupSearch" class="input full-input" placeholder="Search users" aria-label="Search backup analysts"><div id="assignmentBackupResults" class="assignment-results" aria-live="polite"></div></div></div></section></section>
++<section class="page" id="page-fields" data-page="fields"><h1>Sources</h1><div id="fieldPickerSummary"></div><div class="layout3"><section class="card"><input id="sourceFieldSearch" class="input full-input"><div id="sourceLibraryTabs"></div><div id="sourceFieldBrowser"></div></section><section class="card"><span id="selectedSourceBadge">0</span><div id="sourcesList"></div><div id="fieldsList" class="visually-hidden"></div></section></div></section>
++<section class="page" id="page-steps" data-page="steps"><h1>Logic Builder</h1><div class="tabs"><button class="tab active" data-logic-tab="business">Business Audit Logic</button><button class="tab" data-logic-tab="application">Application Logic</button></div><button id="fieldDisplayModeBtn" class="btn secondary">Aa</button><button id="addStepBtn" class="btn primary">+ New Rule</button><div id="stepsList"></div><div id="selectedRuleBadge"></div><div id="selectedStepDetails"></div></section>
++<section class="page" id="page-preview" data-page="preview"><h1>Requirements Preview</h1><select id="previewStyle"><option value="table">Standard Table</option></select><label><input id="includeNotesToggle" type="checkbox" checked> Include notes</label><label><input id="completeStatementsToggle" type="checkbox"> Complete statements</label><div id="logicPreview"></div></section>
++<section class="page" id="page-review" data-page="review"><h1>Readiness & Review</h1><div id="validationPanel"></div><div id="status"></div></section>
++<section class="page" id="page-save" data-page="save"><h1>Publication Preview</h1><p id="saveStatus"></p><p id="autosaveStatus"></p><select id="flowSelect"></select><div class="toolbar"><button id="saveFlowBtn">Save</button><button id="loadFlowBtn">Load</button><button id="deleteFlowBtn">Delete</button><button id="clearAutosaveBtn">Clear Autosave</button><button id="resetLocalDataBtn">Clear All</button><button id="downloadDocBtn">JSON</button><button id="downloadCsvBtn">CSV</button><button id="downloadExcelBtn">Excel</button><button id="downloadQtestExcelBtn">Qtest</button><button id="downloadHtmlBtn">HTML</button><button id="copyHtmlBtn">Copy HTML</button><button id="copyMarkdownBtn">Markdown</button><button id="exportAllBtn">Export all</button><label>Import<input id="importAllFile" type="file" accept=".json"></label></div></section>
++</div></main></div>
++<script src="./js/00-config-utils.js"></script><script src="./js/01-state-dom.js"></script><script src="./js/02-hierarchy.js"></script><script src="./js/02-logic-rendering.js"></script><script src="./js/03-capture-actions.js"></script><script src="./js/04-persistence.js"></script><script src="./tutorials/tutorial-global.js"></script><script src="./tutorials/tutorial-audit-library.js"></script><script src="./tutorials/tutorial-fields.js"></script><script src="./tutorials/tutorial-logic-builder.js"></script><script src="./tutorials/tutorial-save-export.js"></script><script src="./js/05-tutorials.js"></script><script src="./js/07-phrase-catalog.js"></script><script src="./js/08-step-templates-validation.js"></script><script src="./js/09-workbook-import.js"></script><script src="./js/10-field-picker.js"></script><script src="./js/11-repo-library.js"></script><script src="./js/12-export-foundation.js"></script><script src="./js/13-catalog-field-browser.js"></script><script src="./js/14-catalog-driven-builder.js"></script><script src="./js/15-visual-ui-upgrades.js"></script><script src="./js/16-page-shell.js"></script><script src="./js/17-source-database.js"></script><script src="./js/18-audit-database.js"></script><script src="./js/19-audit-version-history.js"></script><script src="./js/20-database-only-audits.js"></script><script src="./js/06-events-bootstrap.js"></script></body></html>
+diff --git a/js/01-state-dom.js b/js/01-state-dom.js
+index eb2334e1d5e0d1939963b1a72d86192f88bf7feb..01fcdd297c079d49f77a0cf6908f7da9cecc5187 100644
+--- a/js/01-state-dom.js
++++ b/js/01-state-dom.js
+@@ -30,6 +30,7 @@ function defaultAudit() {
+ 
+     // Audit workflow steps, validations, or review activities.
+     steps: [],
++    assignments: { assigned: [], backup: [] },
+   };
+ }
+ 
+@@ -65,6 +66,13 @@ const state = {
+   auditSwitchInProgress: false,
+   databaseAudits: [],
+   auditPersistence: { auditId: null, revisionId: null, revisionNumber: 0, access: null, saving: false, conflict: null },
++  currentUser: null, currentUserStatus: 'idle', currentUserError: '',
++  myAuditsRoleFilter: localStorage.getItem('atlasAlignMyAuditsRoleFilter') || 'assigned',
++  myAuditsSearch: '', databaseAuditsStatus: 'idle', databaseAuditsError: '',
++  assignmentUserSearch: {
++    assigned: { query: '', loading: false, error: '', results: [] },
++    backup: { query: '', loading: false, error: '', results: [] }
++  },
+ 
+   // Stores the preferred field display mode, defaulting to source-based display.
+   // The value is persisted in localStorage so the preference survives page reloads.
+diff --git a/js/06-events-bootstrap.js b/js/06-events-bootstrap.js
+index ffa93dcc8d8d858de1878bcf9bbcd6da438e43f8..3fc64343e7ea3f39e9d8961a99afe1fc35031231 100644
+--- a/js/06-events-bootstrap.js
++++ b/js/06-events-bootstrap.js
+@@ -259,6 +259,18 @@ function bindEvents() {
+       scheduleAutosave();
+     }
+   });
++
++  document.querySelectorAll('[data-my-audits-role]').forEach((button) => button.addEventListener('click', () => {
++    state.myAuditsRoleFilter=button.dataset.myAuditsRole; localStorage.setItem('atlasAlignMyAuditsRoleFilter',state.myAuditsRoleFilter); renderMyAudits?.();
++  }));
++  on('myAuditsSearch','input',(event)=>{state.myAuditsSearch=event.target.value||'';renderMyAudits?.();});
++  document.body.addEventListener('click',(event)=>{
++    const open=event.target.closest('[data-open-database-audit]'); if(open){atlasLoadDatabaseAudit(open.dataset.openDatabaseAudit).catch(err=>status(err.message,'bad'));return;}
++    const add=event.target.closest('[data-add-assignment-role]'); if(add){const role=add.dataset.addAssignmentRole;let user;try{user=JSON.parse(add.dataset.assignmentUser);}catch{return;}state.audit.assignments=normalizeAuditAssignments(state.audit.assignments);if(!state.audit.assignments[role].some(v=>atlasUserMatches(v,user))){state.audit.assignments[role].push(normalizeAssignmentUser(user));scheduleAutosave();renderAssignmentEditor();updateDashboardMetrics?.();}return;}
++    const remove=event.target.closest('[data-remove-assignment-role]'); if(remove){const role=remove.dataset.removeAssignmentRole;state.audit.assignments=normalizeAuditAssignments(state.audit.assignments);state.audit.assignments[role]=state.audit.assignments[role].filter(u=>!(remove.dataset.assignmentUserId&&u.id===remove.dataset.assignmentUserId)&&!(remove.dataset.assignmentUsername&&u.username.toLowerCase()===remove.dataset.assignmentUsername.toLowerCase()));scheduleAutosave();renderAssignmentEditor();return;}
++  });
++  ['assigned','backup'].forEach((role)=>{const input=$(`assignment${role[0].toUpperCase()+role.slice(1)}Search`);if(!input)return;let timer=null,controller=null;input.addEventListener('input',()=>{clearTimeout(timer);controller?.abort();const search=state.assignmentUserSearch[role];search.query=input.value.trim();search.error='';search.results=[];renderAssignmentSearchResults(role);if(search.query.length<2)return;timer=setTimeout(async()=>{controller=new AbortController();search.loading=true;renderAssignmentSearchResults(role);try{const payload=await atlasSearchUsers(search.query,{signal:controller.signal});search.results=payload.items||[];}catch(err){if(err.name!=='AbortError')search.error=err.message;}finally{search.loading=false;renderAssignmentSearchResults(role);}},300);});});
++
+   window.addEventListener('resize', positionTutorial);
+   if (!window.__atlasPageHideSaveBound) {
+     window.addEventListener('pagehide', atlasSaveOnPageHide);
+@@ -278,6 +290,7 @@ async function init() {
+   await initPhraseCatalog?.();
+   await atlasInitSourceDatabase?.();
+   await atlasInitAuditDatabase?.();
++  await atlasLoadCurrentUser?.();
+   await loadRepoLibrary?.();
+   renderStepTemplateOptions?.();
+   bindEvents();
+diff --git a/js/11-repo-library.js b/js/11-repo-library.js
+index ca3abb81e70fbab4edd0b0acca0a27049a5cc1b2..55a424890c33ab83c8dcb8923cec75f3d0fd5a4f 100644
+--- a/js/11-repo-library.js
++++ b/js/11-repo-library.js
+@@ -199,6 +199,26 @@ function getAuditLibraryItems() {
+  * @param {any} audit - Audit object to normalize or load.
+  * @param {any} sourceKind - Input used by normalizeLoadedAudit.
+  */
++function normalizeAssignmentUser(user) {
++  if (!user || typeof user !== 'object' || Array.isArray(user)) return null;
++  const id = String(user.id || '').trim();
++  const username = String(user.username || '').trim();
++  if (!id && !username) return null;
++  return { id, username, fullName: String(user.fullName || '').trim(), email: String(user.email || '').trim(), avatar: String(user.avatar || '').trim() || null };
++}
++function normalizeAssignmentUsers(users) {
++  const seenIds = new Set(), seenNames = new Set();
++  return (Array.isArray(users) ? users : []).map(normalizeAssignmentUser).filter((user) => {
++    if (!user) return false;
++    const name = user.username.toLowerCase();
++    if ((user.id && seenIds.has(user.id)) || (name && seenNames.has(name))) return false;
++    if (user.id) seenIds.add(user.id); if (name) seenNames.add(name); return true;
++  });
++}
++function normalizeAuditAssignments(assignments) {
++  const value = assignments && typeof assignments === 'object' && !Array.isArray(assignments) ? assignments : {};
++  return { assigned: normalizeAssignmentUsers(value.assigned), backup: normalizeAssignmentUsers(value.backup) };
++}
+ function normalizeLoadedAudit(audit, sourceKind = 'unknown') {
+   const normalized = structuredClone(audit || defaultAudit());
+   normalized.id = normalized.id || uid('audit');
+@@ -214,6 +234,7 @@ function normalizeLoadedAudit(audit, sourceKind = 'unknown') {
+   });
+   normalized.fields = Array.isArray(normalized.fields) ? normalized.fields : [];
+   normalized.fields.forEach((field) => { field.sourceKey = field.sourceKey || field.sourceFile; });
++  normalized.assignments = normalizeAuditAssignments(normalized.assignments);
+   normalized.steps = Array.isArray(normalized.steps) ? normalized.steps : [];
+   normalized.steps.forEach((step, index) => normalizeCatalogStep?.(step, index));
+   return normalized;
+diff --git a/js/16-page-shell.js b/js/16-page-shell.js
+index 1335ae5b5179618a722671e40a7ef8019670edd1..d0a63737e1a416af3d35708a7f7a2a357a9f36e8 100644
+--- a/js/16-page-shell.js
++++ b/js/16-page-shell.js
+@@ -414,3 +414,66 @@ updateDashboardMetrics = function updateDatabaseOnlyMetrics() {
+     savedList.innerHTML = audits.length ? audits.map((audit) => `<div class="package"><span>${esc(audit.name || audit.id)}</span><small>${esc(audit.updatedAt ? new Date(audit.updatedAt).toLocaleString() : '')}</small></div>`).join('') : '<p class="hint">No database audits yet.</p>';
+   }
+ };
++
++
++// Signed-in profile, personal audit work queue, and assignment editor.
++function atlasUserInitials(user) {
++  const source = String(user?.fullName || user?.username || '').trim();
++  if (!source) return '?'; const parts = source.split(/\s+/).filter(Boolean);
++  return (parts.length > 1 ? parts[0][0] + parts.at(-1)[0] : source.slice(0,2)).toUpperCase();
++}
++function atlasDisplayUser(user) { return String(user?.fullName || user?.username || 'Unknown user'); }
++function atlasUserMatches(left, right) {
++  const leftId=String(left?.id||'').trim(), rightId=String(right?.id||'').trim();
++  if (leftId && rightId) return leftId === rightId;
++  const a=String(left?.username||'').trim().toLowerCase(), b=String(right?.username||'').trim().toLowerCase();
++  return !!a && a === b;
++}
++function atlasAuditMembership(audit) {
++  const current=state.currentUser, assignments=normalizeAuditAssignments?.(audit?.assignments) || {assigned:[],backup:[]};
++  if (!current || state.currentUserStatus !== 'ready') return {assigned:false,backup:false,role:'Other'};
++  const assigned=assignments.assigned.some((user)=>atlasUserMatches(user,current));
++  const backup=assignments.backup.some((user)=>atlasUserMatches(user,current));
++  return {assigned,backup,role:assigned?'Assigned Analyst':backup?'Backup Analyst':'Other'};
++}
++function renderCurrentUserProfile() {
++  const root=$('currentUserProfile'); if(!root) return; root.replaceChildren();
++  if(state.currentUserStatus==='loading'||state.currentUserStatus==='idle'){root.textContent='Loading profile…';root.setAttribute('aria-label','Loading signed-in user profile');return;}
++  if(state.currentUserStatus!=='ready'||!state.currentUser){root.textContent='Profile unavailable';root.setAttribute('aria-label','Signed-in user profile unavailable');return;}
++  const user=state.currentUser, avatar=document.createElement('span'); avatar.className='avatar profile-avatar';
++  avatar.textContent=atlasUserInitials(user); avatar.setAttribute('aria-hidden','true');
++  if(user.avatar){const img=document.createElement('img');img.src=user.avatar;img.alt=`${atlasDisplayUser(user)} profile photo`;img.addEventListener('error',()=>img.remove(),{once:true});avatar.append(img);}
++  const text=document.createElement('span');text.className='profile-text';
++  const primary=document.createElement('strong');primary.textContent=atlasDisplayUser(user);
++  const secondary=document.createElement('span');secondary.className='profile-secondary';secondary.textContent=user.username||user.email||'';
++  text.append(primary,secondary);root.append(avatar,text);root.setAttribute('aria-label',`Signed in as ${atlasDisplayUser(user)}`);
++}
++function atlasAssignmentNames(users){return (users||[]).map(atlasDisplayUser).join(', ')||'None';}
++function atlasAuditSearchText(audit){const a=normalizeAuditAssignments?.(audit.assignments)||{assigned:[],backup:[]};return [audit.name,audit.id,audit.purpose,audit.description,...a.assigned.flatMap(u=>[u.fullName,u.username]),...a.backup.flatMap(u=>[u.fullName,u.username])].join(' ').toLowerCase();}
++function renderMyAudits(){
++  const body=$('myAuditsTableBody'), stateHost=$('myAuditsState'); if(!body||!stateHost)return;
++  const audits=state.databaseAudits||[], identityReady=state.currentUserStatus==='ready';
++  const metrics={assigned:0,backup:0,other:0,all:audits.length}; audits.forEach(a=>{const m=atlasAuditMembership(a);if(identityReady&&m.assigned)metrics.assigned++;if(identityReady&&m.backup)metrics.backup++;if(!identityReady||(!m.assigned&&!m.backup))metrics.other++;});
++  Object.entries(metrics).forEach(([k,v])=>setText(`myAuditsMetric${k[0].toUpperCase()+k.slice(1)}`,v));
++  document.querySelectorAll('[data-my-audits-role]').forEach(b=>{const active=b.dataset.myAuditsRole===state.myAuditsRoleFilter;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));b.disabled=!identityReady&&b.dataset.myAuditsRole!=='all';});
++  if(state.databaseAuditsStatus==='loading'){body.replaceChildren();stateHost.textContent='Loading database audits…';stateHost.className='my-audits-state loading';return;}
++  if(state.databaseAuditsStatus==='error'){body.replaceChildren();stateHost.textContent=`Audit list could not be loaded. ${state.databaseAuditsError||''}`;stateHost.className='my-audits-state error';return;}
++  if(!identityReady&&state.myAuditsRoleFilter!=='all'){body.replaceChildren();stateHost.textContent='Personalized audit filters are unavailable because your profile could not be loaded. Choose All to browse audits.';stateHost.className='my-audits-state error';return;}
++  const q=state.myAuditsSearch.trim().toLowerCase(); const filtered=audits.filter(a=>{const m=atlasAuditMembership(a),f=state.myAuditsRoleFilter;return (f==='all'||(f==='assigned'&&m.assigned)||(f==='backup'&&m.backup)||(f==='other'&&!m.assigned&&!m.backup))&&(!q||atlasAuditSearchText(a).includes(q));});
++  body.replaceChildren();stateHost.textContent='';stateHost.className='my-audits-state';
++  filtered.forEach(a=>{const m=atlasAuditMembership(a),as=normalizeAuditAssignments?.(a.assignments)||{assigned:[],backup:[]},tr=document.createElement('tr');
++    const cells=[[a.name||a.id,a.id],[m.role,''],[atlasAssignmentNames(as.assigned),''],[atlasAssignmentNames(as.backup),''],[a.updatedAt?new Date(a.updatedAt).toLocaleString():'Not set','']];
++    cells.forEach(([main,sub],i)=>{const td=document.createElement('td');if(i===1){const badge=document.createElement('span');badge.className='badge role-badge';badge.textContent=main;td.append(badge);}else{const strong=document.createElement(i===0?'strong':'span');strong.textContent=main;td.append(strong);if(sub){const small=document.createElement('small');small.textContent=sub;td.append(small);}td.title=main;}tr.append(td);});
++    const action=document.createElement('td'),button=document.createElement('button');button.type='button';button.className='btn primary small';button.dataset.openDatabaseAudit=a.id;button.textContent='Open';action.append(button);tr.append(action);body.append(tr);});
++  if(!filtered.length){const messages={assigned:'No audits are currently assigned to you.',backup:'You are not currently listed as backup on any audits.',other:'No other audits are available.',all:'No database audits are available.'};stateHost.textContent=messages[state.myAuditsRoleFilter];stateHost.className='my-audits-state empty';}
++}
++function atlasRenderAssignmentAvatar(user){const span=document.createElement('span');span.className='avatar assignment-avatar';span.textContent=atlasUserInitials(user);return span;}
++function renderAssignmentEditor(){
++  ['assigned','backup'].forEach(role=>{const root=$(`assignment${role[0].toUpperCase()+role.slice(1)}Selected`);if(!root)return;root.replaceChildren();const users=normalizeAuditAssignments?.(state.audit.assignments)?.[role]||[];
++    users.forEach(user=>{const chip=document.createElement('span');chip.className='assignment-chip';chip.append(atlasRenderAssignmentAvatar(user));const name=document.createElement('span');name.textContent=atlasDisplayUser(user);const remove=document.createElement('button');remove.type='button';remove.dataset.removeAssignmentRole=role;remove.dataset.assignmentUserId=user.id||'';remove.dataset.assignmentUsername=user.username||'';remove.setAttribute('aria-label',`Remove ${atlasDisplayUser(user)} from ${role}`);remove.textContent='×';chip.append(name,remove);root.append(chip);});
++    if(!users.length)root.textContent=`No ${role} analysts selected.`; renderAssignmentSearchResults(role);
++  });
++}
++function renderAssignmentSearchResults(role){const host=$(`assignment${role[0].toUpperCase()+role.slice(1)}Results`),search=state.assignmentUserSearch[role];if(!host)return;host.replaceChildren();if(search.loading){host.textContent='Searching users…';return;}if(search.error){host.textContent=search.error;host.className='assignment-results error';return;}host.className='assignment-results';search.results.forEach(user=>{const row=document.createElement('button');row.type='button';row.className='assignment-result';row.dataset.addAssignmentRole=role;row.dataset.assignmentUser=JSON.stringify(user);const already=(state.audit.assignments?.[role]||[]).some(v=>atlasUserMatches(v,user));row.disabled=already||user.disabled;row.append(atlasRenderAssignmentAvatar(user));const label=document.createElement('span');label.textContent=`${atlasDisplayUser(user)}${user.username?` · ${user.username}`:''}`;row.append(label);host.append(row);});if(search.query.length>=2&&!search.loading&&!search.error&&!search.results.length)host.textContent='No users found.';}
++const assignmentRenderBase=renderPageShellStatus;
++renderPageShellStatus=function renderPageShellStatusWithAssignments(){assignmentRenderBase();renderCurrentUserProfile();renderMyAudits();renderAssignmentEditor();};
+diff --git a/js/18-audit-database.js b/js/18-audit-database.js
+index deb343a3fdee1a3487b6b50af67c530a7902f32d..3a3719228666fae74a2f1b95c1c0f0a528806939 100644
+--- a/js/18-audit-database.js
++++ b/js/18-audit-database.js
+@@ -18,6 +18,16 @@ function atlasApplyLoadedAudit(payload, source='database') {
+   updateActiveAuditBaseline();
+   renderActiveAuditSelect?.();
+ }
++async function atlasLoadCurrentUser() {
++  state.currentUserStatus = 'loading'; state.currentUserError = ''; renderCurrentUserProfile?.(); renderMyAudits?.();
++  try { state.currentUser = await atlasAuditApi('/api/me'); state.currentUserStatus = 'ready'; }
++  catch (error) { state.currentUser = null; state.currentUserStatus = 'error'; state.currentUserError = error.message; }
++  renderCurrentUserProfile?.(); renderMyAudits?.(); return state.currentUser;
++}
++async function atlasSearchUsers(query, options = {}) {
++  const q = String(query || '').trim(); if (q.length < 2) return { items: [] };
++  return atlasAuditApi(`/api/users?q=${encodeURIComponent(q)}&page=${options.page || 1}&size=${Math.min(25, options.size || 10)}`, { signal: options.signal });
++}
+ function atlasSetAuditLibraryLoading(loading) {
+   const spinner = document.querySelector('[data-audit-loading-spinner]');
+   if (spinner) spinner.hidden = !loading;
+@@ -27,14 +37,16 @@ function atlasSetAuditLibraryStatus(message) {
+   if (text) text.textContent = message;
+ }
+ async function atlasRefreshDatabaseAudits() {
++  state.databaseAuditsStatus = 'loading'; state.databaseAuditsError = ''; renderMyAudits?.();
+   atlasSetAuditLibraryLoading(true);
+   atlasSetAuditLibraryStatus('Database audit library has not loaded yet.');
+   try {
+     const payload=await atlasAuditApi('/api/audits');
+-    state.databaseAudits=Array.isArray(payload.audits)?payload.audits:[];
++    state.databaseAudits=Array.isArray(payload.audits)?payload.audits:[]; state.databaseAuditsStatus='ready'; renderMyAudits?.();
+     atlasSetAuditLibraryStatus(`Loaded ${state.databaseAudits.length} database audit(s).`);
+     return state.databaseAudits;
+   } catch (error) {
++    state.databaseAuditsStatus='error'; state.databaseAuditsError=error.message; renderMyAudits?.();
+     atlasSetAuditLibraryStatus('The database audit library could not be loaded.');
+     throw error;
+   } finally {
+diff --git a/js/audit-repository.js b/js/audit-repository.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..1d5833c7f472dfe4e2fc6032764213de09a7f964
+--- /dev/null
++++ b/js/audit-repository.js
+@@ -0,0 +1,219 @@
++import { createHash } from 'node:crypto';
++
++function stableValue(value) {
++  if (Array.isArray(value)) return value.map(stableValue);
++  if (value && typeof value === 'object') {
++    return Object.keys(value).sort().reduce((result, key) => {
++      result[key] = stableValue(value[key]);
++      return result;
++    }, {});
++  }
++  return value;
++}
++export function canonicalJson(value) { return JSON.stringify(stableValue(value)); }
++export function documentHash(value) { return createHash('sha256').update(canonicalJson(value)).digest('hex'); }
++
++function cleanText(value) { return typeof value === 'string' ? value.trim() : ''; }
++export function normalizeAssignmentUser(user) {
++  if (!user || typeof user !== 'object' || Array.isArray(user)) return null;
++  const id = cleanText(user.id), username = cleanText(user.username);
++  if (!id && !username) return null;
++  return { id, username, fullName: cleanText(user.fullName), email: cleanText(user.email), avatar: cleanText(user.avatar) || null };
++}
++export function normalizeAssignmentUsers(users) {
++  const result = [], ids = new Set(), usernames = new Set();
++  for (const value of Array.isArray(users) ? users : []) {
++    const user = normalizeAssignmentUser(value); if (!user) continue;
++    const username = user.username.toLowerCase();
++    if ((user.id && ids.has(user.id)) || (username && usernames.has(username))) continue;
++    if (user.id) ids.add(user.id); if (username) usernames.add(username); result.push(user);
++  }
++  return result;
++}
++export function normalizeAssignments(value) {
++  const assignments = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
++  return { assigned: normalizeAssignmentUsers(assignments.assigned), backup: normalizeAssignmentUsers(assignments.backup) };
++}
++
++function userFields(user) {
++  return [user?.id || null, user?.username || 'unknown', user?.fullName || null, user?.email || null];
++}
++export function validateAudit(document) {
++  if (!document || typeof document !== 'object' || Array.isArray(document)) throw Object.assign(new Error('Audit document must be a JSON object.'), { status: 400 });
++  if (!String(document.id || '').trim()) throw Object.assign(new Error('Audit id is required.'), { status: 400 });
++  if (!String(document.name || '').trim()) throw Object.assign(new Error('Audit name is required.'), { status: 400 });
++  for (const key of ['sources', 'fields', 'steps']) if (!Array.isArray(document[key])) document[key] = [];
++  document.assignments = normalizeAssignments(document.assignments);
++  const ids = new Set();
++  for (const step of document.steps) {
++    if (!step?.id) throw Object.assign(new Error('Every audit step requires an id.'), { status: 400 });
++    if (ids.has(step.id)) throw Object.assign(new Error(`Duplicate step id: ${step.id}`), { status: 400 });
++    ids.add(step.id);
++  }
++  return document;
++}
++export async function listAudits(pool) {
++  const result = await pool.query(`SELECT a.id, a.name, a.purpose, a.description, a.schema_version AS "schemaVersion",
++    a.source_kind AS "sourceKind", a.current_revision_id AS "currentRevisionId",
++    a.current_revision_number AS "currentRevisionNumber", a.owner_username AS "ownerUsername",
++    a.created_at AS "createdAt", a.updated_at AS "updatedAt", a.updated_by_username AS "updatedByUsername",
++    r.document->'assignments' AS assignments
++    FROM atlas_audits a JOIN atlas_audit_revisions r ON r.id = a.current_revision_id
++    WHERE a.archived_at IS NULL ORDER BY lower(a.name), a.id`);
++  return result.rows.map((row) => ({ ...row, assignments: normalizeAssignments(row.assignments) }));
++}
++export async function getAudit(pool, auditId) {
++  const result = await pool.query(`SELECT a.*, r.document, r.created_at AS revision_created_at,
++    r.created_by_username AS revision_created_by_username
++    FROM atlas_audits a JOIN atlas_audit_revisions r ON r.id = a.current_revision_id
++    WHERE a.id = $1 AND a.archived_at IS NULL`, [auditId]);
++  if (!result.rowCount) return null;
++  const row = result.rows[0];
++  return { audit: row.document, revision: { id: Number(row.current_revision_id), number: row.current_revision_number,
++    createdAt: row.revision_created_at, createdByUsername: row.revision_created_by_username } };
++}
++async function insertStepRevision(client, { auditId, auditRevisionId, step, operation, user, changeSummary, restoredFromStepRevisionId = null }) {
++  const current = await client.query(`SELECT COALESCE(max(step_revision_number), 0)::integer + 1 AS next
++    FROM atlas_audit_step_revisions WHERE audit_id = $1 AND step_id = $2`, [auditId, step.id]);
++  const [uid, username, fullName] = userFields(user);
++  await client.query(`INSERT INTO atlas_audit_steps
++    (audit_id, step_id, parent_step_id, branch_type, sort_order, step_type, enabled, auto_generated_reference, locked, deleted_at)
++    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NULL)
++    ON CONFLICT (audit_id, step_id) DO UPDATE SET parent_step_id=EXCLUDED.parent_step_id,
++      branch_type=EXCLUDED.branch_type, sort_order=EXCLUDED.sort_order, step_type=EXCLUDED.step_type,
++      enabled=EXCLUDED.enabled, auto_generated_reference=EXCLUDED.auto_generated_reference,
++      locked=EXCLUDED.locked, deleted_at=NULL`, [auditId, step.id, step.parentId || null, step.branchType || 'root',
++      Number(step.sortOrder || 0), step.step_type || step.type || null, step.enabled !== false,
++      step.autoGeneratedReference === true, step.locked === true]);
++  const inserted = await client.query(`INSERT INTO atlas_audit_step_revisions
++    (audit_id, step_id, audit_revision_id, step_revision_number, operation, step_document,
++     step_sha256, change_summary, created_by_user_id, created_by_username, created_by_full_name, restored_from_step_revision_id)
++    VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8,$9,$10,$11,$12) RETURNING id`, [auditId, step.id, auditRevisionId,
++      current.rows[0].next, operation, JSON.stringify(step), documentHash(step), changeSummary || null,
++      uid, username, fullName, restoredFromStepRevisionId]);
++  await client.query(`UPDATE atlas_audit_steps SET current_step_revision_id=$3 WHERE audit_id=$1 AND step_id=$2`, [auditId, step.id, inserted.rows[0].id]);
++}
++export async function saveAudit(pool, { document, expectedRevisionId, user, changeType = 'save', changeSummary = null, restoredFromRevisionId = null, restoredStep = null }) {
++  document = validateAudit(structuredClone(document));
++  const client = await pool.connect();
++  try {
++    await client.query('BEGIN');
++    const existing = await client.query('SELECT * FROM atlas_audits WHERE id=$1 FOR UPDATE', [document.id]);
++    const isCreate = !existing.rowCount;
++    if (!isCreate && expectedRevisionId != null && Number(existing.rows[0].current_revision_id) !== Number(expectedRevisionId)) {
++      const error = new Error('This audit has a newer database revision. Load the latest revision before saving.');
++      error.status = 409; error.currentRevisionId = Number(existing.rows[0].current_revision_id); throw error;
++    }
++    const hash = documentHash(document);
++    if (!isCreate) {
++      const currentDoc = await client.query('SELECT document_sha256 FROM atlas_audit_revisions WHERE id=$1', [existing.rows[0].current_revision_id]);
++      if (currentDoc.rows[0]?.document_sha256 === hash && changeType === 'save') {
++        await client.query('ROLLBACK');
++        return getAudit(pool, document.id);
++      }
++    }
++    const revisionNumber = isCreate ? 1 : Number(existing.rows[0].current_revision_number) + 1;
++    const [uid, username, fullName, email] = userFields(user);
++    if (isCreate) {
++      await client.query(`INSERT INTO atlas_audits
++        (id,name,purpose,description,schema_version,source_kind,owner_user_id,owner_username,
++         created_by_user_id,created_by_username,updated_by_user_id,updated_by_username)
++        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$7,$8,$7,$8)`, [document.id, document.name,
++          document.purpose || '', document.description || '', Number(document.schemaVersion || 1),
++          document.sourceKind || 'database', uid, username]);
++    }
++    const revision = await client.query(`INSERT INTO atlas_audit_revisions
++      (audit_id,revision_number,parent_revision_id,document,document_sha256,change_type,change_summary,
++       created_by_user_id,created_by_username,created_by_full_name,created_by_email,restored_from_revision_id)
++      VALUES ($1,$2,$3,$4::jsonb,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id, created_at`, [document.id,
++        revisionNumber, isCreate ? null : existing.rows[0].current_revision_id, JSON.stringify(document), hash,
++        isCreate ? 'create' : changeType, changeSummary, uid, username, fullName, email, restoredFromRevisionId]);
++    const auditRevisionId = Number(revision.rows[0].id);
++    let previousSteps = new Map();
++    if (!isCreate) {
++      const previous = await client.query('SELECT document FROM atlas_audit_revisions WHERE id=$1', [existing.rows[0].current_revision_id]);
++      previousSteps = new Map((previous.rows[0]?.document?.steps || []).map(step => [step.id, step]));
++    }
++    const submitted = new Map(document.steps.map(step => [step.id, step]));
++    for (const step of document.steps) {
++      const before = previousSteps.get(step.id);
++      let operation = before ? 'update' : 'create';
++      if (before && documentHash(before) === documentHash(step)) continue;
++      if (before && (before.parentId !== step.parentId || Number(before.sortOrder || 0) !== Number(step.sortOrder || 0))) operation = 'move';
++      if (restoredStep?.stepId === step.id) operation = 'restore';
++      await insertStepRevision(client, { auditId: document.id, auditRevisionId, step, operation, user, changeSummary,
++        restoredFromStepRevisionId: restoredStep?.stepId === step.id ? restoredStep.stepRevisionId : null });
++    }
++    for (const [stepId, step] of previousSteps) if (!submitted.has(stepId)) {
++      const current = await client.query(`SELECT COALESCE(max(step_revision_number),0)::integer+1 AS next FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2`, [document.id, stepId]);
++      await client.query(`INSERT INTO atlas_audit_step_revisions
++        (audit_id,step_id,audit_revision_id,step_revision_number,operation,step_document,step_sha256,change_summary,created_by_user_id,created_by_username,created_by_full_name)
++        VALUES ($1,$2,$3,$4,'delete',$5::jsonb,$6,$7,$8,$9,$10)`, [document.id, stepId, auditRevisionId, current.rows[0].next,
++          JSON.stringify(step), documentHash(step), changeSummary, uid, username, fullName]);
++      await client.query('UPDATE atlas_audit_steps SET deleted_at=current_timestamp,current_step_revision_id=NULL WHERE audit_id=$1 AND step_id=$2', [document.id, stepId]);
++    }
++    await client.query(`UPDATE atlas_audits SET name=$2,purpose=$3,description=$4,schema_version=$5,source_kind=$6,
++      current_revision_id=$7,current_revision_number=$8,updated_by_user_id=$9,updated_by_username=$10,updated_at=current_timestamp
++      WHERE id=$1`, [document.id, document.name, document.purpose || '', document.description || '',
++      Number(document.schemaVersion || 1), document.sourceKind || 'database', auditRevisionId, revisionNumber, uid, username]);
++    await client.query('COMMIT');
++    return { audit: document, revision: { id: auditRevisionId, number: revisionNumber,
++      createdAt: revision.rows[0].created_at, createdByUsername: username } };
++  } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
++}
++export async function listAuditRevisions(pool, auditId) {
++  const result = await pool.query(`SELECT id,revision_number AS "number",change_type AS "changeType",change_summary AS "changeSummary",
++    created_by_username AS "createdByUsername",created_by_full_name AS "createdByFullName",created_at AS "createdAt",
++    restored_from_revision_id AS "restoredFromRevisionId" FROM atlas_audit_revisions WHERE audit_id=$1 ORDER BY revision_number DESC`, [auditId]);
++  return result.rows;
++}
++export async function getAuditRevision(pool, auditId, revisionId) {
++  const result = await pool.query(`SELECT id,revision_number AS "number",document,document_sha256 AS sha256,
++    change_type AS "changeType",change_summary AS "changeSummary",created_by_username AS "createdByUsername",
++    created_at AS "createdAt" FROM atlas_audit_revisions WHERE audit_id=$1 AND id=$2`, [auditId, revisionId]);
++  return result.rows[0] || null;
++}
++export async function restoreAuditRevision(pool, { auditId, revisionId, expectedRevisionId, user }) {
++  const revision = await getAuditRevision(pool, auditId, revisionId);
++  if (!revision) return null;
++  return saveAudit(pool, { document: revision.document, expectedRevisionId, user, changeType: 'restore',
++    changeSummary: `Restored audit revision ${revision.number}`, restoredFromRevisionId: Number(revisionId) });
++}
++export async function listStepRevisions(pool, auditId, stepId) {
++  const result = await pool.query(`SELECT id,audit_revision_id AS "auditRevisionId",step_revision_number AS "number",operation,
++    change_summary AS "changeSummary",created_by_username AS "createdByUsername",created_by_full_name AS "createdByFullName",
++    created_at AS "createdAt" FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2 ORDER BY step_revision_number DESC`, [auditId, stepId]);
++  return result.rows;
++}
++export async function getStepRevision(pool, auditId, stepId, revisionId) {
++  const result = await pool.query(`SELECT id,audit_revision_id AS "auditRevisionId",step_revision_number AS "number",operation,
++    step_document AS "stepDocument",step_sha256 AS sha256,created_by_username AS "createdByUsername",created_at AS "createdAt"
++    FROM atlas_audit_step_revisions WHERE audit_id=$1 AND step_id=$2 AND id=$3`, [auditId, stepId, revisionId]);
++  return result.rows[0] || null;
++}
++export async function restoreStepRevision(pool, { auditId, stepId, revisionId, expectedRevisionId, user }) {
++  const [current, stepRevision] = await Promise.all([getAudit(pool, auditId), getStepRevision(pool, auditId, stepId, revisionId)]);
++  if (!current || !stepRevision?.stepDocument) return null;
++  const document = structuredClone(current.audit);
++  const index = document.steps.findIndex(step => step.id === stepId);
++  if (index >= 0) document.steps[index] = stepRevision.stepDocument; else document.steps.push(stepRevision.stepDocument);
++  return saveAudit(pool, { document, expectedRevisionId, user, changeType: 'restore',
++    changeSummary: `Restored step ${stepId} revision ${stepRevision.number}`,
++    restoredStep: { stepId, stepRevisionId: Number(revisionId) } });
++}
++export async function archiveAudit(pool, auditId, expectedRevisionId, user) {
++  const result = await pool.query(`UPDATE atlas_audits SET archived_at=current_timestamp,archived_by_username=$3
++    WHERE id=$1 AND current_revision_id=$2 AND archived_at IS NULL RETURNING id`, [auditId, expectedRevisionId, user.username]);
++  if (!result.rowCount) { const error = new Error('This audit has changed or is already archived.'); error.status=409; throw error; }
++  return { id: auditId, archived: true };
++}
++
++
++export async function importAudit(pool, { document, user, changeSummary = 'Imported JSON audit' }) {
++  const normalized = validateAudit(structuredClone(document));
++  const current = await getAudit(pool, normalized.id);
++  const incomingHash = documentHash(normalized);
++  if (current && documentHash(current.audit) === incomingHash) return { status:'unchanged', auditId:normalized.id, revision:current.revision };
++  const result = await saveAudit(pool, { document:normalized, expectedRevisionId:current?.revision?.id ?? null, user, changeType:'import', changeSummary });
++  return { status:'imported', ...result };
++}
+diff --git a/server.js b/server.js
+index 269f0a59201bf4ec256f2575475e14873b49d52a..85483887665c50ddfd6f5f44a89225795fb3657d 100644
+--- a/server.js
++++ b/server.js
+@@ -169,12 +169,40 @@ app.get('/api/health', async (_req, res) => {
+ });
+ 
+ app.get('/api/me', requireCurrentUser, (req, res) => {
+-  const { id, username, fullName, email } = req.studioshareUser;
++  const { id, username, fullName, email, avatar } = req.studioshareUser;
+   const roles = normalizedRoleSlugs(req.studioshareUser);
+-  res.json({ id, username, fullName, email, roles, capabilities: { canReplaceSourceLibrary: canReplaceSourceLibrary(req.studioshareUser) } });
++  res.json({ id, username, fullName, email, avatar: avatar || null, roles, capabilities: { canReplaceSourceLibrary: canReplaceSourceLibrary(req.studioshareUser) } });
+ });
+ 
+ 
++
++app.get('/api/users', requireCurrentUser, async (req, res) => {
++  const q = String(req.query.q || '').trim();
++  if (q.length < 2) return res.status(400).json({ error: 'Enter at least two characters to search for users.' });
++  const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
++  const size = Math.min(25, Math.max(1, Number.parseInt(req.query.size, 10) || 10));
++  const accessToken = cookieValue(req, 'access_token');
++  const url = new URL(`${studioshareApiUrl.replace(/\/$/, '')}/core/users`);
++  url.searchParams.set('q', q); url.searchParams.set('page', String(page)); url.searchParams.set('size', String(size));
++  try {
++    const response = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
++    let payload = null; try { payload = await response.json(); } catch (_error) {}
++    if (!response.ok) {
++      const status = [400,401,403,404,429].includes(response.status) ? response.status : 502;
++      const messages = {400:'The user search request was invalid.',401:'Authentication is required.',403:'User search is not permitted.',404:'The user directory is unavailable.',429:'User search is temporarily rate limited.'};
++      return res.status(status).json({ error: messages[response.status] || 'StudioShare user search is unavailable.' });
++    }
++    const items = (Array.isArray(payload?.items) ? payload.items : []).map(({ id, username, fullName, email, avatar, disabled }) => ({
++      id: String(id || '').trim(), username: String(username || '').trim(), fullName: String(fullName || '').trim(),
++      email: String(email || '').trim(), avatar: avatar || null, disabled: disabled === true
++    })).filter((user) => (user.id || user.username) && !user.disabled);
++    res.json({ items, number: payload?.number || page, size: payload?.size || size, totalItems: payload?.totalItems || items.length, totalPages: payload?.totalPages || 1 });
++  } catch (error) {
++    console.error(JSON.stringify({ level:'error', event:'user_search_failed', message:error.message }));
++    res.status(502).json({ error:'StudioShare user search is unavailable.' });
++  }
++});
++
+ app.get('/api/source-library/access', requireCurrentUser, (req, res) => {
+   const { id, username, fullName } = req.studioshareUser;
+   res.json({ canRead: true, canReplace: canReplaceSourceLibrary(req.studioshareUser), user: { id, username, fullName } });
+diff --git a/styles.css b/styles.css
+index a8b5a22f5d8f83c2ce1b9e9ae96a1f5d3c6cbcd1..2a729dc7c3e4bf841f0ee0e209d3e061a96c5394 100644
+--- a/styles.css
++++ b/styles.css
+@@ -4937,3 +4937,7 @@ Sources page UI update
+   overflow-wrap: break-word !important;
+ }
+ 
++
++
++/* ATLAS Align 1.6 profile, My Audits, and assignments */
++.topbar{height:auto;min-height:76px;gap:16px}.topbar-actions{display:flex;align-items:center;gap:14px;margin-left:auto}.current-user-profile{display:flex;align-items:center;gap:10px;min-width:0}.profile-text{display:grid;min-width:0}.profile-secondary{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis}.profile-avatar{position:relative;overflow:hidden;flex:0 0 36px}.profile-avatar img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.my-audits-metrics{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:18px}.my-audits-toolbar{justify-content:space-between}.my-audits-filters{display:flex;gap:8px;flex-wrap:wrap}.my-audits-filters .active{background:var(--primary);color:#fff}.my-audits-search{min-width:min(340px,100%)}.my-audits-table{min-width:900px}.my-audits-table td strong,.my-audits-table td small{display:block}.my-audits-table td small{color:var(--muted);margin-top:3px}.my-audits-state{padding:18px;text-align:center;color:var(--muted)}.my-audits-state.error{color:var(--danger)}.role-badge{background:var(--accent2);color:var(--primary)}.assignment-card{margin-top:18px}.assignment-columns{display:grid;grid-template-columns:1fr 1fr;gap:18px}.assignment-selected{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.assignment-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;padding:4px 8px;background:var(--surface2)}.assignment-chip button{border:0;background:transparent;color:var(--danger);cursor:pointer;font-size:1.1rem}.assignment-avatar{width:28px;height:28px;font-size:.72rem}.assignment-results{display:grid;gap:6px;margin-top:8px}.assignment-result{display:flex;align-items:center;gap:8px;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:9px;padding:8px;cursor:pointer}.assignment-result:hover:not(:disabled){border-color:var(--primary);background:var(--surface2)}.assignment-result:disabled{opacity:.55}.my-audits-filters button:focus-visible,.assignment-result:focus-visible,.assignment-chip button:focus-visible,.current-user-profile:focus-visible{outline:3px solid var(--primary);outline-offset:2px}@media(max-width:900px){.my-audits-metrics{grid-template-columns:repeat(2,1fr)}.assignment-columns{grid-template-columns:1fr}.topbar{padding:12px 18px;flex-wrap:wrap}.profile-secondary{display:none}.topbar-audit-switcher{min-width:0;flex:1}.topbar-actions{margin-left:0}}@media(max-width:560px){.my-audits-metrics{grid-template-columns:1fr 1fr}.profile-text strong{display:none}.content{padding:18px}.my-audits-toolbar{align-items:stretch}.my-audits-search{min-width:100%}}

@@ -1,0 +1,37 @@
+<section class="page" data-page="preview" id="page-preview">
+  <h1>Requirements Preview</h1>
+  <div class="subtitle">Live preview of the generated requirement output.</div>
+  <div class="tabs">
+    <button class="tab active" data-preview-tab="table" type="button">
+      Standard Table
+    </button>
+  </div>
+  <select aria-hidden="true" class="visually-hidden" id="previewStyle">
+    <option selected="" value="table">Standard Table</option>
+  </select>
+  <label class="check export-option"
+    ><input checked="" id="includeNotesToggle" type="checkbox" /> Include notes
+    in preview/export</label
+  >
+  <label class="check export-option"
+    ><input id="completeStatementsToggle" type="checkbox" /> View as complete
+    statements</label
+  >
+  <section class="card requirements-fields-panel">
+    <div class="section-title"><strong>Fields</strong></div>
+    <div id="requirementsFieldsPreview"></div>
+  </section>
+  <section class="card logic-preview-panel">
+    <div class="section-title">
+      <strong>Audit Logic</strong
+      ><button
+        class="btn secondary small"
+        onclick="renderPreview()"
+        type="button"
+      >
+        Refresh Preview
+      </button>
+    </div>
+    <div id="logicPreview"></div>
+  </section>
+</section>

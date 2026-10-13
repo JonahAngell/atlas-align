@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "generatedFrom": "Vanity Labels_Updated.xlsx",
+  "audits": [
+    {
+      "id": "active-employees-in-sap-not-wd",
+      "name": "Active Employees in SAP, Not WD",
+      "file": "audits/active-employees-in-sap-not-wd.json",
+      "description": "Audit converted from worksheet \"Active Employees in SAP, Not WD\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 5,
+      "fieldCount": 62,
+      "logicStepCount": 43
+    },
+    {
+      "id": "work-contract-comparison",
+      "name": "Work Contract Comparison",
+      "file": "audits/work-contract-comparison.json",
+      "description": "Audit converted from worksheet \"Work Contract Comparison\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 2,
+      "fieldCount": 27,
+      "logicStepCount": 0
+    },
+    {
+      "id": "security-groups-assigned-to-vac",
+      "name": "Security Groups Assigned to Vac",
+      "file": "audits/security-groups-assigned-to-vac.json",
+      "description": "Audit converted from worksheet \"Security Groups Assigned to Vac\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 4,
+      "fieldCount": 35,
+      "logicStepCount": 0
+    },
+    {
+      "id": "midweek-rehire-status",
+      "name": "Midweek Rehire Status",
+      "file": "audits/midweek-rehire-status.json",
+      "description": "Audit converted from worksheet \"Midweek Rehire Status\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 3,
+      "fieldCount": 43,
+      "logicStepCount": 0
+    },
+    {
+      "id": "diesi-sapl---infotypes-missing",
+      "name": "DIESI SAPL - Infotypes Missing",
+      "file": "audits/diesi-sapl---infotypes-missing.json",
+      "description": "Audit converted from worksheet \"DIESI SAPL - Infotypes Missing\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 8,
+      "fieldCount": 44,
+      "logicStepCount": 40
+    },
+    {
+      "id": "system-security-role-assignment",
+      "name": "System Security Role Assignment",
+      "file": "audits/system-security-role-assignment.json",
+      "description": "Audit converted from worksheet \"System Security Role Assignment\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 2,
+      "fieldCount": 26,
+      "logicStepCount": 0
+    },
+    {
+      "id": "core-connector-worker-idoc",
+      "name": "Core Connector Worker iDoc",
+      "file": "audits/core-connector-worker-idoc.json",
+      "description": "Audit converted from worksheet \"Core Connector Worker iDoc\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 2,
+      "fieldCount": 12,
+      "logicStepCount": 0
+    },
+    {
+      "id": "pa-to-psa",
+      "name": "PA to PSA",
+      "file": "audits/pa-to-psa.json",
+      "description": "Audit converted from worksheet \"PA to PSA\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 2,
+      "fieldCount": 9,
+      "logicStepCount": 0
+    },
+    {
+      "id": "rehire-status-compare",
+      "name": "Rehire Status Compare",
+      "file": "audits/rehire-status-compare.json",
+      "description": "Audit converted from worksheet \"Rehire Status Compare\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 3,
+      "fieldCount": 39,
+      "logicStepCount": 0
+    },
+    {
+      "id": "currency-accuracy-outside-north-america",
+      "name": "Currency Accuracy Outside North America",
+      "file": "audits/Currency_Accuracy_Outside_North_America.json",
+      "description": "Audit converted from worksheet \"Currency Accuracy Outside North\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 5,
+      "fieldCount": 58,
+      "logicStepCount": 0
+    },
+    {
+      "id": "currency-accuracy",
+      "name": "Currency Accuracy",
+      "file": "audits/currency-accuracy.json",
+      "description": "Audit converted from worksheet \"Currency Accuracy\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 4,
+      "fieldCount": 39,
+      "logicStepCount": 0
+    },
+    {
+      "id": "infotype-errors",
+      "name": "Infotype Errors",
+      "file": "audits/infotype-errors.json",
+      "description": "Audit converted from worksheet \"Infotype Errors\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 3,
+      "fieldCount": 25,
+      "logicStepCount": 0
+    },
+    {
+      "id": "service-dates",
+      "name": "Service Dates",
+      "file": "audits/service-dates.json",
+      "description": "Audit converted from worksheet \"Service Dates\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 4,
+      "fieldCount": 76,
+      "logicStepCount": 131
+    },
+    {
+      "id": "dcl-loa-90-day",
+      "name": "DCL LOA 90 Day",
+      "file": "audits/dcl-loa-90-day.json",
+      "description": "Audit converted from worksheet \"DCL LOA 90 Day\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 4,
+      "fieldCount": 23,
+      "logicStepCount": 16
+    },
+    {
+      "id": "dcl-it210",
+      "name": "DCL IT210",
+      "file": "audits/dcl-it210.json",
+      "description": "Audit converted from worksheet \"DCL IT210\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 4,
+      "fieldCount": 31,
+      "logicStepCount": 24
+    },
+    {
+      "id": "global-names",
+      "name": "Global Names",
+      "file": "audits/global-names.json",
+      "description": "Audit converted from worksheet \"Global Names\" in Vanity Labels_Updated.xlsx.",
+      "sourceKind": "repo",
+      "sourceCount": 5,
+      "fieldCount": 25,
+      "logicStepCount": 0
+    }
+  ],
+  "catalogs": {
+    "vanityLabels": "catalogs/vanity-labels.json",
+    "sourceAliases": "catalogs/source-table-aliases.json",
+    "sourceFields": "catalogs/source-fields.json"
+  }
+}

@@ -1,0 +1,104 @@
+/* ATLAS-SOURCE-UNIT:u0960:BEGIN */
+.history-heading-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0960:END *//* ATLAS-SOURCE-UNIT:u0961:BEGIN */.history-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 34%) minmax(0, 1fr);
+  gap: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0961:END *//* ATLAS-SOURCE-UNIT:u0962:BEGIN */.history-timeline-panel,
+.history-viewer {
+  min-height: 60vh;
+}
+/* ATLAS-SOURCE-UNIT:u0962:END *//* ATLAS-SOURCE-UNIT:u0963:BEGIN */.history-timeline {
+  display: grid;
+  gap: 0.625rem;
+  max-height: 68vh;
+  overflow: auto;
+}
+/* ATLAS-SOURCE-UNIT:u0963:END *//* ATLAS-SOURCE-UNIT:u0964:BEGIN */.history-entry {
+  width: 100%;
+  text-align: left;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  color: var(--text);
+}
+/* ATLAS-SOURCE-UNIT:u0964:END *//* ATLAS-SOURCE-UNIT:u0965:BEGIN */.history-entry[aria-current="true"],
+.history-entry[aria-pressed="true"] {
+  border-inline-start: 4px solid var(--accent);
+  background: var(--panel-2, var(--panel));
+}
+/* ATLAS-SOURCE-UNIT:u0965:END *//* ATLAS-SOURCE-UNIT:u0966:BEGIN */.history-entry-title {
+  display: block;
+  font-weight: 700;
+}
+/* ATLAS-SOURCE-UNIT:u0966:END *//* ATLAS-SOURCE-UNIT:u0967:BEGIN */.history-entry-meta {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+/* ATLAS-SOURCE-UNIT:u0967:END *//* ATLAS-SOURCE-UNIT:u0968:BEGIN */.history-navigation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0968:END *//* ATLAS-SOURCE-UNIT:u0969:BEGIN */.history-navigation fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+/* ATLAS-SOURCE-UNIT:u0969:END *//* ATLAS-SOURCE-UNIT:u0970:BEGIN */.history-navigation select {
+  max-width: 15rem;
+}
+/* ATLAS-SOURCE-UNIT:u0970:END *//* ATLAS-SOURCE-UNIT:u0971:BEGIN */.history-metadata {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+/* ATLAS-SOURCE-UNIT:u0971:END *//* ATLAS-SOURCE-UNIT:u0972:BEGIN */.history-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+/* ATLAS-SOURCE-UNIT:u0972:END *//* ATLAS-SOURCE-UNIT:u0973:BEGIN */.history-document {
+  max-height: 58vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  background: var(--panel-2, var(--panel));
+}
+/* ATLAS-SOURCE-UNIT:u0973:END *//* ATLAS-SOURCE-UNIT:u0974:BEGIN */@media (max-width: 900px) {
+  .history-layout {
+    grid-template-columns: 1fr;
+  }
+  .history-navigation {
+    grid-template-columns: 1fr;
+  }
+  .history-heading-row {
+    flex-direction: column;
+  }
+  .history-timeline {
+    max-height: 38vh;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0974:END *//* ATLAS-SOURCE-UNIT:u0975:BEGIN */@media (forced-colors: active) {
+  .history-entry[aria-current="true"],
+  .history-entry[aria-pressed="true"] {
+    border: 3px solid Highlight;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u0975:END */
