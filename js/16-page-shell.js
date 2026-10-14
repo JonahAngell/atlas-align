@@ -647,33 +647,219 @@ renderActiveAuditSelect = function renderActiveAuditSelectFinal() {
   }
   const stagedValue = state.pendingActiveAuditValue || "";
   const includePlaceholder = !hasSelectedAudit?.();
-  const placeholder = hasOptions ? "Select an audit..." : "No audit selected";
-  select.innerHTML = atlasGroupedAuditOptionsHtml(
-    renderOptions,
-    includePlaceholder,
-    placeholder,
-  );
-  select.disabled = !renderOptions.length;
+  const placeholder = hasOptions ? "Search audits" : "No audit selected";
   const valueToShow =
     stagedValue && renderOptions.some((option) => option.value === stagedValue)
       ? stagedValue
       : state.activeAuditValue || "";
-  if (
-    valueToShow &&
-    renderOptions.some((option) => option.value === valueToShow)
-  )
-    select.value = valueToShow;
-  else select.value = includePlaceholder ? "" : renderOptions[0]?.value || "";
-  if (confirmButton) {
-    confirmButton.textContent = "Switch";
-    confirmButton.title = "Switch audit";
-    confirmButton.setAttribute("aria-label", "Switch audit");
-    confirmButton.classList.remove("secondary", "icon-button");
-    confirmButton.classList.add("primary");
-    confirmButton.disabled =
-      !select.value || select.value === state.activeAuditValue;
+  select.value =
+    valueToShow && renderOptions.some((option) => option.value === valueToShow)
+      ? valueToShow
+      : includePlaceholder
+        ? ""
+        : renderOptions[0]?.value || "";
+  atlasTopbarAuditOptions = renderOptions;
+  const search = $("activeAuditSearch");
+  const current = renderOptions.find((option) => option.value === select.value);
+  if (search) {
+    search.disabled = !renderOptions.length;
+    search.placeholder = placeholder;
+    if (document.activeElement !== search) {
+      search.value = current?.label || "";
+      atlasAuditSwitcherQuery = null;
+      atlasHideAuditSwitcherResults();
+    } else if (atlasAuditSwitcherQuery == null)
+      atlasRenderAuditSwitcherResults("");
+    else atlasRenderAuditSwitcherResults(atlasAuditSwitcherQuery);
   }
+  if (confirmButton) confirmButton.hidden = true;
 };
+
+let atlasTopbarAuditOptions = [];
+let atlasAuditSwitcherQuery = null;
+let atlasAuditSwitcherActiveIndex = 0;
+
+function atlasAuditSwitcherMatches(query = "") {
+  const wanted = String(query || "").trim().toLowerCase();
+  return atlasTopbarAuditOptions.filter(
+    (option) =>
+      !wanted || String(option.label || "").toLowerCase().includes(wanted),
+  );
+}
+
+function atlasHighlightAuditSwitcherOption() {
+  const results = $("activeAuditResults");
+  const search = $("activeAuditSearch");
+  const options = [
+    ...(results?.querySelectorAll("[data-audit-switch-value]") || []),
+  ];
+  if (!options.length) {
+    search?.removeAttribute("aria-activedescendant");
+    return;
+  }
+  if (atlasAuditSwitcherActiveIndex >= options.length)
+    atlasAuditSwitcherActiveIndex = 0;
+  options.forEach((option, index) => {
+    const on = index === atlasAuditSwitcherActiveIndex;
+    option.classList.toggle("is-active", on);
+    option.id = `activeAuditOption-${index}`;
+    if (!on) return;
+    search?.setAttribute("aria-activedescendant", option.id);
+    const top = option.offsetTop;
+    const bottom = top + option.offsetHeight;
+    if (top < results.scrollTop) results.scrollTop = top;
+    else if (bottom > results.scrollTop + results.clientHeight)
+      results.scrollTop = bottom - results.clientHeight;
+  });
+}
+
+function atlasRenderAuditSwitcherResults(query = "", { resetIndex = false } = {}) {
+  const results = $("activeAuditResults");
+  const search = $("activeAuditSearch");
+  if (!results) return;
+  const matches = atlasAuditSwitcherMatches(query);
+  const selectedValue = $("activeAuditSelect")?.value || "";
+  if (resetIndex) {
+    const currentIndex = matches.findIndex(
+      (option) => option.value === selectedValue,
+    );
+    atlasAuditSwitcherActiveIndex = currentIndex >= 0 ? currentIndex : 0;
+  }
+  results.hidden = false;
+  search?.setAttribute("aria-expanded", "true");
+  results.innerHTML = matches.length
+    ? matches
+        .map((option) => {
+          const selected = option.value === selectedValue;
+          return `<button type="button" class="atlas-audit-switcher-option" role="option" aria-selected="${selected ? "true" : "false"}" data-audit-switch-value="${esc(option.value)}"><span>${esc(option.label)}</span><small>${esc(selected ? "Current" : option.group || "")}</small></button>`;
+        })
+        .join("")
+    : '<p class="hint">No matching audits.</p>';
+  atlasHighlightAuditSwitcherOption();
+}
+
+function atlasHideAuditSwitcherResults() {
+  const results = $("activeAuditResults");
+  const search = $("activeAuditSearch");
+  if (results) results.hidden = true;
+  search?.setAttribute("aria-expanded", "false");
+  search?.removeAttribute("aria-activedescendant");
+}
+
+function atlasRestoreAuditSwitcherLabel() {
+  const search = $("activeAuditSearch");
+  const select = $("activeAuditSelect");
+  if (!search || document.activeElement === search) return;
+  const current = atlasTopbarAuditOptions.find(
+    (option) => option.value === select?.value,
+  );
+  search.value = current?.label || "";
+  atlasAuditSwitcherQuery = null;
+}
+
+function atlasChooseAuditSwitcherValue(value) {
+  const select = $("activeAuditSelect");
+  const search = $("activeAuditSearch");
+  if (select) select.value = value;
+  state.pendingActiveAuditValue = "";
+  atlasAuditSwitcherQuery = null;
+  atlasHideAuditSwitcherResults();
+  search?.blur();
+  if (!value || value === state.activeAuditValue) {
+    renderActiveAuditSelect?.();
+    return;
+  }
+  switchActiveAudit(value)
+    .then(() => renderActiveAuditSelect?.())
+    .catch((err) => {
+      status?.(`Audit switch failed: ${err.message}`, "bad");
+      renderActiveAuditSelect?.();
+    });
+}
+
+document.addEventListener("focusin", (event) => {
+  if (event.target?.id !== "activeAuditSearch") return;
+  atlasAuditSwitcherQuery = null;
+  atlasRenderAuditSwitcherResults("", { resetIndex: true });
+  event.target.select?.();
+});
+document.addEventListener("input", (event) => {
+  if (event.target?.id !== "activeAuditSearch") return;
+  atlasAuditSwitcherQuery = event.target.value;
+  atlasRenderAuditSwitcherResults(event.target.value, { resetIndex: true });
+});
+document.addEventListener("keydown", (event) => {
+  if (event.target?.id !== "activeAuditSearch") return;
+  const options = [
+    ...($("activeAuditResults")?.querySelectorAll("[data-audit-switch-value]") ||
+      []),
+  ];
+  if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+    event.preventDefault();
+    if ($("activeAuditResults")?.hidden) {
+      atlasAuditSwitcherQuery = null;
+      atlasRenderAuditSwitcherResults("", { resetIndex: true });
+    }
+    const list = [
+      ...($("activeAuditResults")?.querySelectorAll("[data-audit-switch-value]") ||
+        []),
+    ];
+    if (!list.length) return;
+    const delta = event.key === "ArrowDown" ? 1 : -1;
+    atlasAuditSwitcherActiveIndex =
+      (atlasAuditSwitcherActiveIndex + delta + list.length) % list.length;
+    atlasHighlightAuditSwitcherOption();
+    return;
+  }
+  if (event.key === "Enter") {
+    event.preventDefault();
+    const option = options[atlasAuditSwitcherActiveIndex] || options[0];
+    if (option) atlasChooseAuditSwitcherValue(option.dataset.auditSwitchValue || "");
+    return;
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    atlasAuditSwitcherQuery = null;
+    atlasHideAuditSwitcherResults();
+    event.target.blur();
+  }
+});
+document.addEventListener(
+  "mousedown",
+  (event) => {
+    if (event.target.closest?.(".topbar-audit-switcher [data-audit-switch-value]"))
+      event.preventDefault();
+  },
+  true,
+);
+document.addEventListener("focusout", (event) => {
+  if (event.target?.id !== "activeAuditSearch") return;
+  setTimeout(() => {
+    if (document.activeElement?.closest?.(".topbar-audit-switcher")) return;
+    atlasAuditSwitcherQuery = null;
+    atlasHideAuditSwitcherResults();
+    atlasRestoreAuditSwitcherLabel();
+  }, 0);
+});
+document.addEventListener(
+  "click",
+  (event) => {
+    const option = event.target.closest?.(
+      ".topbar-audit-switcher [data-audit-switch-value]",
+    );
+    if (option) {
+      event.preventDefault();
+      atlasChooseAuditSwitcherValue(option.dataset.auditSwitchValue || "");
+      return;
+    }
+    if (!event.target.closest?.(".topbar-audit-switcher")) {
+      atlasAuditSwitcherQuery = null;
+      atlasHideAuditSwitcherResults();
+      atlasRestoreAuditSwitcherLabel();
+    }
+  },
+  true,
+);
 
 // Database-only audit selectors and metrics.
 topbarAuditOptions = function topbarDatabaseAuditOptions() {
@@ -1047,7 +1233,10 @@ function renderMyAudits() {
 
   const statusFilter = state.myAuditsStatusFilter || "all";
   const statusControl = $("myAuditsStatusFilter");
-  if (statusControl) statusControl.value = statusFilter;
+  if (statusControl) {
+    statusControl.value = statusFilter;
+    atlasSyncChoiceSelection?.(statusControl);
+  }
   const query = String(state.myAuditsSearch ?? "")
     .trim()
     .toLowerCase();

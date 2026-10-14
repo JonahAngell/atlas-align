@@ -113,17 +113,36 @@
           <div class="topbar-primary">
             <div
               aria-label="Current audit selector"
-              class="topbar-audit-switcher"
+              class="topbar-audit-switcher atlas-audit-switcher"
             >
-              <label for="activeAuditSelect">Current audit</label
-              ><select id="activeAuditSelect">
-                <option value="">No audit selected</option></select
-              ><button
+              <label for="activeAuditSearch">Current audit</label>
+              <input id="activeAuditSelect" type="hidden" value="" />
+              <div class="audit-switcher-field">
+                <input
+                  id="activeAuditSearch"
+                  type="text"
+                  class="input"
+                  role="combobox"
+                  placeholder="Search audits"
+                  autocomplete="off"
+                  aria-autocomplete="list"
+                  aria-controls="activeAuditResults"
+                  aria-expanded="false"
+                />
+              </div>
+              <div
+                id="activeAuditResults"
+                class="atlas-audit-switcher-results"
+                role="listbox"
+                hidden
+              ></div>
+              <button
                 aria-label="Switch audit"
                 class="btn primary small confirm-audit-button"
                 id="confirmActiveAuditBtn"
                 title="Switch audit"
                 type="button"
+                hidden
               >
                 Switch
               </button>

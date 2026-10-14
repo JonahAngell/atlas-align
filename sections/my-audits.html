@@ -62,16 +62,21 @@
         type="search"
       />
 
-      <label class="my-audits-status-filter">
-        <span>Status</span>
-        <select id="myAuditsStatusFilter">
-          <option value="all">All Statuses</option>
-          <option value="Draft">Draft</option>
-          <option value="Requirement Gathering">Requirement Gathering</option>
-          <option value="Ready for Review">Ready for Review</option>
-          <option value="Complete">Complete</option>
-        </select>
-      </label>
+      <div class="my-audits-status-filter atlas-choice-field">
+        <span class="atlas-choice-heading" id="myAuditsStatusLabel">Status</span>
+        <div
+          class="atlas-choice atlas-choice-chips"
+          role="radiogroup"
+          aria-labelledby="myAuditsStatusLabel"
+        >
+          <input id="myAuditsStatusFilter" type="hidden" value="all" />
+          <button type="button" class="atlas-choice-option is-selected" role="radio" aria-checked="true" data-choice-value="all" tabindex="0">All</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Draft" tabindex="-1">Draft</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Requirement Gathering" tabindex="-1">Requirement Gathering</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Ready for Review" tabindex="-1">Ready for Review</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Complete" tabindex="-1">Complete</button>
+        </div>
+      </div>
 
       <div class="my-audits-toolbar-actions">
         <button class="btn secondary" id="refreshLibraryBtn" type="button">

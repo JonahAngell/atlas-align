@@ -107,6 +107,7 @@ function bindEvents() {
       const result = globalThis.ATLASAuditIssues?.current?.();
       if ((result?.counts?.critical || 0) > 0) {
         event.target.value = previous;
+        atlasSyncChoiceSelection?.(event.target);
         if (message)
           message.textContent =
             "Resolve all Critical Errors before marking this audit Ready for Review or Complete.";

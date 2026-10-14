@@ -347,6 +347,22 @@
       "targetType": "condition",
       "config": {},
       "documentation": "Uses enabled, complete INNER, LEFT, RIGHT, and FULL OUTER JOIN steps as undirected source relationships. UNION does not establish connectivity."
+    },
+    {
+      "id": "audit.logic.self-field-comparison",
+      "enabled": true,
+      "severity": "warning",
+      "category": "conditions",
+      "priority": 40,
+      "title": "Condition compares a field to itself",
+      "summary": "This condition compares a field to the same field. Choose a different field, or compare against a value.",
+      "detail": "Both sides name the same source and field, so this comparison does not check two different values. Choose a different field, or compare against a value.",
+      "evaluator": "selfFieldComparison",
+      "jumpAction": "openLogicTarget",
+      "fixAction": "repairIssue",
+      "targetType": "condition",
+      "config": {},
+      "documentation": "Warns when a compare-to-field condition uses the same source identity and field name on both sides. Catalog aliases resolve through source identity. Created-column tokens and attached calculated fields use the same match."
     }
   ]
 }

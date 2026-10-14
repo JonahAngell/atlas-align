@@ -38,15 +38,20 @@
         >
         </textarea>
       </label>
-      <label>
-        Status
-        <select id="auditStatus">
-          <option value="Draft">Draft</option>
-          <option value="Requirement Gathering">Requirement Gathering</option>
-          <option value="Ready for Review">Ready for Review</option>
-          <option value="Complete">Complete</option>
-        </select>
-      </label>
+      <div class="atlas-choice-field">
+        <span class="atlas-choice-heading" id="auditStatusLabel">Status</span>
+        <div
+          class="atlas-choice atlas-choice-segment"
+          role="radiogroup"
+          aria-labelledby="auditStatusLabel"
+        >
+          <input id="auditStatus" type="hidden" value="Draft" />
+          <button type="button" class="atlas-choice-option is-selected" role="radio" aria-checked="true" data-choice-value="Draft" tabindex="0">Draft</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Requirement Gathering" tabindex="-1">Requirement Gathering</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Ready for Review" tabindex="-1">Ready for Review</button>
+          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Complete" tabindex="-1">Complete</button>
+        </div>
+      </div>
       <p
         aria-live="polite"
         class="hint audit-status-message"

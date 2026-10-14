@@ -817,7 +817,7 @@ document.addEventListener(
       const panel = menuAction.closest("[data-rule-menu-panel]");
       const ruleId = panel?.dataset.ruleMenuPanel || "";
       const step = stepById?.(ruleId);
-      if (!panel || !step) {
+      if (!step) {
         atlasCloseRuleMenus();
         status?.("The selected rule is no longer available.", "warn");
         return;

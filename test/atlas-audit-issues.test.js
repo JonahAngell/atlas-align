@@ -1398,6 +1398,288 @@ test("Create Column source-field mode still flags a missing catalog field", asyn
   assert.equal(issues[0].target.control, "param:field_name");
 });
 
+test("comparing two created fields does not flag them as missing catalog fields", async () => {
+  const audit = completeAudit();
+  audit.steps = [
+    {
+      id: "column-a",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "create_column",
+      params: {
+        value_mode: "Static value",
+        column_name: "test",
+      },
+    },
+    {
+      id: "column-b",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "create_column",
+      params: {
+        value_mode: "Static value",
+        column_name: "test 2",
+      },
+    },
+    {
+      id: "compare-step",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "if_then",
+      params: {
+        then_action_type: "do_not_display",
+        conditions_json: JSON.stringify([
+          {
+            id: "cond_2b8db257",
+            sourceFile: "__created_columns__",
+            fieldName: "test",
+            operator: "is equal to",
+            valueMode: "field",
+            compareSourceFile: "__created_columns__",
+            compareFieldName: "test 2",
+            compareFieldRef: {
+              kind: "created",
+              creatorStepId: "column-b",
+            },
+          },
+        ]),
+      },
+    },
+  ];
+  const context = await runtime(audit);
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.target?.stepId === "compare-step",
+  );
+  assert.equal(
+    issues.filter((entry) => entry.ruleId === "audit.sources.reference-integrity")
+      .length,
+    0,
+  );
+  assert.equal(
+    issues.filter((entry) => entry.ruleId === "audit.logic.self-field-comparison")
+      .length,
+    0,
+  );
+});
+
+test("comparing a created field to itself warns once", async () => {
+  const audit = completeAudit();
+  audit.steps = [
+    {
+      id: "column-a",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "create_column",
+      params: {
+        value_mode: "Static value",
+        column_name: "test",
+      },
+    },
+    {
+      id: "compare-step",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "if_then",
+      params: {
+        then_action_type: "do_not_display",
+        conditions_json: JSON.stringify([
+          {
+            id: "cond_self",
+            sourceFile: "__created_columns__",
+            fieldName: "test",
+            fieldRef: { kind: "created", creatorStepId: "column-a" },
+            operator: "is equal to",
+            valueMode: "field",
+            compareSourceFile: "__created_columns__",
+            compareFieldName: "test",
+          },
+        ]),
+      },
+    },
+  ];
+  const context = await runtime(audit);
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.target?.stepId === "compare-step",
+  );
+  const warnings = issues.filter(
+    (entry) => entry.ruleId === "audit.logic.self-field-comparison",
+  );
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].severity, "warning");
+  assert.equal(warnings[0].title, "Condition compares a field to itself");
+  assert.equal(
+    warnings[0].summary,
+    'This condition compares "test" to itself. Choose a different field, or compare against a value.',
+  );
+  assert.equal(warnings[0].instanceId, "compare-step-cond_self-self-compare");
+  assert.equal(warnings[0].target.page, "steps");
+  assert.equal(warnings[0].target.conditionId, "cond_self");
+  assert.equal(warnings[0].target.control, "condition-compareFieldName");
+  assert.equal(
+    issues.some(
+      (entry) =>
+        entry.ruleId === "audit.sources.reference-integrity" ||
+        entry.ruleId === "audit.logic.created-reference" ||
+        entry.severity === "critical",
+    ),
+    false,
+  );
+});
+
+test("comparing an attached calculated field to itself warns once", async () => {
+  const audit = completeAudit();
+  audit.steps = [
+    {
+      id: "ref-source",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "reference_source",
+      source: "source.one",
+      params: { source_file: "source.one" },
+    },
+    {
+      id: "attached-column",
+      enabled: true,
+      parentId: "ref-source",
+      branchType: "then",
+      step_type: "create_column",
+      params: {
+        value_mode: "Static value",
+        column_name: "test",
+      },
+    },
+    {
+      id: "compare-step",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "if_then",
+      params: {
+        then_action_type: "do_not_display",
+        conditions_json: JSON.stringify([
+          {
+            id: "cond_attached",
+            sourceFile: "source.one",
+            fieldName: "test",
+            operator: "is equal to",
+            valueMode: "field",
+            compareSourceFile: "Source One",
+            compareFieldName: "test",
+          },
+        ]),
+      },
+    },
+  ];
+  const context = await runtime(audit);
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.target?.stepId === "compare-step",
+  );
+  const warnings = issues.filter(
+    (entry) => entry.ruleId === "audit.logic.self-field-comparison",
+  );
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].severity, "warning");
+  assert.equal(
+    issues.some((entry) => entry.ruleId === "audit.sources.reference-integrity"),
+    false,
+  );
+});
+
+test("comparing a catalog field to itself warns once", async () => {
+  const audit = completeAudit();
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    {
+      id: "cond_status",
+      sourceFile: "source.one",
+      fieldName: "Status",
+      operator: "is equal to",
+      valueMode: "field",
+      compareSourceFile: "source.one",
+      compareFieldName: "Status",
+    },
+  ]);
+  const context = await runtime(audit);
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.target?.stepId === "step-1",
+  );
+  const warnings = issues.filter(
+    (entry) => entry.ruleId === "audit.logic.self-field-comparison",
+  );
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].severity, "warning");
+  assert.equal(
+    warnings[0].summary,
+    'This condition compares "Status" to itself. Choose a different field, or compare against a value.',
+  );
+  assert.equal(
+    issues.some((entry) => entry.severity === "critical"),
+    false,
+  );
+});
+
+test("comparing a catalog field to itself through an alias warns once", async () => {
+  const audit = completeAudit();
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    {
+      id: "cond_alias",
+      sourceFile: "Source One",
+      fieldName: "Status",
+      operator: "is equal to",
+      valueMode: "field",
+      compareSourceFile: "source.one",
+      compareFieldName: "Status",
+    },
+  ]);
+  const context = await runtime(audit);
+  const warnings = context.ATLASAuditIssues.current().issues.filter(
+    (entry) =>
+      entry.target?.stepId === "step-1" &&
+      entry.ruleId === "audit.logic.self-field-comparison",
+  );
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].severity, "warning");
+});
+
+test("comparing two different catalog fields does not self-compare warn", async () => {
+  const audit = completeAudit();
+  audit.sources.push({ sourceKey: "source.two", sourceFile: "Source Two" });
+  audit.fields.push(
+    { sourceKey: "source.one", rawFieldName: "Amount", name: "Amount" },
+    { sourceKey: "source.two", rawFieldName: "Status", name: "Status" },
+  );
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    {
+      id: "cond_fields",
+      sourceFile: "source.one",
+      fieldName: "Status",
+      operator: "is equal to",
+      valueMode: "field",
+      compareSourceFile: "source.one",
+      compareFieldName: "Amount",
+    },
+    {
+      id: "cond_sources",
+      sourceFile: "source.one",
+      fieldName: "Status",
+      operator: "is equal to",
+      valueMode: "field",
+      compareSourceFile: "source.two",
+      compareFieldName: "Status",
+    },
+  ]);
+  const context = await runtime(audit);
+  const warnings = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.ruleId === "audit.logic.self-field-comparison",
+  );
+  assert.equal(warnings.length, 0);
+});
+
 test("unmatched source replacement gaps are critical and suppress the generic missing-source issue", async () => {
   const audit = completeAudit();
   audit.sources = [{ sourceKey: "source.two", sourceFile: "Source Two" }];

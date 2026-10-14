@@ -111,42 +111,75 @@ function atlasHistoryRenderTimeline() {
   document.getElementById("atlasHistoryMore").hidden =
     historyView.activityComplete;
 }
-function atlasHistoryRenderSelectors() {
-  const r = document.getElementById("atlasRevisionSelector"),
-    p = document.getElementById("atlasPublicationSelector");
-  if (r) {
-    r.innerHTML =
-      '<option value="">Select revision</option>' +
-      historyView.revisions
-        .slice()
-        .sort((a, b) => a.number - b.number)
-        .map(
-          (x) =>
-            `<option value="${x.id}">Revision ${esc(x.number)} · ${esc(x.changeType || "")}</option>`,
-        )
-        .join("");
-    r.value =
-      historyView.kind === "revision"
-        ? String(historyView.revisionId || "")
-        : "";
+function atlasHistorySortedRevisions() {
+  return historyView.revisions.slice().sort((a, b) => a.number - b.number);
+}
+function atlasHistorySortedPublications() {
+  return historyView.publications
+    .slice()
+    .sort((a, b) => a.versionNumber - b.versionNumber);
+}
+function atlasHistoryPositionLabel(kind) {
+  const revisions = atlasHistorySortedRevisions();
+  const publications = atlasHistorySortedPublications();
+  if (kind === "revision") {
+    const index = revisions.findIndex(
+      (item) => Number(item.id) === Number(historyView.revisionId),
+    );
+    return revisions.length
+      ? `Revision ${index >= 0 ? index + 1 : "—"} of ${revisions.length}`
+      : "No revisions";
   }
-  if (p) {
-    p.innerHTML =
-      '<option value="">Select publication</option>' +
-      historyView.publications
-        .slice()
-        .sort((a, b) => a.versionNumber - b.versionNumber)
-        .map(
-          (x) =>
-            `<option value="${x.versionNumber}">v${esc(x.versionNumber)} · ${esc(x.versionTitle || "")}</option>`,
-        )
-        .join("");
-    p.value =
-      historyView.kind === "publication"
-        ? String(historyView.publicationVersion || "")
-        : "";
+  const index = publications.findIndex(
+    (item) =>
+      Number(item.versionNumber) === Number(historyView.publicationVersion),
+  );
+  return publications.length
+    ? `Publication ${index >= 0 ? index + 1 : "—"} of ${publications.length}`
+    : "No publications";
+}
+function atlasHistoryRenderSelectors() {
+  const revisionButton = document.getElementById("atlasRevisionSelector");
+  const publicationButton = document.getElementById("atlasPublicationSelector");
+  if (revisionButton) {
+    revisionButton.textContent = atlasHistoryPositionLabel("revision");
+    revisionButton.disabled = !historyView.revisions.length;
+  }
+  if (publicationButton) {
+    publicationButton.textContent = atlasHistoryPositionLabel("publication");
+    publicationButton.disabled = !historyView.publications.length;
   }
   atlasHistoryUpdateNavigation();
+}
+function atlasHistoryOpenJumpList(kind, anchor) {
+  document.querySelector(".atlas-jump-dialog")?.remove();
+  const items =
+    kind === "publication"
+      ? atlasHistorySortedPublications().map((item) => ({
+          value: String(item.versionNumber),
+          label: `v${item.versionNumber}${item.versionTitle ? ` · ${item.versionTitle}` : ""}`,
+        }))
+      : atlasHistorySortedRevisions().map((item) => ({
+          value: String(item.id),
+          label: `Revision ${item.number}${item.changeType ? ` · ${item.changeType}` : ""}`,
+        }));
+  const dialog = document.createElement("div");
+  dialog.className = "atlas-jump-dialog";
+  dialog.setAttribute("role", "dialog");
+  dialog.setAttribute(
+    "aria-label",
+    kind === "publication" ? "Choose publication" : "Choose revision",
+  );
+  dialog.innerHTML = items.length
+    ? items
+        .map(
+          (item) =>
+            `<button type="button" data-history-jump-kind="${esc(kind)}" data-history-jump-value="${esc(item.value)}">${esc(item.label)}</button>`,
+        )
+        .join("")
+    : '<p class="hint">Nothing to choose yet.</p>';
+  anchor?.insertAdjacentElement("afterend", dialog);
+  dialog.querySelector("button")?.focus();
 }
 function atlasHistoryUpdateNavigation() {
   const pubs = historyView.kind === "publication",
@@ -372,18 +405,25 @@ document
 document
   .getElementById("atlasHistoryMore")
   ?.addEventListener("click", () => atlasHistoryLoad(true));
-document
-  .getElementById("atlasRevisionSelector")
-  ?.addEventListener(
-    "change",
-    (e) => e.target.value && atlasHistorySelectRevision(e.target.value),
-  );
-document
-  .getElementById("atlasPublicationSelector")
-  ?.addEventListener(
-    "change",
-    (e) => e.target.value && atlasHistorySelectPublication(e.target.value),
-  );
+document.getElementById("atlasRevisionSelector")?.addEventListener("click", (event) => {
+  atlasHistoryOpenJumpList("revision", event.currentTarget);
+});
+document.getElementById("atlasPublicationSelector")?.addEventListener("click", (event) => {
+  atlasHistoryOpenJumpList("publication", event.currentTarget);
+});
+document.addEventListener("click", (event) => {
+  const jump = event.target.closest?.("[data-history-jump-value]");
+  if (jump) {
+    const value = jump.dataset.historyJumpValue;
+    if (jump.dataset.historyJumpKind === "publication")
+      atlasHistorySelectPublication(value);
+    else atlasHistorySelectRevision(value);
+    document.querySelector(".atlas-jump-dialog")?.remove();
+    return;
+  }
+  if (!event.target.closest?.(".atlas-jump-dialog, #atlasRevisionSelector, #atlasPublicationSelector"))
+    document.querySelector(".atlas-jump-dialog")?.remove();
+});
 document
   .getElementById("atlasRevisionPrevious")
   ?.addEventListener("click", () => atlasHistoryMove("revision", -1));

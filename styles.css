@@ -10825,3 +10825,381 @@ body.dark .created-column-token {
     outline-color: Highlight;
   }
 }
+
+.atlas-choice-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.atlas-choice-heading {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.atlas-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.atlas-choice-segment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 0.2rem;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.atlas-choice-option {
+  min-height: 44px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.atlas-choice-segment .atlas-choice-option {
+  border-radius: 8px;
+}
+
+.atlas-choice-chips .atlas-choice-option,
+.atlas-choice-cards .atlas-choice-option {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.atlas-choice-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.atlas-choice-option:hover {
+  background: var(--surface2);
+}
+
+.atlas-choice-option.is-selected {
+  background: var(--accent2);
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.atlas-choice-segment .atlas-choice-option.is-selected {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.atlas-choice-option:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.atlas-choice-label,
+.atlas-choice-description {
+  display: block;
+}
+
+.atlas-choice-description {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.atlas-choice-option.is-selected .atlas-choice-description {
+  color: var(--text);
+}
+
+.atlas-choice-segment .atlas-choice-option.is-selected .atlas-choice-description {
+  color: var(--surface);
+}
+
+.atlas-choice-disclosure {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.atlas-choice-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  list-style: none;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.atlas-choice-disclosure > summary::-webkit-details-marker,
+.atlas-choice-disclosure > summary::marker {
+  display: none;
+  content: "";
+}
+
+.atlas-choice-disclosure > summary::after {
+  content: "▸";
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.atlas-choice-disclosure[open] > summary::after {
+  content: "▾";
+}
+
+.atlas-choice-disclosure > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+.atlas-choice-disclosure .atlas-choice-heading {
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.atlas-choice-current {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.atlas-choice-disclosure:not([open]) > .atlas-choice {
+  display: none;
+}
+
+.atlas-choice-disclosure > .atlas-choice {
+  padding: 0 0.75rem 0.75rem;
+}
+
+.refined-condition-row > .atlas-choice-field,
+.guided-builder > .atlas-choice-field {
+  grid-column: 1 / -1;
+}
+
+.atlas-filter-chips,
+.atlas-status-segments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.new-rule-dialog-backdrop.new-rule-menu-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  width: auto;
+  max-width: none;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--nav) 45%, transparent);
+  border: 0;
+  box-shadow: none;
+}
+
+.new-rule-dialog {
+  width: min(720px, 100%);
+  max-height: min(80vh, 640px);
+  overflow: auto;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+}
+
+.new-rule-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.new-rule-dialog-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.new-rule-dialog-options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.new-rule-type-option {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.new-rule-type-option:hover,
+.new-rule-type-option:focus-visible {
+  border-color: var(--primary);
+  background: var(--accent2);
+}
+
+.new-rule-type-description {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.atlas-jump-label {
+  min-height: 44px;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.atlas-saved-audit-row,
+.atlas-audit-switcher-option,
+.atlas-jump-dialog button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.45rem 0.65rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.atlas-audit-switcher-option:hover,
+.atlas-jump-dialog button:hover,
+.atlas-saved-audit-row:hover {
+  background: var(--surface2);
+}
+
+.atlas-audit-switcher-option small {
+  color: var(--muted);
+}
+
+#flowAuditList.atlas-audit-switcher-results {
+  position: static;
+  width: 100%;
+  max-height: 320px;
+  margin-top: 0.5rem;
+  box-shadow: none;
+}
+
+.atlas-audit-switcher-results,
+.atlas-jump-dialog {
+  position: absolute;
+  z-index: 30;
+  display: grid;
+  gap: 0.25rem;
+  width: min(420px, 80vw);
+  max-height: 280px;
+  overflow: auto;
+  padding: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.atlas-audit-switcher {
+  position: relative;
+}
+
+.topbar-audit-switcher {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "label"
+    "select";
+}
+
+.audit-switcher-field {
+  grid-area: select;
+  position: relative;
+}
+
+.audit-switcher-field::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  color: var(--muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+#activeAuditSearch {
+  min-height: 44px;
+  padding-right: 2rem;
+  background: var(--surface);
+  color: var(--text);
+}
+
+#activeAuditSearch:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+#confirmActiveAuditBtn[hidden],
+.topbar-audit-switcher .atlas-audit-switcher-results[hidden] {
+  display: none !important;
+}
+
+.topbar-audit-switcher .atlas-audit-switcher-results {
+  top: 100%;
+  left: 0;
+  width: 100%;
+  margin-top: 0.25rem;
+  z-index: 30;
+}
+
+.atlas-audit-switcher-option span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.atlas-audit-switcher-option[aria-selected="true"] {
+  background: var(--accent2);
+}
+
+.atlas-audit-switcher-option.is-active {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atlas-choice-option,
+  .new-rule-type-option {
+    transition: none;
+  }
+}

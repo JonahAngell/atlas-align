@@ -521,21 +521,44 @@ async function resetLocalAppData() {
 }
 
 // PostgreSQL is the only durable audit store. IndexedDB remains crash recovery only.
+function atlasRenderSavedAuditList() {
+  const flowList = document.getElementById("flowAuditList");
+  const audits = state.databaseAudits || [];
+  if (!flowList) return;
+  const query = String(document.getElementById("flowAuditSearch")?.value || "")
+    .trim()
+    .toLowerCase();
+  const visible = audits.filter((audit) =>
+    `${audit.name || ""} ${audit.id || ""}`.toLowerCase().includes(query),
+  );
+  flowList.hidden = false;
+  flowList.innerHTML = visible.length
+    ? visible
+        .map(
+          (audit) =>
+            `<div class="atlas-saved-audit-row"><span>${esc(audit.name)} — revision ${esc(audit.currentRevisionNumber || 0)}</span><button type="button" class="btn secondary small" data-load-saved-audit="${esc(audit.id)}">Load</button></div>`,
+        )
+        .join("")
+    : '<p class="hint">No matching saved audits.</p>';
+}
 refreshSaved = async function refreshDatabaseAudits() {
   await atlasRefreshDatabaseAudits?.();
   state.savedFlows = [];
-  if (e.flowSelect)
-    e.flowSelect.innerHTML = (state.databaseAudits || []).length
-      ? state.databaseAudits
-          .map(
-            (audit) =>
-              `<option value="${esc(audit.id)}">${esc(audit.name)} — revision ${audit.currentRevisionNumber || 0}</option>`,
-          )
-          .join("")
-      : '<option value="">No database audits yet</option>';
+  atlasRenderSavedAuditList();
   if (e.saveStatus)
     e.saveStatus.textContent = `${(state.databaseAudits || []).length} audit${(state.databaseAudits || []).length === 1 ? "" : "s"} in the shared database.`;
 };
+document.addEventListener("input", (event) => {
+  if (event.target?.id !== "flowAuditSearch") return;
+  atlasRenderSavedAuditList();
+});
+document.addEventListener("click", (event) => {
+  const load = event.target.closest?.("[data-load-saved-audit]");
+  if (!load) return;
+  event.preventDefault();
+  if (e.flowSelect) e.flowSelect.value = load.dataset.loadSavedAudit || "";
+  loadFlow?.()?.catch?.((err) => status?.(err.message, "bad"));
+});
 saveFlow = async function saveDatabaseAudit() {
   return atlasSaveCurrentAudit?.();
 };

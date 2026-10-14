@@ -53,11 +53,18 @@
       <button class="btn primary full" id="saveFlowBtn" type="button">
         Save Current Audit Locally
       </button>
-      <label
-        >Load Saved Audit<select id="flowSelect">
-          <option value="">No saved audits yet</option>
-        </select></label
-      >
+      <div class="atlas-saved-audit-picker atlas-audit-switcher">
+        <label for="flowAuditSearch">Load saved audit</label>
+        <input id="flowSelect" type="hidden" value="" />
+        <input
+          id="flowAuditSearch"
+          class="input"
+          type="search"
+          placeholder="Search saved audits"
+          autocomplete="off"
+        />
+        <div id="flowAuditList" class="atlas-audit-switcher-results"></div>
+      </div>
       <div class="toolbar">
         <button class="btn secondary small" id="loadFlowBtn" type="button">
           Load Saved Audit</button

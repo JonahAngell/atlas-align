@@ -2330,13 +2330,43 @@ function atlasRenderLogicImportMapping() {
   const controls = (draft.controls || [])
     .map((control) => {
       if (control.kind === "select") {
-        const options = (control.options || [])
-          .map(
-            (option) =>
-              `<option value="${atlasImportEsc(option)}" ${option === control.value ? "selected" : ""}>${atlasImportEsc(option)}</option>`,
-          )
-          .join("");
-        return `<label class="logic-import-control">${atlasImportEsc(control.label)}<select data-import-control="${atlasImportEsc(control.id)}">${options}</select></label>`;
+        const descriptions = {
+          "INNER JOIN": "Keep rows that match in both sources.",
+          "LEFT JOIN": "Keep every left-source row, plus matches.",
+          "RIGHT JOIN": "Keep every right-source row, plus matches.",
+          "FULL OUTER JOIN": "Keep every row from both sources.",
+          UNION: "Append rows from both sources into one output.",
+          "eight digits with leading zeroes": "Pad the value to eight digits.",
+          "date format MM/DD/YYYY": "Show the value as a date.",
+          text: "Keep the value as text.",
+          number: "Keep the value as a number.",
+          "Keep first record": "Keep the earliest matching record.",
+          "Keep last record": "Keep the latest matching record.",
+          "Drop all duplicated records": "Remove every record that is duplicated.",
+          "Keep matching rows": "Keep rows that match the condition.",
+          "Exclude matching rows": "Drop rows that match the condition.",
+        };
+        const options = (control.options || []).map((option) => [
+          option,
+          option,
+          descriptions[option] || "",
+        ]);
+        const id = control.id || "";
+        const variant =
+          id.endsWith("sort-direction") || id === "filter-action"
+            ? "segment"
+            : id === "join_type" || id === "format" || id === "duplicate-action"
+              ? "cards"
+              : "chips";
+        return `<div class="logic-import-control atlas-choice-field"><span class="atlas-choice-heading">${atlasImportEsc(control.label)}</span>${atlasChoiceControl(
+          {
+            options,
+            selected: control.value,
+            variant,
+            label: control.label,
+            attributes: `data-import-control="${atlasImportEsc(control.id)}"`,
+          },
+        )}</div>`;
       }
       if (control.kind === "values") {
         return `<label class="logic-import-control">${atlasImportEsc(control.label)}<textarea data-import-control="${atlasImportEsc(control.id)}" rows="3">${atlasImportEsc(control.value)}</textarea></label>`;

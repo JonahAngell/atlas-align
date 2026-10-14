@@ -576,6 +576,74 @@
           )
             ? context.sourceIdentityMap[sourceKey]
             : string(reference.source).trim();
+          const createdSourceTokens = new Set([
+            "__created_columns__",
+            "calculated fields",
+            "calculated field",
+            "created columns",
+            "created column",
+          ]);
+          const conditionForReference = step.conditions.find(
+            (condition) =>
+              string(condition.id) === conditionId ||
+              String(condition.__index) === conditionId,
+          );
+          const createdFieldRef =
+            locationKind === "compare"
+              ? conditionForReference?.compareFieldRef
+              : conditionForReference?.fieldRef;
+          const createdFieldName = string(reference.field)
+            .trim()
+            .toLocaleLowerCase();
+          const matchingCreatedColumns = context.audit.steps.filter((item) => {
+            if (item.type !== "create_column" || item.index >= step.index)
+              return false;
+            return (
+              string(item.params?.column_name || item.field || "")
+                .trim()
+                .toLocaleLowerCase() === createdFieldName
+            );
+          });
+          const attachedSourceTokens = (column) => {
+            const tokens = new Set();
+            let current = column;
+            const seen = new Set();
+            while (current?.parentId && !seen.has(current.id)) {
+              seen.add(current.id);
+              const parent = context.audit.steps.find(
+                (item) => item.id === current.parentId,
+              );
+              if (!parent) break;
+              if (parent.type === "reference_source") {
+                [parent.params?.source_file, parent.source]
+                  .map((value) => string(value).trim())
+                  .filter(Boolean)
+                  .forEach((value) => {
+                    tokens.add(value.toLocaleLowerCase());
+                    const mapped = context.sourceIdentityMap?.[
+                      value.toLocaleLowerCase()
+                    ];
+                    if (mapped) tokens.add(string(mapped).trim().toLocaleLowerCase());
+                  });
+                break;
+              }
+              current = parent;
+            }
+            return tokens;
+          };
+          const createdReferenceReason = createdFieldRef?.kind === "created"
+            ? "created-ref"
+            : createdSourceTokens.has(sourceKey) && matchingCreatedColumns.length
+              ? "created-source"
+              : matchingCreatedColumns.some((column) =>
+                    attachedSourceTokens(column).has(sourceKey) ||
+                    attachedSourceTokens(column).has(
+                      string(canonicalSource).trim().toLocaleLowerCase(),
+                    ),
+                  )
+                ? "attached-source"
+                : "";
+          if (createdReferenceReason) return;
           if (
             selectedSources.size &&
             !selectedSources.has(canonicalSource) &&
@@ -609,67 +677,7 @@
           if (
             knownFields.size &&
             !knownFields.has(`${canonicalSource}::${reference.field}`)
-          ) {
-            // #region agent log
-            const conditionMatch = step.conditions.find(
-              (condition) =>
-                string(condition.id) === conditionId ||
-                String(condition.__index) === conditionId,
-            );
-            const fieldName = string(reference.field).trim();
-            fetch(
-              "http://127.0.0.1:7617/ingest/4d07ccff-1e81-4bc2-ba64-1517d5bc059a",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-Debug-Session-Id": "5972a3",
-                },
-                body: JSON.stringify({
-                  sessionId: "5972a3",
-                  runId: "pre-fix",
-                  hypothesisId: "A-E",
-                  location: "js/23-atlas-audit-issues.js:sourceAndFieldIntegrity",
-                  message: "field reference missing from known fields",
-                  data: {
-                    stepId: step.id,
-                    stepIndex: step.index,
-                    stepType: step.type,
-                    location: reference.location,
-                    source: string(reference.source).trim(),
-                    field: fieldName,
-                    canonicalSource,
-                    sourceMapHit: Object.prototype.hasOwnProperty.call(
-                      context.sourceIdentityMap || {},
-                      sourceKey,
-                    ),
-                    mappedSource: context.sourceIdentityMap?.[sourceKey] ?? null,
-                    conditionId,
-                    sameConditionCount: step.conditions.filter(
-                      (condition) =>
-                        string(condition.id) === conditionId ||
-                        String(condition.__index) === conditionId,
-                    ).length,
-                    fieldRefKind: conditionMatch?.fieldRef?.kind || "",
-                    compareFieldRefKind:
-                      conditionMatch?.compareFieldRef?.kind || "",
-                    fieldKnownElsewhere: (context.knownFieldIds || []).some(
-                      (id) => string(id).endsWith(`::${fieldName}`),
-                    ),
-                    createdColumnNames: context.audit.steps
-                      .filter((item) => item.type === "create_column")
-                      .map((item) =>
-                        string(
-                          item.params?.column_name || item.field || "",
-                        ).trim(),
-                      )
-                      .filter(Boolean),
-                  },
-                  timestamp: Date.now(),
-                }),
-              },
-            ).catch(() => {});
-            // #endregion
+          )
             issues.push(
               issue(
                 `${step.id}-${reference.location}-field`,
@@ -682,7 +690,6 @@
                 },
               ),
             );
-          }
         });
       });
       return issues;
@@ -1496,6 +1503,85 @@
         });
       });
     },
+    selfFieldComparison(context) {
+      const createdSourceTokens = new Set([
+        "__created_columns__",
+        "calculated fields",
+        "calculated field",
+        "created columns",
+        "created column",
+      ]);
+      const sourceIdentityFor = (value) => {
+        const raw = string(value).trim();
+        if (!raw) return "";
+        const key = raw.toLocaleLowerCase();
+        if (createdSourceTokens.has(key)) return "__created_columns__";
+        const map = context.sourceIdentityMap || {};
+        if (Object.prototype.hasOwnProperty.call(map, key)) {
+          const mapped = map[key];
+          return mapped ? string(mapped).trim().toLocaleLowerCase() : "";
+        }
+        return key;
+      };
+      return context.audit.steps.flatMap((step) =>
+        step.conditions.flatMap((condition) => {
+          if (
+            condition.__parseError ||
+            (condition.valueMode || "values") !== "field"
+          )
+            return [];
+          const sourceValue = condition.sourceFile || step.source;
+          const compareSourceValue = condition.compareSourceFile;
+          const field = condition.fieldName || condition.field;
+          const compareField = condition.compareFieldName;
+          if (
+            blank(sourceValue) ||
+            blank(compareSourceValue) ||
+            blank(field) ||
+            blank(compareField)
+          )
+            return [];
+          const sourceIdentity = sourceIdentityFor(sourceValue);
+          const compareIdentity = sourceIdentityFor(compareSourceValue);
+          if (
+            !sourceIdentity ||
+            sourceIdentity !== compareIdentity ||
+            string(field).trim().toLocaleLowerCase() !==
+              string(compareField).trim().toLocaleLowerCase()
+          )
+            return [];
+          const conditionId = string(condition.id).trim();
+          const fieldLabel = string(field).trim();
+          return [
+            issue(
+              `${step.id}-${conditionId || condition.__index}-self-compare`,
+              {
+                page: "steps",
+                stepId: step.id,
+                conditionId,
+                field: "condition",
+                control: "condition-compareFieldName",
+              },
+              {
+                severity: "warning",
+                summary: `This condition compares "${fieldLabel}" to itself. Choose a different field, or compare against a value.`,
+                control: "condition-compareFieldName",
+                fixKind: "picker",
+                actionData: {
+                  repair: "logic-reference",
+                  referenceKind: "field",
+                  location: "compare",
+                  conditionId,
+                  stepId: step.id,
+                  source: string(compareSourceValue).trim(),
+                  fieldName: string(compareField).trim(),
+                },
+              },
+            ),
+          ];
+        }),
+      );
+    },
   };
 
   function currentAuditKey() {
@@ -1874,15 +1960,129 @@
       .filter((name) => name && !seen.has(name) && seen.add(name));
   }
 
+  function fixChoiceItems(options) {
+    return options.map((option) => {
+      const value = typeof option === "string" ? option : option.value;
+      const text = typeof option === "string" ? option : option.label || value;
+      return [value, text];
+    });
+  }
+
+  function fixPickerMarkup(name, label, selected = "") {
+    const kind = name === "field" ? "field" : "source";
+    const caption = selected || "Choose...";
+    return `<div class="atlas-choice-field"><span class="atlas-choice-heading">${safeText(label)}</span><div class="atlas-fix-picker"><input type="hidden" data-fix-field="${safeText(name)}" value="${safeText(selected)}"><button type="button" class="visual-picker-trigger-button${selected ? "" : " empty"}" data-fix-open-picker="${kind}" data-fix-picker-for="${safeText(name)}"><span class="visual-picker-trigger-copy"><strong>${safeText(caption)}</strong></span></button></div></div>`;
+  }
+
   function selectMarkup(name, label, options, selected = "") {
-    const choices = options
-      .map((option) => {
-        const value = typeof option === "string" ? option : option.value;
-        const text = typeof option === "string" ? option : option.label || value;
-        return `<option value="${safeText(value)}"${value === selected ? " selected" : ""}>${safeText(text)}</option>`;
-      })
-      .join("");
-    return `<label>${safeText(label)}<select data-fix-field="${safeText(name)}"><option value="">Choose...</option>${choices}</select></label>`;
+    if (name === "source" || name === "field")
+      return fixPickerMarkup(name, label, selected);
+    const items = fixChoiceItems(options);
+    const variant =
+      name === "stepType" || name === "actionType"
+        ? "cards"
+        : items.length <= 4 && items.every((item) => item[1].length <= 16)
+          ? "segment"
+          : "chips";
+    const described =
+      name === "stepType"
+        ? items.map(([value, text]) => [
+            value,
+            text,
+            value === "if_then"
+              ? "Add conditional IF / THEN logic."
+              : value === "join"
+                ? "Combine sources with Join or Union logic."
+                : "Create or populate an output column.",
+          ])
+        : name === "actionType"
+          ? items.map(([value, text]) => [
+              value,
+              text,
+              value === "do_not_display"
+                ? "Hide the matching record."
+                : "Show a text response for the matching record.",
+            ])
+          : items;
+    return `<div class="atlas-choice-field"><span class="atlas-choice-heading">${safeText(label)}</span>${
+      typeof atlasChoiceControl === "function"
+        ? atlasChoiceControl({
+            options: described,
+            selected,
+            variant,
+            label,
+            attributes: `data-fix-field="${safeText(name)}"`,
+          })
+        : ""
+    }</div>`;
+  }
+
+  if (typeof document !== "undefined") {
+  document.addEventListener(
+    "click",
+    (event) => {
+      const button = event.target.closest?.("[data-fix-open-picker]");
+      if (!button || typeof global.ATLASVisualPicker?.open !== "function") return;
+      event.preventDefault();
+      event.stopPropagation();
+      const dialog = button.closest(".atlas-issue-fix-dialog");
+      const kind = button.dataset.fixOpenPicker === "field" ? "field" : "source";
+      const name = button.dataset.fixPickerFor || kind;
+      const input = button.parentElement?.querySelector(
+        `[data-fix-field="${CSS.escape(name)}"]`,
+      );
+      const sourceValue =
+        dialog?.querySelector('[data-fix-field="source"]')?.value || "";
+      const entries =
+        kind === "source"
+          ? sourceChoices().map((item) => ({
+              key: item.value,
+              label: item.label,
+              rawName: item.value,
+              sourceKey: item.value,
+              sourceLabel: item.label,
+            }))
+          : fieldChoices(sourceValue).map((fieldName) => ({
+              key: fieldName,
+              label: fieldName,
+              rawName: fieldName,
+              sourceKey: sourceValue || "field",
+              sourceLabel: sourceValue || "Fields",
+            }));
+      global.ATLASVisualPicker.open({
+        mode: kind,
+        title: kind === "source" ? "Choose Source" : "Choose Field",
+        guidance:
+          kind === "field" && !sourceValue
+            ? "Choose a source before choosing a field."
+            : "Choose a replacement. Search if the list is long.",
+        entries,
+        selectedKey: input?.value || null,
+        onSelect(entry) {
+          if (!input || !entry) return;
+          const value = String(entry.rawName || entry.key || "");
+          input.value = value;
+          const strong = button.querySelector("strong");
+          if (strong) strong.textContent = entry.label || value || "Choose...";
+          button.classList.toggle("empty", !value);
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+          if (kind !== "source") return;
+          const fieldInput = dialog?.querySelector('[data-fix-field="field"]');
+          const fieldButton = dialog?.querySelector(
+            '[data-fix-open-picker="field"]',
+          );
+          if (fieldInput) {
+            fieldInput.value = "";
+            fieldInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+          const fieldStrong = fieldButton?.querySelector("strong");
+          if (fieldStrong) fieldStrong.textContent = "Choose...";
+          fieldButton?.classList.add("empty");
+        },
+      });
+    },
+    true,
+  );
   }
 
   function actionRow(saveLabel) {
@@ -2535,6 +2735,7 @@
       const sourceSelect = fix.root.querySelector('[data-fix-field="source"]');
       const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
       const fillFields = () => {
+        if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
         const selected = fieldSelect.value;
         fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
           .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
@@ -2569,6 +2770,7 @@
       const sourceSelect = fix.root.querySelector('[data-fix-field="source"]');
       const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
       sourceSelect.addEventListener("change", () => {
+        if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
         fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
           .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
           .join("")}`;
@@ -2640,6 +2842,7 @@
       const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
       if (sourceSelect && fieldSelect)
         sourceSelect.addEventListener("change", () => {
+          if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
           fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
             .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
             .join("")}`;
@@ -2754,6 +2957,7 @@
     const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
     if (sourceSelect && fieldSelect)
       sourceSelect.addEventListener("change", () => {
+        if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
         fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
           .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
           .join("")}`;

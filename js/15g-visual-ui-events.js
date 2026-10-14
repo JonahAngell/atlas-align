@@ -191,19 +191,30 @@ atlasRenderStepEditor = function atlasRenderStepEditorUsability(step) {
     <section class="logic-editor-section step-settings-section">
       <h3>Step Settings</h3>
       <div class="logic-editor-grid single-column-settings">
-        <label><span>Step Type</span><select data-live-step-type-select>${atlasSelectOptions(
-          [
-            ...atlasNewRuleTypeOptions(),
-            ...(atlasNewRuleTypeOptions().some(
-              ([value]) => value === step.step_type,
-            )
-              ? []
-              : (STEP_TYPE_OPTIONS || []).filter(
-                  ([value]) => value === step.step_type,
-                )),
-          ],
-          step.step_type,
-        )}</select></label>
+        <div class="atlas-choice-field">${atlasChoiceControl(
+          {
+            options: [
+              ...atlasNewRuleTypeOptions(),
+              ...(atlasNewRuleTypeOptions().some(
+                ([value]) => value === step.step_type,
+              )
+                ? []
+                : (STEP_TYPE_OPTIONS || []).filter(
+                    ([value]) => value === step.step_type,
+                  )),
+            ].map(([value, label]) => [
+              value,
+              label,
+              atlasRuleTypeDescription(value),
+            ]),
+            selected: step.step_type,
+            variant: "cards",
+            label: "Step type",
+            heading: "Step Type",
+            collapsible: true,
+            attributes: 'data-live-step-type-select=""',
+          },
+        )}</div>
       </div>
     </section>
     <section class="logic-editor-section criteria-section">
@@ -312,45 +323,90 @@ function catalogOperatorLabel(path, fallback) {
   return typeof value === "string" && value ? value : fallback;
 }
 
-function atlasOperatorOptionsForValueMode(valueMode, selectedOperator = "") {
+function atlasThenActionTypeChoices() {
+  return [
+    ["freeform", "Freeform Text", "Write the action in your own words."],
+    [
+      "set_column_value",
+      "Set Column Value from Field",
+      "Copy a field into the target column.",
+    ],
+    [
+      "set_column_string_transform",
+      "Set Column to String Transformation",
+      "Take characters or a character count from a field.",
+    ],
+    [
+      "set_column_calculation",
+      "Set Column to Calculated Value",
+      "Calculate a numeric result into the target column.",
+    ],
+    [
+      "display_text",
+      "Display Text Response in Column",
+      "Show a text response in a column.",
+    ],
+    ["do_not_display", "Do Not Display", "Hide the matching record."],
+  ];
+}
+
+function atlasThenActionTypeControl(prefix, actionType) {
+  return `<div class="full action-type-row atlas-choice-field">${atlasChoiceControl(
+    {
+      options: atlasThenActionTypeChoices(),
+      selected: actionType || "freeform",
+      variant: "cards",
+      label: `${prefix} action type`,
+      heading: `${prefix} Action Type`,
+      collapsible: true,
+      attributes: 'data-param="then_action_type"',
+    },
+  )}</div>`;
+}
+
+function atlasOperatorListForValueMode(valueMode) {
   const mode = valueMode || "values";
-  const operators =
-    mode === "blank"
-      ? [
-          catalogOperatorLabel(
-            "analyst_logic.blank_comparison.is_blank",
-            "is blank/null",
-          ),
-          catalogOperatorLabel(
-            "analyst_logic.blank_comparison.is_not_blank",
-            "is not blank/null",
-          ),
-        ]
-      : catalogArrayFromOptions({
-          path: `app_config.logic_options.operator_sets.${
-            mode === "field" || mode === "expression" ? mode : "values"
-          }`,
-          fallback:
-            mode === "field"
-              ? [
-                  "is equal to",
-                  "is not equal to",
-                  "is greater than",
-                  "is greater than or equal to",
-                  "is less than",
-                  "is less than or equal to",
-                ]
-              : mode === "expression"
-                ? ["matches expression", "does not match expression"]
-                : [
-                    "is equal to",
-                    "is not equal to",
-                    "contains",
-                    "does not contain",
-                    "starts with",
-                    "ends with",
-                  ],
-        });
+  if (mode === "blank") {
+    return [
+      catalogOperatorLabel(
+        "analyst_logic.blank_comparison.is_blank",
+        "is blank/null",
+      ),
+      catalogOperatorLabel(
+        "analyst_logic.blank_comparison.is_not_blank",
+        "is not blank/null",
+      ),
+    ];
+  }
+  return catalogArrayFromOptions({
+    path: `app_config.logic_options.operator_sets.${
+      mode === "field" || mode === "expression" ? mode : "values"
+    }`,
+    fallback:
+      mode === "field"
+        ? [
+            "is equal to",
+            "is not equal to",
+            "is greater than",
+            "is greater than or equal to",
+            "is less than",
+            "is less than or equal to",
+          ]
+        : mode === "expression"
+          ? ["matches expression", "does not match expression"]
+          : [
+              "is equal to",
+              "is not equal to",
+              "contains",
+              "does not contain",
+              "starts with",
+              "ends with",
+            ],
+  });
+}
+
+function atlasOperatorOptionsForValueMode(valueMode, selectedOperator = "") {
+  const operators = atlasOperatorListForValueMode(valueMode);
   return optionsHtml(
     operators,
     operators.includes(selectedOperator) ? selectedOperator : operators[0],
@@ -361,11 +417,38 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
   const sourceFile = condition.sourceFile || "";
   const valueMode = condition.valueMode || "values";
   return `<div class="guided-condition-row refined-condition-row" data-condition-index="${index}" data-condition-id="${esc(condition.id || uid("cond"))}">
-    <div class="condition-row-header"><span class="badge blue">${index === 0 ? "IF" : esc(condition.connector || "AND")}</span><select data-condition-field="connector"><option ${index === 0 ? "selected" : ""}>IF</option><option ${condition.connector === "AND" ? "selected" : ""}>AND</option><option ${condition.connector === "OR" ? "selected" : ""}>OR</option></select></div>
+    <div class="condition-row-header">${atlasChoiceControl({
+      options: ["IF", "AND", "OR"],
+      selected: index === 0 ? "IF" : condition.connector || "AND",
+      variant: "segment",
+      label: "Connector",
+      attributes: 'data-condition-field="connector"',
+    })}</div>
     <label>Source File${renderConditionPickerTrigger("source", "sourceFile", sourceFile, sourceFile || "Choose source")}</label>
     <label>Field${renderConditionPickerTrigger("field", "fieldName", condition.fieldName || "", condition.fieldName || "Choose field", sourceFile)}</label>
-    <label>Value Mode<select data-condition-field="valueMode"><option value="values" ${valueMode === "values" ? "selected" : ""}>Values</option><option value="field" ${valueMode === "field" ? "selected" : ""}>Compare to Field</option><option value="blank" ${valueMode === "blank" ? "selected" : ""}>Blank / Null</option><option value="expression" ${valueMode === "expression" ? "selected" : ""}>Expression</option></select></label>
-    <label>Operator<select data-condition-field="operator">${atlasOperatorOptionsForValueMode(valueMode, condition.operator)}</select></label>
+    <div class="atlas-choice-field">${atlasChoiceControl({
+      options: [
+        ["values", "Values", "Match one or more listed values."],
+        ["field", "Compare to Field", "Compare this field to another field."],
+        ["blank", "Blank / Null", "Match blank or null values."],
+        ["expression", "Expression", "Match a written expression."],
+      ],
+      selected: valueMode,
+      variant: "cards",
+      label: "Value mode",
+      heading: "Value Mode",
+      collapsible: true,
+      attributes: 'data-condition-field="valueMode"',
+    })}</div>
+    <div class="atlas-choice-field">${atlasChoiceControl({
+      options: atlasOperatorListForValueMode(valueMode),
+      selected: condition.operator,
+      variant: "chips",
+      label: "Operator",
+      heading: "Operator",
+      collapsible: true,
+      attributes: 'data-condition-field="operator"',
+    })}</div>
     ${
       valueMode === "field"
         ? `<label>Compare Source${renderConditionPickerTrigger("source", "compareSourceFile", condition.compareSourceFile || sourceFile, condition.compareSourceFile || sourceFile || "Choose source")}</label><label>Compare Field${renderConditionPickerTrigger("field", "compareFieldName", condition.compareFieldName || "", condition.compareFieldName || "Choose field", condition.compareSourceFile || sourceFile)}</label>`
@@ -399,7 +482,7 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
   prefix = "THEN",
 ) {
   const actionType = p.then_action_type || "freeform";
-  const typeSelect = `<label class="full action-type-row"><span>${prefix} Action Type</span><select data-param="then_action_type"><option value="freeform" ${actionType === "freeform" ? "selected" : ""}>Freeform Text</option><option value="set_column_value" ${actionType === "set_column_value" ? "selected" : ""}>Set Column Value from Field</option><option value="display_text" ${actionType === "display_text" ? "selected" : ""}>Display Text Response in Column</option><option value="do_not_display" ${actionType === "do_not_display" ? "selected" : ""}>Do Not Display</option></select></label>`;
+  const typeSelect = atlasThenActionTypeControl(prefix, actionType);
   if (actionType === "set_column_value") {
     return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label>Target Column${fieldInputFromOptions(
       {
@@ -627,11 +710,19 @@ document.addEventListener(
     if (valueMode) {
       const row = valueMode.closest(".guided-condition-row");
       const operator = row?.querySelector('[data-condition-field="operator"]');
-      if (operator)
-        operator.innerHTML = atlasOperatorOptionsForValueMode(
-          valueMode.value,
-          operator.value,
-        );
+      if (operator) {
+        const operators = atlasOperatorListForValueMode(valueMode.value);
+        const selected = operators.includes(operator.value)
+          ? operator.value
+          : operators[0];
+        if (operator.closest(".atlas-choice"))
+          atlasSetChoiceOptions(operator, operators, selected);
+        else
+          operator.innerHTML = atlasOperatorOptionsForValueMode(
+            valueMode.value,
+            operator.value,
+          );
+      }
     }
     if (event.target.closest('[data-param="then_action_type"]'))
       atlasCommitLiveEditor?.({ rerender: true });
@@ -785,34 +876,30 @@ function atlasRuleTypeDescription(stepType) {
   };
   return descriptions[stepType] || "Add this rule type.";
 }
-function atlasCloseNewRuleTypeMenu() {
+function atlasCloseNewRuleTypeMenu({ restoreFocus = false } = {}) {
   atlasNewRuleMenuOpen = false;
   document.querySelector(".new-rule-menu-panel")?.remove();
-  document.getElementById("addStepBtn")?.setAttribute("aria-expanded", "false");
+  const button = document.getElementById("addStepBtn");
+  button?.setAttribute("aria-expanded", "false");
+  if (restoreFocus) button?.focus();
 }
 function atlasOpenNewRuleTypeMenu(
   button = document.getElementById("addStepBtn"),
 ) {
   if (!button) return;
   document.querySelector(".new-rule-menu-panel")?.remove();
-  const rect = button.getBoundingClientRect();
   const panel = document.createElement("div");
-  panel.className = "new-rule-menu-panel";
-  panel.setAttribute("role", "menu");
-  panel.setAttribute("aria-label", "Choose rule type");
-  panel.innerHTML = atlasNewRuleTypeOptions()
+  panel.className = "new-rule-menu-panel new-rule-dialog-backdrop";
+  panel.innerHTML = `<div class="new-rule-dialog" role="dialog" aria-modal="true" aria-labelledby="new-rule-dialog-title"><div class="new-rule-dialog-header"><h2 id="new-rule-dialog-title">New Rule</h2><button type="button" class="btn ghost small" data-close-new-rule>Cancel</button></div><div class="new-rule-dialog-options">${atlasNewRuleTypeOptions()
     .map(
       ([value, label]) =>
-        `<button type="button" class="new-rule-type-option" role="menuitem" data-new-rule-type="${esc(value)}"><span class="new-rule-type-label">${esc(label)}</span><span class="new-rule-type-description">${esc(atlasRuleTypeDescription(value))}</span></button>`,
+        `<button type="button" class="new-rule-type-option" data-new-rule-type="${esc(value)}"><span class="new-rule-type-label">${esc(label)}</span><span class="new-rule-type-description">${esc(atlasRuleTypeDescription(value))}</span></button>`,
     )
-    .join("");
+    .join("")}</div></div>`;
   document.body.append(panel);
-  const panelWidth = Math.min(360, Math.max(260, panel.offsetWidth || 320));
-  panel.style.left = `${Math.min(window.innerWidth - panelWidth - 12, Math.max(12, rect.left))}px`;
-  panel.style.top = `${Math.min(window.innerHeight - 12, rect.bottom + 8)}px`;
-  panel.style.width = `${panelWidth}px`;
   button.setAttribute("aria-expanded", "true");
   atlasNewRuleMenuOpen = true;
+  panel.querySelector("[data-new-rule-type]")?.focus();
 }
 function atlasToggleNewRuleTypeMenu(event) {
   event?.preventDefault?.();
@@ -834,12 +921,18 @@ document.addEventListener(
       atlasCreateRuleOfType(typeButton.dataset.newRuleType || "if_then");
       return;
     }
+    if (event.target.closest("[data-close-new-rule]")) {
+      event.preventDefault();
+      atlasCloseNewRuleTypeMenu({ restoreFocus: true });
+      return;
+    }
     if (
       atlasNewRuleMenuOpen &&
-      !event.target.closest(".new-rule-menu-panel") &&
-      !event.target.closest("#addStepBtn")
+      (event.target.classList?.contains("new-rule-dialog-backdrop") ||
+        (!event.target.closest(".new-rule-dialog") &&
+          !event.target.closest("#addStepBtn")))
     )
-      atlasCloseNewRuleTypeMenu();
+      atlasCloseNewRuleTypeMenu({ restoreFocus: true });
   },
   true,
 );
@@ -1111,6 +1204,7 @@ document.addEventListener(
     const index = rows.indexOf(row);
     if (index <= 0) {
       connector.value = "IF";
+      atlasSyncChoiceSelection?.(connector);
       return;
     }
     const nextConnector = atlasConditionConnectorValue(connector.value);
@@ -1120,6 +1214,7 @@ document.addEventListener(
         (condition) => condition.id === row.dataset.conditionId,
       );
       connector.value = atlasConditionConnectorValue(stored?.connector);
+      atlasSyncChoiceSelection?.(connector);
       status?.(
         "Mixed AND/OR connectors are not supported in one condition group yet. Use one connector type or create a nested rule.",
         "warn",
@@ -1127,6 +1222,7 @@ document.addEventListener(
       return;
     }
     connector.value = nextConnector;
+    atlasSyncChoiceSelection?.(connector);
     atlasCommitLiveEditor?.({ rerender: true });
   },
   true,
@@ -1260,7 +1356,7 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderWithMath(
     );
   }
   return `<div class="then-action-builder refined-action-builder dynamic-action-builder">
-    <label class="full">${prefix} Action Type<select data-param="then_action_type"><option value="freeform">Freeform Text</option><option value="set_column_value">Set Column Value from Field</option><option value="set_column_calculation" selected>Set Column to Calculated Value</option><option value="display_text">Display Text Response in Column</option><option value="do_not_display">Do Not Display</option></select></label>
+    ${atlasThenActionTypeControl(prefix, "set_column_calculation")}
     <label>Target Column${fieldInputFromOptions({
       name: "then_target_column",
       value: p.then_target_column,
@@ -1277,7 +1373,7 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderWithMath(
         : "",
     })}</label>
     ${atlasMathEditorHtml("then_math_json", p.then_math_json || "[]", p.then_value_field ? p.then_value_source_file || p.source_file : "")}
-    <div class="math-rounding-grid"><label>Rounding<select data-param="then_rounding_mode"><option value="none" ${!p.then_rounding_mode || p.then_rounding_mode === "none" ? "selected" : ""}>None</option><option value="nearest" ${p.then_rounding_mode === "nearest" ? "selected" : ""}>Nearest</option><option value="up" ${p.then_rounding_mode === "up" ? "selected" : ""}>Up</option><option value="down" ${p.then_rounding_mode === "down" ? "selected" : ""}>Down</option></select></label><label>Decimal places<input data-param="then_rounding_decimal_places" inputmode="numeric" value="${esc(p.then_rounding_decimal_places || "0")}"></label></div>
+    <div class="math-rounding-grid"><div class="atlas-choice-field"><span class="atlas-choice-heading">Rounding</span>${atlasRoundingChoice("then_rounding_mode", p.then_rounding_mode)}</div><label>Decimal places<input data-param="then_rounding_decimal_places" inputmode="numeric" value="${esc(p.then_rounding_decimal_places || "0")}"></label></div>
   </div>`;
 };
 
@@ -1396,29 +1492,7 @@ atlasRenderThenActionBuilder =
             ${prefix} Action
           </h4>
       
-          <label>
-            ${prefix} Action Type
-            <select data-param="then_action_type">
-              <option value="freeform">
-                Freeform Text
-              </option>
-              <option value="set_column_value">
-                Set Column Value from Field
-              </option>
-              <option value="set_column_string_transform" selected>
-                Set Column to String Transformation
-              </option>
-              <option value="set_column_calculation">
-                Set Column to Calculated Value
-              </option>
-              <option value="display_text">
-                Display Text Response in Column
-              </option>
-              <option value="do_not_display">
-                Do Not Display
-              </option>
-            </select>
-          </label>
+          ${atlasThenActionTypeControl(prefix, "set_column_string_transform")}
 
           <label>
             Target Column
@@ -1430,28 +1504,10 @@ atlasRenderThenActionBuilder =
             })}
           </label>
 
-          <label>
-            Operation
-            <select data-param="then_string_operation">
-              <option 
-                value="first_characters" 
-                ${c.operation === "first_characters" ? "selected" : ""}>
-                  First characters
-              </option>
-              
-              <option 
-                value="last_characters" 
-                ${c.operation === "last_characters" ? "selected" : ""}>
-                  Last characters
-              </option>
-              
-              <option 
-                value="character_count" 
-                ${c.operation === "character_count" ? "selected" : ""}>
-                  Character count
-              </option>
-            </select>
-          </label>
+          <div class="atlas-choice-field">
+            <span class="atlas-choice-heading">Operation</span>
+            ${atlasStringOperationChoice("then_string_operation", c.operation)}
+          </div>
 
           <input 
             type="hidden" 

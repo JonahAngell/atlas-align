@@ -203,9 +203,13 @@ function atlasCustomSourceFieldRow() {
       <span class="hint">Optional. Uses the display name when blank.</span>
       <input autocomplete="off" class="input full-input" data-field-name maxlength="200" type="text">
     </label>
-    <label class="custom-source-label">Format
-      <select class="input full-input" data-field-format required>${atlasCustomSourceFormatOptions()}</select>
-    </label>
+    <div class="custom-source-label atlas-choice-field"><span class="atlas-choice-heading">Format</span>${atlasChoiceControl({
+      options: CUSTOM_FIELD_FORMATS,
+      selected: "Text",
+      variant: "chips",
+      label: "Field format",
+      attributes: 'data-field-format="" required',
+    })}</div>
     <label class="custom-source-label">Description
       <span class="hint">Optional</span>
       <textarea class="input full-input" data-field-description maxlength="2000" rows="2"></textarea>

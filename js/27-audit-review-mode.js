@@ -368,21 +368,22 @@
             overall.requestChanges
           ? "Review is not ready for approval"
           : "Ready for final validation";
-    shell.innerHTML = `<div class="reviewer-mode-summary" data-review-hud-drag-handle><div><strong>${review.mode === "analyst-feedback" ? "Review Feedback" : "Reviewer Mode"}</strong><small>${escHtml(review.document?.name || review.session.auditId)} · revision ${review.session.submittedRevisionId}</small></div><button type="button" data-review-shell-collapse aria-expanded="${!hudCollapsed}" aria-controls="atlasReviewerHudBody" aria-label="${hudCollapsed ? "Restore Reviewer Mode" : "Collapse Reviewer Mode"}">${hudCollapsed ? "+" : "−"}</button></div><div id="atlasReviewerHudBody" class="reviewer-mode-body"><div class="reviewer-mode-progress"><progress max="${overall.total || 1}" value="${overall.decided}"></progress><b>${overall.decided}/${overall.total} reviewed (${overall.percent}%)</b><span>Page ${current.decided}/${current.total}</span><span>${overall.approved} approved · ${overall.needsDiscussion} discussion · ${overall.requestChanges} changes · ${overall.unreviewed} unreviewed</span><span class="review-final-readiness">${escHtml(blocker)}</span><span id="atlasReviewSaveStatus" role="status">${dirty.size ? "Changes not yet saved" : "Draft saved"}</span></div><label>Filter<select data-review-filter>${[
-      ["all", "All review items"],
-      ["page", "Current page"],
-      ["unreviewed", "Unreviewed"],
-      ["needs-discussion", "Needs Discussion"],
-      ["request-changes", "Request Changes"],
-      ["changed", "Changed items"],
-      ["commented", "Commented items"],
-      ["deleted", "Deleted items"],
-    ]
-      .map(
-        ([value, label]) =>
-          `<option value="${value}" ${filter === value ? "selected" : ""}>${label}</option>`,
-      )
-      .join("")}</select></label><div class="reviewer-mode-results">${
+    shell.innerHTML = `<div class="reviewer-mode-summary" data-review-hud-drag-handle><div><strong>${review.mode === "analyst-feedback" ? "Review Feedback" : "Reviewer Mode"}</strong><small>${escHtml(review.document?.name || review.session.auditId)} · revision ${review.session.submittedRevisionId}</small></div><button type="button" data-review-shell-collapse aria-expanded="${!hudCollapsed}" aria-controls="atlasReviewerHudBody" aria-label="${hudCollapsed ? "Restore Reviewer Mode" : "Collapse Reviewer Mode"}">${hudCollapsed ? "+" : "−"}</button></div><div id="atlasReviewerHudBody" class="reviewer-mode-body"><div class="reviewer-mode-progress"><progress max="${overall.total || 1}" value="${overall.decided}"></progress><b>${overall.decided}/${overall.total} reviewed (${overall.percent}%)</b><span>Page ${current.decided}/${current.total}</span><span>${overall.approved} approved · ${overall.needsDiscussion} discussion · ${overall.requestChanges} changes · ${overall.unreviewed} unreviewed</span><span class="review-final-readiness">${escHtml(blocker)}</span><span id="atlasReviewSaveStatus" role="status">${dirty.size ? "Changes not yet saved" : "Draft saved"}</span></div><div class="atlas-choice-field"><span class="atlas-choice-heading">Filter</span>${typeof atlasChoiceControl === "function" ? atlasChoiceControl({
+      options: [
+        ["all", "All"],
+        ["page", "Current page"],
+        ["unreviewed", "Unreviewed"],
+        ["needs-discussion", "Needs Discussion"],
+        ["request-changes", "Request Changes"],
+        ["changed", "Changed"],
+        ["commented", "Commented"],
+        ["deleted", "Deleted"],
+      ],
+      selected: filter,
+      variant: "chips",
+      label: "Review filter",
+      attributes: 'data-review-filter=""',
+    }) : ""}</div><div class="reviewer-mode-results">${
       items()
         .filter(matches)
         .slice(0, 100)

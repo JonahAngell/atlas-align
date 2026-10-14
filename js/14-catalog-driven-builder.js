@@ -204,6 +204,165 @@ function optionsHtml(options, selected) {
     )
     .join("");
 }
+
+/**
+ * Normalizes strings, value/label pairs, or objects into choice-control items.
+ * A third array entry is an optional description for card layouts.
+ */
+function atlasNormalizeChoiceOptions(options) {
+  return (Array.isArray(options) ? options : []).map((option) => {
+    if (Array.isArray(option)) {
+      return {
+        value: String(option[0] ?? ""),
+        label: String(option[1] ?? option[0] ?? ""),
+        description: String(option[2] || ""),
+      };
+    }
+    if (option && typeof option === "object") {
+      return {
+        value: String(option.value ?? ""),
+        label: String(option.label ?? option.value ?? ""),
+        description: String(option.description || ""),
+      };
+    }
+    return {
+      value: String(option ?? ""),
+      label: String(option ?? ""),
+      description: "",
+    };
+  });
+}
+
+function atlasChoiceOptionButton(item, selected) {
+  const on = item.value === selected;
+  return `<button type="button" class="atlas-choice-option${on ? " is-selected" : ""}" role="radio" aria-checked="${on ? "true" : "false"}" data-choice-value="${esc(item.value)}" tabindex="${on ? "0" : "-1"}"><span class="atlas-choice-label">${esc(item.label)}</span>${item.description ? `<span class="atlas-choice-description">${esc(item.description)}</span>` : ""}</button>`;
+}
+
+/**
+ * Visible single-choice control. The hidden input keeps the existing data
+ * attribute so callers can keep reading `.value` and listening for `change`.
+ * variant: "segment" for 2–4 short labels, "chips" for wrapping phrases,
+ * "cards" when each option needs a description.
+ * collapsible wraps cards or chips so the editor shows the current choice
+ * until the group is opened.
+ */
+function atlasChoiceControl({
+  options = [],
+  selected = "",
+  variant = "segment",
+  label = "Choose",
+  heading = "",
+  attributes = "",
+  collapsible = false,
+} = {}) {
+  const items = atlasNormalizeChoiceOptions(options);
+  const current = items.some((item) => item.value === selected)
+    ? String(selected)
+    : items[0]?.value || "";
+  const safeVariant = ["segment", "chips", "cards"].includes(variant)
+    ? variant
+    : "segment";
+  const currentItem =
+    items.find((item) => item.value === current) || items[0] || null;
+  const control = `<div class="atlas-choice atlas-choice-${safeVariant}" role="radiogroup" aria-label="${esc(label)}"><input type="hidden" ${attributes} value="${esc(current)}">${items.map((item) => atlasChoiceOptionButton(item, current)).join("")}</div>`;
+  if (!collapsible) return control;
+  const title = heading || label;
+  return `<details class="atlas-choice-disclosure"><summary><span class="atlas-choice-heading">${esc(title)}</span><span class="atlas-choice-current">${esc(currentItem?.label || "Choose")}</span></summary>${control}</details>`;
+}
+
+function atlasSyncChoiceSelection(input) {
+  const group = input?.closest?.(".atlas-choice");
+  if (!group) return;
+  const value = input.value;
+  let currentLabel = value;
+  group.querySelectorAll(".atlas-choice-option").forEach((button) => {
+    const on = button.dataset.choiceValue === value;
+    button.classList.toggle("is-selected", on);
+    button.setAttribute("aria-checked", on ? "true" : "false");
+    button.tabIndex = on ? 0 : -1;
+    if (on)
+      currentLabel =
+        button.querySelector(".atlas-choice-label")?.textContent || value;
+  });
+  const current = group
+    .closest(".atlas-choice-disclosure")
+    ?.querySelector(".atlas-choice-current");
+  if (current) current.textContent = currentLabel;
+}
+
+function atlasSetChoiceOptions(input, options, selected = input?.value || "") {
+  const group = input?.closest?.(".atlas-choice");
+  if (!group || !input) return false;
+  const items = atlasNormalizeChoiceOptions(options);
+  const current = items.some((item) => item.value === selected)
+    ? String(selected)
+    : items.some((item) => item.value === input.value)
+      ? input.value
+      : items[0]?.value || "";
+  input.value = current;
+  group.querySelectorAll(".atlas-choice-option").forEach((button) => button.remove());
+  group.insertAdjacentHTML(
+    "beforeend",
+    items.map((item) => atlasChoiceOptionButton(item, current)).join(""),
+  );
+  atlasSyncChoiceSelection(input);
+  return true;
+}
+
+function atlasApplyChoiceValue(button) {
+  const group = button?.closest?.(".atlas-choice");
+  const input = group?.querySelector("input[type='hidden']");
+  const next = button?.dataset.choiceValue ?? "";
+  if (!group || !input || input.value === next) {
+    button?.focus?.();
+    return;
+  }
+  input.value = next;
+  atlasSyncChoiceSelection(input);
+  button.focus();
+  input.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const button = event.target.closest?.("[data-choice-value]");
+    if (!button || !button.closest(".atlas-choice")) return;
+    event.preventDefault();
+    atlasApplyChoiceValue(button);
+  },
+  true,
+);
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    const button = event.target.closest?.(".atlas-choice-option");
+    if (!button) return;
+    const group = button.closest(".atlas-choice");
+    const options = [...group.querySelectorAll(".atlas-choice-option")];
+    const index = options.indexOf(button);
+    let next = index;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+      next = (index + 1) % options.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+      next = (index - 1 + options.length) % options.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = options.length - 1;
+    else return;
+    event.preventDefault();
+    atlasApplyChoiceValue(options[next]);
+  },
+  true,
+);
+
+function atlasDescribedChoices(options, descriptions = {}) {
+  return (Array.isArray(options) ? options : []).map((option) => {
+    const value = Array.isArray(option) ? option[0] : option;
+    const label = Array.isArray(option) ? option[1] : option;
+    return [value, label, descriptions[value] || ""];
+  });
+}
 /**
  * Renders a field picker input using an options object.
  * Explicit property names keep call sites readable and avoid positional-argument ambiguity.
@@ -291,26 +450,43 @@ function renderGuidedBuilder(step) {
         placeholder: "Select source file",
       },
     )}</label><label>Source Alias<input data-param="source_alias" value="${esc(p.source_alias || sourceAliasFor(p.source_file || ""))}"></label></div>`;
-  if (step.step_type === "create_column")
-    return `<div class="guided-builder"><h4>Create Column</h4><label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label><label>Column Value Type<select data-param="value_mode">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.create_value_modes",
-        fallback: [
-          "Static value",
-          "Source field value",
-          ATLAS_STRING_TRANSFORM_VALUE_MODE,
-          "Concatenate fields",
-        ],
-      }).filter(
-        (value) =>
-          value !== "Expression / calculation" &&
-          value !== "Expression/Calculation",
-      ),
+  if (step.step_type === "create_column") {
+    const valueModes = catalogArrayFromOptions({
+      path: "app_config.logic_options.create_value_modes",
+      fallback: [
+        "Static value",
+        "Source field value",
+        ATLAS_STRING_TRANSFORM_VALUE_MODE,
+        "Concatenate fields",
+      ],
+    }).filter(
+      (value) =>
+        value !== "Expression / calculation" &&
+        value !== "Expression/Calculation",
+    );
+    const selectedValueMode =
       p.value_mode === "Expression / calculation" ||
-        p.value_mode === "Expression/Calculation"
+      p.value_mode === "Expression/Calculation"
         ? ""
-        : p.value_mode,
-    )}</select></label>${renderCreateModeInputs(p)}</div>`;
+        : p.value_mode;
+    return `<div class="guided-builder"><h4>Create Column</h4><label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label><div class="atlas-choice-field">${atlasChoiceControl(
+      {
+        options: atlasDescribedChoices(valueModes, {
+          "Static value": "Write a fixed value into the new column.",
+          "Source field value": "Copy or calculate from a source field.",
+          [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
+            "Take characters or a character count from a field.",
+          "Concatenate fields": "Join two fields into one value.",
+        }),
+        selected: selectedValueMode,
+        variant: "cards",
+        label: "Column Value Type",
+        heading: "Column Value Type",
+        collapsible: true,
+        attributes: 'data-param="value_mode"',
+      },
+    )}</div>${renderCreateModeInputs(p)}</div>`;
+  }
   if (step.step_type === "if_then")
     return `<div class="guided-builder"><h4>IF Condition Builder</h4><div class="condition-guided-stack">${parseStepConditions(
       step,
@@ -409,13 +585,28 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><label>Format<select data-param="format">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.format_options",
-        fallback: ["text", "number"],
-      }),
-      p.format,
-    )}</select></label></div>`;
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
+      {
+        options: atlasDescribedChoices(
+          catalogArrayFromOptions({
+            path: "app_config.logic_options.format_options",
+            fallback: ["text", "number"],
+          }),
+          {
+            "eight digits with leading zeroes": "Pad the value to eight digits.",
+            "date format MM/DD/YYYY": "Show the value as a date.",
+            text: "Keep the value as text.",
+            number: "Keep the value as a number.",
+          },
+        ),
+        selected: p.format,
+        variant: "cards",
+        label: "Format",
+        heading: "Format",
+        collapsible: true,
+        attributes: 'data-param="format"',
+      },
+    )}</div></div>`;
   if (step.step_type === "split_field")
     return `<div class="guided-builder"><h4>Split Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -440,13 +631,18 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><label>Direction<select data-param="sort_direction">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.sort_directions",
-        fallback: ["Ascending", "Descending"],
-      }),
-      p.sort_direction,
-    )}</select></label></div>`;
+    )}</label><div class="atlas-choice-field"><span class="atlas-choice-heading">Direction</span>${atlasChoiceControl(
+      {
+        options: catalogArrayFromOptions({
+          path: "app_config.logic_options.sort_directions",
+          fallback: ["Ascending", "Descending"],
+        }),
+        selected: p.sort_direction,
+        variant: "segment",
+        label: "Sort direction",
+        attributes: 'data-param="sort_direction"',
+      },
+    )}</div></div>`;
   if (step.step_type === "remove_duplicates")
     return `<div class="guided-builder"><h4>Remove Duplicates</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -455,17 +651,31 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><label>Duplicate Action<select data-param="duplicate_action">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.duplicate_actions",
-        fallback: [
-          "Keep first record",
-          "Keep last record",
-          "Drop all duplicated records",
-        ],
-      }),
-      p.duplicate_action,
-    )}</select></label></div>`;
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
+      {
+        options: atlasDescribedChoices(
+          catalogArrayFromOptions({
+            path: "app_config.logic_options.duplicate_actions",
+            fallback: [
+              "Keep first record",
+              "Keep last record",
+              "Drop all duplicated records",
+            ],
+          }),
+          {
+            "Keep first record": "Keep the earliest matching record.",
+            "Keep last record": "Keep the latest matching record.",
+            "Drop all duplicated records": "Remove every record that is duplicated.",
+          },
+        ),
+        selected: p.duplicate_action,
+        variant: "cards",
+        label: "Duplicate action",
+        heading: "Duplicate Action",
+        collapsible: true,
+        attributes: 'data-param="duplicate_action"',
+      },
+    )}</div></div>`;
   if (step.step_type === "filter_rows" || step.step_type === "flag_records")
     return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -474,22 +684,58 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><label>Operator<select data-param="operator">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.operators",
-        fallback: ["is equal to"],
-      }),
-      p.operator,
-    )}</select></label><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
+      {
+        options: catalogArrayFromOptions({
+          path: "app_config.logic_options.operators",
+          fallback: ["is equal to"],
+        }),
+        selected: p.operator,
+        variant: "chips",
+        label: "Operator",
+        heading: "Operator",
+        collapsible: true,
+        attributes: 'data-param="operator"',
+      },
+    )}</div><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
       step.step_type === "filter_rows"
-        ? `<label>Filter Action<select data-param="filter_action">${optionsHtml(
-            catalogArrayFromOptions({
-              path: "app_config.logic_options.filter_actions",
-              fallback: ["Keep matching rows", "Exclude matching rows"],
-            }),
-            p.filter_action,
-          )}</select></label>`
-        : `<label>Flag Action<select data-param="flag_action"><option value="display_text" ${p.flag_action !== "do_not_display" ? "selected" : ""}>Display text response</option><option value="do_not_display" ${p.flag_action === "do_not_display" ? "selected" : ""}>Do not display record</option></select></label><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
+        ? `<div class="atlas-choice-field"><span class="atlas-choice-heading">Filter Action</span>${atlasChoiceControl(
+            {
+              options: catalogArrayFromOptions({
+                path: "app_config.logic_options.filter_actions",
+                fallback: ["Keep matching rows", "Exclude matching rows"],
+              }),
+              selected: p.filter_action,
+              variant: "segment",
+              label: "Filter action",
+              attributes: 'data-param="filter_action"',
+            },
+          )}</div>`
+        : `<div class="atlas-choice-field">${atlasChoiceControl(
+            {
+              options: [
+                [
+                  "display_text",
+                  "Display text response",
+                  "Show a message for the matching record.",
+                ],
+                [
+                  "do_not_display",
+                  "Do not display record",
+                  "Hide the matching record.",
+                ],
+              ],
+              selected:
+                p.flag_action === "do_not_display"
+                  ? "do_not_display"
+                  : "display_text",
+              variant: "cards",
+              label: "Flag action",
+              heading: "Flag Action",
+              collapsible: true,
+              attributes: 'data-param="flag_action"',
+            },
+          )}</div><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
             {
               name: "output_column",
               value: p.output_column || phrasePlaceholder("error_message_column", "Error Message"),
@@ -1126,7 +1372,18 @@ function atlasMathOperationRowHtml(operation = {}, fallbackSourceFile = "") {
     : "";
   const modeLabel = fieldMode ? "Source Field" : "Static Value";
   return `<div class="math-operation-row" data-math-row data-math-id="${esc(item.id)}">
-    <label class="math-operator-control">Operator<select data-math-operator>${atlasMathOperatorOptions(item.operator || "*")}</select></label>
+    <div class="atlas-choice-field math-operator-control"><span class="atlas-choice-heading">Operator</span>${atlasChoiceControl({
+      options: [
+        ["+", "+"],
+        ["-", "−"],
+        ["*", "×"],
+        ["/", "÷"],
+      ],
+      selected: item.operator || "*",
+      variant: "segment",
+      label: "Math operator",
+      attributes: 'data-math-operator=""',
+    })}</div>
     <div class="math-operand-mode"><span class="math-control-label">Operand type</span><label class="math-mode-switch"><input type="checkbox" role="switch" data-math-operand-mode ${fieldMode ? "checked" : ""} aria-label="Use a source field for this mathematical operand"><span class="math-mode-switch-track" aria-hidden="true"></span><span data-math-mode-label>${modeLabel}</span></label><input type="hidden" data-math-operand-type value="${fieldMode ? "field" : "number"}"></div>
     <div class="math-active-operand">
       <label class="math-number-operand" ${fieldMode ? "hidden" : ""}>Value<input data-math-operand inputmode="decimal" value="${esc(item.operand)}" placeholder="e.g., -1.5"></label>
@@ -1153,7 +1410,18 @@ renderCreateModeInputs = function renderCreateModeInputsWithMath(p) {
       sourceFile: p.source_file,
     })}</label>
     ${atlasMathEditorHtml("source_math_json", p.source_math_json || "[]", p.source_file)}
-    <div class="math-rounding-grid"><label>Rounding<select data-param="rounding_mode"><option value="none" ${!p.rounding_mode || p.rounding_mode === "none" ? "selected" : ""}>None</option><option value="nearest" ${p.rounding_mode === "nearest" ? "selected" : ""}>Nearest</option><option value="up" ${p.rounding_mode === "up" ? "selected" : ""}>Up</option><option value="down" ${p.rounding_mode === "down" ? "selected" : ""}>Down</option></select></label>
+    <div class="math-rounding-grid"><div class="atlas-choice-field"><span class="atlas-choice-heading">Rounding</span>${atlasChoiceControl({
+      options: [
+        ["none", "None"],
+        ["nearest", "Nearest"],
+        ["up", "Up"],
+        ["down", "Down"],
+      ],
+      selected: p.rounding_mode || "none",
+      variant: "segment",
+      label: "Rounding",
+      attributes: 'data-param="rounding_mode"',
+    })}</div>
     <label>Decimal places<input data-param="rounding_decimal_places" inputmode="numeric" value="${esc(p.rounding_decimal_places || "0")}"></label></div>`;
 };
 // ATLAS-MATH-OPERATIONS-UPDATE:END
@@ -1165,6 +1433,35 @@ const ATLAS_STRING_TRANSFORM_OPERATIONS = [
   "last_characters",
   "character_count",
 ];
+
+function atlasStringOperationChoice(paramName, selected) {
+  return atlasChoiceControl({
+    options: [
+      ["first_characters", "First characters"],
+      ["last_characters", "Last characters"],
+      ["character_count", "Character count"],
+    ],
+    selected: selected || "first_characters",
+    variant: "segment",
+    label: "String operation",
+    attributes: `data-param="${esc(paramName)}"`,
+  });
+}
+
+function atlasRoundingChoice(paramName, selected) {
+  return atlasChoiceControl({
+    options: [
+      ["none", "None"],
+      ["nearest", "Nearest"],
+      ["up", "Up"],
+      ["down", "Down"],
+    ],
+    selected: selected || "none",
+    variant: "segment",
+    label: "Rounding",
+    attributes: `data-param="${esc(paramName)}"`,
+  });
+}
 const ATLAS_STRING_TRANSFORM_POSITIONS = ["first", "last"];
 
 function atlasPositiveWholeNumber(value) {
@@ -1435,29 +1732,10 @@ renderCreateModeInputs = function renderCreateModeInputsWithStringTransform(p) {
     return atlasRenderCreateModeInputsBeforeStringTransform(p);
   const c = atlasStringTransformConfig(p);
   return `
-    <label>
-      Operation
-      <select 
-        data-param="string_operation">
-          <option 
-            value="first_characters" 
-            ${c.operation === "first_characters" ? "selected" : ""}>
-              First characters
-          </option>
-          
-          <option 
-            value="last_characters" 
-            ${c.operation === "last_characters" ? "selected" : ""}>
-              Last characters
-          </option>
-          
-          <option 
-            value="character_count" 
-            ${c.operation === "character_count" ? "selected" : ""}>
-              Character count
-          </option>
-      </select>
-    </label>
+    <div class="atlas-choice-field">
+      <span class="atlas-choice-heading">Operation</span>
+      ${atlasStringOperationChoice("string_operation", c.operation)}
+    </div>
     
     <input 
       type="hidden" 

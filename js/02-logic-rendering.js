@@ -999,7 +999,10 @@ function renderHeader() {
   const audit = atlasDisplayDocument?.() || state.audit;
   e.auditName.value = audit.name || "";
   e.auditPurpose.value = audit.purpose || "";
-  if (e.auditStatus) e.auditStatus.value = audit.status || "Draft";
+  if (e.auditStatus) {
+    e.auditStatus.value = audit.status || "Draft";
+    atlasSyncChoiceSelection?.(e.auditStatus);
+  }
 }
 
 /**

@@ -444,8 +444,7 @@ let atlasInitValidation = async function atlasInitValidation() {
     const result = run.steps[step.id] || { status: "not_run" };
     panel.innerHTML = `
       <header><div><small>Read-Only Isolation</small><h2 id="atlas-validation-title">${esc(step.title)}</h2></div><button class="btn ghost" type="button" data-validation-close aria-label="Close Validation">×</button></header>
-      <label for="atlas-validation-suite"><strong>Suite</strong></label>
-      <select id="atlas-validation-suite" data-validation-suite><option value="read-only-isolation">Read-Only Isolation</option></select>
+      <p><strong>Suite:</strong> <span id="atlas-validation-suite" data-validation-suite>Read-Only Isolation</span></p>
       <p><strong>Step ${activeStepIndex + 1} of ${suite.steps.length}</strong> · Status: <span role="status">${esc(result.status)}</span></p>
       <p><strong>Purpose:</strong> ${esc(step.purpose)}</p>
       <p><strong>Instructions:</strong> ${esc(step.instructions)}</p>
