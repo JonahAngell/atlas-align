@@ -1,10 +1,18 @@
 import assert from "node:assert/strict";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import test from "node:test";
 const source = process.cwd();
+const sourceVersion = /ATLAS_APP_VERSION = "([^"]+)"/.exec(
+  fs.readFileSync(path.join(source, "js/00-config-utils.js"), "utf8"),
+)[1];
+const nextVersion = sourceVersion.replace(
+  /^(v\d+\.\d+\.)(\d+)$/,
+  (_, prefix, patch) => `${prefix}${Number(patch) + 1}`,
+);
 function git(root, ...args) {
   return spawnSync("git", args, { cwd: root, encoding: "utf8" });
 }
@@ -53,7 +61,7 @@ test("normal commit bumps once and stages managed files", async () => {
       path.join(root, "js/00-config-utils.js"),
       "utf8",
     );
-    assert.match(src, /v3\.0\.5/g);
+    assert.match(src, new RegExp(nextVersion.replaceAll(".", "\\.")));
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -77,7 +85,7 @@ test("hook retry reuses prepared version", async () => {
     assert.equal(r.status, 0, r.stderr);
     assert.match(
       await readFile(path.join(root, "js/00-config-utils.js"), "utf8"),
-      /v3\.0\.5/g,
+      new RegExp(nextVersion.replaceAll(".", "\\.")),
     );
   } finally {
     await rm(root, { recursive: true, force: true });

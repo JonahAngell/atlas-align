@@ -5,7 +5,7 @@ Use this template for feature work, bug fixes, UI adjustments, refactors, perfor
 Complete every relevant section. Use `Not applicable` when a section does not apply. Do not delete safeguards merely to shorten a request. For a narrow, low-risk update, keep the same headings but answer them concisely.
 
 <!-- ATLAS-APP-VERSION:PROJECT-NOTE:BEGIN -->
-**Project version note:** The current ATLAS Align application version is `v3.0.5`
+**Project version note:** The current ATLAS Align application version is `v3.0.6`
 <!-- ATLAS-APP-VERSION:PROJECT-NOTE:END -->
 
 ---
@@ -410,7 +410,7 @@ Update `PROJECT_CONTEXT.md` only if the implementation changes one or more of th
 If a maintenance trigger occurs, update the complete `PROJECT_CONTEXT.md` and include it in the deliverable. Do not update or package `PROJECT_CONTEXT.md` merely because code changed.
 
 <!-- ATLAS-APP-VERSION:CURRENT-VERSION:BEGIN -->
-**Current version:** `v3.0.5`
+**Current version:** `v3.0.6`
 <!-- ATLAS-APP-VERSION:CURRENT-VERSION:END -->
 
 ---
@@ -647,5 +647,5 @@ Before sending the request, confirm:
 - [ ] The requested delivery summary is concise and evidence-based.
 
 <!-- ATLAS-APP-VERSION:QUALITY-CHECK:BEGIN -->
-- [ ] The current application version is listed as `v3.0.5`.
+- [ ] The current application version is listed as `v3.0.6`.
 <!-- ATLAS-APP-VERSION:QUALITY-CHECK:END -->
