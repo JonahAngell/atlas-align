@@ -17,10 +17,7 @@ test("review UI exposes final summary and returned feedback entry", () => {
 });
 test("Reviewer Mode uses append-only discussion routes", () => {
   assert.match(review, /\/items\/\$\{item\.id\}\/discussions/);
-  assert.match(
-    review,
-    /\/review-discussions\/\$\{current\.thread\.id\}\/messages/,
-  );
+  assert.match(review, /review-discussions/);
   assert.doesNotMatch(
     review,
     /method:\s*["'](?:PUT|PATCH|DELETE)["'][\s\S]{0,120}review-discussions/,

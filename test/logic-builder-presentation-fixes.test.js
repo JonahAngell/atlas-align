@@ -29,9 +29,15 @@ function declaration(name) {
 
 const roundingContext = {
   renderCatalogPhrase(path, values = {}) {
-    const template = path.split(".").reduce((current, key) => current?.[key], phraseCatalog);
-    return String(template || "").replace(/\{([A-Za-z0-9_.-]+)\}/g, (match, key) =>
-      Object.prototype.hasOwnProperty.call(values, key) ? String(values[key] ?? "") : match,
+    const template = path
+      .split(".")
+      .reduce((current, key) => current?.[key], phraseCatalog);
+    return String(template || "").replace(
+      /\{([A-Za-z0-9_.-]+)\}/g,
+      (match, key) =>
+        Object.prototype.hasOwnProperty.call(values, key)
+          ? String(values[key] ?? "")
+          : match,
     );
   },
 };

@@ -17,11 +17,17 @@ test("pending approval is a server-side mutation lock", async () => {
 
 test("rescind is an assigned-analyst transactional workflow", async () => {
   const workflow = await source("src/audit-workflow-repository.js");
+  const requestSql = await source(
+    "sql/audit-workflow-repository/rescind-approval-request.sql",
+  );
+  const sessionSql = await source(
+    "sql/audit-workflow-repository/rescind-review-session.sql",
+  );
   assert.match(workflow, /export async function rescindAuditApprovalRequest/);
   assert.match(workflow, /canRescindApprovalRequest/);
-  assert.match(workflow, /request_status='Rescinded'/);
+  assert.match(requestSql, /request_status\s*=\s*'Rescinded'/i);
   assert.match(workflow, /approval\.request_rescinded/);
-  assert.match(workflow, /session_status='Rescinded'/);
+  assert.match(sessionSql, /session_status\s*=\s*'Rescinded'/i);
 });
 
 test("browser presents pending approval as read-only with rescission", async () => {

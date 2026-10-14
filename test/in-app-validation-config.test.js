@@ -1,10 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-const server = [
-  "../server.js",
-  "../src/routes/identity-routes.js",
-]
+const server = ["../server.js", "../src/routes/identity-routes.js"]
   .map((file) => readFileSync(new URL(file, import.meta.url), "utf8"))
   .join("\n");
 test("validation requires preview and a literal true flag", () => {

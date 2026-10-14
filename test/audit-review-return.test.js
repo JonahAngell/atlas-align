@@ -31,6 +31,6 @@ test("structured return SQL uses the approval-request schema", () => {
   assert.match(sql, /updated_at = now\(\)/);
   assert.match(sql, /reviewer_response = 'Returned through item-level review'/);
   assert.match(sql, /request_status = 'Pending'/);
-  assert.match(sql, /RETURNING id/);
+  assert.match(sql, /RETURNING\s+id/);
   assert.doesNotMatch(sql, /decided_at/);
 });

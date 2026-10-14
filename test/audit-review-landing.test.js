@@ -32,8 +32,5 @@ test("workflow View Approval Request resolves current request identity", () => {
   );
   assert.match(workflowSource, /auditId: workflow\.auditId/);
   assert.match(workflowSource, /requestId: workflow\.currentRequestId/);
-  assert.match(
-    workflowSource,
-    /ATLASAuditReview\.open\(atlasApprovalReviewContext\(bound\)\)/,
-  );
+  assert.match(workflowSource, /window\.ATLASAuditReview\.open\(bound\)/);
 });

@@ -11,5 +11,5 @@ test("carry-forward is server-calculated and approve-only", () => {
   assert.match(s, /semanticFingerprint/);
   assert.match(s, /parentItemKey/);
   assert.match(s, /canonicalOrder/);
-  assert.match(s, /source_review_item_id/);
+  assert.match(s, /carry-forward-review-item/);
 });

@@ -10,9 +10,7 @@ test("draft save uses atomic concurrency and releases before refresh", () => {
     source.indexOf("export async function saveAuditReview"),
     source.indexOf("export async function bulkApproveAuditReview"),
   );
-  assert.match(body, /draft_version=\$2::bigint/);
-  assert.match(body, /RETURNING draft_version/);
-  assert.match(body, /RETURNING id/);
+  assert.match(body, /SQL\.updateReviewSessionDraft/);
   assert.ok(
     body.indexOf("c.release()") < body.indexOf("return getAuditReview"),
   );

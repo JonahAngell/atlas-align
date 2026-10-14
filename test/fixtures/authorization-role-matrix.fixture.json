@@ -7,7 +7,7 @@
       "id": "user-analyst",
       "username": "analyst.fake",
       "disabled": false,
-      "resolvedRoleSlugs": [],
+      "resolvedRoleSlugs": ["atlas-admin-team"],
       "roleResolutionStatus": "resolved"
     },
     "selectedReviewer": {

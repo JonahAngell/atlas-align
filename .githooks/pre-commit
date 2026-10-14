@@ -11,8 +11,8 @@ trap 'rm -f "$prettier_files"' EXIT HUP INT TERM
 git diff --cached --name-only --diff-filter=ACMR -z > "$prettier_files"
 
 # Format only staged files that Prettier recognizes, then restage them.
-if [ -s "$prettier_files" ]; then
-    xargs -0 -n 25 npx prettier --write --ignore-unknown < "$prettier_files"
+if [ -s "$prettier_files" ] && [ -f "node_modules/prettier/bin/prettier.cjs" ]; then
+    node node_modules/prettier/bin/prettier.cjs --write --ignore-unknown $(tr '\0' '\n' < "$prettier_files")
     xargs -0 -n 25 git add -- < "$prettier_files"
 fi
 

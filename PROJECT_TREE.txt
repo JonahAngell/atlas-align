@@ -16,21 +16,23 @@
 │           ├── react.md
 │           └── typescript.md
 ├── .cursor
-│   └── rules
-│       ├── core
-│       │   ├── contributing.mdc
-│       │   ├── design-foundations.mdc
-│       │   └── security.mdc
-│       ├── patterns
-│       │   ├── postgres.mdc
-│       │   ├── react-composition.mdc
-│       │   └── zod-validation.mdc
-│       ├── products
-│       │   └── studioshare-launch.mdc
-│       └── stacks
-│           ├── nextjs.mdc
-│           ├── react.mdc
-│           └── typescript.mdc
+│   ├── rules
+│   │   ├── core
+│   │   │   ├── contributing.mdc
+│   │   │   ├── design-foundations.mdc
+│   │   │   └── security.mdc
+│   │   ├── patterns
+│   │   │   ├── postgres.mdc
+│   │   │   ├── react-composition.mdc
+│   │   │   └── zod-validation.mdc
+│   │   ├── products
+│   │   │   └── studioshare-launch.mdc
+│   │   └── stacks
+│   │       ├── nextjs.mdc
+│   │       ├── react.mdc
+│   │       └── typescript.mdc
+│   ├── debug-2dede6.log
+│   └── debug-5972a3.log
 ├── .githooks
 │   └── pre-commit
 ├── .github
@@ -51,7 +53,8 @@
 │   │   ├── 20260914230000_add_audit_review_approval_finalization.sql
 │   │   ├── 20260915150000_add_canonical_review_object_metadata.sql
 │   │   ├── 20260915170000_add_persistent_audit_review_discussions.sql
-│   │   └── 20260915190000_add_rescinded_approval_request_state.sql
+│   │   ├── 20260915190000_add_rescinded_approval_request_state.sql
+│   │   └── 20261013120000_create_atlas_custom_sources.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
@@ -93,6 +96,7 @@
 │   └── work-contract-comparison.json
 ├── catalogs
 │   ├── audit-issue-rules.json
+│   ├── logic_phrase_catalog.json
 │   ├── source-fields.json
 │   ├── source-file-index.json
 │   ├── source-table-aliases.json
@@ -130,6 +134,7 @@
 │   ├── 00-config-utils.js
 │   ├── 00-exceljs-loader.js
 │   ├── 00-html-partials-loader.js
+│   ├── 00-icons.js
 │   ├── 01-state-dom.js
 │   ├── 02-hierarchy.js
 │   ├── 02-logic-rendering.js
@@ -153,6 +158,8 @@
 │   ├── 15f-join-picker.js
 │   ├── 15g-visual-ui-events.js
 │   ├── 15h-visual-picker.js
+│   ├── 15i-source-replace.js
+│   ├── 15j-logic-text-import.js
 │   ├── 16-page-shell.js
 │   ├── 16a-user-impersonation.js
 │   ├── 17-source-database.js
@@ -229,7 +236,6 @@
 │   ├── audit-overview.html
 │   ├── combined_html.txt
 │   ├── display-fields.html
-│   ├── group-landing.html
 │   ├── inbox.html
 │   ├── logic-builder.html
 │   ├── my-audits.html
@@ -385,6 +391,11 @@
 │   │   ├── set-audit-published.sql
 │   │   ├── share-lock-current-revision.sql
 │   │   └── soft-delete-publication.sql
+│   ├── custom-source
+│   │   ├── insert-custom-source-field.sql
+│   │   ├── insert-custom-source.sql
+│   │   ├── list-custom-source-keys.sql
+│   │   └── list-custom-sources.sql
 │   ├── field-library
 │   │   ├── complete-import-record.sql
 │   │   ├── copy-stage-to-field-library.sql
@@ -400,6 +411,14 @@
 │   │   └── resolve-impersonation-session.sql
 │   └── .prettierrc
 ├── src
+│   ├── routes
+│   │   ├── audit-routes.js
+│   │   ├── field-library-routes.js
+│   │   ├── identity-routes.js
+│   │   ├── preview-routes.js
+│   │   ├── review-routes.js
+│   │   ├── source-library-routes.js
+│   │   └── workflow-routes.js
 │   ├── 00-global-variables.js
 │   ├── audit-authorization.js
 │   ├── audit-comparison.js
@@ -408,10 +427,22 @@
 │   ├── audit-repository.js
 │   ├── audit-review-repository.js
 │   ├── audit-workflow-repository.js
+│   ├── canonical-json.js
+│   ├── custom-source-repository.js
+│   ├── custom-source.js
+│   ├── db-transaction.js
+│   ├── field-library-source.js
+│   ├── field-library-workbook.js
 │   ├── field-library.js
+│   ├── http-error.js
+│   ├── load-env.js
+│   ├── local-development.js
 │   ├── schema.js
+│   ├── sharepoint-client.js
 │   ├── source-library-authorization.js
+│   ├── source-library.js
 │   ├── sql.js
+│   ├── studioshare-client.js
 │   ├── studioshare-role-refresh.js
 │   ├── user-impersonation.js
 │   ├── user-profile-repository.js
@@ -446,13 +477,18 @@
 │   ├── audit-workflow-repository.test.js
 │   ├── audit-workflow-routes.test.js
 │   ├── authorization-role-matrix.test.js
+│   ├── custom-source.test.js
 │   ├── in-app-validation-config.test.js
 │   ├── in-app-validation-runner.test.js
 │   ├── in-app-validation-storage.test.js
 │   ├── inbox-card-redesign.test.js
 │   ├── inbox-ui.test.js
+│   ├── live-render-owners.test.js
+│   ├── local-development.test.js
 │   ├── logic-builder-initialization.test.js
 │   ├── logic-builder-presentation-fixes.test.js
+│   ├── logic-step-editor-join.test.js
+│   ├── logic-text-import.test.js
 │   ├── my-audits-render.test.js
 │   ├── pending-approval-rescind.test.js
 │   ├── publication-deletion-ui.test.js
@@ -461,7 +497,10 @@
 │   ├── recently-deleted-publications-ui.test.js
 │   ├── render-scheduling.test.js
 │   ├── schema.test.js
+│   ├── sharepoint-field-library.test.js
 │   ├── source-library-authorization.test.js
+│   ├── source-library-identity.test.js
+│   ├── source-replace.test.js
 │   ├── startup-recovery.test.js
 │   ├── user-impersonation.test.js
 │   ├── user-profile-persistence.test.js
@@ -543,18 +582,16 @@
 │   ├── exceljs.LICENSE.txt
 │   └── exceljs.min.js
 ├── .dockerignore
+├── .DS_Store
 ├── .env
 ├── .env.example
 ├── .gitignore
-├── .stylelintrc.json
-├── atlas-align-logic-builder-presentation-bugfixes.zip
 ├── audit-index.json
 ├── build-css.mjs
 ├── docker-compose.yml
 ├── Dockerfile
 ├── FEATURE_REQUEST_TEMPLATE.md
 ├── index.html
-├── logic_phrase_catalog.json
 ├── package-lock.json
 ├── package.json
 ├── playwright.config.js
@@ -567,5 +604,6 @@
 ├── REVIEW_BUNDLE.txt
 ├── review-bundle-files.txt
 ├── server.js
+├── SHAREPOINT_ENV_GUIDE_NO_BINDING.md
 ├── ste-blueprints.sh
 └── styles.css

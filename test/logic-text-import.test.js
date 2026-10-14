@@ -215,13 +215,18 @@ test("mapping source and field controls open the visual picker and keep the chos
     source: colored,
     sourceRef: "c0-source",
     ariaLabel: "Column for Nationality",
-    hiddenAttribute:
-      'data-import-field="c0-field" data-source-ref="c0-source"',
+    hiddenAttribute: 'data-import-field="c0-field" data-source-ref="c0-source"',
   });
   assert.match(sourceHtml, /data-logic-import-picker="source"/);
   assert.match(fieldHtml, /data-logic-import-picker="field"/);
-  assert.match(sourceHtml, /data-import-source="c0-source" value="sap\.hi0256"/);
-  assert.match(fieldHtml, /data-import-field="c0-field"[^>]*value="Nationality"/);
+  assert.match(
+    sourceHtml,
+    /data-import-source="c0-source" value="sap\.hi0256"/,
+  );
+  assert.match(
+    fieldHtml,
+    /data-import-field="c0-field"[^>]*value="Nationality"/,
+  );
   assert.match(sourceHtml, /--source-color:#123456/);
   assert.match(fieldHtml, /<strong>Nationality<\/strong>/);
   assert.doesNotMatch(sourceHtml, /<select/);
@@ -298,7 +303,9 @@ test("mapping source and field controls open the visual picker and keep the chos
   sandbox.atlasLogicImportOpenPicker(fieldButton);
   assert.equal(opened.mode, "field");
   assert.equal(opened.hideLabelMode, false);
-  const nationality = opened.entries.find((entry) => entry.rawName === "Nationality");
+  const nationality = opened.entries.find(
+    (entry) => entry.rawName === "Nationality",
+  );
   assert.ok(nationality);
   assert.equal(nationality.pickerValue, "Nationality");
   assert.equal(nationality.sourceColor, "#123456");

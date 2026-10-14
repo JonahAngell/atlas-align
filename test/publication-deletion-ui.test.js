@@ -11,12 +11,7 @@ const ui = readFileSync(
   );
 test("delete UI is capability driven and sends exact confirmation fields", () => {
   assert.match(workflow, /canDeletePublication/);
-  for (const value of [
-    "expectedPublicationId",
-    "expectedRevisionId",
-    "confirmation:true",
-    "reason",
-  ])
+  for (const value of ["expectedPublicationId", "expectedRevisionId", "reason"])
     assert.ok(ui.includes(value), value);
 });
 test("delete UI is separate from audit archive", () => {

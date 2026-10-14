@@ -24,7 +24,12 @@ function loadJoinEditor() {
         return null;
       },
       createElement() {
-        return { append() {}, querySelector() { return null; } };
+        return {
+          append() {},
+          querySelector() {
+            return null;
+          },
+        };
       },
       body: { append() {} },
     },
@@ -100,10 +105,7 @@ test("Union steps render source pickers through the current source helper", () =
   assert.match(html, /SOURCE:left_source/);
   assert.match(html, /SOURCE:right_source/);
   assert.match(html, /SOURCE:output_source/);
-  assert.equal(
-    calls.filter(([kind]) => kind === "field").length,
-    0,
-  );
+  assert.equal(calls.filter(([kind]) => kind === "field").length, 0);
 });
 
 test("non-join steps still use the previous guided builder", () => {
@@ -229,7 +231,10 @@ test("Choose Join Type opens with the current type selected and lays out list, d
   }
   assert.match(html, /data-join-type="LEFT JOIN"/);
   assert.match(html, /LEFT JOIN Venn diagram/);
-  assert.match(html, /All rows from the left source, plus matching rows from the right source/);
+  assert.match(
+    html,
+    /All rows from the left source, plus matching rows from the right source/,
+  );
 });
 
 test("choosing a join type updates the selected list item, diagram, and info together", () => {
@@ -237,9 +242,19 @@ test("choosing a join type updates the selected list item, diagram, and info tog
   picker.open({
     id: "step-join",
     step_type: "join",
-    params: { join_type: "INNER JOIN", left_field: "Employee ID", right_field: "Person ID" },
+    params: {
+      join_type: "INNER JOIN",
+      left_field: "Employee ID",
+      right_field: "Person ID",
+    },
   });
-  for (const type of ["LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN", "UNION", "INNER JOIN"]) {
+  for (const type of [
+    "LEFT JOIN",
+    "RIGHT JOIN",
+    "FULL OUTER JOIN",
+    "UNION",
+    "INNER JOIN",
+  ]) {
     const html = picker.choose(type);
     const chosen = joinOption(html, type);
     assert.equal(chosen.pressed, true);
@@ -249,7 +264,10 @@ test("choosing a join type updates the selected list item, diagram, and info tog
     assert.equal(html.match(/class="join-type-rectangle active/g).length, 1);
     if (type === "UNION") {
       assert.match(html, /class="join-union-visual"/);
-      assert.match(html, /Append rows from both sources into one combined output/);
+      assert.match(
+        html,
+        /Append rows from both sources into one combined output/,
+      );
       assert.match(html, />UNION \/ APPEND ROWS</);
     } else {
       assert.match(html, new RegExp(`data-join-type="${type}"`));

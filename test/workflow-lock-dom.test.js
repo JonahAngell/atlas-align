@@ -126,6 +126,13 @@ function contextFor(elements) {
     },
     Set,
     atlasWorkflowSummary: { workflowStatus: "Pending Approval" },
+    atlasLoadWorkflowSummary: async () => ({
+      workflowStatus: "Pending Approval",
+    }),
+    atlasWorkflowCan: () => true,
+    atlasWorkflowFeature: () => true,
+    atlasRenderWorkflowCard: () => {},
+    atlasAuditIsPublishedLocked: () => false,
     atlasAuditIsWorkflowLocked: () => true,
     atlasSubmitForApproval: async () => {},
     atlasShowApprovalReview: async () => {

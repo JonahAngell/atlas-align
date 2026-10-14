@@ -145,9 +145,18 @@ test("reference children limit the visual picker to the reference source", () =>
   });
   vm.runInContext(
     [
-      functionSource("../js/15g-visual-ui-events.js", "atlasPickerReferenceSource"),
-      functionSource("../js/15g-visual-ui-events.js", "atlasReferenceChildSource"),
-      functionSource("../js/15g-visual-ui-events.js", "atlasPickerSourceMatches"),
+      functionSource(
+        "../js/15g-visual-ui-events.js",
+        "atlasPickerReferenceSource",
+      ),
+      functionSource(
+        "../js/15g-visual-ui-events.js",
+        "atlasReferenceChildSource",
+      ),
+      functionSource(
+        "../js/15g-visual-ui-events.js",
+        "atlasPickerSourceMatches",
+      ),
       functionSource(
         "../js/15g-visual-ui-events.js",
         "atlasFieldPickerEligibilityPolicy",
@@ -189,7 +198,10 @@ test("reference children limit the visual picker to the reference source", () =>
   );
   context.visualPickerState = { targetStepId: "child" };
   assert.equal(
-    context.pickerSourceOptions().map((option) => option.sourceFile).join(","),
+    context
+      .pickerSourceOptions()
+      .map((option) => option.sourceFile)
+      .join(","),
     "orders.csv",
   );
 });

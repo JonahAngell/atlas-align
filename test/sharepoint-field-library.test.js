@@ -46,8 +46,7 @@ function bytesResponse(bytes, status = 200) {
     ok: status >= 200 && status < 300,
     status,
     json: async () => ({}),
-    arrayBuffer: async () =>
-      Uint8Array.from(bytes).buffer,
+    arrayBuffer: async () => Uint8Array.from(bytes).buffer,
   };
 }
 
@@ -86,7 +85,10 @@ test("environment loader does not override or echo values", async () => {
     loadEnvFile(file);
     assert.equal(process.env.KEEP_ME, "original");
     assert.equal(process.env.NEW_VALUE, SECRET);
-    assert.equal(logs.some((line) => line.includes(SECRET)), false);
+    assert.equal(
+      logs.some((line) => line.includes(SECRET)),
+      false,
+    );
   } finally {
     console.log = original;
     delete process.env.KEEP_ME;
@@ -209,7 +211,10 @@ test.describe("SharePoint client", { concurrency: false }, () => {
           return true;
         },
       );
-      assert.equal(logs.some((line) => line.includes(SECRET)), false);
+      assert.equal(
+        logs.some((line) => line.includes(SECRET)),
+        false,
+      );
     } finally {
       console.error = original;
     }
@@ -287,8 +292,7 @@ test("workbook parser keeps the field-library contract", async () => {
     /field-library sheet/,
   );
   await assert.rejects(
-    () =>
-      parseFieldLibraryWorkbook(mismatched, { sheetName: "Field Library" }),
+    () => parseFieldLibraryWorkbook(mismatched, { sheetName: "Field Library" }),
     /header mismatch/,
   );
 });
@@ -304,7 +308,11 @@ test.describe("field library reload", { concurrency: false }, () => {
         { outcome: "reloaded", bytes, fileName: "catalog.xlsx", sheetName: "" },
         { outcome: "reloaded", bytes, fileName: "catalog.xlsx", sheetName: "" },
         { outcome: "cached", bytes, fileName: "catalog.xlsx", sheetName: "" },
-        { throw: new SharePointError("SharePoint workbook unavailable (HTTP 503)") },
+        {
+          throw: new SharePointError(
+            "SharePoint workbook unavailable (HTTP 503)",
+          ),
+        },
       ];
       return async () => {
         const step = steps.shift();
@@ -347,13 +355,29 @@ test.describe("field library reload", { concurrency: false }, () => {
 
     const outage = await loadLiveFieldLibrary({}, options);
     assert.equal(outage.state, "backup");
-    assert.equal(outage.detail, "SharePoint workbook unavailable. Saved field library.");
+    assert.equal(
+      outage.detail,
+      "SharePoint workbook unavailable. Saved field library.",
+    );
     assert.equal(outage.rows[0].ID, "15");
     assert.equal(reads, 1);
   });
 
   test("uses backup rows when the workbook is invalid and unavailable when backup is empty", async () => {
-    const backup = [{ ...Object.fromEntries(FIELD_LIBRARY_COLUMNS.map((column) => [column, column === "ID" ? "9" : column === "Current Source" ? "sap.backup" : ""])) }];
+    const backup = [
+      {
+        ...Object.fromEntries(
+          FIELD_LIBRARY_COLUMNS.map((column) => [
+            column,
+            column === "ID"
+              ? "9"
+              : column === "Current Source"
+                ? "sap.backup"
+                : "",
+          ]),
+        ),
+      },
+    ];
     const invalid = await loadLiveFieldLibrary(
       {},
       {
@@ -370,14 +394,19 @@ test.describe("field library reload", { concurrency: false }, () => {
       },
     );
     assert.equal(invalid.state, "backup");
-    assert.equal(invalid.detail, "SharePoint workbook could not be read. Saved field library.");
+    assert.equal(
+      invalid.detail,
+      "SharePoint workbook could not be read. Saved field library.",
+    );
     assert.equal(invalid.rows[0].ID, "9");
 
     const empty = await loadLiveFieldLibrary(
       {},
       {
         downloadWorkbook: async () => {
-          throw new SharePointError("SharePoint workbook unavailable (HTTP 503)");
+          throw new SharePointError(
+            "SharePoint workbook unavailable (HTTP 503)",
+          );
         },
         readRows: async () => [],
       },
@@ -397,7 +426,10 @@ test.describe("field library reload", { concurrency: false }, () => {
 });
 
 test("Sources lightboard exposes live, backup, and unavailable", () => {
-  const html = readFileSync(new URL("../sections/sources.html", import.meta.url), "utf8");
+  const html = readFileSync(
+    new URL("../sections/sources.html", import.meta.url),
+    "utf8",
+  );
   assert.match(html, /id="fieldLibraryLightboard"/);
   assert.match(html, /data-lamp="live"/);
   assert.match(html, /data-lamp="backup"/);
@@ -438,7 +470,10 @@ test("Sources lightboard exposes live, backup, and unavailable", () => {
   sandbox.atlasRenderFieldLibraryLightboard();
   assert.equal(root.dataset.state, "checking");
   assert.equal(detail.textContent, "Checking field library source");
-  assert.equal(lamps.some((lamp) => lamp.classList.lit), false);
+  assert.equal(
+    lamps.some((lamp) => lamp.classList.lit),
+    false,
+  );
 
   sandbox.repoLibraryState.fieldLibraryProvenance = {
     state: "live",

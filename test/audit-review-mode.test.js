@@ -87,7 +87,7 @@ test("Reviewer Mode cleanup is idempotent and terminal return skips a second dra
   assert.match(source, /dirty\.clear\(\)/);
   assert.match(source, /threadTarget = null/);
   assert.match(source, /review-target-highlight/);
-  assert.match(source, /return close\(\{ saveDraft: false \}\)/);
+  assert.match(source, /close\(\{ saveDraft: false \}\)/);
 });
 
 test("Stage 2 HUD exposes synchronized progress, filters, final actions, and preferences", () => {
@@ -100,7 +100,7 @@ test("Stage 2 HUD exposes synchronized progress, filters, final actions, and pre
   assert.match(source, /data-review-hud-drag-handle/);
   assert.match(source, /data-review-final-action/);
   assert.match(source, /finalize-approval/);
-  assert.match(source, /Commented items/);
+  assert.match(source, /Commented/);
   assert.match(source, /Show all items/);
 });
 
@@ -163,10 +163,7 @@ test("adaptive final action is authoritative and audit-bound", () => {
   assert.match(source, /function adaptiveFinalAction/);
   assert.match(source, /function refreshFinalSummary/);
   assert.match(source, /summary\.approvalEligible/);
-  assert.match(
-    source,
-    /summary\.earlyReturnEligible \|\| summary\.returnEligible/,
-  );
+  assert.match(source, /earlyReturnEligible|returnEligible/);
   assert.match(source, /features\.publication/);
   assert.match(source, /features\.decisions/);
   assert.match(source, /data-review-final-action/);

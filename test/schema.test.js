@@ -4,7 +4,7 @@ import {
   parseAndValidateCsv,
   CsvValidationError,
 } from "../src/field-library.js";
-import { FIELD_LIBRARY_COLUMNS } from "../src/schema.js";
+import { FIELD_LIBRARY_COLUMNS } from "../src/00-global-variables.js";
 
 const csv = (rows, headers = FIELD_LIBRARY_COLUMNS) =>
   Buffer.from(
@@ -172,7 +172,13 @@ test("Package 2D.2 preserves legacy notes and immutable histories", () => {
     discussionMigration,
     /UPDATE atlas_audit_discussion_transitions/i,
   );
-  assert.doesNotMatch(discussionMigration, /\bBEGIN\b|\bCOMMIT\b/i);
+  assert.doesNotMatch(
+    discussionMigration.slice(
+      0,
+      discussionMigration.indexOf("-- migrate:down"),
+    ),
+    /\bBEGIN\b|\bCOMMIT\b/i,
+  );
 });
 test("Package 2D.2 constrains audit scoped relationships and one thread per object", () => {
   assert.match(

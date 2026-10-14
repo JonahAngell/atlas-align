@@ -30,7 +30,10 @@ test("topbar Inbox uses authoritative unread count and existing navigation", () 
 });
 
 test("topbar and sidebar Inbox controls use the same mailbox icon", () => {
-  const icons = readFileSync(new URL("../js/00-icons.js", import.meta.url), "utf8");
+  const icons = readFileSync(
+    new URL("../js/00-icons.js", import.meta.url),
+    "utf8",
+  );
   const sidebar = index.match(
     /data-section="inbox"[\s\S]*?data-atlas-icon="([^"]+)"/,
   );

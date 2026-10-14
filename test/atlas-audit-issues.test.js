@@ -703,7 +703,10 @@ test("Issues circle keeps a count badge only when issues exist", async () => {
   );
   assert.equal(html.includes("atlas-audit-issues__trigger-text"), false);
   assert.equal(html.includes("Audit status"), false);
-  assert.match(html, /id="atlas-audit-issues-trigger"[\s\S]*aria-label="Issues"/);
+  assert.match(
+    html,
+    /id="atlas-audit-issues-trigger"[\s\S]*aria-label="Issues"/,
+  );
   assert.match(
     html,
     /id="atlas-audit-issues-count"[\s\S]*class="atlas-audit-issues__count"[\s\S]*hidden/,
@@ -712,7 +715,10 @@ test("Issues circle keeps a count badge only when issues exist", async () => {
     new URL("../css/audit-issues.css", import.meta.url),
     "utf8",
   );
-  assert.match(css, /\.atlas-audit-issues__count\[hidden\]\s*\{[^}]*display:\s*none/);
+  assert.match(
+    css,
+    /\.atlas-audit-issues__count\[hidden\]\s*\{[^}]*display:\s*none/,
+  );
 
   const clear = mountIssueTrigger(await runtime(completeAudit()));
   assert.equal(clear.count.hidden, true);
@@ -886,9 +892,11 @@ test("every enabled rule can jump and fix", () => {
 test("issue findings name the control and fix kind", async () => {
   const nameAudit = completeAudit();
   nameAudit.name = "";
-  const nameIssue = (await runtime(nameAudit))
-    .ATLASAuditIssues.current()
-    .issues.find((entry) => entry.ruleId === "audit.identity.name-missing");
+  const nameIssue = (
+    await runtime(nameAudit)
+  ).ATLASAuditIssues.current().issues.find(
+    (entry) => entry.ruleId === "audit.identity.name-missing",
+  );
   assert.equal(nameIssue.target.control, "audit-name");
   assert.equal(nameIssue.actionData.fixKind, "text");
   assert.equal(nameIssue.canJump, true);
@@ -898,9 +906,11 @@ test("issue findings name the control and fix kind", async () => {
   conditionAudit.steps[0].params.conditions_json = JSON.stringify([
     { id: "condition-1", fieldName: "", operator: "", valueMode: "values" },
   ]);
-  const conditionIssue = (await runtime(conditionAudit))
-    .ATLASAuditIssues.current()
-    .issues.find((entry) => entry.instanceId.endsWith("-field"));
+  const conditionIssue = (
+    await runtime(conditionAudit)
+  ).ATLASAuditIssues.current().issues.find((entry) =>
+    entry.instanceId.endsWith("-field"),
+  );
   assert.equal(conditionIssue.target.control, "condition-fieldName");
   assert.equal(conditionIssue.actionData.fixKind, "picker");
 
@@ -921,9 +931,11 @@ test("issue findings name the control and fix kind", async () => {
       },
     },
   ];
-  const joinIssue = (await runtime(joinAudit))
-    .ATLASAuditIssues.current()
-    .issues.find((entry) => entry.ruleId === "audit.logic.join-integrity");
+  const joinIssue = (
+    await runtime(joinAudit)
+  ).ATLASAuditIssues.current().issues.find(
+    (entry) => entry.ruleId === "audit.logic.join-integrity",
+  );
   assert.equal(joinIssue.target.control, "param:right_field");
   assert.equal(joinIssue.severity, "critical");
   assert.equal(joinIssue.actionData.fixKind, "picker");
@@ -933,9 +945,11 @@ test("issue findings name the control and fix kind", async () => {
     { sourceKey: "source.one", rawFieldName: "Status" },
     { sourceKey: "source.one", rawFieldName: "Status" },
   ];
-  const displayIssue = (await runtime(displayAudit))
-    .ATLASAuditIssues.current()
-    .issues.find((entry) => entry.ruleId === "audit.display.integrity");
+  const displayIssue = (
+    await runtime(displayAudit)
+  ).ATLASAuditIssues.current().issues.find(
+    (entry) => entry.ruleId === "audit.display.integrity",
+  );
   assert.equal(displayIssue.target.control, "display-row");
   assert.equal(displayIssue.actionData.repair, "remove-display");
   assert.equal(displayIssue.severity, "warning");
@@ -1454,13 +1468,15 @@ test("comparing two created fields does not flag them as missing catalog fields"
     (entry) => entry.target?.stepId === "compare-step",
   );
   assert.equal(
-    issues.filter((entry) => entry.ruleId === "audit.sources.reference-integrity")
-      .length,
+    issues.filter(
+      (entry) => entry.ruleId === "audit.sources.reference-integrity",
+    ).length,
     0,
   );
   assert.equal(
-    issues.filter((entry) => entry.ruleId === "audit.logic.self-field-comparison")
-      .length,
+    issues.filter(
+      (entry) => entry.ruleId === "audit.logic.self-field-comparison",
+    ).length,
     0,
   );
 });
@@ -1586,7 +1602,9 @@ test("comparing an attached calculated field to itself warns once", async () => 
   assert.equal(warnings.length, 1);
   assert.equal(warnings[0].severity, "warning");
   assert.equal(
-    issues.some((entry) => entry.ruleId === "audit.sources.reference-integrity"),
+    issues.some(
+      (entry) => entry.ruleId === "audit.sources.reference-integrity",
+    ),
     false,
   );
 });
@@ -1728,12 +1746,11 @@ test("unmatched source replacement gaps are critical and suppress the generic mi
     unmatched.every((entry) => entry.jumpAction === "openSourceReplacement"),
   );
   const fieldIssue = unmatched.find((entry) => /Legacy/.test(entry.summary));
-  const sourceIssue = unmatched.find((entry) => /Source Three/.test(entry.summary));
-  assert.match(fieldIssue.summary, /source\.two, source\.three/);
-  assert.match(
-    sourceIssue.summary,
-    /no fields were matched to it/,
+  const sourceIssue = unmatched.find((entry) =>
+    /Source Three/.test(entry.summary),
   );
+  assert.match(fieldIssue.summary, /source\.two, source\.three/);
+  assert.match(sourceIssue.summary, /no fields were matched to it/);
   assert.equal(
     issues.some(
       (entry) =>
@@ -1857,8 +1874,9 @@ function indicatorElement(tag, { id = "", className = "", dataset = {} } = {}) {
         .split(",")
         .map((part) => part.trim().replace(":scope > ", "").toLowerCase());
       return (
-        node.children.find((child) => names.includes(child.tagName.toLowerCase())) ||
-        null
+        node.children.find((child) =>
+          names.includes(child.tagName.toLowerCase()),
+        ) || null
       );
     }
     return node.querySelectorAll(selector)[0] || null;
@@ -1879,16 +1897,12 @@ function indicatorMatches(node, selector) {
     rest = rest.slice(id.length + 1);
   }
   const classes = [...rest.matchAll(/\.([\w-]+)/g)].map((match) => match[1]);
-  if (
-    classes.some((name) => !node.className.split(/\s+/).includes(name))
-  )
+  if (classes.some((name) => !node.className.split(/\s+/).includes(name)))
     return false;
   const attrs = [...rest.matchAll(/\[([^\]=]+)(?:="([^"]*)")?\]/g)];
   for (const [, key, value] of attrs) {
     const prop = key.startsWith("data-")
-      ? key
-          .slice(5)
-          .replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
+      ? key.slice(5).replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
       : "";
     const actual = prop ? node.dataset[prop] : node.getAttribute(key);
     if (value == null) {
@@ -2126,14 +2140,10 @@ test("issue cards show the rules-list step number instead of the step id", async
   );
 
   const missing = completeAudit();
-  missing.steps = [
-    brokenConditionStep("step_2d01d8c4", "step_missing_parent"),
-  ];
+  missing.steps = [brokenConditionStep("step_2d01d8c4", "step_missing_parent")];
   const missingLines = issueContextLines(await runtime(missing));
   assert.ok(
-    missingLines.some(
-      (line) => line === "Step · Condition cond_92dbe63a",
-    ),
+    missingLines.some((line) => line === "Step · Condition cond_92dbe63a"),
   );
   assert.equal(
     missingLines.some((line) => line.includes("step_")),

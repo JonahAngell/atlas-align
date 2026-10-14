@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
-const scripts = [...read("../index.html").matchAll(/src="\.\/(js\/[^"]+\.js)"/g)].map(
-  (match) => match[1],
-);
+const scripts = [
+  ...read("../index.html").matchAll(/src="\.\/(js\/[^"]+\.js)"/g),
+].map((match) => match[1]);
 
 function filesMatching(pattern) {
   return scripts.filter((script) => pattern.test(read(`../${script}`)));

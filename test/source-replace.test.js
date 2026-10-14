@@ -226,7 +226,10 @@ test("gaps keep unmatched fields and replacement sources that received no mappin
     ],
     existing: gaps,
   });
-  assert.equal(finished.fields.map((item) => item.originalField).join("|"), "Keep");
+  assert.equal(
+    finished.fields.map((item) => item.originalField).join("|"),
+    "Keep",
+  );
   assert.equal(finished.sources.length, 0);
 
   const unusedSwap = replacement.atlasBuildSourceReplacementGaps({

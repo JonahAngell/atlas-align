@@ -14,6 +14,11 @@ async function repo() {
     "js/00-config-utils.js",
     "FEATURE_REQUEST_TEMPLATE.md",
     "PROJECT_CONTEXT.md",
+    "build-css.mjs",
+    "css/manifest.json",
+    "css/display-fields.css",
+    "css/requirements-preview.css",
+    "styles.css",
     "tools/sync-app-version.mjs",
     "tools/install-git-hooks.mjs",
     ".githooks/pre-commit",
@@ -22,6 +27,9 @@ async function repo() {
     if (d !== ".") await mkdir(path.join(root, d), { recursive: true });
     await cp(path.join(source, f), path.join(root, f));
   }
+  await cp(path.join(source, "css"), path.join(root, "css"), {
+    recursive: true,
+  });
   git(root, "init");
   git(root, "config", "user.email", "test@example.test");
   git(root, "config", "user.name", "Test");
@@ -45,7 +53,7 @@ test("normal commit bumps once and stages managed files", async () => {
       path.join(root, "js/00-config-utils.js"),
       "utf8",
     );
-    assert.match(src, /v2\.0\.2/);
+    assert.match(src, /v3\.0\.5/g);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -69,7 +77,7 @@ test("hook retry reuses prepared version", async () => {
     assert.equal(r.status, 0, r.stderr);
     assert.match(
       await readFile(path.join(root, "js/00-config-utils.js"), "utf8"),
-      /v2\.0\.2/,
+      /v3\.0\.5/g,
     );
   } finally {
     await rm(root, { recursive: true, force: true });

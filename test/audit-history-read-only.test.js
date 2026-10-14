@@ -25,7 +25,7 @@ test("ordinary browsing contains no persistence calls", () => {
 });
 test("stale responses are rejected by audit and generation", () => {
   assert.match(s, /requestGeneration/);
-  assert.match(s, /auditId!==historyView\.auditId/);
+  assert.match(s, /auditId\s*!==\s*historyView\.auditId/);
 });
 test("only restoration delegates to the existing Phase 4 entry point", () =>
   assert.match(s, /atlasRestoreAuditRevision\(historyView\.revisionId\)/));

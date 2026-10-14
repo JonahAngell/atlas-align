@@ -78,7 +78,10 @@ async function withSourceLibraryApp(overrides, run) {
         allowed: false,
         reason: "required_role_absent",
       }),
-      loadLiveFieldLibrary: async () => ({ rows: [workbookRow], state: "live" }),
+      loadLiveFieldLibrary: async () => ({
+        rows: [workbookRow],
+        state: "live",
+      }),
       sourceLibraryFromRows,
       fieldLibraryProvenance: () => ({
         state: "live",
@@ -350,7 +353,12 @@ test("custom source badge shows the creator name and initials", () => {
   });
   assert.equal(unsafe.includes("<img"), false);
 
-  const image = { removed: false, remove() { this.removed = true; } };
+  const image = {
+    removed: false,
+    remove() {
+      this.removed = true;
+    },
+  };
   atlasCustomSourceAvatarFallback(image);
   assert.equal(image.removed, true);
   assert.equal(atlasCustomSourceBadge({ origin: "catalog" }), "");

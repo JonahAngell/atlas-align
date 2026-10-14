@@ -26,12 +26,15 @@ function loadIdentityHelpers(sourceFiles) {
     repoLibraryState: { sourceFiles },
   };
   vm.createContext(sandbox);
-  vm.runInContext(`${source.slice(start, end)}\nthis.helpers = {
+  vm.runInContext(
+    `${source.slice(start, end)}\nthis.helpers = {
     atlasCatalogSourcesForSelection,
     atlasSourceDisambiguatedLabel,
     atlasStableSourceKey,
     atlasDisplayNameCollision,
-  };`, sandbox);
+  };`,
+    sandbox,
+  );
   return sandbox.helpers;
 }
 
@@ -49,25 +52,22 @@ test("Field Library keeps sources that share a display name distinct", () => {
 
   const hi = titled.get("HI0256");
   assert.ok(hi);
-  assert.deepEqual(
-    hi.map((source) => source.sourceKey).sort(),
-    ["sap.hi0256", "wb.hi0256can"],
-  );
+  assert.deepEqual(hi.map((source) => source.sourceKey).sort(), [
+    "sap.hi0256",
+    "wb.hi0256can",
+  ]);
 
   const sap = hi.find((source) => source.sourceKey === "sap.hi0256");
   const canada = hi.find((source) => source.sourceKey === "wb.hi0256can");
   const sapFields = new Set(sap.fields.map((field) => field.fieldName));
   const sapIds = new Set(sap.fields.map((field) => field.id));
-  assert.deepEqual(
-    canada.fields.map((field) => field.fieldName).sort(),
-    [
-      "action_reason_number",
-      "action_reason_text",
-      "action_type",
-      "action_type_text",
-      "persno",
-    ],
-  );
+  assert.deepEqual(canada.fields.map((field) => field.fieldName).sort(), [
+    "action_reason_number",
+    "action_reason_text",
+    "action_type",
+    "action_type_text",
+    "persno",
+  ]);
   for (const field of canada.fields) {
     assert.equal(sapIds.has(field.id), false);
     assert.equal(sapFields.has(field.fieldName), false);
@@ -109,9 +109,7 @@ test("selecting one shared-name source does not include the other source's field
     ["sap.hi0256"],
   );
   const names = new Set(
-    selected.flatMap((source) =>
-      source.fields.map((field) => field.fieldName),
-    ),
+    selected.flatMap((source) => source.fields.map((field) => field.fieldName)),
   );
   assert.equal(names.has("persno"), false);
   assert.equal(names.has("PA0002-NACHN"), true);
@@ -120,10 +118,10 @@ test("selecting one shared-name source does not include the other source's field
     { sourceKey: "sap.hi0256", sourceFile: "HI0256", alias: "sap.hi0256" },
     { sourceKey: "wb.hi0256can", sourceFile: "HI0256", alias: "wb.hi0256can" },
   ]);
-  assert.deepEqual(
-    both.map((source) => source.sourceKey).sort(),
-    ["sap.hi0256", "wb.hi0256can"],
-  );
+  assert.deepEqual(both.map((source) => source.sourceKey).sort(), [
+    "sap.hi0256",
+    "wb.hi0256can",
+  ]);
   const lookedUp = helpers.atlasCatalogSourcesForSelection(
     sources,
     both,

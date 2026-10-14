@@ -32,4 +32,4 @@ test("adjacent classic script order is preserved", () =>
         i.indexOf("20-database-only-audits.js"),
   ));
 test("workflow history entry point opens unified browser", () =>
-  assert.match(j, /atlasOpenAuditHistory=function\(\)/));
+  assert.match(j, /atlasOpenAuditHistory\s*=\s*function\s*\(\)/));

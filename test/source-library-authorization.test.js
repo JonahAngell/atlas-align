@@ -24,7 +24,9 @@ test("does not treat opaque role identifiers as slugs", () => {
 
 test("permits only the required owner role", () => {
   assert.equal(
-    sourceLibraryAccessDecision({ resolvedRoleSlugs: ["owner"] }).allowed,
+    sourceLibraryAccessDecision({
+      resolvedRoleSlugs: ["atlas-align-admin"],
+    }).allowed,
     true,
   );
   assert.equal(
