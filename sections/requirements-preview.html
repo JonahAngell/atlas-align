@@ -1,37 +1,81 @@
 <section class="page" data-page="preview" id="page-preview">
-  <h1>Requirements Preview</h1>
-  <div class="subtitle">Live preview of the generated requirement output.</div>
-  <div class="tabs">
-    <button class="tab active" data-preview-tab="table" type="button">
-      Standard Table
-    </button>
-  </div>
-  <select aria-hidden="true" class="visually-hidden" id="previewStyle">
-    <option selected="" value="table">Standard Table</option>
-  </select>
-  <label class="check export-option"
-    ><input checked="" id="includeNotesToggle" type="checkbox" /> Include notes
-    in preview/export</label
-  >
-  <label class="check export-option"
-    ><input id="completeStatementsToggle" type="checkbox" /> View as complete
-    statements</label
-  >
-  <section class="card requirements-fields-panel">
-    <div class="section-title"><strong>Fields</strong></div>
-    <div id="requirementsFieldsPreview"></div>
-  </section>
-  <section class="card logic-preview-panel">
-    <div class="section-title">
-      <strong>Audit Logic</strong
-      ><button
+  <div class="preview-pagehead">
+    <div class="preview-heading">
+      <h1>Requirements Preview</h1>
+      <p class="subtitle">Live preview of the generated requirement output.</p>
+    </div>
+    <div class="preview-toolbar">
+      <label class="check export-option"
+        ><input checked="" id="includeNotesToggle" type="checkbox" /> Include
+        notes in preview/export</label
+      >
+      <label class="check export-option"
+        ><input id="completeStatementsToggle" type="checkbox" /> View as
+        complete statements</label
+      >
+      <button
         class="btn secondary small"
+        id="refreshPreviewBtn"
         onclick="renderPreview()"
         type="button"
       >
         Refresh Preview
       </button>
     </div>
-    <div id="logicPreview"></div>
-  </section>
+  </div>
+  <select aria-hidden="true" class="visually-hidden" id="previewStyle">
+    <option selected="" value="table">Standard Table</option>
+  </select>
+  <div
+    aria-label="Fields and audit logic"
+    class="preview-pane-switch"
+    data-preview-pane-switch
+    role="tablist"
+  >
+    <button
+      aria-controls="requirementsFieldsPanel"
+      aria-selected="true"
+      class="preview-pane-tab"
+      data-preview-pane-tab="fields"
+      id="previewPaneFieldsTab"
+      role="tab"
+      type="button"
+    >
+      Fields
+    </button>
+    <button
+      aria-controls="requirementsLogicPanel"
+      aria-selected="false"
+      class="preview-pane-tab"
+      data-preview-pane-tab="logic"
+      id="previewPaneLogicTab"
+      role="tab"
+      tabindex="-1"
+      type="button"
+    >
+      Audit Logic
+    </button>
+  </div>
+  <div class="preview-panels">
+    <section
+      aria-labelledby="previewPaneFieldsTab"
+      class="card requirements-fields-panel preview-pane is-preview-pane-active"
+      data-preview-pane="fields"
+      id="requirementsFieldsPanel"
+      role="tabpanel"
+    >
+      <div class="section-title"><strong>Fields</strong></div>
+      <div id="requirementsFieldsPreview"></div>
+    </section>
+    <section
+      aria-labelledby="previewPaneLogicTab"
+      class="card logic-preview-panel preview-pane"
+      data-preview-pane="logic"
+      id="requirementsLogicPanel"
+      role="tabpanel"
+    >
+      <div class="section-title"><strong>Audit Logic</strong></div>
+      <div id="logicPreview"></div>
+    </section>
+  </div>
 </section>

@@ -372,6 +372,13 @@ function atlasDisplayFieldDeleteControl(row) {
   const reason = esc(ATLAS_DISPLAY_LOGIC_DELETE_REASON);
   return `<span class="display-field-delete-lock" title="${reason}"><button type="button" class="secondary small display-field-delete" disabled aria-disabled="true" data-display-field-delete="${esc(row.key)}" aria-label="${esc(label)}" title="${reason}">Delete</button></span>`;
 }
+function atlasDisplayFieldMeta(row) {
+  const parts = [row.vanityLabel, row.displayFormat, row.dataCategory]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  parts.push(row.usedInLogic ? "Used in logic" : "Not used in logic");
+  return parts.map((part) => esc(part)).join(" · ");
+}
 function renderDisplayFieldsPage() {
   const host = $("displayFieldsTable");
   if (!host) return;
@@ -407,7 +414,12 @@ function renderDisplayFieldsPage() {
     return `<span class="${classes}"${reason}${style}>${dot}${esc(value)}${badge}</span>`;
   };
   host.innerHTML = rows.length
-    ? `<div class="display-fields-table-wrap"><table class="display-fields-table"><thead><tr><th scope="col" aria-label="Reorder"></th><th>Source</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Used in Logic</th><th>Displayed</th></tr></thead><tbody>${rows.map((row) => `<tr class="${row.usedInLogic ? "display-field-logic-locked" : ""}" draggable="true" data-display-field-row="${esc(row.key)}"><td><span class="display-field-drag-handle" draggable="true" tabindex="0" role="button" aria-label="Reorder ${esc(row.vanityLabel || row.fieldTitle)}" title="Drag to reorder or use Alt+Up and Alt+Down">⋮⋮</span></td><td>${pill(row.sourceAlias || row.uniqueId || "Calculated Field", row, "source")}</td><td>${pill(row.fieldTitle, row, "field")}</td><td>${esc(row.vanityLabel)}</td><td>${esc(row.displayFormat)}</td><td>${esc(row.dataCategory)}</td><td>${row.usedInLogic ? "Yes" : "No"}</td><td><div class="display-fields-actions"><label class="display-fields-switch"><input type="checkbox" role="switch" data-display-field-toggle="${esc(row.key)}" aria-label="Include ${esc(row.vanityLabel || row.fieldTitle)} in preview and export" ${row.displayed ? "checked" : ""}><span class="display-fields-switch-track" aria-hidden="true"></span><span data-display-field-switch-label>${row.displayed ? "Displayed" : "Hidden"}</span></label>${atlasDisplayFieldDeleteControl(row)}</div></td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="display-fields-table-wrap"><table class="display-fields-table"><thead><tr><th scope="col" aria-label="Reorder"></th><th>Source</th><th>Field Title</th><th class="display-field-col-detail">Vanity Label</th><th class="display-field-col-detail">Display Format</th><th class="display-field-col-detail">Data Category</th><th class="display-field-col-detail">Used in Logic</th><th>Displayed</th></tr></thead><tbody>${rows
+        .map(
+          (row) =>
+            `<tr class="${row.usedInLogic ? "display-field-logic-locked" : ""}" draggable="true" data-display-field-row="${esc(row.key)}"><td><span class="display-field-drag-handle" draggable="true" tabindex="0" role="button" aria-label="Reorder ${esc(row.vanityLabel || row.fieldTitle)}" title="Drag to reorder or use Alt+Up and Alt+Down">⋮⋮</span></td><td>${pill(row.sourceAlias || row.uniqueId || "Calculated Field", row, "source")}</td><td class="display-field-identity">${pill(row.fieldTitle, row, "field")}<div class="display-field-meta">${atlasDisplayFieldMeta(row)}</div></td><td class="display-field-col-detail">${esc(row.vanityLabel)}</td><td class="display-field-col-detail">${esc(row.displayFormat)}</td><td class="display-field-col-detail">${esc(row.dataCategory)}</td><td class="display-field-col-detail">${row.usedInLogic ? "Yes" : "No"}</td><td><div class="display-fields-actions"><label class="display-fields-switch"><input type="checkbox" role="switch" data-display-field-toggle="${esc(row.key)}" aria-label="Include ${esc(row.vanityLabel || row.fieldTitle)} in preview and export" ${row.displayed ? "checked" : ""}><span class="display-fields-switch-track" aria-hidden="true"></span><span data-display-field-switch-label>${row.displayed ? "Displayed" : "Hidden"}</span></label>${atlasDisplayFieldDeleteControl(row)}</div></td></tr>`,
+        )
+        .join("")}</tbody></table></div>`
     : `<div class="empty-state"><strong>No fields are available.</strong><p>Add logic fields or select a display-only field from an included source.</p></div>`;
   const audit = atlasDisplayDocument?.() || state.audit,
     enabled = (audit.sources || []).length > 0,
@@ -813,15 +825,24 @@ document.addEventListener("keydown", (event) => {
   const handle = event.target.closest?.(".display-field-drag-handle");
   if (!handle || !event.altKey || !["ArrowUp", "ArrowDown"].includes(event.key))
     return;
-  const row = handle.closest("[data-display-field-row]"),
-    rows = [...document.querySelectorAll("[data-display-field-row]")],
+  const row = handle.closest("#displayFieldsTable [data-display-field-row]");
+  if (!row) return;
+  const rows = [
+      ...document.querySelectorAll(
+        "#displayFieldsTable [data-display-field-row]",
+      ),
+    ],
     index = rows.indexOf(row),
     target = rows[index + (event.key === "ArrowUp" ? -1 : 1)];
   if (!target) return;
   event.preventDefault();
   const key = row.dataset.displayFieldRow;
   if (atlasMoveDisplayField(key, target.dataset.displayFieldRow))
-    [...document.querySelectorAll("[data-display-field-row]")]
+    [
+      ...document.querySelectorAll(
+        "#displayFieldsTable [data-display-field-row]",
+      ),
+    ]
       .find((item) => item.dataset.displayFieldRow === key)
       ?.querySelector(".display-field-drag-handle")
       ?.focus();
@@ -871,7 +892,9 @@ function atlasRemoveDisplayField(row) {
   }
   const prefs = atlasDisplayPreferences();
   const matches = atlasDisplayPreferenceIndexes(row);
-  const rows = [...document.querySelectorAll("[data-display-field-row]")];
+  const rows = [
+    ...document.querySelectorAll("#displayFieldsTable [data-display-field-row]"),
+  ];
   const index = rows.findIndex(
     (item) => item.dataset.displayFieldRow === row.key,
   );
@@ -915,7 +938,9 @@ function atlasRemoveDisplayField(row) {
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
   atlasRestorePageScroll(point);
-  const next = [...document.querySelectorAll("[data-display-field-row]")].find(
+  const next = [
+    ...document.querySelectorAll("#displayFieldsTable [data-display-field-row]"),
+  ].find(
     (item) => item.dataset.displayFieldRow === focusKey,
   );
   (

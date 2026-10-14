@@ -369,10 +369,18 @@ function requirementsFieldRows(options = {}) {
     }));
 }
 
+/** Shows or hides the Notes columns without dropping note text from the rows. */
+function syncPreviewNotesLayout() {
+  document
+    .getElementById("page-preview")
+    ?.classList.toggle("is-notes-off", !e.includeNotes?.checked);
+}
+
 /** Renders the canonical Requirements Preview Fields table. */
 function renderRequirementsFieldsPreview() {
   const target = $("requirementsFieldsPreview");
   if (!target) return;
+  syncPreviewNotesLayout();
   const rows = requirementsFieldRows();
   const pill = (value, row, kind) => {
     const color = row.sourceColor || "#7da2d8";
@@ -389,7 +397,7 @@ function renderRequirementsFieldsPreview() {
         : "";
     return `<span class="${classes}" style="--requirements-field-color:${esc(color)};--source-color:${esc(color)};--source-pill-color:${esc(color)}">${esc(value)}${badge}</span>`;
   };
-  target.innerHTML = `<div class="logic-table-wrap requirements-fields-table-wrap" tabindex="0" aria-label="Fields table"><table class="logic-preview-table requirements-fields-table"><thead><tr><th scope="col" aria-label="Row number"></th><th scope="col">Unique ID</th><th scope="col">Field Title</th><th scope="col">Vanity Label</th><th scope="col">Display Format</th><th scope="col">Data Category</th><th scope="col">Display</th><th scope="col">Notes</th></tr></thead><tbody>${rows.length ? rows.map((row) => `<tr${row.key ? ` data-display-field-row="${esc(row.key)}"` : ""}><td>${row.rowNumber}</td><td>${pill(row.uniqueId || "Calculated Field", row, "source")}</td><td>${pill(row.fieldTitle, row, "field")}</td><td>${esc(row.vanityLabel)}</td><td>${esc(row.displayFormat)}</td><td>${esc(row.dataCategory)}</td><td>${esc(row.display)}</td><td>${esc(row.notes).replace(/\n/g, "<br>")}</td></tr>`).join("") : `<tr><td colspan="8" class="hint">No referenced or custom fields are available for this audit.</td></tr>`}</tbody></table></div>`;
+  target.innerHTML = `<div class="logic-table-wrap requirements-fields-table-wrap" tabindex="0" aria-label="Fields table"><table class="logic-preview-table requirements-fields-table"><thead><tr><th scope="col" aria-label="Row number"></th><th scope="col">Unique ID</th><th scope="col">Field Title</th><th scope="col">Vanity Label</th><th scope="col">Display Format</th><th scope="col">Data Category</th><th scope="col">Display</th><th class="preview-notes-col" scope="col">Notes</th></tr></thead><tbody>${rows.length ? rows.map((row) => `<tr${row.key ? ` data-display-field-row="${esc(row.key)}"` : ""}><td>${row.rowNumber}</td><td>${pill(row.uniqueId || "Calculated Field", row, "source")}</td><td>${pill(row.fieldTitle, row, "field")}</td><td>${esc(row.vanityLabel)}</td><td>${esc(row.displayFormat)}</td><td>${esc(row.dataCategory)}</td><td>${esc(row.display)}</td><td class="preview-notes-col">${esc(row.notes).replace(/\n/g, "<br>")}</td></tr>`).join("") : `<tr><td colspan="8" class="hint">No referenced or custom fields are available for this audit.</td></tr>`}</tbody></table></div>`;
 }
 
 /**
@@ -1166,6 +1174,7 @@ function renderSelectedStep() {
  * Renders the Requirements Preview table.
  */
 function renderPreview() {
+  syncPreviewNotesLayout();
   renderRequirementsFieldsPreview();
   const rows = isCompleteStatementsPreviewMode()
     ? completeStatementPreviewRows()
@@ -1178,7 +1187,7 @@ function renderPreview() {
             <th>Step</th>
             <th>Analyst Logic</th>
             <th>Developer Logic</th>
-            <th>Notes</th>
+            <th class="preview-notes-col">Notes</th>
           </tr>
         </thead>
         <tbody>
@@ -1189,7 +1198,7 @@ function renderPreview() {
               <td>${esc(row.step)}</td>
               <td>${renderLogicWithPills(row.analyst)}</td>
               <td>${esc(row.developer)}</td>
-              <td>${e.includeNotes?.checked ? renderLogicWithPills(row.notes) : ""}</td>
+              <td class="preview-notes-col">${e.includeNotes?.checked ? renderLogicWithPills(row.notes) : ""}</td>
             </tr>`,
             )
             .join("")}
@@ -1197,6 +1206,58 @@ function renderPreview() {
       </table>
     </div>`;
 }
+
+/* Narrow preview pane switch. Both panels stay mounted; CSS shows one at a time. */
+function atlasActivatePreviewPane(pane) {
+  const page = document.getElementById("page-preview");
+  if (!page) return;
+  const tabs = [...page.querySelectorAll("[data-preview-pane-tab]")];
+  const panels = [...page.querySelectorAll("[data-preview-pane]")];
+  if (!tabs.length || !panels.length) return;
+  const nextPane = pane === "logic" ? "logic" : "fields";
+  tabs.forEach((tab) => {
+    const selected = tab.dataset.previewPaneTab === nextPane;
+    tab.setAttribute("aria-selected", selected ? "true" : "false");
+    tab.tabIndex = selected ? 0 : -1;
+  });
+  panels.forEach((panel) => {
+    panel.classList.toggle(
+      "is-preview-pane-active",
+      panel.dataset.previewPane === nextPane,
+    );
+  });
+}
+
+function atlasBindPreviewPaneSwitch() {
+  const tablist = document.querySelector(
+    "#page-preview [data-preview-pane-switch]",
+  );
+  if (!tablist || tablist.dataset.bound === "true") return;
+  tablist.dataset.bound = "true";
+  tablist.addEventListener("click", (event) => {
+    const tab = event.target.closest("[data-preview-pane-tab]");
+    if (!tab || !tablist.contains(tab)) return;
+    atlasActivatePreviewPane(tab.dataset.previewPaneTab);
+  });
+  tablist.addEventListener("keydown", (event) => {
+    const tabs = [...tablist.querySelectorAll("[role='tab']")];
+    const index = tabs.indexOf(document.activeElement);
+    if (index < 0) return;
+    let nextIndex = -1;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+      nextIndex = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
+      nextIndex = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    if (nextIndex < 0) return;
+    event.preventDefault();
+    atlasActivatePreviewPane(tabs[nextIndex].dataset.previewPaneTab);
+    tabs[nextIndex].focus();
+  });
+}
+
+atlasBindPreviewPaneSwitch();
 
 /**
  * Refreshes saved flow choices.

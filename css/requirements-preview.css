@@ -42,4 +42,256 @@
     border: 2px solid CanvasText;
   }
 }
-/* ATLAS-SOURCE-UNIT:u0950:END */
+/* ATLAS-SOURCE-UNIT:u0950:END *//* ATLAS-SOURCE-UNIT:u1344:BEGIN */
+
+body:has(#page-preview.active) {
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u1344:END *//* ATLAS-SOURCE-UNIT:u1345:BEGIN */body:has(#page-preview.active) .main {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u1345:END *//* ATLAS-SOURCE-UNIT:u1346:BEGIN */body:has(#page-preview.active) .topbar {
+  flex: 0 0 auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1346:END *//* ATLAS-SOURCE-UNIT:u1347:BEGIN */body:has(#page-preview.active) .content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u1347:END *//* ATLAS-SOURCE-UNIT:u1348:BEGIN */body:has(#page-preview.active) .content > .page:not(#page-preview) {
+  display: none !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u1348:END *//* ATLAS-SOURCE-UNIT:u1349:BEGIN */#page-preview.page.active {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  container-name: preview-page;
+}
+
+/* ATLAS-SOURCE-UNIT:u1349:END *//* ATLAS-SOURCE-UNIT:u1350:BEGIN */#page-preview .preview-pagehead {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1350:END *//* ATLAS-SOURCE-UNIT:u1351:BEGIN */#page-preview .preview-heading {
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1351:END *//* ATLAS-SOURCE-UNIT:u1352:BEGIN */#page-preview .preview-pagehead h1,
+#page-preview .preview-pagehead .subtitle {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1352:END *//* ATLAS-SOURCE-UNIT:u1353:BEGIN */#page-preview .preview-pagehead .subtitle {
+  margin-top: 0.15rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1353:END *//* ATLAS-SOURCE-UNIT:u1354:BEGIN */#page-preview .preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1354:END *//* ATLAS-SOURCE-UNIT:u1355:BEGIN */#page-preview .preview-toolbar .check,
+#page-preview #refreshPreviewBtn {
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1355:END *//* ATLAS-SOURCE-UNIT:u1356:BEGIN */#page-preview .preview-pane-switch {
+  display: none;
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u1356:END *//* ATLAS-SOURCE-UNIT:u1357:BEGIN */#page-preview .preview-pane-tab {
+  flex: 1 1 0;
+  min-width: 44px;
+  min-height: 44px;
+  margin: 0 0 -1px;
+  padding: 0.5rem 0.75rem;
+  color: var(--muted);
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+/* ATLAS-SOURCE-UNIT:u1357:END *//* ATLAS-SOURCE-UNIT:u1358:BEGIN */#page-preview .preview-pane-tab:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+/* ATLAS-SOURCE-UNIT:u1358:END *//* ATLAS-SOURCE-UNIT:u1359:BEGIN */#page-preview .preview-pane-tab[aria-selected="true"] {
+  color: var(--text);
+  background: transparent;
+  border-bottom-color: var(--primary);
+  font-weight: 750;
+}
+
+/* ATLAS-SOURCE-UNIT:u1359:END *//* ATLAS-SOURCE-UNIT:u1360:BEGIN */#page-preview .preview-pane-tab[aria-selected="true"]:hover {
+  background: var(--surface2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1360:END *//* ATLAS-SOURCE-UNIT:u1361:BEGIN */#page-preview .preview-pane-tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1361:END *//* ATLAS-SOURCE-UNIT:u1362:BEGIN */#page-preview .preview-panels {
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1362:END *//* ATLAS-SOURCE-UNIT:u1363:BEGIN */#page-preview .preview-pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* ATLAS-SOURCE-UNIT:u1363:END *//* ATLAS-SOURCE-UNIT:u1364:BEGIN */#page-preview .preview-pane .section-title {
+  flex: 0 0 auto;
+  margin-bottom: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1364:END *//* ATLAS-SOURCE-UNIT:u1365:BEGIN */#page-preview #requirementsFieldsPreview,
+#page-preview #logicPreview {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1365:END *//* ATLAS-SOURCE-UNIT:u1366:BEGIN */#page-preview .logic-table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1366:END *//* ATLAS-SOURCE-UNIT:u1367:BEGIN */#page-preview .logic-preview-table {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1367:END *//* ATLAS-SOURCE-UNIT:u1368:BEGIN */#page-preview .logic-preview-table th,
+#page-preview .logic-preview-table td {
+  min-width: 7rem;
+  overflow-wrap: break-word;
+}
+
+#page-preview .requirements-fields-table th:first-child,
+#page-preview .requirements-fields-table td:first-child,
+#page-preview .logic-preview-panel .logic-preview-table th:first-child,
+#page-preview .logic-preview-panel .logic-preview-table td:first-child {
+  min-width: 2.75rem;
+  width: 2.75rem;
+}
+
+#page-preview .logic-preview-panel .logic-preview-table th:nth-child(2),
+#page-preview .logic-preview-panel .logic-preview-table td:nth-child(2),
+#page-preview .preview-notes-col {
+  min-width: 12rem;
+}
+
+#page-preview .requirements-field-pill,
+#page-preview .logic-pill,
+#page-preview .source-pill,
+#page-preview .field-pill-token {
+  display: inline-flex !important;
+  max-width: none !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  white-space: nowrap !important;
+}
+
+/* ATLAS-SOURCE-UNIT:u1368:END *//* ATLAS-SOURCE-UNIT:u1369:BEGIN */#page-preview.is-notes-off .preview-notes-col {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1369:END *//* ATLAS-SOURCE-UNIT:u1370:BEGIN */@container preview-page (max-width: 960px) {
+  #page-preview .preview-pane-switch {
+    display: flex;
+  }
+
+  #page-preview .preview-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  #page-preview .preview-pane:not(.is-preview-pane-active) {
+    display: none;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1370:END *//* ATLAS-SOURCE-UNIT:u1371:BEGIN */@media (prefers-reduced-motion: reduce) {
+  #page-preview .preview-pane-tab {
+    transition: none;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1371:END *//* ATLAS-SOURCE-UNIT:u1372:BEGIN */@media (forced-colors: active) {
+  #page-preview .preview-pane-tab[aria-selected="true"] {
+    border-bottom-color: Highlight;
+  }
+
+  #page-preview .preview-pane-tab:focus-visible {
+    outline-color: Highlight;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1372:END *//* ATLAS-SOURCE-UNIT:u1373:BEGIN */
+
+@container preview-page (max-width: 520px) {
+  #page-preview .preview-pagehead .subtitle {
+    display: none;
+  }
+
+  #page-preview .preview-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    width: 100%;
+  }
+
+  #page-preview #refreshPreviewBtn {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+  }
+
+  #page-preview .preview-pane .section-title {
+    display: none;
+  }
+}/* ATLAS-SOURCE-UNIT:u1373:END */
