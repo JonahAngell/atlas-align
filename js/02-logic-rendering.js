@@ -288,11 +288,14 @@ function requirementsFieldRows(options = {}) {
     (entry, order) => {
       const step = entry.step;
       const params = step.params || {};
+      const usesTargetColumn = !["display_text", "do_not_display"].includes(
+        params.then_action_type,
+      );
       [
         params.output_column,
         params.destination_column,
         params.then_output_column,
-        params.then_target_column,
+        usesTargetColumn ? params.then_target_column : "",
         params.created_field,
         params.column_name,
       ]
