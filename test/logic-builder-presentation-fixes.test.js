@@ -139,6 +139,6 @@ test("Requirements output columns ignore stale reference fields on display actio
   );
   assert.match(
     renderingSource,
-    /\[\s*"display_text",\s*"do_not_display",\s*\]\.includes\(params\.then_action_type\)/,
+    /\[\s*"display_text",\s*"do_not_display",?\s*\]\.includes\(\s*params\.then_action_type,?\s*\)/,
   );
 });
