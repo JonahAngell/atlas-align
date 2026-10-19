@@ -87,9 +87,19 @@
       class="atlas-visual-picker-footer"
       hidden
     >
-      <p id="atlas-visual-picker-selection-count" aria-live="polite">
-        No items selected
-      </p>
+      <div class="atlas-visual-picker-footer-start">
+        <button
+          id="atlas-visual-picker-select-all"
+          class="atlas-visual-picker-control"
+          type="button"
+          hidden
+        >
+          Select all
+        </button>
+        <p id="atlas-visual-picker-selection-count" aria-live="polite">
+          No items selected
+        </p>
+      </div>
       <button
         id="atlas-visual-picker-confirm"
         class="btn primary"
