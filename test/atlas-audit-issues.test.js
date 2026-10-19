@@ -645,6 +645,42 @@ test("workflow prerequisites show no-display-fields after sources and logic exis
   assert.equal(rules.has("audit.display.none"), true);
 });
 
+test("logic-referenced Display Field rows satisfy no-display-fields without manual additions", async () => {
+  const audit = completeAudit();
+  audit.displayFields = [];
+  const context = await runtime(audit);
+  context.requirementsFieldRows = () => [
+    { key: "source.one::status", displayed: true, usedInLogic: true },
+  ];
+  const rules = new Set(
+    context.ATLASAuditIssues.current().issues.map((entry) => entry.ruleId),
+  );
+  assert.equal(rules.has("audit.display.none"), false);
+});
+
+test("no-display-fields returns when every Display Field row is hidden", async () => {
+  const context = await runtime(completeAudit());
+  context.requirementsFieldRows = () => [];
+  const rules = new Set(
+    context.ATLASAuditIssues.current().issues.map((entry) => entry.ruleId),
+  );
+  assert.equal(rules.has("audit.display.none"), true);
+});
+
+test("hidden or removed Display Field preferences do not count as displayed", async () => {
+  const audit = completeAudit();
+  audit.displayFields = [
+    { sourceKey: "source.one", rawFieldName: "Status", displayed: false },
+    { sourceKey: "source.one", rawFieldName: "Other", removed: true },
+  ];
+  const rules = new Set(
+    (await runtime(audit)).ATLASAuditIssues.current().issues.map(
+      (entry) => entry.ruleId,
+    ),
+  );
+  assert.equal(rules.has("audit.display.none"), true);
+});
+
 test("Audit Issues partial contains one complete root and one severity set", () => {
   const html = readFileSync(
     new URL("../sections/audit-issues.html", import.meta.url),
