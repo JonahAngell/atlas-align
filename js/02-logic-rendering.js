@@ -1426,11 +1426,86 @@ function developerConditionRightExpression(condition = {}, options = {}) {
   return '""';
 }
 
+const DEVELOPER_TEXT_MATCH_OPERATORS = {
+  contains: { kind: "contains", negated: false },
+  "does not contain": { kind: "contains", negated: true },
+  "starts with": { kind: "starts", negated: false },
+  "does not start with": { kind: "starts", negated: true },
+  "ends with": { kind: "ends", negated: false },
+  "does not end with": { kind: "ends", negated: true },
+};
+
+function developerTextMatchOperator(operator = "") {
+  return (
+    DEVELOPER_TEXT_MATCH_OPERATORS[
+      String(operator || "")
+        .trim()
+        .toLowerCase()
+    ] || null
+  );
+}
+
+function developerTextMatchTerm(left, match, term, { sql = false } = {}) {
+  if (sql) {
+    const pattern = term.literal
+      ? `'${match.kind === "starts" ? "" : "%"}${term.value.replace(/'/g, "''")}${match.kind === "ends" ? "" : "%"}'`
+      : [
+          match.kind === "starts" ? "" : "'%'",
+          term.expression,
+          match.kind === "ends" ? "" : "'%'",
+        ]
+          .filter(Boolean)
+          .join(" + ");
+    return `${left} ${match.negated ? "NOT LIKE" : "LIKE"} ${pattern}`;
+  }
+  const right = term.literal
+    ? `"${term.value.replace(/"/g, '""')}"`
+    : term.expression;
+  const test =
+    match.kind === "contains"
+      ? `ISNUMBER(SEARCH(${right}, ${left}))`
+      : `${match.kind === "starts" ? "LEFT" : "RIGHT"}(${left}, LEN(${right})) = ${right}`;
+  return match.negated ? `NOT(${test})` : test;
+}
+
+function developerTextMatchExpression(left, match, condition, options = {}) {
+  const terms =
+    condition.valueMode === "field"
+      ? [
+          {
+            literal: false,
+            expression: developerConditionRightExpression(condition, options),
+          },
+        ]
+      : String(condition.compareValue || condition.value || "")
+          .split(/\r?\n/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+          .map((value) => ({ literal: true, value }));
+  if (!terms.length) terms.push({ literal: true, value: "" });
+  const parts = terms.map((term) =>
+    developerTextMatchTerm(left, match, term, options),
+  );
+  if (parts.length === 1) return parts[0];
+  // Negated multi-value matches must fail every value; positive ones need any.
+  const joiner = match.negated ? "AND" : "OR";
+  return options.sql
+    ? `(${parts.join(` ${joiner} `)})`
+    : `${joiner}(${parts.join(", ")})`;
+}
+
 function developerConditionExpression(condition = {}, options = {}) {
   const left = conditionFieldDeveloperExpression(
     condition.fieldName || condition.field || "[field]",
     options,
   );
+  const textMatch =
+    condition.valueMode === "field" ||
+    (condition.valueMode || "values") === "values"
+      ? developerTextMatchOperator(condition.operator)
+      : null;
+  if (textMatch)
+    return developerTextMatchExpression(left, textMatch, condition, options);
   const operator =
     condition.valueMode === "blank"
       ? String(condition.operator || "")

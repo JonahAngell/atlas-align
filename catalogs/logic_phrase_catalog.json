@@ -304,15 +304,16 @@
         "field": [
           "is equal to",
           "is not equal to",
+          "contains",
+          "does not contain",
+          "starts with",
+          "ends with",
           "is greater than",
           "is greater than or equal to",
           "is less than",
           "is less than or equal to"
         ],
-        "expression": [
-          "matches expression",
-          "does not match expression"
-        ]
+        "expression": ["matches expression", "does not match expression"]
       },
       "filter_actions": ["Keep matching rows", "Exclude matching rows"],
       "sort_directions": ["Ascending", "Descending"],
