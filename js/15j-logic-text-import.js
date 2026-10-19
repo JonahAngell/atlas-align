@@ -209,7 +209,9 @@ function atlasImportReadQuotedList(text) {
 }
 
 function atlasImportReadLooseList(text) {
-  const rest = String(text || "").trim().replace(/\.$/, "");
+  const rest = String(text || "")
+    .trim()
+    .replace(/\.$/, "");
   if (!rest || rest.includes('"')) return null;
   const values = rest
     .split(/\s+or\s+|,\s*/i)
@@ -221,7 +223,9 @@ function atlasImportReadLooseList(text) {
 function atlasImportReadValue(text, operator) {
   const source = String(text || "").trim();
   if (operator === "is blank/null" || operator === "is not blank/null") {
-    if (!atlasImportRemainderOk(source.replace(/^(?:blank\/null|blank)\s*/i, "")))
+    if (
+      !atlasImportRemainderOk(source.replace(/^(?:blank\/null|blank)\s*/i, ""))
+    )
       return null;
     return {
       valueMode: "blank",
@@ -231,7 +235,10 @@ function atlasImportReadValue(text, operator) {
       compareFieldToken: "",
     };
   }
-  if (operator === "matches expression" || operator === "does not match expression") {
+  if (
+    operator === "matches expression" ||
+    operator === "does not match expression"
+  ) {
     return {
       valueMode: "expression",
       compareValue: "",
@@ -277,7 +284,9 @@ function atlasImportReadValue(text, operator) {
 function atlasImportReadCondition(text) {
   const column = atlasImportReadTableColumn(text);
   if (!column || column.kind === "new-column") return null;
-  const afterColumn = String(text || "").slice(column.end).trimStart();
+  const afterColumn = String(text || "")
+    .slice(column.end)
+    .trimStart();
   const operator = atlasImportMatchOperator(afterColumn);
   if (!operator) return null;
   const value = atlasImportReadValue(
@@ -294,7 +303,9 @@ function atlasImportReadCondition(text) {
 }
 
 function atlasImportSplitConnectors(text) {
-  const source = String(text || "").trim().replace(/^if\b\s*/i, "");
+  const source = String(text || "")
+    .trim()
+    .replace(/^if\b\s*/i, "");
   const mask = atlasImportMaskQuotes(source);
   const expression = /\b(AND|OR)\b(?=\s+(?:file|column|new)\b)/gi;
   const splits = [];
@@ -307,7 +318,8 @@ function atlasImportSplitConnectors(text) {
     });
     match = expression.exec(mask);
   }
-  if (!splits.length) return { ok: true, parts: [{ connector: "IF", text: source }] };
+  if (!splits.length)
+    return { ok: true, parts: [{ connector: "IF", text: source }] };
   const connectors = splits.map((item) => item.connector);
   if (connectors.includes("AND") && connectors.includes("OR"))
     return atlasImportFail(
@@ -400,7 +412,9 @@ function atlasImportValuesControl(id, label, value, bind) {
 }
 
 function atlasImportSelectControl(id, label, value, options, bind) {
-  const list = options.includes(value) ? options : [value, ...options].filter(Boolean);
+  const list = options.includes(value)
+    ? options
+    : [value, ...options].filter(Boolean);
   return {
     id,
     kind: "select",
@@ -534,6 +548,10 @@ function atlasImportOperatorsForMode(valueMode) {
     return [
       "is equal to",
       "is not equal to",
+      "contains",
+      "does not contain",
+      "starts with",
+      "ends with",
       "is greater than",
       "is greater than or equal to",
       "is less than",
@@ -609,7 +627,9 @@ function atlasImportReadMath(text) {
 function atlasImportReadRounding(text) {
   const match =
     /^,\s*then round\s+(down to|up to|to)\s+(the nearest whole number|\d+\s+decimal places?)\s*$/i.exec(
-      String(text || "").trim().replace(/\.$/, ""),
+      String(text || "")
+        .trim()
+        .replace(/\.$/, ""),
     );
   if (!match) return null;
   const direction = match[1].toLowerCase();
@@ -624,7 +644,9 @@ function atlasImportReadRounding(text) {
 }
 
 function atlasImportParseThenAction(action) {
-  const text = String(action || "").trim().replace(/\.\s*$/, "");
+  const text = String(action || "")
+    .trim()
+    .replace(/\.\s*$/, "");
   if (!text)
     return {
       params: { then_action_type: "freeform", then_action: "" },
@@ -681,7 +703,10 @@ function atlasImportParseThenAction(action) {
   if (setLead) {
     const target = atlasImportReadQuote(text, setLead[0].length);
     if (target) {
-      let rest = text.slice(target.end).trim().replace(/^value to\s+/i, "");
+      let rest = text
+        .slice(target.end)
+        .trim()
+        .replace(/^value to\s+/i, "");
       if (text.slice(target.end).trim().toLowerCase().startsWith("value to")) {
         const shaped = atlasImportParseSetValue(target.value, rest);
         if (shaped) return shaped;
@@ -703,8 +728,9 @@ function atlasImportParseThenAction(action) {
 }
 
 function atlasImportParseSetValue(target, rest) {
-  const substring =
-    /^the\s+(first|last)\s+(\d+)\s+characters\s+of\s+/i.exec(rest);
+  const substring = /^the\s+(first|last)\s+(\d+)\s+characters\s+of\s+/i.exec(
+    rest,
+  );
   if (substring) {
     const column = atlasImportReadTableColumn(rest.slice(substring[0].length));
     if (
@@ -854,8 +880,10 @@ function atlasImportStringTransformAction(details) {
     params.string_position = details.position;
     params.string_character_count = details.count;
   }
-  const sourceId = prefix === "params.then_" ? "then-string-source" : "string-source";
-  const fieldId = prefix === "params.then_" ? "then-string-field" : "string-field";
+  const sourceId =
+    prefix === "params.then_" ? "then-string-source" : "string-source";
+  const fieldId =
+    prefix === "params.then_" ? "then-string-field" : "string-field";
   const references = [];
   if (details.column.sourceToken) {
     references.push(
@@ -956,7 +984,8 @@ function atlasImportParseCreate(text) {
   const lead = blank || /^create new column\s+/i.exec(text);
   if (!lead) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
   const name = atlasImportReadQuote(text, lead[0].length);
-  if (!name) return atlasImportFail("Create Column needs a quoted column name.");
+  if (!name)
+    return atlasImportFail("Create Column needs a quoted column name.");
   const rest = text.slice(name.end).trim();
   if (blank || atlasImportRemainderOk(rest))
     return atlasImportDraft("create_column", {
@@ -1009,7 +1038,10 @@ function atlasImportParseCreate(text) {
         column_name: name.value,
         value_mode: "Expression / calculation",
         expression_type: "custom_expression",
-        expression: rest.slice(expressionLead[0].length).replace(/\.$/, "").trim(),
+        expression: rest
+          .slice(expressionLead[0].length)
+          .replace(/\.$/, "")
+          .trim(),
       },
       controls: [
         atlasImportTextControl(
@@ -1029,13 +1061,17 @@ function atlasImportParseCreate(text) {
   const concatLead = /^by concatenating\s+/i.exec(rest);
   if (concatLead) {
     const first = atlasImportReadTableColumn(rest.slice(concatLead[0].length));
-    if (!first) return atlasImportFail("Concatenate needs a first file and column.");
+    if (!first)
+      return atlasImportFail("Concatenate needs a first file and column.");
     const between = rest.slice(concatLead[0].length + first.end).trim();
     const andLead = /^and\s+/i.exec(between);
     if (!andLead)
       return atlasImportFail("Concatenate needs a second file and column.");
     const second = atlasImportReadTableColumn(between.slice(andLead[0].length));
-    if (!second || !atlasImportRemainderOk(between.slice(andLead[0].length + second.end)))
+    if (
+      !second ||
+      !atlasImportRemainderOk(between.slice(andLead[0].length + second.end))
+    )
       return atlasImportFail("Concatenate needs a second file and column.");
     const references = [
       ...atlasImportBindColumn(first, "concat-1", "First", {
@@ -1068,8 +1104,15 @@ function atlasImportParseCreate(text) {
   const firstCharacters =
     /^using the (first|last) (\d+) characters of\s+/i.exec(rest);
   if (firstCharacters) {
-    const column = atlasImportReadTableColumn(rest.slice(firstCharacters[0].length));
-    if (!column || !atlasImportRemainderOk(rest.slice(firstCharacters[0].length + column.end)))
+    const column = atlasImportReadTableColumn(
+      rest.slice(firstCharacters[0].length),
+    );
+    if (
+      !column ||
+      !atlasImportRemainderOk(
+        rest.slice(firstCharacters[0].length + column.end),
+      )
+    )
       return atlasImportFail(
         "The character transform needs a file and column.",
       );
@@ -1092,7 +1135,10 @@ function atlasImportParseCreate(text) {
     );
   if (lengthLead) {
     const column = atlasImportReadTableColumn(rest.slice(lengthLead[0].length));
-    if (!column || !atlasImportRemainderOk(rest.slice(lengthLead[0].length + column.end)))
+    if (
+      !column ||
+      !atlasImportRemainderOk(rest.slice(lengthLead[0].length + column.end))
+    )
       return atlasImportFail("Character count needs a file and column.");
     return atlasImportDraft(
       "create_column",
@@ -1200,7 +1246,10 @@ function atlasImportParseJoin(text) {
   const andLead = /^and\s+/i.exec(between);
   if (!andLead) return atlasImportFail("Join needs a right file and column.");
   const right = atlasImportReadTableColumn(between.slice(andLead[0].length));
-  if (!right || !atlasImportRemainderOk(between.slice(andLead[0].length + right.end)))
+  if (
+    !right ||
+    !atlasImportRemainderOk(between.slice(andLead[0].length + right.end))
+  )
     return atlasImportFail("Join needs a right file and column.");
   return atlasImportDraft("join", {
     params: { join_type: "INNER JOIN" },
@@ -1240,7 +1289,8 @@ function atlasImportParseUnion(text) {
   if (!right) return atlasImportFail("UNION needs a quoted right file.");
   rest = rest.slice(right.end).trim();
   const outputLead = /^,?\s*reference as file\s+/i.exec(rest);
-  if (!outputLead) return atlasImportFail("UNION needs a referenced output file.");
+  if (!outputLead)
+    return atlasImportFail("UNION needs a referenced output file.");
   const output = atlasImportReadQuote(rest, outputLead[0].length);
   if (!output || !atlasImportRemainderOk(rest.slice(output.end)))
     return atlasImportFail("UNION needs a quoted output file.");
@@ -1272,12 +1322,16 @@ function atlasImportParseUnion(text) {
   });
 }
 
-function atlasImportParseSimpleColumnStep(text, stepType, leadPattern, afterReader) {
+function atlasImportParseSimpleColumnStep(
+  text,
+  stepType,
+  leadPattern,
+  afterReader,
+) {
   const lead = leadPattern.exec(text);
   if (!lead) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
   const column = atlasImportReadTableColumn(text.slice(lead[0].length));
-  if (!column)
-    return atlasImportFail("This sentence needs a file and column.");
+  if (!column) return atlasImportFail("This sentence needs a file and column.");
   const rest = text.slice(lead[0].length + column.end).trim();
   const extra = afterReader(rest, column);
   if (!extra?.ok) return extra || atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
@@ -1332,7 +1386,9 @@ function atlasImportParseSplit(text) {
       const after = rest.slice(delimiter.end).trim();
       const display = /^and display\s+/i.exec(after);
       if (!display) return atlasImportFail("Split needs a display part.");
-      const outputLead = /\s+in column\s+/i.exec(after.slice(display[0].length));
+      const outputLead = /\s+in column\s+/i.exec(
+        after.slice(display[0].length),
+      );
       if (!outputLead) return atlasImportFail("Split needs an output column.");
       const part = after
         .slice(display[0].length, display[0].length + outputLead.index)
@@ -1341,10 +1397,15 @@ function atlasImportParseSplit(text) {
         after,
         display[0].length + outputLead.index + outputLead[0].length,
       );
-      if (!output) return atlasImportFail("Split needs a quoted output column.");
+      if (!output)
+        return atlasImportFail("Split needs a quoted output column.");
       return {
         ok: true,
-        params: { split_on: delimiter.value, split_part: part, output_column: output.value },
+        params: {
+          split_on: delimiter.value,
+          split_part: part,
+          output_column: output.value,
+        },
         controls: [
           atlasImportTextControl(
             "split-on",
@@ -1379,8 +1440,10 @@ function atlasImportParseSort(text) {
       const match = /^in\s+(ascending|descending)\s+order\s*$/i.exec(
         rest.replace(/\.$/, "").trim(),
       );
-      if (!match) return atlasImportFail("Sort needs Ascending or Descending order.");
-      const direction = match[1].toLowerCase() === "descending" ? "Descending" : "Ascending";
+      if (!match)
+        return atlasImportFail("Sort needs Ascending or Descending order.");
+      const direction =
+        match[1].toLowerCase() === "descending" ? "Descending" : "Ascending";
       return {
         ok: true,
         params: { sort_direction: direction },
@@ -1404,7 +1467,9 @@ function atlasImportParseDuplicates(text) {
     "remove_duplicates",
     /^(?:if\s+)?/i,
     (rest) => {
-      const lead = /^value appears more than once in the column,\s*/i.exec(rest);
+      const lead = /^value appears more than once in the column,\s*/i.exec(
+        rest,
+      );
       if (!lead)
         return atlasImportFail(
           "Remove Duplicates needs the phrase value appears more than once in the column.",
@@ -1452,7 +1517,10 @@ function atlasImportParseFilter(before, action) {
     references: parsed.references.map(atlasImportRetargetFilterReference),
     controls: [
       ...parsed.controls
-        .filter((control) => control.id.endsWith("-operator") || control.id.endsWith("-values"))
+        .filter(
+          (control) =>
+            control.id.endsWith("-operator") || control.id.endsWith("-values"),
+        )
         .map((control) => ({
           ...control,
           bind: control.id.endsWith("-operator")
@@ -1472,9 +1540,17 @@ function atlasImportParseFilter(before, action) {
 
 function atlasImportRetargetFilterReference(reference) {
   if (reference.fileBind === "conditions.0.sourceFile")
-    return { ...reference, fileBind: "params.source_file", aliasBind: "params.source_alias" };
+    return {
+      ...reference,
+      fileBind: "params.source_file",
+      aliasBind: "params.source_alias",
+    };
   if (reference.fieldBind === "conditions.0.fieldName")
-    return { ...reference, fieldBind: "params.field_name", requiresJoinFields: false };
+    return {
+      ...reference,
+      fieldBind: "params.field_name",
+      requiresJoinFields: false,
+    };
   return reference;
 }
 
@@ -1490,24 +1566,38 @@ function atlasImportParseFlag(before, details) {
     flag_action: details.flag_action,
   };
   const controls = parsed.controls
-    .filter((control) => control.id.endsWith("-operator") || control.id.endsWith("-values"))
+    .filter(
+      (control) =>
+        control.id.endsWith("-operator") || control.id.endsWith("-values"),
+    )
     .map((control) => ({
       ...control,
-      bind: control.id.endsWith("-operator") ? "params.operator" : "params.compare_value",
+      bind: control.id.endsWith("-operator")
+        ? "params.operator"
+        : "params.compare_value",
     }));
   if (details.flag_action === "display_text") {
     const lead = /^display text response\s+/i.exec(details.action);
-    const message = lead ? atlasImportReadQuote(details.action, lead[0].length) : null;
+    const message = lead
+      ? atlasImportReadQuote(details.action, lead[0].length)
+      : null;
     const rest = message ? details.action.slice(message.end) : "";
     const columnLead = /^\s+in\s+column\s+/i.exec(rest);
     const column =
       columnLead && atlasImportReadQuote(rest, columnLead[0].length);
     if (!message || !column)
-      return atlasImportFail("Flag display text needs a quoted message and column.");
+      return atlasImportFail(
+        "Flag display text needs a quoted message and column.",
+      );
     params.message = message.value;
     params.output_column = column.value;
     controls.push(
-      atlasImportTextControl("flag-message", "Message", message.value, "params.message"),
+      atlasImportTextControl(
+        "flag-message",
+        "Message",
+        message.value,
+        "params.message",
+      ),
       atlasImportTextControl(
         "flag-output",
         "Output column",
@@ -1537,7 +1627,10 @@ function atlasImportParseIfThen(before, action) {
 }
 
 function atlasImportParseElse(text) {
-  const body = text.replace(/^else\b\s*/i, "").replace(/\.\s*$/, "").trim();
+  const body = text
+    .replace(/^else\b\s*/i, "")
+    .replace(/\.\s*$/, "")
+    .trim();
   if (!body || body === ":")
     return atlasImportDraft("else", {
       params: { then_action_type: "freeform", then_action: "" },
@@ -1551,8 +1644,12 @@ function atlasParseImportedLogicText(value) {
   const text = atlasImportNormalizeText(value);
   if (!text) return atlasImportFail("Enter a logic sentence to import.");
   const head = text.toLowerCase();
-  if (head.startsWith("reference source file")) return atlasImportParseReference(text);
-  if (head.startsWith("create new blank column") || head.startsWith("create new column"))
+  if (head.startsWith("reference source file"))
+    return atlasImportParseReference(text);
+  if (
+    head.startsWith("create new blank column") ||
+    head.startsWith("create new column")
+  )
     return atlasImportParseCreate(text);
   if (head.startsWith("join ")) return atlasImportParseJoin(text);
   if (head.startsWith("union file")) return atlasImportParseUnion(text);
@@ -1568,7 +1665,9 @@ function atlasParseImportedLogicText(value) {
     if (/^(keep matching rows|exclude matching rows)$/i.test(split.after))
       return atlasImportParseFilter(split.before, split.after);
     if (/^do NOT display\b/.test(split.after))
-      return atlasImportParseFlag(split.before, { flag_action: "do_not_display" });
+      return atlasImportParseFlag(split.before, {
+        flag_action: "do_not_display",
+      });
     if (
       /^display text response\b/i.test(split.after) &&
       !/\bin new column\b/i.test(split.after)
@@ -1583,7 +1682,9 @@ function atlasParseImportedLogicText(value) {
 }
 
 function atlasLogicImportNormalize(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function atlasLogicImportIdentity(source) {
@@ -1610,7 +1711,8 @@ function atlasLogicImportMatchSources(sources, tokens) {
       wanted.has(atlasLogicImportNormalize(value)),
     ),
   );
-  if (stable.length === 1) return { match: stable[0], ambiguous: false, matches: stable };
+  if (stable.length === 1)
+    return { match: stable[0], ambiguous: false, matches: stable };
   if (stable.length > 1)
     return { match: null, ambiguous: true, matches: stable };
   const display = list.filter((source) =>
@@ -1627,7 +1729,10 @@ function atlasLogicImportMatchSources(sources, tokens) {
 
 function atlasClassifyLogicImportSource(token, options = {}) {
   const tokens = [token, ...(options.matchTokens || [])];
-  const selected = atlasLogicImportMatchSources(options.selectedSources || [], tokens);
+  const selected = atlasLogicImportMatchSources(
+    options.selectedSources || [],
+    tokens,
+  );
   if (selected.match)
     return {
       status: "in-use",
@@ -1642,7 +1747,10 @@ function atlasClassifyLogicImportSource(token, options = {}) {
       matches: selected.matches,
       eligibleToUse: false,
     };
-  const library = atlasLogicImportMatchSources(options.librarySources || [], tokens);
+  const library = atlasLogicImportMatchSources(
+    options.librarySources || [],
+    tokens,
+  );
   if (library.match)
     return {
       status: "library",
@@ -1677,7 +1785,11 @@ function atlasSuggestLogicImportField(token, source) {
     return {
       status: "matched",
       fieldName: String(
-        field.fieldName || field.rawFieldName || field.name || field.label || "",
+        field.fieldName ||
+          field.rawFieldName ||
+          field.name ||
+          field.label ||
+          "",
       ),
     };
   }
@@ -1698,14 +1810,17 @@ function atlasSuggestLogicImportMappings(draft, catalogs = {}) {
       };
     }
     if (reference.kind === "field") {
-      const sourceRef = references.find((item) => item.id === reference.sourceRefId);
+      const sourceRef = references.find(
+        (item) => item.id === reference.sourceRefId,
+      );
       const sourceClass = sourceRef
         ? atlasClassifyLogicImportSource(sourceRef.token, {
             ...catalogs,
             matchTokens: sourceRef.matchTokens,
           })
         : null;
-      const source = sourceClass?.status === "in-use" ? sourceClass.source : null;
+      const source =
+        sourceClass?.status === "in-use" ? sourceClass.source : null;
       return {
         ...reference,
         ...atlasSuggestLogicImportField(reference.token, source),
@@ -1717,7 +1832,9 @@ function atlasSuggestLogicImportMappings(draft, catalogs = {}) {
 }
 
 function atlasImportSetPath(target, path, value) {
-  const parts = String(path || "").split(".").filter(Boolean);
+  const parts = String(path || "")
+    .split(".")
+    .filter(Boolean);
   if (!parts.length) return;
   let node = target;
   for (let index = 0; index < parts.length - 1; index += 1) {
@@ -1742,7 +1859,11 @@ function atlasImportLegacyType(stepType) {
   if (stepType === "reference_source") return "source";
   if (stepType === "create_column") return "create";
   if (stepType === "join") return "join";
-  if (stepType === "if_then" || stepType === "else" || stepType === "filter_rows")
+  if (
+    stepType === "if_then" ||
+    stepType === "else" ||
+    stepType === "filter_rows"
+  )
     return "if";
   return "if";
 }
@@ -1789,7 +1910,8 @@ function atlasImportMaterialize(draft, choices = {}) {
       const fieldName = choices.fields?.[reference.id] || "";
       if (reference.required && !String(fieldName).trim())
         return atlasImportFail(`Choose a column for "${reference.token}".`);
-      if (reference.fieldBind) atlasImportSetPath(cloned, reference.fieldBind, fieldName);
+      if (reference.fieldBind)
+        atlasImportSetPath(cloned, reference.fieldBind, fieldName);
     }
   }
   if (draft.stepType === "reference_source") {
@@ -1881,7 +2003,11 @@ function atlasLogicImportSelectedSources() {
 
 function atlasLogicImportLibrarySources() {
   if (typeof sourceCatalogEntries === "function") return sourceCatalogEntries();
-  return (typeof repoLibraryState !== "undefined" && repoLibraryState?.sourceFiles) || [];
+  return (
+    (typeof repoLibraryState !== "undefined" &&
+      repoLibraryState?.sourceFiles) ||
+    []
+  );
 }
 
 function atlasLogicImportCatalogs() {
@@ -1893,9 +2019,19 @@ function atlasLogicImportCatalogs() {
 
 function atlasLogicImportSourceChoice(source) {
   return {
-    sourceKey: source.sourceKey || source.alias || source.sourceFile || source.name || "",
+    sourceKey:
+      source.sourceKey ||
+      source.alias ||
+      source.sourceFile ||
+      source.name ||
+      "",
     sourceFile: source.sourceFile || source.name || source.sourceKey || "",
-    sourceAlias: source.alias || source.sourceKey || source.sourceFile || source.name || "",
+    sourceAlias:
+      source.alias ||
+      source.sourceKey ||
+      source.sourceFile ||
+      source.name ||
+      "",
     fields: source.fields || [],
   };
 }
@@ -1962,7 +2098,9 @@ function atlasCollectLogicImportChoices() {
   const sources = {};
   document.querySelectorAll("[data-import-source]").forEach((select) => {
     const source = atlasLogicImportFindSource(select.value);
-    if (source) sources[select.dataset.importSource] = atlasLogicImportSourceChoice(source);
+    if (source)
+      sources[select.dataset.importSource] =
+        atlasLogicImportSourceChoice(source);
   });
   const fields = {};
   document.querySelectorAll("[data-import-field]").forEach((select) => {
@@ -1976,7 +2114,8 @@ function atlasCollectLogicImportChoices() {
 }
 
 function atlasLogicImportJoinIsUnion(draft, choices) {
-  const selected = choices?.controls?.join_type || draft?.params?.join_type || "";
+  const selected =
+    choices?.controls?.join_type || draft?.params?.join_type || "";
   return String(selected).toUpperCase() === "UNION";
 }
 
@@ -1986,13 +2125,17 @@ function atlasLogicImportMissingMessage(draft, choices) {
   for (const control of draft.controls || []) {
     if (!control.required) continue;
     const value = choices.controls?.[control.id] ?? control.value;
-    if (!String(value || "").trim()) return `Enter a value for ${control.label}.`;
+    if (!String(value || "").trim())
+      return `Enter a value for ${control.label}.`;
   }
   for (const reference of draft.references || []) {
     if (union && reference.requiresJoinFields) continue;
     if (reference.kind === "source" && !choices.sources?.[reference.id])
       return `Choose a source for "${reference.token}".`;
-    if (reference.kind === "field" && !String(choices.fields?.[reference.id] || "").trim())
+    if (
+      reference.kind === "field" &&
+      !String(choices.fields?.[reference.id] || "").trim()
+    )
       return `Choose a column for "${reference.token}".`;
   }
   return "";
@@ -2002,7 +2145,9 @@ function atlasLogicImportRefreshAddState() {
   const button = document.querySelector("[data-logic-import-add]");
   const reason = document.getElementById("logicImportAddReason");
   const draft = atlasLogicImportState?.draft;
-  const choices = draft?.ok ? atlasCollectLogicImportChoices() : { sources: {}, fields: {}, controls: {} };
+  const choices = draft?.ok
+    ? atlasCollectLogicImportChoices()
+    : { sources: {}, fields: {}, controls: {} };
   const message = atlasLogicImportMissingMessage(draft, choices);
   if (button) button.disabled = Boolean(message);
   if (reason) reason.textContent = message;
@@ -2036,7 +2181,11 @@ function atlasLogicImportLowerPicker() {
 function atlasLogicImportPickerCaption(kind, value, source) {
   if (kind === "field") {
     if (!source)
-      return { label: "Use a source to choose a column", detail: "", color: "" };
+      return {
+        label: "Use a source to choose a column",
+        detail: "",
+        color: "",
+      };
     const color = atlasLogicImportSourceColor(source);
     if (!value) return { label: "Choose column", detail: "", color };
     const field = (source.fields || []).find((item) => {
@@ -2079,7 +2228,11 @@ function atlasLogicImportPickerButtonHtml({
   disabled = false,
   hiddenAttribute,
 }) {
-  const caption = atlasLogicImportPickerCaption(kind, value, disabled ? null : source);
+  const caption = atlasLogicImportPickerCaption(
+    kind,
+    value,
+    disabled ? null : source,
+  );
   const empty = !value || disabled;
   const showColor = Boolean(caption.color) && !empty;
   const tokenClass = kind === "field" ? "field-token" : "source-token";
@@ -2088,8 +2241,13 @@ function atlasLogicImportPickerButtonHtml({
 
 function atlasLogicImportPaintPickerButton(button, kind, value, source) {
   if (!button) return;
-  const caption = atlasLogicImportPickerCaption(kind, value, button.disabled ? null : source);
-  const showColor = Boolean(caption.color) && !button.disabled && Boolean(value);
+  const caption = atlasLogicImportPickerCaption(
+    kind,
+    value,
+    button.disabled ? null : source,
+  );
+  const showColor =
+    Boolean(caption.color) && !button.disabled && Boolean(value);
   button.classList.toggle("empty", !value || button.disabled);
   if (showColor) button.style.setProperty("--source-color", caption.color);
   else button.style.removeProperty("--source-color");
@@ -2102,7 +2260,11 @@ function atlasLogicImportPaintPickerButton(button, kind, value, source) {
   } else if (!showColor && dot) dot.remove();
   button.setAttribute(
     "aria-label",
-    atlasLogicImportPickerAria(button.dataset.logicImportSlot || "", caption, value),
+    atlasLogicImportPickerAria(
+      button.dataset.logicImportSlot || "",
+      caption,
+      value,
+    ),
   );
   const copy = button.querySelector(".visual-picker-trigger-copy");
   if (!copy) return;
@@ -2152,7 +2314,8 @@ function atlasLogicImportSourceEntries(sources, groupLabel) {
         label: described.label,
         rawName: described.label,
         detail:
-          described.sourceAlias && described.sourceAlias !== described.sourceFile
+          described.sourceAlias &&
+          described.sourceAlias !== described.sourceFile
             ? described.sourceAlias
             : "",
         sourceKey,
@@ -2175,7 +2338,11 @@ function atlasLogicImportFieldEntries(source) {
   return (source.fields || [])
     .map((field) => {
       const fieldName =
-        field.fieldName || field.rawFieldName || field.name || field.label || "";
+        field.fieldName ||
+        field.rawFieldName ||
+        field.name ||
+        field.label ||
+        "";
       if (!fieldName) return null;
       const vanity =
         field.auditSpecificVanityLabel ||
@@ -2202,7 +2369,8 @@ function atlasLogicImportFieldEntries(source) {
 
 function atlasLogicImportOpenPicker(button) {
   if (!button || button.disabled) return;
-  const picker = typeof window !== "undefined" ? window.ATLASVisualPicker : null;
+  const picker =
+    typeof window !== "undefined" ? window.ATLASVisualPicker : null;
   if (typeof picker?.open !== "function") {
     atlasLogicImportShowError(
       "The visual picker is unavailable. Reload the page and try again.",
@@ -2222,7 +2390,8 @@ function atlasLogicImportOpenPicker(button) {
   if (kind === "field") {
     mode = "field";
     title = "Choose Field";
-    guidance = "Fields from the source chosen for this file are available here.";
+    guidance =
+      "Fields from the source chosen for this file are available here.";
     const sourceInput = document.querySelector(
       `[data-import-source="${atlasLogicImportCssEscape(button.dataset.sourceRef || "")}"]`,
     );
@@ -2295,7 +2464,8 @@ function atlasRenderLogicImportMapping() {
     .map((reference) => {
       if (reference.kind === "source") {
         const declined = atlasLogicImportState.declined.has(reference.id);
-        const currentSource = reference.status === "in-use" ? reference.source : null;
+        const currentSource =
+          reference.status === "in-use" ? reference.source : null;
         const current = currentSource
           ? atlasLogicImportSourceChoice(currentSource).sourceKey
           : "";
@@ -2318,10 +2488,15 @@ function atlasRenderLogicImportMapping() {
         return `<section class="logic-import-row"><div class="logic-import-token"><span>${atlasImportEsc(reference.label)}</span><strong>${atlasImportEsc(reference.token)}</strong></div><label>Source${atlasLogicImportPickerButtonHtml({ kind: "source", targetId: reference.id, value: current, source: currentSource, ariaLabel: `Source for ${reference.token}`, hiddenAttribute: `data-import-source="${atlasImportEsc(reference.id)}"` })}</label>${prompt}</section>`;
       }
       if (reference.kind === "field") {
-        const sourceSuggestion = suggestions.find((item) => item.id === reference.sourceRefId);
+        const sourceSuggestion = suggestions.find(
+          (item) => item.id === reference.sourceRefId,
+        );
         const source =
-          sourceSuggestion?.status === "in-use" ? sourceSuggestion.source : null;
-        const selected = source && reference.status === "matched" ? reference.fieldName : "";
+          sourceSuggestion?.status === "in-use"
+            ? sourceSuggestion.source
+            : null;
+        const selected =
+          source && reference.status === "matched" ? reference.fieldName : "";
         return `<section class="logic-import-row"><div class="logic-import-token"><span>${atlasImportEsc(reference.label)}</span><strong>${atlasImportEsc(reference.token)}</strong></div><label>Column${atlasLogicImportPickerButtonHtml({ kind: "field", targetId: reference.id, value: selected, source, sourceRef: reference.sourceRefId || "", ariaLabel: `Column for ${reference.token}`, disabled: !source, hiddenAttribute: `data-import-field="${atlasImportEsc(reference.id)}" data-source-ref="${atlasImportEsc(reference.sourceRefId || "")}"` })}</label></section>`;
       }
       return "";
@@ -2342,7 +2517,8 @@ function atlasRenderLogicImportMapping() {
           number: "Keep the value as a number.",
           "Keep first record": "Keep the earliest matching record.",
           "Keep last record": "Keep the latest matching record.",
-          "Drop all duplicated records": "Remove every record that is duplicated.",
+          "Drop all duplicated records":
+            "Remove every record that is duplicated.",
           "Keep matching rows": "Keep rows that match the condition.",
           "Exclude matching rows": "Drop rows that match the condition.",
         };
@@ -2395,18 +2571,25 @@ function atlasLogicImportRememberControlEdits() {
   const draft = atlasLogicImportState?.draft;
   if (!draft?.ok) return;
   document.querySelectorAll("[data-import-control]").forEach((control) => {
-    const match = draft.controls.find((item) => item.id === control.dataset.importControl);
+    const match = draft.controls.find(
+      (item) => item.id === control.dataset.importControl,
+    );
     if (match) match.value = control.value;
   });
 }
 
 function atlasUseImportedLogicSource(sourceKey) {
-  if (typeof atlasAuditIsWorkflowLocked === "function" && atlasAuditIsWorkflowLocked()) {
+  if (
+    typeof atlasAuditIsWorkflowLocked === "function" &&
+    atlasAuditIsWorkflowLocked()
+  ) {
     status?.("This audit is read-only while approval is pending.", "bad");
     return;
   }
   if (typeof atlasCommitAuditSourceChange !== "function") {
-    atlasLogicImportShowError("This source could not be added from the import dialog.");
+    atlasLogicImportShowError(
+      "This source could not be added from the import dialog.",
+    );
     return;
   }
   const result = atlasCommitAuditSourceChange({
@@ -2426,7 +2609,10 @@ function atlasUseImportedLogicSource(sourceKey) {
 function atlasCommitLogicImport() {
   const draft = atlasLogicImportState?.draft;
   if (!draft?.ok) return;
-  if (typeof atlasAuditIsWorkflowLocked === "function" && atlasAuditIsWorkflowLocked()) {
+  if (
+    typeof atlasAuditIsWorkflowLocked === "function" &&
+    atlasAuditIsWorkflowLocked()
+  ) {
     status?.("This audit is read-only while approval is pending.", "bad");
     return;
   }
@@ -2447,16 +2633,19 @@ function atlasCommitLogicImport() {
       if (!item.autoGeneratedReference && item.step_type !== "reference_source")
         return false;
       const params = item.params || {};
-      const keys = [item.source, params.source_file, params.source_alias, params.source_key];
+      const keys = [
+        item.source,
+        params.source_file,
+        params.source_alias,
+        params.source_key,
+      ];
       return keys.some((value) => {
         const normalized = atlasLogicImportNormalize(value);
         return (
           normalized &&
-          [
-            built.sourceKey,
-            built.sourceFile,
-            built.sourceAlias,
-          ].some((candidate) => atlasLogicImportNormalize(candidate) === normalized)
+          [built.sourceKey, built.sourceFile, built.sourceAlias].some(
+            (candidate) => atlasLogicImportNormalize(candidate) === normalized,
+          )
         );
       });
     });
@@ -2475,7 +2664,8 @@ function atlasCommitLogicImport() {
     atlasCloseLogicImportDialog();
     return;
   }
-  built.step.id = typeof uid === "function" ? uid("step") : `step_${Date.now()}`;
+  built.step.id =
+    typeof uid === "function" ? uid("step") : `step_${Date.now()}`;
   if (built.step.step_type === "if_then") {
     const conditions = JSON.parse(built.step.params.conditions_json || "[]");
     conditions.forEach((condition) => {
@@ -2505,7 +2695,9 @@ function atlasCommitLogicImport() {
 
 function atlasLogicImportFillFields(sourceInput) {
   const source = atlasLogicImportFindSource(sourceInput.value);
-  const refId = atlasLogicImportCssEscape(sourceInput.dataset.importSource || "");
+  const refId = atlasLogicImportCssEscape(
+    sourceInput.dataset.importSource || "",
+  );
   document
     .querySelectorAll(`[data-import-field][data-source-ref="${refId}"]`)
     .forEach((fieldInput) => {
@@ -2522,14 +2714,21 @@ function atlasLogicImportFillFields(sourceInput) {
       fieldInput.value = source ? suggestion.fieldName || "" : "";
       if (button) {
         button.disabled = !source;
-        atlasLogicImportPaintPickerButton(button, "field", fieldInput.value, source);
+        atlasLogicImportPaintPickerButton(
+          button,
+          "field",
+          fieldInput.value,
+          source,
+        );
       }
     });
   atlasLogicImportRefreshAddState();
 }
 
 function atlasLogicImportOnClick(event) {
-  const target = event.target?.closest ? event.target : event.target?.parentElement;
+  const target = event.target?.closest
+    ? event.target
+    : event.target?.parentElement;
   if (!target?.closest) return;
   if (target.closest("#importLogicTextBtn")) {
     event.preventDefault();
@@ -2578,7 +2777,9 @@ function atlasLogicImportOnClick(event) {
   if (decline) {
     event.preventDefault();
     atlasLogicImportRememberControlEdits();
-    atlasLogicImportState?.declined.add(decline.dataset.logicImportDecline || "");
+    atlasLogicImportState?.declined.add(
+      decline.dataset.logicImportDecline || "",
+    );
     atlasRenderLogicImportMapping();
   }
 }
@@ -2604,9 +2805,9 @@ function atlasLogicImportOnKeydown(event) {
     return;
   }
   if (event.key !== "Tab" || event.defaultPrevented) return;
-  const focusable = [...root.querySelectorAll("button, textarea, select, input")].filter(
-    (node) => !node.disabled && node.offsetParent !== null,
-  );
+  const focusable = [
+    ...root.querySelectorAll("button, textarea, select, input"),
+  ].filter((node) => !node.disabled && node.offsetParent !== null);
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable.at(-1);

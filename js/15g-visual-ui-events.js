@@ -387,6 +387,10 @@ function atlasOperatorListForValueMode(valueMode) {
         ? [
             "is equal to",
             "is not equal to",
+            "contains",
+            "does not contain",
+            "starts with",
+            "ends with",
             "is greater than",
             "is greater than or equal to",
             "is less than",
