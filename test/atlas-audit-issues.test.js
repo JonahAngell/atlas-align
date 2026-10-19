@@ -2150,3 +2150,85 @@ test("issue cards show the rules-list step number instead of the step id", async
     false,
   );
 });
+
+const rootStep = (id, step_type, params, extra = {}) => ({
+  id,
+  enabled: true,
+  parentId: null,
+  branchType: "root",
+  step_type,
+  params,
+  ...extra,
+});
+const issuesFor = (context, stepId, ruleId) =>
+  context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.target?.stepId === stepId && entry.ruleId === ruleId,
+  );
+
+test("stale conditions on non-condition steps are not checked", async () => {
+  const audit = completeAudit();
+  const stale = [{ id: "c", fieldName: "", operator: "", compareValue: "" }];
+  audit.steps.push(
+    rootStep(
+      "join-step",
+      "join",
+      {
+        join_type: "INNER JOIN",
+        left_source: "Source One",
+        right_source: "Source One",
+        left_field: "Status",
+        right_field: "Status",
+      },
+      { conditions: stale },
+    ),
+    rootStep(
+      "column-step",
+      "create_column",
+      { value_mode: "Static value", column_name: "Flag", static_value: "Y" },
+      { conditions: stale },
+    ),
+    rootStep(
+      "sort-step",
+      "sort",
+      { source_file: "Source One", field_name: "Status" },
+      { conditions: stale },
+    ),
+  );
+  const context = await runtime(audit);
+  ["join-step", "column-step", "sort-step"].forEach((stepId) =>
+    assert.equal(
+      issuesFor(context, stepId, "audit.logic.condition-integrity").length,
+      0,
+      stepId,
+    ),
+  );
+});
+
+test("if/then step with a blank condition field is still flagged", async () => {
+  const audit = completeAudit();
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    { id: "c", fieldName: "", operator: "is equal to", compareValue: "x" },
+  ]);
+  const context = await runtime(audit);
+  assert.ok(
+    issuesFor(context, "step-1", "audit.logic.condition-integrity").length,
+  );
+});
+
+test("blank operators do not require a comparison value", async () => {
+  const audit = completeAudit();
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    {
+      id: "c",
+      fieldName: "Status",
+      operator: "is blank/null",
+      valueMode: "values",
+      compareValue: "",
+    },
+  ]);
+  const context = await runtime(audit);
+  assert.equal(
+    issuesFor(context, "step-1", "audit.logic.condition-integrity").length,
+    0,
+  );
+});
