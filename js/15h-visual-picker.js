@@ -215,8 +215,34 @@
       });
     });
   }
+  /** True when this open asked for bulk select controls in multi-select mode. */
+  function selectAllEnabled() {
+    return state.multiple && state.config?.selectAll === true;
+  }
+  /** Keys of the enabled entries in a list, which bulk selection may toggle. */
+  function eligibleKeys(entries) {
+    return entries.filter((entry) => !entry.disabled).map((entry) => entry.key);
+  }
+  /** Enabled entries visible under the current search, optionally for one source. */
+  function eligibleVisibleKeys(sourceKey = null) {
+    return eligibleKeys(
+      visibleEntries().filter(
+        (entry) => sourceKey == null || entry.sourceKey === sourceKey,
+      ),
+    );
+  }
+  /** Build the per-source "Select all" toggle shown in a group heading. */
+  function groupSelectButton(sourceKey, heading) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className =
+      "atlas-visual-picker-control atlas-visual-picker-group-select";
+    button.dataset.atlasPickerGroupSelect = sourceKey;
+    button.dataset.atlasPickerGroupName = heading;
+    return button;
+  }
   /** Render one source/result group and append all entry buttons to it. */
-  function renderGroup(container, heading, color, entries) {
+  function renderGroup(container, heading, color, entries, sourceKey = null) {
     const group = document.createElement("section");
     group.className = "atlas-visual-picker-group";
     const title = document.createElement("h3");
@@ -234,7 +260,12 @@
     const options = document.createElement("div");
     options.className = "atlas-visual-picker-options";
     entries.forEach((entry) => options.append(optionButton(entry)));
-    group.append(title, options);
+    if (selectAllEnabled() && sourceKey != null) {
+      const head = document.createElement("div");
+      head.className = "atlas-visual-picker-group-head";
+      head.append(title, groupSelectButton(sourceKey, heading));
+      group.append(head, options);
+    } else group.append(title, options);
     container.append(group);
   }
   /**
@@ -270,6 +301,7 @@
       entries.forEach((entry) => {
         if (!groups.has(entry.sourceKey))
           groups.set(entry.sourceKey, {
+            sourceKey: entry.sourceKey,
             label: entry.sourceLabel,
             color: entry.sourceColor,
             entries: [],
@@ -288,6 +320,7 @@
             group.label,
             group.color,
             calculatedFieldsLast(group.entries),
+            group.sourceKey,
           ),
         );
     }
@@ -323,6 +356,77 @@
       : `No ${noun}s selected`;
     confirm.disabled = total === 0;
     confirm.textContent = total > 1 ? `Add ${total} ${noun}s` : `Add ${noun}`;
+    syncSelectAllControls();
+  }
+  /**
+   * Label each bulk toggle as "Select all" until every eligible key it covers
+   * is checked, then as "Clear". Disable it when nothing is eligible.
+   */
+  function syncSelectAllControls() {
+    const enabled = selectAllEnabled();
+    const footerButton = element("atlas-visual-picker-select-all");
+    const noun = text(state.config?.selectionNoun, "item");
+    const sync = (button, keys, selectLabel, clearLabel, scope) => {
+      const allSelected =
+        keys.length > 0 && keys.every((key) => state.selectedKeys.has(key));
+      button.disabled = keys.length === 0;
+      button.textContent = allSelected ? clearLabel : selectLabel;
+      button.setAttribute(
+        "aria-label",
+        allSelected
+          ? `Clear selected ${noun}s ${scope}`
+          : keys.length === 1
+            ? `Select the 1 ${noun} ${scope}`
+            : `Select all ${keys.length} ${noun}s ${scope}`,
+      );
+      button.dataset.atlasPickerSelectState = allSelected ? "clear" : "select";
+    };
+    if (footerButton) {
+      footerButton.hidden = !enabled;
+      if (enabled)
+        sync(
+          footerButton,
+          eligibleVisibleKeys(),
+          "Select all",
+          "Clear all",
+          state.query.trim() ? "matching this search" : "in all sources",
+        );
+    }
+    if (!enabled) return;
+    element("atlas-visual-picker-results")
+      ?.querySelectorAll("[data-atlas-picker-group-select]")
+      .forEach((button) =>
+        sync(
+          button,
+          eligibleVisibleKeys(button.dataset.atlasPickerGroupSelect),
+          "Select all",
+          "Clear",
+          `in ${button.dataset.atlasPickerGroupName}`,
+        ),
+      );
+  }
+  /** Check or uncheck many enabled options at once without committing. */
+  function setKeysSelected(keys, on) {
+    if (!state.multiple) return;
+    const keySet = new Set(keys);
+    keySet.forEach((key) =>
+      on ? state.selectedKeys.add(key) : state.selectedKeys.delete(key),
+    );
+    element("atlas-visual-picker-results")
+      ?.querySelectorAll("[data-atlas-picker-key]")
+      .forEach((node) => {
+        if (keySet.has(node.dataset.atlasPickerKey))
+          node.setAttribute("aria-selected", String(on));
+      });
+    syncMultipleChrome();
+  }
+  /** Apply a bulk toggle: select every eligible key unless all are already checked. */
+  function toggleKeys(keys) {
+    if (!keys.length) return;
+    setKeysSelected(
+      keys,
+      !keys.every((key) => state.selectedKeys.has(key)),
+    );
   }
   /** Drop multi-select keys that are no longer enabled options. */
   function pruneSelection() {
@@ -455,6 +559,20 @@
         confirmSelection();
         return;
       }
+      if (event.target.closest("#atlas-visual-picker-select-all")) {
+        if (selectAllEnabled()) toggleKeys(eligibleVisibleKeys());
+        return;
+      }
+      const groupSelect = event.target.closest(
+        "[data-atlas-picker-group-select]",
+      );
+      if (groupSelect) {
+        if (selectAllEnabled())
+          toggleKeys(
+            eligibleVisibleKeys(groupSelect.dataset.atlasPickerGroupSelect),
+          );
+        return;
+      }
       const closeControl = event.target.closest("[data-atlas-picker-close]");
       if (closeControl) {
         close("dismiss");
@@ -538,6 +656,9 @@
    * - selectedKey: key to expose with aria-selected="true".
    * - multiple: when true, options toggle and Add commits the checked entries together. Other callers stay single-select.
    * - selectionNoun: singular label used by the multi-select footer. Defaults to "item".
+   * - selectAll: with `multiple`, adds "Select all" toggles to each source heading
+   *   (source sort only) and to the footer (every source). They check or clear the
+   *   enabled entries visible under the current search; Add still commits.
    * - closeOnSelect: set false when the caller closes after a successful commit.
    * - onSelect(originalEntry, key): apply one selected entry. In multiple mode this receives the original entries array and their keys.
    * - onClose(reason): respond to `close`, `escape`, `dismiss`, or caller reasons.
