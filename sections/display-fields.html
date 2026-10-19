@@ -13,6 +13,33 @@
       Turn a field off to hide it from preview and export. Delete removes it
       from this list.
     </div>
+    <div
+      class="display-fields-toolbar"
+      role="toolbar"
+      aria-label="Display Fields bulk actions"
+    >
+      <button class="btn secondary" id="displayAllFieldsBtn" type="button">
+        Display all fields
+      </button>
+      <div class="display-fields-sort" role="group" aria-label="Sort fields">
+        <button
+          class="btn secondary"
+          id="displayFieldsSortSourceBtn"
+          type="button"
+          data-display-fields-sort="source"
+        >
+          Sort by source
+        </button>
+        <button
+          class="btn secondary"
+          id="displayFieldsSortAlphaBtn"
+          type="button"
+          data-display-fields-sort="alpha"
+        >
+          Sort A–Z
+        </button>
+      </div>
+    </div>
     <div id="displayFieldsTable"></div>
   </div>
 </section>

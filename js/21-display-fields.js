@@ -379,6 +379,33 @@ function atlasDisplayFieldMeta(row) {
   parts.push(row.usedInLogic ? "Used in logic" : "Not used in logic");
   return parts.map((part) => esc(part)).join(" · ");
 }
+let atlasDisplayRowCache = new Map();
+function atlasDisplayCachedRow(key) {
+  return (
+    atlasDisplayRowCache.get(key) ||
+    requirementsFieldRows({ includeHidden: true, includeNotes: false }).find(
+      (item) => item.key === key,
+    )
+  );
+}
+function atlasSyncDisplayFieldsToolbar(rows) {
+  const hidden = rows.filter((row) => !row.displayed).length,
+    all = $("displayAllFieldsBtn");
+  if (all) {
+    all.disabled = hidden === 0;
+    all.title = rows.length
+      ? hidden
+        ? ""
+        : "Every field is already displayed."
+      : "Add a field first.";
+  }
+  ["displayFieldsSortSourceBtn", "displayFieldsSortAlphaBtn"].forEach((id) => {
+    const button = $(id);
+    if (!button) return;
+    button.disabled = rows.length < 2;
+    button.title = rows.length < 2 ? "Add at least two fields to sort." : "";
+  });
+}
 function renderDisplayFieldsPage() {
   const host = $("displayFieldsTable");
   if (!host) return;
@@ -386,6 +413,8 @@ function renderDisplayFieldsPage() {
     includeHidden: true,
     includeNotes: false,
   });
+  atlasDisplayRowCache = new Map(rows.map((row) => [row.key, row]));
+  atlasSyncDisplayFieldsToolbar(rows);
   const pill = (value, row, kind) => {
     const locked = kind === "field" && row.usedInLogic;
     const classes = [
@@ -578,6 +607,7 @@ function atlasOpenDisplayPicker() {
     entries: atlasDisplayPickerEntries(),
     sort: "source",
     multiple: true,
+    selectAll: true,
     selectionNoun: "field",
     closeOnSelect: false,
     onSelect(entry) {
@@ -698,6 +728,7 @@ function atlasAddDisplayField(sourceFile, fieldName, entry = null) {
   atlasInvalidatePages?.(["display-fields", "preview", "save"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
+  globalThis.ATLASAuditIssues?.render?.();
   window.ATLASVisualPicker.close("select");
   status?.(`Added ${staged.fieldName} to displayed fields.`, "ok");
   return true;
@@ -745,6 +776,7 @@ function atlasAddDisplayFields(entries) {
   atlasInvalidatePages?.(["display-fields", "preview", "save"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
+  globalThis.ATLASAuditIssues?.render?.();
   if (added.length === list.length) {
     window.ATLASVisualPicker.close("select");
     status?.(`Added ${added.length} fields to displayed fields.`, "ok");
@@ -779,6 +811,7 @@ function atlasMoveDisplayField(sourceKey, targetKey) {
   atlasPersistDisplayFieldOrder(rows);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
+  globalThis.ATLASAuditIssues?.render?.();
   return true;
 }
 let atlasDraggedDisplayFieldKey = "";
@@ -937,6 +970,7 @@ function atlasRemoveDisplayField(row) {
   atlasInvalidatePages?.(["display-fields", "preview", "save"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
+  globalThis.ATLASAuditIssues?.render?.();
   atlasRestorePageScroll(point);
   const next = [
     ...document.querySelectorAll("#displayFieldsTable [data-display-field-row]"),
@@ -970,28 +1004,146 @@ document.addEventListener("click", (event) => {
   }
   atlasRemoveDisplayField(row);
 });
+function atlasDisplayPreviewVisible() {
+  return !!$("requirementsFieldsPreview")?.closest(".page.active");
+}
+function atlasCommitDisplayFieldChange({ rerender = false } = {}) {
+  scheduleAutosave?.();
+  atlasInvalidatePages?.(
+    rerender ? ["display-fields", "preview", "save"] : ["preview", "save"],
+  );
+  if (rerender) renderDisplayFieldsPage();
+  // The preview page re-renders on its next visit; only refresh it now when it
+  // is on screen, and then in the next frame so the click is never blocked.
+  if (atlasDisplayPreviewVisible()) atlasRequestRender?.({ preview: true });
+}
+function atlasSetDisplayFieldsStatus(message, kind = "", undo = null) {
+  const host = $("displayFieldsStatus");
+  if (!host) return status?.(message, kind);
+  host.className = `status ${kind}`.trim();
+  host.innerHTML = `<span>${esc(message)}</span>${
+    undo
+      ? ' <button type="button" class="btn secondary small" data-display-fields-undo>Undo</button>'
+      : ""
+  }`;
+  atlasDisplayFieldsUndo = undo;
+}
+let atlasDisplayFieldsUndo = null;
+function atlasDisplayAllFields() {
+  if (atlasIsReviewerMode?.()) return 0;
+  const hidden = [...atlasDisplayRowCache.values()].filter(
+    (row) => !row.displayed,
+  );
+  if (!hidden.length) return 0;
+  const previous = hidden.map((row) => row.key);
+  hidden.forEach((row) => atlasSaveDisplayField(row, true));
+  const point = atlasCapturePageScroll();
+  atlasCommitDisplayFieldChange({ rerender: true });
+  atlasRestorePageScroll(point);
+  atlasSetDisplayFieldsStatus(
+    `${hidden.length} ${hidden.length === 1 ? "field" : "fields"} set to Displayed.`,
+    "ok",
+    () => {
+      previous.forEach((key) => {
+        const row = atlasDisplayRowCache.get(key);
+        if (row) atlasSaveDisplayField(row, false);
+      });
+      return `${previous.length} ${previous.length === 1 ? "field" : "fields"} hidden again.`;
+    },
+  );
+  return hidden.length;
+}
+function atlasDisplaySortLabel(value) {
+  return String(value || "").trim();
+}
+const atlasDisplayCollator = new Intl.Collator(undefined, {
+  sensitivity: "base",
+  numeric: true,
+});
+function atlasSortedDisplayRows(rows, mode) {
+  // Standalone calculated fields carry a placeholder source label; group them
+  // with blank sources after every real source.
+  const source = (row) => {
+      const label = atlasDisplaySortLabel(row.sourceAlias || row.uniqueId);
+      return label && label.toLowerCase() !== "calculated field"
+        ? label
+        : "\uffff";
+    },
+    title = (row) => atlasDisplaySortLabel(row.fieldTitle),
+    bySource = (a, b) => atlasDisplayCollator.compare(source(a), source(b)),
+    byTitle = (a, b) => atlasDisplayCollator.compare(title(a), title(b));
+  return [...rows].sort((a, b) =>
+    mode === "alpha"
+      ? byTitle(a, b) || bySource(a, b)
+      : bySource(a, b) ||
+        Number(!!a.calculated) - Number(!!b.calculated) ||
+        byTitle(a, b),
+  );
+}
+function atlasSortDisplayFields(mode) {
+  if (atlasIsReviewerMode?.()) return false;
+  const rows = [...atlasDisplayRowCache.values()];
+  if (rows.length < 2) return false;
+  const previous = rows.map((row) => row.key);
+  const point = atlasCapturePageScroll();
+  atlasPersistDisplayFieldOrder(atlasSortedDisplayRows(rows, mode));
+  atlasCommitDisplayFieldChange({ rerender: true });
+  atlasRestorePageScroll(point);
+  atlasSetDisplayFieldsStatus(
+    mode === "alpha" ? "Sorted A–Z by field title." : "Sorted by source.",
+    "ok",
+    () => {
+      const restored = previous
+        .map((key) => atlasDisplayRowCache.get(key))
+        .filter(Boolean);
+      atlasPersistDisplayFieldOrder(restored);
+      return "Previous order restored.";
+    },
+  );
+  return true;
+}
+document.addEventListener("click", (event) => {
+  if (event.target.closest("#displayAllFieldsBtn")) {
+    atlasDisplayAllFields();
+    return;
+  }
+  const sort = event.target.closest("[data-display-fields-sort]");
+  if (sort) {
+    atlasSortDisplayFields(sort.dataset.displayFieldsSort);
+    return;
+  }
+  if (!event.target.closest("[data-display-fields-undo]")) return;
+  const undo = atlasDisplayFieldsUndo;
+  if (!undo || atlasIsReviewerMode?.()) return;
+  const point = atlasCapturePageScroll();
+  const message = undo();
+  atlasCommitDisplayFieldChange({ rerender: true });
+  atlasRestorePageScroll(point);
+  atlasSetDisplayFieldsStatus(message, "ok");
+  $("displayAllFieldsBtn")?.focus({ preventScroll: true });
+});
 document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-display-field-toggle]")) return;
-  const row = requirementsFieldRows({
-    includeHidden: true,
-    includeNotes: false,
-  }).find((item) => item.key === event.target.dataset.displayFieldToggle);
+  const toggle = event.target,
+    displayed = toggle.checked,
+    row = atlasDisplayCachedRow(toggle.dataset.displayFieldToggle);
   if (!row) {
-    event.target.checked = !event.target.checked;
+    toggle.checked = !displayed;
     status?.(
       "That Display Field is no longer available. Refresh and try again.",
       "warn",
     );
     return;
   }
-  atlasSaveDisplayField(row, event.target.checked);
-  const label = event.target
+  const label = toggle
     .closest(".display-fields-switch")
     ?.querySelector("[data-display-field-switch-label]");
-  if (label) label.textContent = event.target.checked ? "Displayed" : "Hidden";
-  scheduleAutosave?.();
-  atlasInvalidatePages?.(["preview", "save"]);
-  renderRequirementsFieldsPreview?.();
+  if (label) label.textContent = displayed ? "Displayed" : "Hidden";
+  atlasSaveDisplayField(row, displayed);
+  row.displayed = displayed;
+  row.display = displayed ? "Yes" : "No";
+  atlasSyncDisplayFieldsToolbar([...atlasDisplayRowCache.values()]);
+  atlasCommitDisplayFieldChange();
 });
 const atlasOriginalRenderPage = atlasRenderPage;
 atlasRenderPage = function atlasRenderPageWithDisplayFields(

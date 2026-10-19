@@ -417,4 +417,34 @@ body:has(#page-display-fields.active) {
   .display-field-meta {
     color: CanvasText;
   }
-}/* ATLAS-SOURCE-UNIT:u1343:END */
+}/* ATLAS-SOURCE-UNIT:u1343:END *//* ATLAS-SOURCE-UNIT:u1410:BEGIN */
+#page-display-fields .display-fields-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1410:END *//* ATLAS-SOURCE-UNIT:u1411:BEGIN */#page-display-fields .display-fields-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1411:END *//* ATLAS-SOURCE-UNIT:u1412:BEGIN */#page-display-fields .display-fields-toolbar .btn {
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1412:END *//* ATLAS-SOURCE-UNIT:u1413:BEGIN */#page-display-fields #displayFieldsStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1413:END *//* ATLAS-SOURCE-UNIT:u1414:BEGIN */#page-display-fields #displayFieldsStatus [data-display-fields-undo] {
+  min-height: 32px;
+}
+/* ATLAS-SOURCE-UNIT:u1414:END */

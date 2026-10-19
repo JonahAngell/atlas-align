@@ -44,6 +44,7 @@ function shouldSkipBaseBodyEditEvent(event) {
     ".modal",
     "[data-my-audits-role]",
     "#myAuditsSearch",
+    "[data-display-field-toggle]",
   ].join(", ");
   return !!event.target.closest?.(skipSelector);
 }
