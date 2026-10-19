@@ -138,6 +138,27 @@
     const fields = array(audit.fields);
     const steps = array(audit.steps);
     const displayFields = array(audit.displayFields);
+    const displayedFieldCount = (() => {
+      const liveDocument =
+        auditInput &&
+        auditInput ===
+          (global.atlasDisplayDocument?.() ||
+            (typeof state === "object" ? state?.audit : null));
+      if (liveDocument && typeof global.requirementsFieldRows === "function") {
+        try {
+          return array(global.requirementsFieldRows({ includeNotes: false }))
+            .length;
+        } catch (error) {
+          console.warn(
+            "ATLAS Audit Issues: Display Field rows unavailable.",
+            error,
+          );
+        }
+      }
+      return displayFields.filter(
+        (field) => !field?.removed && field?.displayed !== false,
+      ).length;
+    })();
     const catalogSources = array(global.repoLibraryState?.sourceFiles);
     const sourceIdentityMap = Object.create(null);
     const registerSourceIdentity = (value, canonical) => {
@@ -297,6 +318,7 @@
         steps: normalizedSteps,
         displayFields: displayFields.map((field) => ({ ...object(field) })),
       },
+      displayedFieldCount,
       knownSourceIds: [...knownSourceIds],
       knownFieldIds: [...knownFieldIds],
       selectedSourceIds: [...sourceIds],
@@ -1455,7 +1477,7 @@
     noDisplayFields(context) {
       if (!context.audit.sources.length || !context.audit.steps.length)
         return [];
-      return context.audit.displayFields.length
+      return context.displayedFieldCount
         ? []
         : [
             issue(
