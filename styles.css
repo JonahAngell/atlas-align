@@ -7875,6 +7875,43 @@ body.dark .atlas-visual-picker-footer {
     padding-right: 18px;
   }
 }
+.atlas-visual-picker-group-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 11px;
+}
+
+.atlas-visual-picker-group-head .atlas-visual-picker-group-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.atlas-visual-picker-group-select,
+#atlas-visual-picker-select-all {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.atlas-visual-picker-group-select:disabled,
+#atlas-visual-picker-select-all:disabled {
+  cursor: not-allowed;
+  color: var(--muted, #667085);
+  filter: none;
+}
+
+.atlas-visual-picker-footer-start {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .atlas-audit-issues {
   position: fixed;
   right: 24px;
@@ -8659,6 +8696,36 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
     color: CanvasText;
   }
 }
+#page-display-fields .display-fields-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+#page-display-fields .display-fields-sort {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#page-display-fields .display-fields-toolbar .btn {
+  min-height: 44px;
+}
+
+#page-display-fields #displayFieldsStatus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#page-display-fields #displayFieldsStatus [data-display-fields-undo] {
+  min-height: 32px;
+}
+
 .requirements-field-pill {
   display: inline-flex;
   align-items: center;

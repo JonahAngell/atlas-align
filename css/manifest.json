@@ -3706,6 +3706,26 @@
       "file": "css/visual-picker.css"
     },
     {
+      "id": "u1415",
+      "file": "css/visual-picker.css"
+    },
+    {
+      "id": "u1416",
+      "file": "css/visual-picker.css"
+    },
+    {
+      "id": "u1417",
+      "file": "css/visual-picker.css"
+    },
+    {
+      "id": "u1418",
+      "file": "css/visual-picker.css"
+    },
+    {
+      "id": "u1419",
+      "file": "css/visual-picker.css"
+    },
+    {
       "id": "u0876",
       "file": "css/audit-issues.css"
     },
@@ -4107,6 +4127,26 @@
     },
     {
       "id": "u1343",
+      "file": "css/display-fields.css"
+    },
+    {
+      "id": "u1410",
+      "file": "css/display-fields.css"
+    },
+    {
+      "id": "u1411",
+      "file": "css/display-fields.css"
+    },
+    {
+      "id": "u1412",
+      "file": "css/display-fields.css"
+    },
+    {
+      "id": "u1413",
+      "file": "css/display-fields.css"
+    },
+    {
+      "id": "u1414",
       "file": "css/display-fields.css"
     },
     {
@@ -5439,7 +5479,7 @@
     }
   ],
   "schemaVersion": 2,
-  "nextUnitNumber": 1410,
+  "nextUnitNumber": 1420,
   "files": {
     "css/display-fields.css": {
       "defaultInsert": "end"
