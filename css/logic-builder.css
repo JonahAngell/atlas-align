@@ -1686,7 +1686,10 @@ body.dark .join-venn-area-label {
 /* ATLAS-SOURCE-UNIT:u0580:BEGIN */
 .join-picker-refined-body {
   display: grid;
-  grid-template-columns: minmax(210px, 250px) minmax(280px, 1.15fr) minmax(260px, 0.9fr);
+  grid-template-columns: minmax(210px, 250px) minmax(280px, 1.15fr) minmax(
+      260px,
+      0.9fr
+    );
   gap: 1rem;
   padding: 1rem;
   align-items: stretch;
@@ -1917,7 +1920,7 @@ body.dark .join-venn-area-label {
   line-height: 1.25;
 }
 
-/* ATLAS-SOURCE-UNIT:u0600:END *//* ATLAS-SOURCE-UNIT:u1271:BEGIN */
+/* ATLAS-SOURCE-UNIT:u0600:END */ /* ATLAS-SOURCE-UNIT:u1271:BEGIN */
 
 .logic-import-backdrop {
   position: fixed;
@@ -1929,7 +1932,8 @@ body.dark .join-venn-area-label {
   background: rgb(15 23 42 / 0.68);
 }
 
-/* ATLAS-SOURCE-UNIT:u1271:END *//* ATLAS-SOURCE-UNIT:u1272:BEGIN */.logic-import-dialog {
+/* ATLAS-SOURCE-UNIT:u1271:END */ /* ATLAS-SOURCE-UNIT:u1272:BEGIN */
+.logic-import-dialog {
   width: min(40rem, 100%);
   max-height: calc(100vh - 3rem);
   display: flex;
@@ -1944,19 +1948,22 @@ body.dark .join-venn-area-label {
   box-shadow: var(--shadow);
 }
 
-/* ATLAS-SOURCE-UNIT:u1272:END *//* ATLAS-SOURCE-UNIT:u1273:BEGIN */.logic-import-header {
+/* ATLAS-SOURCE-UNIT:u1272:END */ /* ATLAS-SOURCE-UNIT:u1273:BEGIN */
+.logic-import-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1273:END *//* ATLAS-SOURCE-UNIT:u1274:BEGIN */.logic-import-header h2 {
+/* ATLAS-SOURCE-UNIT:u1273:END */ /* ATLAS-SOURCE-UNIT:u1274:BEGIN */
+.logic-import-header h2 {
   margin: 0;
   font-size: 1.125rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1274:END *//* ATLAS-SOURCE-UNIT:u1275:BEGIN */.logic-import-close {
+/* ATLAS-SOURCE-UNIT:u1274:END */ /* ATLAS-SOURCE-UNIT:u1275:BEGIN */
+.logic-import-close {
   min-width: 2.75rem;
   min-height: 2.75rem;
   color: var(--text);
@@ -1966,12 +1973,14 @@ body.dark .join-venn-area-label {
   cursor: pointer;
 }
 
-/* ATLAS-SOURCE-UNIT:u1275:END *//* ATLAS-SOURCE-UNIT:u1276:BEGIN */.logic-import-close:focus-visible {
+/* ATLAS-SOURCE-UNIT:u1275:END */ /* ATLAS-SOURCE-UNIT:u1276:BEGIN */
+.logic-import-close:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* ATLAS-SOURCE-UNIT:u1276:END *//* ATLAS-SOURCE-UNIT:u1277:BEGIN */.logic-import-label,
+/* ATLAS-SOURCE-UNIT:u1276:END */ /* ATLAS-SOURCE-UNIT:u1277:BEGIN */
+.logic-import-label,
 .logic-import-control,
 .logic-import-row label {
   display: grid;
@@ -1979,7 +1988,8 @@ body.dark .join-venn-area-label {
   font-size: 0.875rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1277:END *//* ATLAS-SOURCE-UNIT:u1278:BEGIN */.logic-import-text,
+/* ATLAS-SOURCE-UNIT:u1277:END */ /* ATLAS-SOURCE-UNIT:u1278:BEGIN */
+.logic-import-text,
 .logic-import-control textarea,
 .logic-import-control input,
 .logic-import-row select,
@@ -1996,7 +2006,8 @@ body.dark .join-venn-area-label {
   font-size: 0.875rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1278:END *//* ATLAS-SOURCE-UNIT:u1279:BEGIN */.logic-import-text:focus-visible,
+/* ATLAS-SOURCE-UNIT:u1278:END */ /* ATLAS-SOURCE-UNIT:u1279:BEGIN */
+.logic-import-text:focus-visible,
 .logic-import-control textarea:focus-visible,
 .logic-import-control input:focus-visible,
 .logic-import-row select:focus-visible,
@@ -2006,7 +2017,8 @@ body.dark .join-venn-area-label {
   outline-offset: 2px;
 }
 
-/* ATLAS-SOURCE-UNIT:u1279:END *//* ATLAS-SOURCE-UNIT:u1280:BEGIN */.logic-import-hint,
+/* ATLAS-SOURCE-UNIT:u1279:END */ /* ATLAS-SOURCE-UNIT:u1280:BEGIN */
+.logic-import-hint,
 .logic-import-reason,
 .logic-import-warning {
   margin: 0;
@@ -2015,7 +2027,8 @@ body.dark .join-venn-area-label {
   line-height: 1.4;
 }
 
-/* ATLAS-SOURCE-UNIT:u1280:END *//* ATLAS-SOURCE-UNIT:u1281:BEGIN */.logic-import-error {
+/* ATLAS-SOURCE-UNIT:u1280:END */ /* ATLAS-SOURCE-UNIT:u1281:BEGIN */
+.logic-import-error {
   margin: 0;
   padding: 0.75rem;
   color: var(--danger);
@@ -2025,18 +2038,21 @@ body.dark .join-venn-area-label {
   font-size: 0.875rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1281:END *//* ATLAS-SOURCE-UNIT:u1282:BEGIN */.logic-import-mapping,
+/* ATLAS-SOURCE-UNIT:u1281:END */ /* ATLAS-SOURCE-UNIT:u1282:BEGIN */
+.logic-import-mapping,
 .logic-import-controls {
   display: grid;
   gap: 0.75rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1282:END *//* ATLAS-SOURCE-UNIT:u1283:BEGIN */.logic-import-type {
+/* ATLAS-SOURCE-UNIT:u1282:END */ /* ATLAS-SOURCE-UNIT:u1283:BEGIN */
+.logic-import-type {
   margin: 0;
   font-size: 0.875rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1283:END *//* ATLAS-SOURCE-UNIT:u1284:BEGIN */.logic-import-row,
+/* ATLAS-SOURCE-UNIT:u1283:END */ /* ATLAS-SOURCE-UNIT:u1284:BEGIN */
+.logic-import-row,
 .logic-import-use-prompt {
   display: grid;
   gap: 0.65rem;
@@ -2046,22 +2062,26 @@ body.dark .join-venn-area-label {
   border-radius: 0.75rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1284:END *//* ATLAS-SOURCE-UNIT:u1285:BEGIN */.logic-import-token {
+/* ATLAS-SOURCE-UNIT:u1284:END */ /* ATLAS-SOURCE-UNIT:u1285:BEGIN */
+.logic-import-token {
   display: grid;
   gap: 0.15rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1285:END *//* ATLAS-SOURCE-UNIT:u1286:BEGIN */.logic-import-token span {
+/* ATLAS-SOURCE-UNIT:u1285:END */ /* ATLAS-SOURCE-UNIT:u1286:BEGIN */
+.logic-import-token span {
   color: var(--muted);
   font-size: 0.75rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1286:END *//* ATLAS-SOURCE-UNIT:u1287:BEGIN */.logic-import-use-prompt p {
+/* ATLAS-SOURCE-UNIT:u1286:END */ /* ATLAS-SOURCE-UNIT:u1287:BEGIN */
+.logic-import-use-prompt p {
   margin: 0;
   font-size: 0.875rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1287:END *//* ATLAS-SOURCE-UNIT:u1288:BEGIN */.logic-import-use-prompt button,
+/* ATLAS-SOURCE-UNIT:u1287:END */ /* ATLAS-SOURCE-UNIT:u1288:BEGIN */
+.logic-import-use-prompt button,
 .logic-import-actions button {
   min-height: 2.75rem;
 }
@@ -2075,17 +2095,20 @@ body.dark .join-venn-area-label {
   cursor: not-allowed;
 }
 
-/* ATLAS-SOURCE-UNIT:u1288:END *//* ATLAS-SOURCE-UNIT:u1289:BEGIN */.logic-import-actions {
+/* ATLAS-SOURCE-UNIT:u1288:END */ /* ATLAS-SOURCE-UNIT:u1289:BEGIN */
+.logic-import-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1289:END *//* ATLAS-SOURCE-UNIT:u1290:BEGIN */.logic-import-backdrop {
+/* ATLAS-SOURCE-UNIT:u1289:END */ /* ATLAS-SOURCE-UNIT:u1290:BEGIN */
+.logic-import-backdrop {
   animation: logic-import-fade 160ms ease-out;
 }
 
-/* ATLAS-SOURCE-UNIT:u1290:END *//* ATLAS-SOURCE-UNIT:u1291:BEGIN */@keyframes logic-import-fade {
+/* ATLAS-SOURCE-UNIT:u1290:END */ /* ATLAS-SOURCE-UNIT:u1291:BEGIN */
+@keyframes logic-import-fade {
   from {
     opacity: 0;
   }
@@ -2094,13 +2117,14 @@ body.dark .join-venn-area-label {
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1291:END *//* ATLAS-SOURCE-UNIT:u1292:BEGIN */@media (prefers-reduced-motion: reduce) {
+/* ATLAS-SOURCE-UNIT:u1291:END */ /* ATLAS-SOURCE-UNIT:u1292:BEGIN */
+@media (prefers-reduced-motion: reduce) {
   .logic-import-backdrop {
     animation: none;
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1292:END *//* ATLAS-SOURCE-UNIT:u0601:BEGIN */ /* Step order group controls */
+/* ATLAS-SOURCE-UNIT:u1292:END */ /* ATLAS-SOURCE-UNIT:u0601:BEGIN */ /* Step order group controls */
 .step-order-group-badge {
   display: inline-flex;
   align-items: center;
@@ -3610,13 +3634,14 @@ body.dark .created-column-token {
     forced-color-adjust: auto;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1140:END *//* ATLAS-SOURCE-UNIT:u1164:BEGIN */
+/* ATLAS-SOURCE-UNIT:u1140:END */ /* ATLAS-SOURCE-UNIT:u1164:BEGIN */
 
 .nav-menu-button {
   display: none;
 }
 
-/* ATLAS-SOURCE-UNIT:u1164:END *//* ATLAS-SOURCE-UNIT:u1165:BEGIN */.nav-backdrop {
+/* ATLAS-SOURCE-UNIT:u1164:END */ /* ATLAS-SOURCE-UNIT:u1165:BEGIN */
+.nav-backdrop {
   position: fixed;
   inset: 0;
   z-index: 35;
@@ -3627,11 +3652,13 @@ body.dark .created-column-token {
   cursor: pointer;
 }
 
-/* ATLAS-SOURCE-UNIT:u1165:END *//* ATLAS-SOURCE-UNIT:u1166:BEGIN */.nav-backdrop[hidden] {
+/* ATLAS-SOURCE-UNIT:u1165:END */ /* ATLAS-SOURCE-UNIT:u1166:BEGIN */
+.nav-backdrop[hidden] {
   display: none !important;
 }
 
-/* ATLAS-SOURCE-UNIT:u1166:END *//* ATLAS-SOURCE-UNIT:u1167:BEGIN */@media (max-width: 700px) {
+/* ATLAS-SOURCE-UNIT:u1166:END */ /* ATLAS-SOURCE-UNIT:u1167:BEGIN */
+@media (max-width: 700px) {
   .nav-menu-button {
     display: inline-flex;
     align-items: center;
@@ -3740,14 +3767,15 @@ body.dark .created-column-token {
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1167:END *//* ATLAS-SOURCE-UNIT:u1168:BEGIN */@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
+/* ATLAS-SOURCE-UNIT:u1167:END */ /* ATLAS-SOURCE-UNIT:u1168:BEGIN */
+@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
   .app-sidebar,
   .app-sidebar.collapsed,
   body.nav-drawer-open .app-sidebar {
     transition: none;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1168:END *//* ATLAS-SOURCE-UNIT:u1171:BEGIN */
+/* ATLAS-SOURCE-UNIT:u1168:END */ /* ATLAS-SOURCE-UNIT:u1171:BEGIN */
 
 /* Compare to Field: the condition row is two columns, so the math box
    was sharing a cell with Delete Condition. Span the full row and
@@ -3760,17 +3788,26 @@ body.dark .created-column-token {
   container-name: compare-field-math;
 }
 
-/* ATLAS-SOURCE-UNIT:u1171:END *//* ATLAS-SOURCE-UNIT:u1172:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .math-operations-header {
+/* ATLAS-SOURCE-UNIT:u1171:END */ /* ATLAS-SOURCE-UNIT:u1172:BEGIN */
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .math-operations-header {
   flex-wrap: wrap;
   align-items: center;
 }
 
-/* ATLAS-SOURCE-UNIT:u1172:END *//* ATLAS-SOURCE-UNIT:u1173:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .hint {
+/* ATLAS-SOURCE-UNIT:u1172:END */ /* ATLAS-SOURCE-UNIT:u1173:BEGIN */
+#page-steps .refined-condition-row > .math-operations-editor .hint {
   margin: 0;
   overflow-wrap: anywhere;
 }
 
-/* ATLAS-SOURCE-UNIT:u1173:END *//* ATLAS-SOURCE-UNIT:u1174:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .math-operation-row {
+/* ATLAS-SOURCE-UNIT:u1173:END */ /* ATLAS-SOURCE-UNIT:u1174:BEGIN */
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .math-operation-row {
   grid-template-columns:
     minmax(6.75rem, 0.75fr)
     minmax(9.25rem, max-content)
@@ -3779,41 +3816,72 @@ body.dark .created-column-token {
   align-items: end;
 }
 
-/* ATLAS-SOURCE-UNIT:u1174:END *//* ATLAS-SOURCE-UNIT:u1175:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .math-operation-row > * {
+/* ATLAS-SOURCE-UNIT:u1174:END */ /* ATLAS-SOURCE-UNIT:u1175:BEGIN */
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .math-operation-row
+  > * {
   min-width: 0;
   max-width: 100%;
 }
 
-/* ATLAS-SOURCE-UNIT:u1175:END *//* ATLAS-SOURCE-UNIT:u1176:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .math-mode-switch {
+/* ATLAS-SOURCE-UNIT:u1175:END */ /* ATLAS-SOURCE-UNIT:u1176:BEGIN */
+#page-steps .refined-condition-row > .math-operations-editor .math-mode-switch {
   position: relative;
   flex-wrap: wrap;
   max-width: 100%;
 }
 
-#page-steps .refined-condition-row > .math-operations-editor .math-mode-switch input {
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .math-mode-switch
+  input {
   width: 2.7rem;
   height: 1.45rem;
   max-width: 2.7rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1176:END *//* ATLAS-SOURCE-UNIT:u1177:BEGIN */#page-steps .refined-condition-row > .math-operations-editor .math-control-label,
-#page-steps .refined-condition-row > .math-operations-editor [data-math-mode-label] {
+/* ATLAS-SOURCE-UNIT:u1176:END */ /* ATLAS-SOURCE-UNIT:u1177:BEGIN */
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .math-control-label,
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  [data-math-mode-label] {
   overflow-wrap: anywhere;
 }
 
-/* ATLAS-SOURCE-UNIT:u1177:END *//* ATLAS-SOURCE-UNIT:u1178:BEGIN */#page-steps .refined-condition-row > .math-operations-editor select,
-#page-steps .refined-condition-row > .math-operations-editor input:not([data-math-operand-mode]),
-#page-steps .refined-condition-row > .math-operations-editor .visual-picker-trigger-button {
+/* ATLAS-SOURCE-UNIT:u1177:END */ /* ATLAS-SOURCE-UNIT:u1178:BEGIN */
+#page-steps .refined-condition-row > .math-operations-editor select,
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  input:not([data-math-operand-mode]),
+#page-steps
+  .refined-condition-row
+  > .math-operations-editor
+  .visual-picker-trigger-button {
   min-width: 0;
   max-width: 100%;
 }
 
-/* ATLAS-SOURCE-UNIT:u1178:END *//* ATLAS-SOURCE-UNIT:u1179:BEGIN */@container compare-field-math (max-width: 680px) {
-  #page-steps .refined-condition-row > .math-operations-editor .math-operation-row {
+/* ATLAS-SOURCE-UNIT:u1178:END */ /* ATLAS-SOURCE-UNIT:u1179:BEGIN */
+@container compare-field-math (max-width: 680px) {
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-operation-row {
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   }
 
-  #page-steps .refined-condition-row > .math-operations-editor .math-active-operand,
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-active-operand,
   #page-steps .refined-condition-row > .math-operations-editor .math-remove {
     grid-column: 1 / -1;
   }
@@ -3823,25 +3891,37 @@ body.dark .created-column-token {
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1179:END *//* ATLAS-SOURCE-UNIT:u1180:BEGIN */@container compare-field-math (max-width: 420px) {
-  #page-steps .refined-condition-row > .math-operations-editor .math-operation-row {
+/* ATLAS-SOURCE-UNIT:u1179:END */ /* ATLAS-SOURCE-UNIT:u1180:BEGIN */
+@container compare-field-math (max-width: 420px) {
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-operation-row {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  #page-steps .refined-condition-row > .math-operations-editor .math-operator-control,
-  #page-steps .refined-condition-row > .math-operations-editor .math-operand-mode,
-  #page-steps .refined-condition-row > .math-operations-editor .math-active-operand,
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-operator-control,
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-operand-mode,
+  #page-steps
+    .refined-condition-row
+    > .math-operations-editor
+    .math-active-operand,
   #page-steps .refined-condition-row > .math-operations-editor .math-remove {
     grid-column: 1 / -1;
   }
-}/* ATLAS-SOURCE-UNIT:u1180:END *//* ATLAS-SOURCE-UNIT:u1316:BEGIN */
-
+} /* ATLAS-SOURCE-UNIT:u1180:END */ /* ATLAS-SOURCE-UNIT:u1316:BEGIN */
 
 #page-steps .logic-pane-switch {
   display: none;
 }
 
-/* ATLAS-SOURCE-UNIT:u1316:END *//* ATLAS-SOURCE-UNIT:u1317:BEGIN */
+/* ATLAS-SOURCE-UNIT:u1316:END */ /* ATLAS-SOURCE-UNIT:u1317:BEGIN */
 @media (max-width: 1100px) {
   body:has(#page-steps.active) {
     overflow: hidden;
@@ -3974,14 +4054,14 @@ body.dark .created-column-token {
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1317:END *//* ATLAS-SOURCE-UNIT:u1318:BEGIN */
+/* ATLAS-SOURCE-UNIT:u1317:END */ /* ATLAS-SOURCE-UNIT:u1318:BEGIN */
 @media (max-width: 1100px) and (prefers-reduced-motion: reduce) {
   #page-steps .logic-pane-tab {
     transition: none;
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1318:END *//* ATLAS-SOURCE-UNIT:u1319:BEGIN */
+/* ATLAS-SOURCE-UNIT:u1318:END */ /* ATLAS-SOURCE-UNIT:u1319:BEGIN */
 @media (max-width: 1100px) and (forced-colors: active) {
   #page-steps .logic-pane-tab[aria-selected="true"] {
     border-bottom-color: Highlight;
@@ -3990,4 +4070,304 @@ body.dark .created-column-token {
   #page-steps .logic-pane-tab:focus-visible {
     outline-color: Highlight;
   }
-}/* ATLAS-SOURCE-UNIT:u1319:END */
+} /* ATLAS-SOURCE-UNIT:u1319:END */ /* ATLAS-SOURCE-UNIT:u1374:BEGIN */
+.atlas-choice-popover-field {
+  display: grid;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1374:END */ /* ATLAS-SOURCE-UNIT:u1375:BEGIN */
+.atlas-choice-trigger {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "heading caret"
+    "current caret";
+  align-items: center;
+  justify-items: start;
+  column-gap: 0.5rem;
+  row-gap: 0.1rem;
+  padding: 0.45rem 0.7rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1375:END */ /* ATLAS-SOURCE-UNIT:u1376:BEGIN */
+.atlas-choice-trigger:hover {
+  background: var(--surface2);
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1376:END */ /* ATLAS-SOURCE-UNIT:u1377:BEGIN */
+.atlas-choice-trigger:active {
+  background: var(--accent2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1377:END */ /* ATLAS-SOURCE-UNIT:u1378:BEGIN */
+.atlas-choice-trigger[aria-expanded="true"] {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+/* ATLAS-SOURCE-UNIT:u1378:END */ /* ATLAS-SOURCE-UNIT:u1379:BEGIN */
+.atlas-choice-trigger:focus-visible,
+.atlas-choice-popover .atlas-choice-option:focus-visible,
+.sort-direction-toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1379:END */ /* ATLAS-SOURCE-UNIT:u1380:BEGIN */
+.atlas-choice-trigger .atlas-choice-heading {
+  grid-area: heading;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1380:END */ /* ATLAS-SOURCE-UNIT:u1381:BEGIN */
+.atlas-choice-trigger .atlas-choice-current {
+  grid-area: current;
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1381:END */ /* ATLAS-SOURCE-UNIT:u1382:BEGIN */
+.atlas-choice-trigger .atlas-choice-caret {
+  grid-area: caret;
+  color: var(--muted);
+  line-height: 1;
+  transition: transform 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1382:END */ /* ATLAS-SOURCE-UNIT:u1383:BEGIN */
+.atlas-choice-trigger[aria-expanded="true"] .atlas-choice-caret {
+  transform: rotate(180deg);
+}
+
+/* ATLAS-SOURCE-UNIT:u1383:END */ /* ATLAS-SOURCE-UNIT:u1384:BEGIN */
+.atlas-choice-popover {
+  position: fixed;
+  z-index: 10200;
+  overflow: auto;
+  padding: 0.45rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  animation: atlas-choice-popover-in 140ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1384:END */ /* ATLAS-SOURCE-UNIT:u1385:BEGIN */
+.atlas-choice-popover[hidden] {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1385:END */ /* ATLAS-SOURCE-UNIT:u1386:BEGIN */
+@keyframes atlas-choice-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1386:END */ /* ATLAS-SOURCE-UNIT:u1387:BEGIN */
+.atlas-choice-popover .atlas-choice {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1387:END */ /* ATLAS-SOURCE-UNIT:u1388:BEGIN */
+.atlas-choice-popover-pills .atlas-choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1388:END */ /* ATLAS-SOURCE-UNIT:u1389:BEGIN */
+.atlas-choice-popover-pills .atlas-choice-option {
+  min-height: 44px;
+  padding: 0.45rem 0.9rem;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-weight: 750;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1389:END */ /* ATLAS-SOURCE-UNIT:u1390:BEGIN */
+.atlas-choice-popover-pills .atlas-choice-option:hover {
+  background: var(--accent2);
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1390:END */ /* ATLAS-SOURCE-UNIT:u1391:BEGIN */
+.atlas-choice-popover-pills .atlas-choice-option:active {
+  transform: scale(0.98);
+}
+
+/* ATLAS-SOURCE-UNIT:u1391:END */ /* ATLAS-SOURCE-UNIT:u1392:BEGIN */
+.atlas-choice-popover-pills .atlas-choice-option.is-selected {
+  color: var(--surface);
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1392:END */ /* ATLAS-SOURCE-UNIT:u1393:BEGIN */
+.atlas-choice-popover-pills .atlas-choice-description {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1393:END */ /* ATLAS-SOURCE-UNIT:u1394:BEGIN */
+.atlas-choice-popover-list .atlas-choice {
+  display: grid;
+  gap: 0.2rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1394:END */ /* ATLAS-SOURCE-UNIT:u1395:BEGIN */
+.atlas-choice-popover-list .atlas-choice-option {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  gap: 0.16rem;
+  justify-content: stretch;
+  justify-items: start;
+  padding: 0.55rem 0.65rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  text-align: left;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1395:END */ /* ATLAS-SOURCE-UNIT:u1396:BEGIN */
+.atlas-choice-popover-list .atlas-choice-option:hover {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
+/* ATLAS-SOURCE-UNIT:u1396:END */ /* ATLAS-SOURCE-UNIT:u1397:BEGIN */
+.atlas-choice-popover-list .atlas-choice-option.is-selected {
+  background: var(--accent2);
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1397:END */ /* ATLAS-SOURCE-UNIT:u1398:BEGIN */
+.atlas-choice-popover-list .atlas-choice-label {
+  font-weight: 850;
+}
+
+/* ATLAS-SOURCE-UNIT:u1398:END */ /* ATLAS-SOURCE-UNIT:u1399:BEGIN */
+.atlas-choice-popover-list .atlas-choice-description {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+/* ATLAS-SOURCE-UNIT:u1399:END */ /* ATLAS-SOURCE-UNIT:u1400:BEGIN */
+.sort-field-control {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1400:END */ /* ATLAS-SOURCE-UNIT:u1401:BEGIN */
+.sort-field-heading {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1401:END */ /* ATLAS-SOURCE-UNIT:u1402:BEGIN */
+.sort-field-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1402:END */ /* ATLAS-SOURCE-UNIT:u1403:BEGIN */
+.sort-field-row > .visual-picker-trigger-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1403:END */ /* ATLAS-SOURCE-UNIT:u1404:BEGIN */
+.sort-direction-toggle {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  color: var(--primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition:
+    background-color 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1404:END */ /* ATLAS-SOURCE-UNIT:u1405:BEGIN */
+.sort-direction-toggle:hover {
+  background: var(--surface2);
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1405:END */ /* ATLAS-SOURCE-UNIT:u1406:BEGIN */
+.sort-direction-toggle:active {
+  background: var(--accent2);
+  transform: scale(0.98);
+}
+
+/* ATLAS-SOURCE-UNIT:u1406:END */ /* ATLAS-SOURCE-UNIT:u1407:BEGIN */
+.sort-direction-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1407:END */ /* ATLAS-SOURCE-UNIT:u1408:BEGIN */
+@media (prefers-reduced-motion: reduce) {
+  .atlas-choice-popover {
+    animation: atlas-choice-popover-fade 1ms linear;
+  }
+
+  .atlas-choice-trigger .atlas-choice-caret,
+  .atlas-choice-popover-pills .atlas-choice-option:active,
+  .sort-direction-toggle:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1408:END */ /* ATLAS-SOURCE-UNIT:u1409:BEGIN */
+@keyframes atlas-choice-popover-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1409:END */

@@ -243,9 +243,11 @@ function atlasChoiceOptionButton(item, selected) {
  * attribute so callers can keep reading `.value` and listening for `change`.
  * variant: "segment" for 2–4 short labels, "chips" for wrapping phrases,
  * "cards" when each option needs a description.
- * collapsible wraps cards or chips so the editor shows the current choice
- * until the group is opened.
+ * popover ("pills" or "list") renders a trigger button that opens the group
+ * in an anchored panel; the group and hidden input stay in place.
  */
+let atlasChoicePopoverSequence = 0;
+
 function atlasChoiceControl({
   options = [],
   selected = "",
@@ -253,7 +255,7 @@ function atlasChoiceControl({
   label = "Choose",
   heading = "",
   attributes = "",
-  collapsible = false,
+  popover = "",
 } = {}) {
   const items = atlasNormalizeChoiceOptions(options);
   const current = items.some((item) => item.value === selected)
@@ -265,9 +267,12 @@ function atlasChoiceControl({
   const currentItem =
     items.find((item) => item.value === current) || items[0] || null;
   const control = `<div class="atlas-choice atlas-choice-${safeVariant}" role="radiogroup" aria-label="${esc(label)}"><input type="hidden" ${attributes} value="${esc(current)}">${items.map((item) => atlasChoiceOptionButton(item, current)).join("")}</div>`;
-  if (!collapsible) return control;
   const title = heading || label;
-  return `<details class="atlas-choice-disclosure"><summary><span class="atlas-choice-heading">${esc(title)}</span><span class="atlas-choice-current">${esc(currentItem?.label || "Choose")}</span></summary>${control}</details>`;
+  if (popover === "pills" || popover === "list") {
+    const id = `atlas-choice-popover-${++atlasChoicePopoverSequence}`;
+    return `<div class="atlas-choice-popover-field"><button type="button" class="atlas-choice-trigger" data-choice-popover-trigger aria-haspopup="true" aria-expanded="false" aria-controls="${id}" aria-label="${esc(title)}: ${esc(currentItem?.label || "Choose")}"><span class="atlas-choice-heading">${esc(title)}</span><span class="atlas-choice-current">${esc(currentItem?.label || "Choose")}</span><span class="atlas-choice-caret" aria-hidden="true">⌄</span></button><div class="atlas-choice-popover atlas-choice-popover-${popover}" id="${id}" hidden>${control}</div></div>`;
+  }
+  return control;
 }
 
 function atlasSyncChoiceSelection(input) {
@@ -284,11 +289,121 @@ function atlasSyncChoiceSelection(input) {
       currentLabel =
         button.querySelector(".atlas-choice-label")?.textContent || value;
   });
-  const current = group
-    .closest(".atlas-choice-disclosure")
-    ?.querySelector(".atlas-choice-current");
+  const wrapper = group.closest(".atlas-choice-popover-field");
+  const current = wrapper?.querySelector(".atlas-choice-current");
   if (current) current.textContent = currentLabel;
+  const trigger = wrapper?.querySelector("[data-choice-popover-trigger]");
+  if (trigger)
+    trigger.setAttribute(
+      "aria-label",
+      `${trigger.querySelector(".atlas-choice-heading")?.textContent || ""}: ${currentLabel}`,
+    );
 }
+
+let atlasOpenChoicePopoverTrigger = null;
+
+function atlasPositionChoicePopover(trigger = atlasOpenChoicePopoverTrigger) {
+  const panel = trigger?.isConnected
+    ? document.getElementById(trigger.getAttribute("aria-controls"))
+    : null;
+  if (!panel || panel.hidden) return;
+  const rect = trigger.getBoundingClientRect();
+  const gutter = 12;
+  const width = Math.min(
+    window.innerWidth - gutter * 2,
+    Math.max(
+      rect.width,
+      panel.classList.contains("atlas-choice-popover-list") ? 280 : 260,
+    ),
+    400,
+  );
+  panel.style.width = `${width}px`;
+  panel.style.left = `${Math.min(window.innerWidth - width - gutter, Math.max(gutter, rect.left))}px`;
+  panel.style.maxHeight = "";
+  const below = window.innerHeight - rect.bottom - gutter - 8;
+  const above = rect.top - gutter - 8;
+  const height = panel.scrollHeight;
+  if (height > below && above > below) {
+    const maxHeight = Math.min(height, above);
+    panel.style.maxHeight = `${maxHeight}px`;
+    panel.style.top = `${rect.top - 8 - maxHeight}px`;
+  } else {
+    panel.style.maxHeight = `${Math.max(120, below)}px`;
+    panel.style.top = `${rect.bottom + 8}px`;
+  }
+}
+
+function atlasCloseChoicePopover({ restoreFocus = false } = {}) {
+  const trigger = atlasOpenChoicePopoverTrigger;
+  atlasOpenChoicePopoverTrigger = null;
+  if (!trigger) return;
+  trigger.setAttribute("aria-expanded", "false");
+  const panel = document.getElementById(trigger.getAttribute("aria-controls"));
+  if (panel) panel.hidden = true;
+  if (restoreFocus && trigger.isConnected) trigger.focus();
+}
+
+function atlasOpenChoicePopover(trigger) {
+  const panel = document.getElementById(trigger?.getAttribute("aria-controls"));
+  if (!panel) return;
+  atlasCloseChoicePopover();
+  panel.hidden = false;
+  trigger.setAttribute("aria-expanded", "true");
+  atlasOpenChoicePopoverTrigger = trigger;
+  atlasPositionChoicePopover(trigger);
+  (
+    panel.querySelector(".atlas-choice-option.is-selected") ||
+    panel.querySelector(".atlas-choice-option")
+  )?.focus();
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const trigger = event.target.closest?.("[data-choice-popover-trigger]");
+    if (trigger) {
+      event.preventDefault();
+      if (atlasOpenChoicePopoverTrigger === trigger) atlasCloseChoicePopover();
+      else atlasOpenChoicePopover(trigger);
+      return;
+    }
+    if (
+      atlasOpenChoicePopoverTrigger &&
+      !event.target.closest?.(".atlas-choice-popover")
+    )
+      atlasCloseChoicePopover();
+  },
+  true,
+);
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    if (!atlasOpenChoicePopoverTrigger) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      atlasCloseChoicePopover({ restoreFocus: true });
+    } else if (event.key === "Tab") {
+      atlasCloseChoicePopover({ restoreFocus: true });
+      event.preventDefault();
+    }
+  },
+  true,
+);
+
+window.addEventListener("resize", () => atlasPositionChoicePopover());
+document.addEventListener(
+  "scroll",
+  (event) => {
+    if (
+      atlasOpenChoicePopoverTrigger &&
+      !event.target?.closest?.(".atlas-choice-popover")
+    )
+      atlasPositionChoicePopover();
+  },
+  true,
+);
 
 function atlasSetChoiceOptions(input, options, selected = input?.value || "") {
   const group = input?.closest?.(".atlas-choice");
@@ -300,7 +415,9 @@ function atlasSetChoiceOptions(input, options, selected = input?.value || "") {
       ? input.value
       : items[0]?.value || "";
   input.value = current;
-  group.querySelectorAll(".atlas-choice-option").forEach((button) => button.remove());
+  group
+    .querySelectorAll(".atlas-choice-option")
+    .forEach((button) => button.remove());
   group.insertAdjacentHTML(
     "beforeend",
     items.map((item) => atlasChoiceOptionButton(item, current)).join(""),
@@ -309,19 +426,58 @@ function atlasSetChoiceOptions(input, options, selected = input?.value || "") {
   return true;
 }
 
-function atlasApplyChoiceValue(button) {
+function atlasApplyChoiceValue(button, { focus = true } = {}) {
   const group = button?.closest?.(".atlas-choice");
   const input = group?.querySelector("input[type='hidden']");
   const next = button?.dataset.choiceValue ?? "";
   if (!group || !input || input.value === next) {
-    button?.focus?.();
+    if (focus) button?.focus?.();
     return;
   }
   input.value = next;
   atlasSyncChoiceSelection(input);
-  button.focus();
+  if (focus) button.focus();
   input.dispatchEvent(new Event("change", { bubbles: true }));
 }
+
+function atlasSortDirectionState(value) {
+  const descending = value === "Descending";
+  return {
+    value: descending ? "Descending" : "Ascending",
+    icon: descending ? "sort-desc" : "sort-asc",
+    label: descending
+      ? "Sort direction: descending. Activate to sort ascending."
+      : "Sort direction: ascending. Activate to sort descending.",
+    title: descending ? "Descending" : "Ascending",
+  };
+}
+
+function atlasSortDirectionToggle(value) {
+  const state = atlasSortDirectionState(value);
+  return `<input type="hidden" data-param="sort_direction" value="${esc(state.value)}"><button type="button" class="sort-direction-toggle" data-sort-direction-toggle aria-label="${esc(state.label)}" title="${esc(state.title)}">${window.atlasIcon?.(state.icon) || ""}</button>`;
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const toggle = event.target.closest?.("[data-sort-direction-toggle]");
+    if (!toggle || toggle.disabled) return;
+    const input = toggle.parentElement?.querySelector(
+      'input[data-param="sort_direction"]',
+    );
+    if (!input) return;
+    event.preventDefault();
+    const state = atlasSortDirectionState(
+      input.value === "Descending" ? "Ascending" : "Descending",
+    );
+    input.value = state.value;
+    toggle.setAttribute("aria-label", state.label);
+    toggle.title = state.title;
+    toggle.innerHTML = window.atlasIcon?.(state.icon) || "";
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  },
+  true,
+);
 
 document.addEventListener(
   "click",
@@ -329,7 +485,9 @@ document.addEventListener(
     const button = event.target.closest?.("[data-choice-value]");
     if (!button || !button.closest(".atlas-choice")) return;
     event.preventDefault();
-    atlasApplyChoiceValue(button);
+    const inPopover = !!button.closest(".atlas-choice-popover");
+    if (inPopover) atlasCloseChoicePopover({ restoreFocus: true });
+    atlasApplyChoiceValue(button, { focus: !inPopover });
   },
   true,
 );
@@ -351,6 +509,10 @@ document.addEventListener(
     else if (event.key === "End") next = options.length - 1;
     else return;
     event.preventDefault();
+    if (button.closest(".atlas-choice-popover")) {
+      options[next].focus();
+      return;
+    }
     atlasApplyChoiceValue(options[next]);
   },
   true,
@@ -482,7 +644,7 @@ function renderGuidedBuilder(step) {
         variant: "cards",
         label: "Column Value Type",
         heading: "Column Value Type",
-        collapsible: true,
+        popover: "pills",
         attributes: 'data-param="value_mode"',
       },
     )}</div>${renderCreateModeInputs(p)}</div>`;
@@ -585,28 +747,26 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
-      {
-        options: atlasDescribedChoices(
-          catalogArrayFromOptions({
-            path: "app_config.logic_options.format_options",
-            fallback: ["text", "number"],
-          }),
-          {
-            "eight digits with leading zeroes": "Pad the value to eight digits.",
-            "date format MM/DD/YYYY": "Show the value as a date.",
-            text: "Keep the value as text.",
-            number: "Keep the value as a number.",
-          },
-        ),
-        selected: p.format,
-        variant: "cards",
-        label: "Format",
-        heading: "Format",
-        collapsible: true,
-        attributes: 'data-param="format"',
-      },
-    )}</div></div>`;
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
+      options: atlasDescribedChoices(
+        catalogArrayFromOptions({
+          path: "app_config.logic_options.format_options",
+          fallback: ["text", "number"],
+        }),
+        {
+          "eight digits with leading zeroes": "Pad the value to eight digits.",
+          "date format MM/DD/YYYY": "Show the value as a date.",
+          text: "Keep the value as text.",
+          number: "Keep the value as a number.",
+        },
+      ),
+      selected: p.format,
+      variant: "cards",
+      label: "Format",
+      heading: "Format",
+      popover: "list",
+      attributes: 'data-param="format"',
+    })}</div></div>`;
   if (step.step_type === "split_field")
     return `<div class="guided-builder"><h4>Split Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -624,25 +784,14 @@ function renderGuidedBuilder(step) {
       },
     )}</label></div>`;
   if (step.step_type === "sort_records")
-    return `<div class="guided-builder"><h4>Sort Records</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Sort Field${fieldInputFromOptions(
+    return `<div class="guided-builder"><h4>Sort Records</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<div class="sort-field-control"><span class="sort-field-heading">Sort Field</span><div class="sort-field-row">${fieldInputFromOptions(
       {
         name: "field_name",
         value: p.field_name,
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><div class="atlas-choice-field"><span class="atlas-choice-heading">Direction</span>${atlasChoiceControl(
-      {
-        options: catalogArrayFromOptions({
-          path: "app_config.logic_options.sort_directions",
-          fallback: ["Ascending", "Descending"],
-        }),
-        selected: p.sort_direction,
-        variant: "segment",
-        label: "Sort direction",
-        attributes: 'data-param="sort_direction"',
-      },
-    )}</div></div>`;
+    )}${atlasSortDirectionToggle(p.sort_direction)}</div></div></div>`;
   if (step.step_type === "remove_duplicates")
     return `<div class="guided-builder"><h4>Remove Duplicates</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -651,31 +800,30 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
-      {
-        options: atlasDescribedChoices(
-          catalogArrayFromOptions({
-            path: "app_config.logic_options.duplicate_actions",
-            fallback: [
-              "Keep first record",
-              "Keep last record",
-              "Drop all duplicated records",
-            ],
-          }),
-          {
-            "Keep first record": "Keep the earliest matching record.",
-            "Keep last record": "Keep the latest matching record.",
-            "Drop all duplicated records": "Remove every record that is duplicated.",
-          },
-        ),
-        selected: p.duplicate_action,
-        variant: "cards",
-        label: "Duplicate action",
-        heading: "Duplicate Action",
-        collapsible: true,
-        attributes: 'data-param="duplicate_action"',
-      },
-    )}</div></div>`;
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
+      options: atlasDescribedChoices(
+        catalogArrayFromOptions({
+          path: "app_config.logic_options.duplicate_actions",
+          fallback: [
+            "Keep first record",
+            "Keep last record",
+            "Drop all duplicated records",
+          ],
+        }),
+        {
+          "Keep first record": "Keep the earliest matching record.",
+          "Keep last record": "Keep the latest matching record.",
+          "Drop all duplicated records":
+            "Remove every record that is duplicated.",
+        },
+      ),
+      selected: p.duplicate_action,
+      variant: "cards",
+      label: "Duplicate action",
+      heading: "Duplicate Action",
+      popover: "list",
+      attributes: 'data-param="duplicate_action"',
+    })}</div></div>`;
   if (step.step_type === "filter_rows" || step.step_type === "flag_records")
     return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -684,20 +832,18 @@ function renderGuidedBuilder(step) {
         placeholder: "Select field",
         sourceFile: p.source_file,
       },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl(
-      {
-        options: catalogArrayFromOptions({
-          path: "app_config.logic_options.operators",
-          fallback: ["is equal to"],
-        }),
-        selected: p.operator,
-        variant: "chips",
-        label: "Operator",
-        heading: "Operator",
-        collapsible: true,
-        attributes: 'data-param="operator"',
-      },
-    )}</div><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
+    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
+      options: catalogArrayFromOptions({
+        path: "app_config.logic_options.operators",
+        fallback: ["is equal to"],
+      }),
+      selected: p.operator,
+      variant: "chips",
+      label: "Operator",
+      heading: "Operator",
+      popover: "pills",
+      attributes: 'data-param="operator"',
+    })}</div><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
       step.step_type === "filter_rows"
         ? `<div class="atlas-choice-field"><span class="atlas-choice-heading">Filter Action</span>${atlasChoiceControl(
             {
@@ -711,34 +857,34 @@ function renderGuidedBuilder(step) {
               attributes: 'data-param="filter_action"',
             },
           )}</div>`
-        : `<div class="atlas-choice-field">${atlasChoiceControl(
-            {
-              options: [
-                [
-                  "display_text",
-                  "Display text response",
-                  "Show a message for the matching record.",
-                ],
-                [
-                  "do_not_display",
-                  "Do not display record",
-                  "Hide the matching record.",
-                ],
+        : `<div class="atlas-choice-field">${atlasChoiceControl({
+            options: [
+              [
+                "display_text",
+                "Display text response",
+                "Show a message for the matching record.",
               ],
-              selected:
-                p.flag_action === "do_not_display"
-                  ? "do_not_display"
-                  : "display_text",
-              variant: "cards",
-              label: "Flag action",
-              heading: "Flag Action",
-              collapsible: true,
-              attributes: 'data-param="flag_action"',
-            },
-          )}</div><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
+              [
+                "do_not_display",
+                "Do not display record",
+                "Hide the matching record.",
+              ],
+            ],
+            selected:
+              p.flag_action === "do_not_display"
+                ? "do_not_display"
+                : "display_text",
+            variant: "cards",
+            label: "Flag action",
+            heading: "Flag Action",
+            popover: "list",
+            attributes: 'data-param="flag_action"',
+          })}</div><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
             {
               name: "output_column",
-              value: p.output_column || phrasePlaceholder("error_message_column", "Error Message"),
+              value:
+                p.output_column ||
+                phrasePlaceholder("error_message_column", "Error Message"),
               placeholder: "Select field",
               sourceFile: "",
             },
@@ -884,7 +1030,9 @@ function renderThenActionBuilder(p, prefix = "THEN") {
   return `<div class="then-action-builder"><h4>${prefix} Action</h4><label>${prefix} Action Type<select data-param="then_action_type"><option value="freeform" ${p.then_action_type === "freeform" ? "selected" : ""}>Freeform Text</option><option value="set_column_value" ${p.then_action_type === "set_column_value" ? "selected" : ""}>Set Column Value from Field</option><option value="display_text" ${p.then_action_type === "display_text" ? "selected" : ""}>Display Text Response in Column</option><option value="do_not_display" ${p.then_action_type === "do_not_display" ? "selected" : ""}>Do Not Display</option></select></label><label>${prefix} Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label><label>Display Text<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="e.g., Research IT0027"></label><label>Output Column${fieldInputFromOptions(
     {
       name: "then_output_column",
-      value: p.then_output_column || phrasePlaceholder("error_message_column", "Error Message"),
+      value:
+        p.then_output_column ||
+        phrasePlaceholder("error_message_column", "Error Message"),
       placeholder: "Select field",
       sourceFile: "",
     },
@@ -1372,18 +1520,20 @@ function atlasMathOperationRowHtml(operation = {}, fallbackSourceFile = "") {
     : "";
   const modeLabel = fieldMode ? "Source Field" : "Static Value";
   return `<div class="math-operation-row" data-math-row data-math-id="${esc(item.id)}">
-    <div class="atlas-choice-field math-operator-control"><span class="atlas-choice-heading">Operator</span>${atlasChoiceControl({
-      options: [
-        ["+", "+"],
-        ["-", "−"],
-        ["*", "×"],
-        ["/", "÷"],
-      ],
-      selected: item.operator || "*",
-      variant: "segment",
-      label: "Math operator",
-      attributes: 'data-math-operator=""',
-    })}</div>
+    <div class="atlas-choice-field math-operator-control"><span class="atlas-choice-heading">Operator</span>${atlasChoiceControl(
+      {
+        options: [
+          ["+", "+"],
+          ["-", "−"],
+          ["*", "×"],
+          ["/", "÷"],
+        ],
+        selected: item.operator || "*",
+        variant: "segment",
+        label: "Math operator",
+        attributes: 'data-math-operator=""',
+      },
+    )}</div>
     <div class="math-operand-mode"><span class="math-control-label">Operand type</span><label class="math-mode-switch"><input type="checkbox" role="switch" data-math-operand-mode ${fieldMode ? "checked" : ""} aria-label="Use a source field for this mathematical operand"><span class="math-mode-switch-track" aria-hidden="true"></span><span data-math-mode-label>${modeLabel}</span></label><input type="hidden" data-math-operand-type value="${fieldMode ? "field" : "number"}"></div>
     <div class="math-active-operand">
       <label class="math-number-operand" ${fieldMode ? "hidden" : ""}>Value<input data-math-operand inputmode="decimal" value="${esc(item.operand)}" placeholder="e.g., -1.5"></label>
@@ -1410,18 +1560,20 @@ renderCreateModeInputs = function renderCreateModeInputsWithMath(p) {
       sourceFile: p.source_file,
     })}</label>
     ${atlasMathEditorHtml("source_math_json", p.source_math_json || "[]", p.source_file)}
-    <div class="math-rounding-grid"><div class="atlas-choice-field"><span class="atlas-choice-heading">Rounding</span>${atlasChoiceControl({
-      options: [
-        ["none", "None"],
-        ["nearest", "Nearest"],
-        ["up", "Up"],
-        ["down", "Down"],
-      ],
-      selected: p.rounding_mode || "none",
-      variant: "segment",
-      label: "Rounding",
-      attributes: 'data-param="rounding_mode"',
-    })}</div>
+    <div class="math-rounding-grid"><div class="atlas-choice-field"><span class="atlas-choice-heading">Rounding</span>${atlasChoiceControl(
+      {
+        options: [
+          ["none", "None"],
+          ["nearest", "Nearest"],
+          ["up", "Up"],
+          ["down", "Down"],
+        ],
+        selected: p.rounding_mode || "none",
+        variant: "segment",
+        label: "Rounding",
+        attributes: 'data-param="rounding_mode"',
+      },
+    )}</div>
     <label>Decimal places<input data-param="rounding_decimal_places" inputmode="numeric" value="${esc(p.rounding_decimal_places || "0")}"></label></div>`;
 };
 // ATLAS-MATH-OPERATIONS-UPDATE:END

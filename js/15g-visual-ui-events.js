@@ -152,7 +152,9 @@ let atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderInitial(
   return `<div class="then-action-builder refined-action-builder"><h4>${prefix} Action Builder</h4><label>${prefix} Action Type<select data-param="then_action_type"><option value="freeform" ${p.then_action_type === "freeform" ? "selected" : ""}>Freeform Text</option><option value="set_column_value" ${p.then_action_type === "set_column_value" ? "selected" : ""}>Set Column Value from Field</option><option value="display_text" ${p.then_action_type === "display_text" ? "selected" : ""}>Display Text Response in Column</option><option value="do_not_display" ${p.then_action_type === "do_not_display" ? "selected" : ""}>Do Not Display</option></select></label><label class="full">${prefix} Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label><label>Display Text<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="e.g., Research IT0027"></label><label>Output Column${fieldInputFromOptions(
     {
       name: "then_output_column",
-      value: p.then_output_column || phrasePlaceholder("error_message_column", "Error Message"),
+      value:
+        p.then_output_column ||
+        phrasePlaceholder("error_message_column", "Error Message"),
       placeholder: "Select field",
       sourceFile: "",
     },
@@ -191,30 +193,28 @@ atlasRenderStepEditor = function atlasRenderStepEditorUsability(step) {
     <section class="logic-editor-section step-settings-section">
       <h3>Step Settings</h3>
       <div class="logic-editor-grid single-column-settings">
-        <div class="atlas-choice-field">${atlasChoiceControl(
-          {
-            options: [
-              ...atlasNewRuleTypeOptions(),
-              ...(atlasNewRuleTypeOptions().some(
-                ([value]) => value === step.step_type,
-              )
-                ? []
-                : (STEP_TYPE_OPTIONS || []).filter(
-                    ([value]) => value === step.step_type,
-                  )),
-            ].map(([value, label]) => [
-              value,
-              label,
-              atlasRuleTypeDescription(value),
-            ]),
-            selected: step.step_type,
-            variant: "cards",
-            label: "Step type",
-            heading: "Step Type",
-            collapsible: true,
-            attributes: 'data-live-step-type-select=""',
-          },
-        )}</div>
+        <div class="atlas-choice-field">${atlasChoiceControl({
+          options: [
+            ...atlasNewRuleTypeOptions(),
+            ...(atlasNewRuleTypeOptions().some(
+              ([value]) => value === step.step_type,
+            )
+              ? []
+              : (STEP_TYPE_OPTIONS || []).filter(
+                  ([value]) => value === step.step_type,
+                )),
+          ].map(([value, label]) => [
+            value,
+            label,
+            atlasRuleTypeDescription(value),
+          ]),
+          selected: step.step_type,
+          variant: "cards",
+          label: "Step type",
+          heading: "Step Type",
+          popover: "pills",
+          attributes: 'data-live-step-type-select=""',
+        })}</div>
       </div>
     </section>
     <section class="logic-editor-section criteria-section">
@@ -358,7 +358,7 @@ function atlasThenActionTypeControl(prefix, actionType) {
       variant: "cards",
       label: `${prefix} action type`,
       heading: `${prefix} Action Type`,
-      collapsible: true,
+      popover: "list",
       attributes: 'data-param="then_action_type"',
     },
   )}</div>`;
@@ -437,7 +437,7 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
       variant: "cards",
       label: "Value mode",
       heading: "Value Mode",
-      collapsible: true,
+      popover: "list",
       attributes: 'data-condition-field="valueMode"',
     })}</div>
     <div class="atlas-choice-field">${atlasChoiceControl({
@@ -446,7 +446,7 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
       variant: "chips",
       label: "Operator",
       heading: "Operator",
-      collapsible: true,
+      popover: "list",
       attributes: 'data-condition-field="operator"',
     })}</div>
     ${
@@ -506,7 +506,9 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
     return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Display Text<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="Text to display for matching records"></label><label>Output Column${fieldInputFromOptions(
       {
         name: "then_output_column",
-        value: p.then_output_column || phrasePlaceholder("error_message_column", "Error Message"),
+        value:
+          p.then_output_column ||
+          phrasePlaceholder("error_message_column", "Error Message"),
         placeholder: "Select field",
         sourceFile: "",
       },
@@ -629,7 +631,6 @@ if (typeof ResizeObserver !== "undefined") {
 } else {
   window.addEventListener("resize", atlasSyncRulesHeightToEditor);
 }
-
 
 function atlasMiniPickerResultsHtml() {
   if (!visualPickerState) return "";
@@ -883,20 +884,47 @@ function atlasCloseNewRuleTypeMenu({ restoreFocus = false } = {}) {
   button?.setAttribute("aria-expanded", "false");
   if (restoreFocus) button?.focus();
 }
+function atlasPositionNewRuleTypeMenu(
+  panel = document.querySelector(".new-rule-menu-panel"),
+  button = document.getElementById("addStepBtn"),
+) {
+  if (!panel || !button) return;
+  const rect = button.getBoundingClientRect();
+  const panelWidth = Math.min(
+    360,
+    window.innerWidth - 24,
+    Math.max(260, panel.offsetWidth || 320),
+  );
+  panel.style.width = `${panelWidth}px`;
+  panel.style.left = `${Math.min(window.innerWidth - panelWidth - 12, Math.max(12, rect.left))}px`;
+  const below = window.innerHeight - rect.bottom - 20;
+  const above = rect.top - 20;
+  const height = panel.offsetHeight;
+  if (height > below && above > below) {
+    panel.style.top = `${Math.max(12, rect.top - 8 - Math.min(height, above))}px`;
+    panel.style.maxHeight = `${above}px`;
+  } else {
+    panel.style.top = `${rect.bottom + 8}px`;
+    panel.style.maxHeight = `${Math.max(160, below)}px`;
+  }
+}
 function atlasOpenNewRuleTypeMenu(
   button = document.getElementById("addStepBtn"),
 ) {
   if (!button) return;
   document.querySelector(".new-rule-menu-panel")?.remove();
   const panel = document.createElement("div");
-  panel.className = "new-rule-menu-panel new-rule-dialog-backdrop";
-  panel.innerHTML = `<div class="new-rule-dialog" role="dialog" aria-modal="true" aria-labelledby="new-rule-dialog-title"><div class="new-rule-dialog-header"><h2 id="new-rule-dialog-title">New Rule</h2><button type="button" class="btn ghost small" data-close-new-rule>Cancel</button></div><div class="new-rule-dialog-options">${atlasNewRuleTypeOptions()
+  panel.className = "new-rule-menu-panel";
+  panel.setAttribute("role", "menu");
+  panel.setAttribute("aria-label", "Choose rule type");
+  panel.innerHTML = atlasNewRuleTypeOptions()
     .map(
       ([value, label]) =>
-        `<button type="button" class="new-rule-type-option" data-new-rule-type="${esc(value)}"><span class="new-rule-type-label">${esc(label)}</span><span class="new-rule-type-description">${esc(atlasRuleTypeDescription(value))}</span></button>`,
+        `<button type="button" class="new-rule-type-option" role="menuitem" tabindex="-1" data-new-rule-type="${esc(value)}"><span class="new-rule-type-label">${esc(label)}</span><span class="new-rule-type-description">${esc(atlasRuleTypeDescription(value))}</span></button>`,
     )
-    .join("")}</div></div>`;
+    .join("");
   document.body.append(panel);
+  atlasPositionNewRuleTypeMenu(panel, button);
   button.setAttribute("aria-expanded", "true");
   atlasNewRuleMenuOpen = true;
   panel.querySelector("[data-new-rule-type]")?.focus();
@@ -921,28 +949,56 @@ document.addEventListener(
       atlasCreateRuleOfType(typeButton.dataset.newRuleType || "if_then");
       return;
     }
-    if (event.target.closest("[data-close-new-rule]")) {
-      event.preventDefault();
-      atlasCloseNewRuleTypeMenu({ restoreFocus: true });
-      return;
-    }
     if (
       atlasNewRuleMenuOpen &&
-      (event.target.classList?.contains("new-rule-dialog-backdrop") ||
-        (!event.target.closest(".new-rule-dialog") &&
-          !event.target.closest("#addStepBtn")))
+      !event.target.closest(".new-rule-menu-panel") &&
+      !event.target.closest("#addStepBtn")
     )
-      atlasCloseNewRuleTypeMenu({ restoreFocus: true });
+      atlasCloseNewRuleTypeMenu();
   },
   true,
 );
 document.addEventListener(
   "keydown",
   (event) => {
-    if (event.key === "Escape" && atlasNewRuleMenuOpen) {
-      atlasCloseNewRuleTypeMenu();
-      document.getElementById("addStepBtn")?.focus();
+    if (!atlasNewRuleMenuOpen) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      atlasCloseNewRuleTypeMenu({ restoreFocus: true });
+      return;
     }
+    if (event.key === "Tab") {
+      atlasCloseNewRuleTypeMenu();
+      return;
+    }
+    const items = [
+      ...document.querySelectorAll(".new-rule-menu-panel [role=menuitem]"),
+    ];
+    if (!items.length) return;
+    const current = items.indexOf(document.activeElement);
+    const nextIndex = {
+      ArrowDown: current < 0 ? 0 : (current + 1) % items.length,
+      ArrowUp: current <= 0 ? items.length - 1 : current - 1,
+      Home: 0,
+      End: items.length - 1,
+    }[event.key];
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    items[nextIndex].focus();
+  },
+  true,
+);
+window.addEventListener("resize", () => {
+  if (atlasNewRuleMenuOpen) atlasPositionNewRuleTypeMenu();
+});
+document.addEventListener(
+  "scroll",
+  (event) => {
+    if (
+      atlasNewRuleMenuOpen &&
+      !event.target?.closest?.(".new-rule-menu-panel")
+    )
+      atlasPositionNewRuleTypeMenu();
   },
   true,
 );
@@ -1321,7 +1377,6 @@ atlasCommitLiveEditor =
       countInput.value = atlasPositiveWholeNumber(countInput.value);
     return atlasStringCharacterCountCommitBase(options);
   };
-
 
 // ATLAS-MATH-OPERATIONS-UPDATE:BEGIN
 const atlasRenderConditionRowBeforeMathUpdate = renderConditionRow;
@@ -1717,7 +1772,8 @@ function atlasCreatedFieldPlacement(step) {
       atlasStableSourceKey(source)) ||
     source.sourceKey ||
     referenceSource;
-  const sourceFile = source.sourceFile || resolved?.sourceFile || referenceSource;
+  const sourceFile =
+    source.sourceFile || resolved?.sourceFile || referenceSource;
   const sourceAlias =
     source.alias ||
     resolved?.alias ||
@@ -2503,7 +2559,8 @@ function atlasMeasureLogicVirtualCards(list, anchorId, anchorOffset) {
   if (sample) {
     const style = getComputedStyle(sample);
     margin =
-      (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+      (parseFloat(style.marginTop) || 0) +
+      (parseFloat(style.marginBottom) || 0);
   }
   cards.forEach((card) => {
     const measured = Math.ceil(card.getBoundingClientRect().height + margin);
