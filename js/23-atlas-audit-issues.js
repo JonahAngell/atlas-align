@@ -48,6 +48,14 @@
     "filter_rows",
     "flag_records",
   ]);
+  // Step params that hold a field, paired with the param holding its source.
+  // Mirrors the logic builder field picker.
+  const FIELD_SOURCE_PARAMS = [
+    ["field_name", "source_file"],
+    ["then_value_field", "then_value_source_file"],
+    ["string_source_field", "string_source_file"],
+    ["then_string_source_field", "then_string_source_file"],
+  ];
   const VALUELESS_OPERATORS = new Set([
     "is blank/null",
     "is not blank/null",
@@ -462,22 +470,22 @@
       });
       context.audit.steps.forEach((step) => {
         const references = [];
+        const params = step.params || {};
+        const createdReference = (param) =>
+          object(params[`${param}_field_ref`]).kind === "created";
+        const pushOperand = (source, field, fieldParam, sourceParam) => {
+          if (createdReference(fieldParam)) return;
+          if (!string(source).trim() || !string(field).trim()) return;
+          references.push({
+            source,
+            field,
+            location: `param-${fieldParam}`,
+            fieldParam,
+            sourceParam,
+          });
+        };
         if (step.type === "create_column") {
-          const params = step.params || {};
           const mode = string(params.value_mode).trim();
-          const createdReference = (param) =>
-            object(params[`${param}_field_ref`]).kind === "created";
-          const pushOperand = (source, field, fieldParam, sourceParam) => {
-            if (createdReference(fieldParam)) return;
-            if (!string(source).trim() || !string(field).trim()) return;
-            references.push({
-              source,
-              field,
-              location: `param-${fieldParam}`,
-              fieldParam,
-              sourceParam,
-            });
-          };
           if (mode === "Source field value")
             pushOperand(
               params.source_file || step.source,
@@ -515,12 +523,27 @@
               "expression_source_field",
               "source_file",
             );
-        } else if (step.source || step.field)
-          references.push({
-            source: step.source,
-            field: step.field,
-            location: "step",
+        } else {
+          FIELD_SOURCE_PARAMS.forEach(([fieldParam, sourceParam]) => {
+            if (blank(params[fieldParam])) return;
+            pushOperand(
+              params[sourceParam] || params.source_file || step.source,
+              params[fieldParam],
+              fieldParam,
+              sourceParam,
+            );
           });
+          if (
+            blank(params.field_name) &&
+            string(step.field).trim() &&
+            string(step.source).trim()
+          )
+            references.push({
+              source: step.source,
+              field: step.field,
+              location: "step",
+            });
+        }
         step.conditions.forEach((condition) => {
           references.push({
             source: condition.sourceFile || step.source,
@@ -655,7 +678,12 @@
                         ),
                     )
                   ? "attached-source"
-                  : "";
+                  : matchingCreatedColumns.length &&
+                      !knownFields.has(
+                        `${canonicalSource}::${string(reference.field).trim()}`,
+                      )
+                    ? "created-name"
+                    : "";
           if (createdReferenceReason) return;
           if (
             selectedSources.size &&

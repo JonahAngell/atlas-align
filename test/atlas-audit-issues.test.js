@@ -2232,3 +2232,85 @@ test("blank operators do not require a comparison value", async () => {
     0,
   );
 });
+
+test("steps using a created column are not invalid references", async () => {
+  const audit = completeAudit();
+  audit.steps.push(
+    rootStep("column-step", "create_column", {
+      value_mode: "Static value",
+      column_name: "Bonus Flag",
+      static_value: "Y",
+    }),
+    rootStep("sort-step", "sort", {
+      source_file: "Source One",
+      field_name: "Bonus Flag",
+      field_name_field_ref: {
+        kind: "created",
+        creatorStepId: "column-step",
+      },
+    }),
+    rootStep("legacy-sort-step", "sort", {
+      source_file: "Source One",
+      field_name: "Bonus Flag",
+    }),
+  );
+  const context = await runtime(audit);
+  ["sort-step", "legacy-sort-step"].forEach((stepId) =>
+    assert.equal(
+      issuesFor(context, stepId, "audit.sources.reference-integrity").length,
+      0,
+      stepId,
+    ),
+  );
+});
+
+test("missing field on a non-condition step is still flagged", async () => {
+  const audit = completeAudit();
+  audit.steps.push(
+    rootStep("sort-step", "sort", {
+      source_file: "Source One",
+      field_name: "Removed Field",
+    }),
+  );
+  const context = await runtime(audit, {
+    sourceFiles: [
+      {
+        sourceKey: "source.one",
+        sourceFile: "Source One",
+        fields: [{ rawFieldName: "Status" }],
+      },
+    ],
+  });
+  assert.ok(
+    issuesFor(context, "sort-step", "audit.sources.reference-integrity").length,
+  );
+});
+
+test("custom source fields are valid references", async () => {
+  const audit = completeAudit();
+  audit.sources.push({ sourceKey: "custom.upload", sourceFile: "My Upload" });
+  audit.steps.push(
+    rootStep("sort-step", "sort", {
+      source_file: "My Upload",
+      field_name: "Amount",
+    }),
+  );
+  const context = await runtime(audit, {
+    sourceFiles: [
+      {
+        sourceKey: "source.one",
+        sourceFile: "Source One",
+        fields: [{ rawFieldName: "Status" }],
+      },
+      {
+        sourceKey: "custom.upload",
+        sourceFile: "My Upload",
+        fields: [{ rawFieldName: "Amount" }],
+      },
+    ],
+  });
+  assert.equal(
+    issuesFor(context, "sort-step", "audit.sources.reference-integrity").length,
+    0,
+  );
+});
