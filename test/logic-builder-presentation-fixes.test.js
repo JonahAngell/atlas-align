@@ -114,3 +114,31 @@ test("created columns receive the canonical blue token classification", () => {
     /@media \(forced-colors: active\)[\s\S]*\.created-column-token/,
   );
 });
+
+test("Display text action drops the unused Reference Field and previews the rule", () => {
+  const visualSource = fs.readFileSync("js/15g-visual-ui-events.js", "utf8");
+  const start = visualSource.indexOf('if (actionType === "display_text")');
+  assert.notEqual(start, -1, "display_text branch should exist");
+  const branch = visualSource.slice(
+    start,
+    visualSource.indexOf('if (actionType === "do_not_display")', start),
+  );
+  assert.doesNotMatch(branch, /Reference Field/);
+  assert.doesNotMatch(branch, /then_target_column/);
+  assert.match(branch, />Message</);
+  assert.match(branch, /Write to Column/);
+  assert.match(branch, /display-text-preview/);
+  assert.match(branch, /analyst_logic\.if_then\.then_display_text/);
+});
+
+test("Requirements output columns ignore stale reference fields on display actions", () => {
+  const renderingSource = fs.readFileSync("js/02-logic-rendering.js", "utf8");
+  assert.match(
+    renderingSource,
+    /usesTargetColumn \? params\.then_target_column : ""/,
+  );
+  assert.match(
+    renderingSource,
+    /\[\s*"display_text",\s*"do_not_display",\s*\]\.includes\(params\.then_action_type\)/,
+  );
+});

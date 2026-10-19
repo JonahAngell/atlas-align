@@ -507,21 +507,24 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
     )}</label><label class="full">Action Notes<textarea data-param="then_action" placeholder="Optional notes for this action">${esc(p.then_action || "")}</textarea></label></div>`;
   }
   if (actionType === "display_text") {
-    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Display Text<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="Text to display for matching records"></label><label>Output Column${fieldInputFromOptions(
+    const outputColumn =
+      p.then_output_column ||
+      phrasePlaceholder("error_message_column", "Error Message");
+    const previewText = `${prefix} ${renderCatalogPhrase(
+      "analyst_logic.if_then.then_display_text",
+      {
+        message: p.then_text ? quotePhraseValue(p.then_text) : "[message]",
+        output_column: quotePhraseValue(outputColumn),
+      },
+    )}.`;
+    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Message<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="e.g., Hourly Rate Mismatch"><span class="hint">Shown for each record that matches the conditions.</span></label><label class="full">Write to Column${fieldInputFromOptions(
       {
         name: "then_output_column",
-        value:
-          p.then_output_column ||
-          phrasePlaceholder("error_message_column", "Error Message"),
-        placeholder: "Select field",
+        value: outputColumn,
+        placeholder: "Select or create column",
         sourceFile: "",
       },
-    )}</label><label>Reference Field${fieldInputFromOptions({
-      name: "then_target_column",
-      value: p.then_target_column,
-      placeholder: "Optional reference field",
-      sourceFile: "",
-    })}</label><label class="full">Action Notes<textarea data-param="then_action" placeholder="Optional notes for this action">${esc(p.then_action || "")}</textarea></label></div>`;
+    )}<span class="hint">The column where the message appears. Defaults to Error Message.</span></label><div class="logic-editor-callout full display-text-preview" aria-live="polite"><strong>Preview:</strong> ${esc(previewText)}</div><label class="full">Notes (optional)<textarea data-param="then_action" placeholder="Internal notes about this action">${esc(p.then_action || "")}</textarea></label></div>`;
   }
   if (actionType === "do_not_display") {
     return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<div class="logic-editor-callout full">Matching records will not be displayed in the audit output for this branch.</div><input type="hidden" data-param="then_action" value="${esc(p.then_action || "Do not display matching records")}"></div>`;
