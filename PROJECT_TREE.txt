@@ -1,20 +1,21 @@
 .
 ├── .claude
-│   └── rules
-│       ├── core
-│       │   ├── contributing.md
-│       │   ├── design-foundations.md
-│       │   └── security.md
-│       ├── patterns
-│       │   ├── postgres.md
-│       │   ├── react-composition.md
-│       │   └── zod-validation.md
-│       ├── products
-│       │   └── studioshare-launch.md
-│       └── stacks
-│           ├── nextjs.md
-│           ├── react.md
-│           └── typescript.md
+│   ├── rules
+│   │   ├── core
+│   │   │   ├── contributing.md
+│   │   │   ├── design-foundations.md
+│   │   │   └── security.md
+│   │   ├── patterns
+│   │   │   ├── postgres.md
+│   │   │   ├── react-composition.md
+│   │   │   └── zod-validation.md
+│   │   ├── products
+│   │   │   └── studioshare-launch.md
+│   │   └── stacks
+│   │       ├── nextjs.md
+│   │       ├── react.md
+│   │       └── typescript.md
+│   └── launch.json
 ├── .cursor
 │   ├── rules
 │   │   ├── core
