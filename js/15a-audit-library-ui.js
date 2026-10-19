@@ -9,7 +9,6 @@ const collapsedStepIds = new Set();
 let draggedLogicStepId = "";
 let dropTargetLogicStepId = "";
 
-
 function pickerFieldOptions(sourceFile = "") {
   const sources = sourceFile
     ? sourceCatalogEntries().filter(
@@ -163,7 +162,6 @@ function moveManualStep(draggedId, targetId) {
   scheduleAutosave();
 }
 
-
 document.addEventListener("click", (event) => {
   const tab = event.target.closest("[data-source-tab]");
   if (tab) {
@@ -199,6 +197,12 @@ document.addEventListener("click", (event) => {
       step.step_type = stepType.dataset.setStepType;
       step.type = legacyTypeFromStepType?.(step.step_type) || step.type;
       step.params = {};
+      if (
+        !["if_then", "else", "filter_rows", "flag_records"].includes(
+          step.step_type,
+        )
+      )
+        step.conditions = [];
       normalizeCatalogStep?.(step);
       renderAll();
       scheduleAutosave();

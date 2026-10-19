@@ -40,7 +40,24 @@
     return `${string(item.sourceKey || item.sourceFile || item.source).trim()}::${string(item.rawFieldName || item.fieldName || item.name).trim()}`;
   }
 
+  // Only these step types carry condition rows. Other types can still hold a
+  // stale `conditions` array left over from a step type change.
+  const CONDITION_STEP_TYPES = new Set([
+    "if_then",
+    "else",
+    "filter_rows",
+    "flag_records",
+  ]);
+  const VALUELESS_OPERATORS = new Set([
+    "is blank/null",
+    "is not blank/null",
+    "is blank",
+    "is not blank",
+  ]);
+
   function conditionRows(step) {
+    const type = string(object(step).step_type || object(step).type).trim();
+    if (type && !CONDITION_STEP_TYPES.has(type)) return [];
     if (typeof global.parseStepConditions === "function") {
       try {
         return array(global.parseStepConditions(step));
@@ -396,10 +413,7 @@
         return unmatchedFields.some((gap) => {
           const gapField = string(gap.originalField).trim();
           if (!gapField || gapField !== refField) return false;
-          const tokens = [
-            gap.originalSourceKey,
-            gap.originalSourceFile,
-          ]
+          const tokens = [gap.originalSourceKey, gap.originalSourceFile]
             .map((value) => string(value).trim())
             .filter(Boolean);
           return tokens.some(
@@ -414,42 +428,36 @@
       const sourceTarget = (source, index) => ({
         page: "fields",
         sourceId: string(source.id).trim(),
-        sourceName: string(source.name || source.sourceFile || source.identity).trim(),
+        sourceName: string(
+          source.name || source.sourceFile || source.identity,
+        ).trim(),
         sourceIndex: index,
       });
       const issues = [];
       context.audit.sources.forEach((source, index) => {
         if (!source.identity)
           issues.push(
-            issue(
-              `source-${index}-identity`,
-              sourceTarget(source, index),
-              {
-                severity: "critical",
-                summary: "A selected source has no usable identity.",
-                control: "source-card",
-                fixKind: "confirm",
-                actionData: { repair: "remove-source", sourceIndex: index },
-              },
-            ),
+            issue(`source-${index}-identity`, sourceTarget(source, index), {
+              severity: "critical",
+              summary: "A selected source has no usable identity.",
+              control: "source-card",
+              fixKind: "confirm",
+              actionData: { repair: "remove-source", sourceIndex: index },
+            }),
           );
         else if (
           knownSources.size &&
           !knownSources.has(source.canonicalIdentity || source.identity)
         )
           issues.push(
-            issue(
-              `source-${index}-missing`,
-              sourceTarget(source, index),
-              {
-                severity: "critical",
-                summary:
-                  "A selected source is no longer available in the source catalog.",
-                control: "source-card",
-                fixKind: "confirm",
-                actionData: { repair: "remove-source", sourceIndex: index },
-              },
-            ),
+            issue(`source-${index}-missing`, sourceTarget(source, index), {
+              severity: "critical",
+              summary:
+                "A selected source is no longer available in the source catalog.",
+              control: "source-card",
+              fixKind: "confirm",
+              actionData: { repair: "remove-source", sourceIndex: index },
+            }),
           );
       });
       context.audit.steps.forEach((step) => {
@@ -546,7 +554,9 @@
               return kind === "field"
                 ? "condition-compareFieldName"
                 : "condition-compareSourceFile";
-            return kind === "field" ? "condition-fieldName" : "condition-sourceFile";
+            return kind === "field"
+              ? "condition-fieldName"
+              : "condition-sourceFile";
           };
           const referenceTarget = (kind) => ({
             page: "steps",
@@ -620,10 +630,10 @@
                   .filter(Boolean)
                   .forEach((value) => {
                     tokens.add(value.toLocaleLowerCase());
-                    const mapped = context.sourceIdentityMap?.[
-                      value.toLocaleLowerCase()
-                    ];
-                    if (mapped) tokens.add(string(mapped).trim().toLocaleLowerCase());
+                    const mapped =
+                      context.sourceIdentityMap?.[value.toLocaleLowerCase()];
+                    if (mapped)
+                      tokens.add(string(mapped).trim().toLocaleLowerCase());
                   });
                 break;
               }
@@ -631,18 +641,21 @@
             }
             return tokens;
           };
-          const createdReferenceReason = createdFieldRef?.kind === "created"
-            ? "created-ref"
-            : createdSourceTokens.has(sourceKey) && matchingCreatedColumns.length
-              ? "created-source"
-              : matchingCreatedColumns.some((column) =>
-                    attachedSourceTokens(column).has(sourceKey) ||
-                    attachedSourceTokens(column).has(
-                      string(canonicalSource).trim().toLocaleLowerCase(),
-                    ),
-                  )
-                ? "attached-source"
-                : "";
+          const createdReferenceReason =
+            createdFieldRef?.kind === "created"
+              ? "created-ref"
+              : createdSourceTokens.has(sourceKey) &&
+                  matchingCreatedColumns.length
+                ? "created-source"
+                : matchingCreatedColumns.some(
+                      (column) =>
+                        attachedSourceTokens(column).has(sourceKey) ||
+                        attachedSourceTokens(column).has(
+                          string(canonicalSource).trim().toLocaleLowerCase(),
+                        ),
+                    )
+                  ? "attached-source"
+                  : "";
           if (createdReferenceReason) return;
           if (
             selectedSources.size &&
@@ -650,29 +663,21 @@
             !coveredByUnmatchedReplacement(reference, canonicalSource)
           )
             issues.push(
-              issue(
-                `${step.id}-${reference.location}-source`,
-                target,
-                {
-                  severity: "critical",
-                  summary:
-                    "Logic references a source that is not selected for this audit.",
-                  ...referenceData("source"),
-                },
-              ),
+              issue(`${step.id}-${reference.location}-source`, target, {
+                severity: "critical",
+                summary:
+                  "Logic references a source that is not selected for this audit.",
+                ...referenceData("source"),
+              }),
             );
           if (knownSources.size && !knownSources.has(canonicalSource))
             issues.push(
-              issue(
-                `${step.id}-${reference.location}-source-catalog`,
-                target,
-                {
-                  severity: "critical",
-                  summary:
-                    "Logic references a source that is no longer available.",
-                  ...referenceData("source"),
-                },
-              ),
+              issue(`${step.id}-${reference.location}-source-catalog`, target, {
+                severity: "critical",
+                summary:
+                  "Logic references a source that is no longer available.",
+                ...referenceData("source"),
+              }),
             );
           if (
             knownFields.size &&
@@ -724,7 +729,8 @@
         );
       });
       const sourceIssues = array(gaps.sources).map((gap) => {
-        const source = string(gap.sourceFile || gap.sourceKey).trim() || "A source";
+        const source =
+          string(gap.sourceFile || gap.sourceKey).trim() || "A source";
         const replaced =
           string(gap.replacedSourceFile || gap.replacedSourceKey).trim() ||
           "the original source";
@@ -880,7 +886,10 @@
             issues.push(
               conditionIssue("field", "condition-fieldName", "picker", {
                 severity: "critical",
-                actionData: { repair: "condition-field", referenceKind: "field" },
+                actionData: {
+                  repair: "condition-field",
+                  referenceKind: "field",
+                },
               }),
             );
           if (blank(condition.operator))
@@ -935,6 +944,7 @@
             );
           } else if (
             mode === "values" &&
+            !VALUELESS_OPERATORS.has(string(condition.operator).trim()) &&
             blank(condition.compareValue || condition.value)
           ) {
             issues.push(
@@ -1010,7 +1020,9 @@
           );
         const issues = [];
         if (blank(p.join_type))
-          issues.push(joinIssue("type", "join_type", "choice", { severity: "warning" }));
+          issues.push(
+            joinIssue("type", "join_type", "choice", { severity: "warning" }),
+          );
         else if (
           ![
             "INNER JOIN",
@@ -1129,7 +1141,10 @@
                 fixKind: "choice",
                 summary:
                   "A created field is referenced before its Create Column step.",
-                actionData: { ...base.actionData, repair: "move-after-creator" },
+                actionData: {
+                  ...base.actionData,
+                  repair: "move-after-creator",
+                },
               }),
             );
         });
@@ -1154,7 +1169,11 @@
               issue(`${step.id}-blank`, target, {
                 control: "param:column_name",
                 fixKind: "text",
-                actionData: { repair: "column-name", param: "column_name", stepId: step.id },
+                actionData: {
+                  repair: "column-name",
+                  param: "column_name",
+                  stepId: step.id,
+                },
               }),
             );
           else {
@@ -1191,33 +1210,35 @@
                 step.params.concat_source_2,
               ],
             ];
-            pairs.forEach(([position, fieldParam, sourceParam, field, source]) => {
-              if (blank(field) || blank(source))
-                issues.push(
-                  issue(
-                    `${step.id}-concatenate-${position}`,
-                    {
-                      page: "steps",
-                      stepId: step.id,
-                      field: "column_name",
-                      control: `param:${blank(field) ? fieldParam : sourceParam}`,
-                    },
-                    {
-                      severity: "critical",
-                      summary: `A Concatenate Fields rule is missing its ${position} field or source.`,
-                      control: `param:${blank(field) ? fieldParam : sourceParam}`,
-                      fixKind: "composite",
-                      actionData: {
-                        repair: "concatenate",
+            pairs.forEach(
+              ([position, fieldParam, sourceParam, field, source]) => {
+                if (blank(field) || blank(source))
+                  issues.push(
+                    issue(
+                      `${step.id}-concatenate-${position}`,
+                      {
+                        page: "steps",
                         stepId: step.id,
-                        fieldParam,
-                        sourceParam,
-                        position,
+                        field: "column_name",
+                        control: `param:${blank(field) ? fieldParam : sourceParam}`,
                       },
-                    },
-                  ),
-                );
-            });
+                      {
+                        severity: "critical",
+                        summary: `A Concatenate Fields rule is missing its ${position} field or source.`,
+                        control: `param:${blank(field) ? fieldParam : sourceParam}`,
+                        fixKind: "composite",
+                        actionData: {
+                          repair: "concatenate",
+                          stepId: step.id,
+                          fieldParam,
+                          sourceParam,
+                          position,
+                        },
+                      },
+                    ),
+                  );
+              },
+            );
           }
         });
       return issues;
@@ -1232,12 +1253,18 @@
           step.type === "create_column" &&
           p.value_mode === "Source field value"
         )
-          groups.push({ value: p.source_math_json || [], param: "source_math_json" });
+          groups.push({
+            value: p.source_math_json || [],
+            param: "source_math_json",
+          });
         if (
           step.type === "if_then" &&
           p.then_action_type === "set_column_calculation"
         )
-          groups.push({ value: p.then_math_json || [], param: "then_math_json" });
+          groups.push({
+            value: p.then_math_json || [],
+            param: "then_math_json",
+          });
         step.conditions
           .filter((condition) => condition.valueMode === "field")
           .forEach((condition) =>
@@ -1255,7 +1282,9 @@
               );
               const code = string(problem.code || "math");
               const control =
-                code === "source" || code === "field" || code === "unresolved_field"
+                code === "source" ||
+                code === "field" ||
+                code === "unresolved_field"
                   ? "param:then_value_field"
                   : group.conditionId
                     ? "condition-compareFieldName"
@@ -1383,7 +1412,11 @@
                 summary: "A Display Field is selected more than once.",
                 control: "display-row",
                 fixKind: "confirm",
-                actionData: { repair: "remove-display", displayIndex: index, key: rowKey },
+                actionData: {
+                  repair: "remove-display",
+                  displayIndex: index,
+                  key: rowKey,
+                },
               },
             ),
           ];
@@ -1734,9 +1767,12 @@
       const field = control.slice("condition-".length);
       const row = `${stepRoot} [data-condition-id="${cssEscape(conditionId)}"]`;
       if (
-        ["sourceFile", "fieldName", "compareSourceFile", "compareFieldName"].includes(
-          field,
-        )
+        [
+          "sourceFile",
+          "fieldName",
+          "compareSourceFile",
+          "compareFieldName",
+        ].includes(field)
       )
         return `${row} [data-condition-name="${field}"], ${row} [data-condition-field="${field}"]`;
       if (field === "compareValue")
@@ -1926,7 +1962,10 @@
 
   function sourceChoices() {
     const seen = new Set();
-    return [...array(global.repoLibraryState?.sourceFiles), ...array(state?.audit?.sources)]
+    return [
+      ...array(global.repoLibraryState?.sourceFiles),
+      ...array(state?.audit?.sources),
+    ]
       .map((source) => ({
         value: string(
           source.sourceKey || source.sourceFile || source.name || source.alias,
@@ -2018,71 +2057,76 @@
   }
 
   if (typeof document !== "undefined") {
-  document.addEventListener(
-    "click",
-    (event) => {
-      const button = event.target.closest?.("[data-fix-open-picker]");
-      if (!button || typeof global.ATLASVisualPicker?.open !== "function") return;
-      event.preventDefault();
-      event.stopPropagation();
-      const dialog = button.closest(".atlas-issue-fix-dialog");
-      const kind = button.dataset.fixOpenPicker === "field" ? "field" : "source";
-      const name = button.dataset.fixPickerFor || kind;
-      const input = button.parentElement?.querySelector(
-        `[data-fix-field="${CSS.escape(name)}"]`,
-      );
-      const sourceValue =
-        dialog?.querySelector('[data-fix-field="source"]')?.value || "";
-      const entries =
-        kind === "source"
-          ? sourceChoices().map((item) => ({
-              key: item.value,
-              label: item.label,
-              rawName: item.value,
-              sourceKey: item.value,
-              sourceLabel: item.label,
-            }))
-          : fieldChoices(sourceValue).map((fieldName) => ({
-              key: fieldName,
-              label: fieldName,
-              rawName: fieldName,
-              sourceKey: sourceValue || "field",
-              sourceLabel: sourceValue || "Fields",
-            }));
-      global.ATLASVisualPicker.open({
-        mode: kind,
-        title: kind === "source" ? "Choose Source" : "Choose Field",
-        guidance:
-          kind === "field" && !sourceValue
-            ? "Choose a source before choosing a field."
-            : "Choose a replacement. Search if the list is long.",
-        entries,
-        selectedKey: input?.value || null,
-        onSelect(entry) {
-          if (!input || !entry) return;
-          const value = String(entry.rawName || entry.key || "");
-          input.value = value;
-          const strong = button.querySelector("strong");
-          if (strong) strong.textContent = entry.label || value || "Choose...";
-          button.classList.toggle("empty", !value);
-          input.dispatchEvent(new Event("change", { bubbles: true }));
-          if (kind !== "source") return;
-          const fieldInput = dialog?.querySelector('[data-fix-field="field"]');
-          const fieldButton = dialog?.querySelector(
-            '[data-fix-open-picker="field"]',
-          );
-          if (fieldInput) {
-            fieldInput.value = "";
-            fieldInput.dispatchEvent(new Event("change", { bubbles: true }));
-          }
-          const fieldStrong = fieldButton?.querySelector("strong");
-          if (fieldStrong) fieldStrong.textContent = "Choose...";
-          fieldButton?.classList.add("empty");
-        },
-      });
-    },
-    true,
-  );
+    document.addEventListener(
+      "click",
+      (event) => {
+        const button = event.target.closest?.("[data-fix-open-picker]");
+        if (!button || typeof global.ATLASVisualPicker?.open !== "function")
+          return;
+        event.preventDefault();
+        event.stopPropagation();
+        const dialog = button.closest(".atlas-issue-fix-dialog");
+        const kind =
+          button.dataset.fixOpenPicker === "field" ? "field" : "source";
+        const name = button.dataset.fixPickerFor || kind;
+        const input = button.parentElement?.querySelector(
+          `[data-fix-field="${CSS.escape(name)}"]`,
+        );
+        const sourceValue =
+          dialog?.querySelector('[data-fix-field="source"]')?.value || "";
+        const entries =
+          kind === "source"
+            ? sourceChoices().map((item) => ({
+                key: item.value,
+                label: item.label,
+                rawName: item.value,
+                sourceKey: item.value,
+                sourceLabel: item.label,
+              }))
+            : fieldChoices(sourceValue).map((fieldName) => ({
+                key: fieldName,
+                label: fieldName,
+                rawName: fieldName,
+                sourceKey: sourceValue || "field",
+                sourceLabel: sourceValue || "Fields",
+              }));
+        global.ATLASVisualPicker.open({
+          mode: kind,
+          title: kind === "source" ? "Choose Source" : "Choose Field",
+          guidance:
+            kind === "field" && !sourceValue
+              ? "Choose a source before choosing a field."
+              : "Choose a replacement. Search if the list is long.",
+          entries,
+          selectedKey: input?.value || null,
+          onSelect(entry) {
+            if (!input || !entry) return;
+            const value = String(entry.rawName || entry.key || "");
+            input.value = value;
+            const strong = button.querySelector("strong");
+            if (strong)
+              strong.textContent = entry.label || value || "Choose...";
+            button.classList.toggle("empty", !value);
+            input.dispatchEvent(new Event("change", { bubbles: true }));
+            if (kind !== "source") return;
+            const fieldInput = dialog?.querySelector(
+              '[data-fix-field="field"]',
+            );
+            const fieldButton = dialog?.querySelector(
+              '[data-fix-open-picker="field"]',
+            );
+            if (fieldInput) {
+              fieldInput.value = "";
+              fieldInput.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+            const fieldStrong = fieldButton?.querySelector("strong");
+            if (fieldStrong) fieldStrong.textContent = "Choose...";
+            fieldButton?.classList.add("empty");
+          },
+        });
+      },
+      true,
+    );
   }
 
   function actionRow(saveLabel) {
@@ -2143,7 +2187,10 @@
       if (result === false) return;
       if (result && typeof result.then === "function") {
         result.catch((error) =>
-          showFixError(fix, string(error?.message) || "The fix could not be saved."),
+          showFixError(
+            fix,
+            string(error?.message) || "The fix could not be saved.",
+          ),
         );
       }
     };
@@ -2304,7 +2351,9 @@
           fix.root.querySelector('[data-fix-field="stepType"]').value ||
           "if_then";
         const id =
-          typeof global.uid === "function" ? global.uid("step") : `step_${Date.now()}`;
+          typeof global.uid === "function"
+            ? global.uid("step")
+            : `step_${Date.now()}`;
         const step = {
           id,
           enabled: true,
@@ -2424,7 +2473,8 @@
     if (repair === "remove-source") {
       const sources = array(state.audit?.sources);
       const index = Number(data.sourceIndex);
-      if (!Number.isInteger(index) || !sources[index]) return "That source is no longer on the audit.";
+      if (!Number.isInteger(index) || !sources[index])
+        return "That source is no longer on the audit.";
       sources.splice(index, 1);
       return "";
     }
@@ -2434,12 +2484,42 @@
       if (!target) return "That logic step is no longer on the audit.";
       if (!string(target.id).trim())
         target.id =
-          typeof global.uid === "function" ? global.uid("step") : `step_${Date.now()}`;
+          typeof global.uid === "function"
+            ? global.uid("step")
+            : `step_${Date.now()}`;
       return "";
     }
-    if (!step && ["detach-step", "mark-child", "mark-root", "break-cycle", "reset-condition", "column-name", "concatenate", "missing-action", "join-param", "math", "string-transform", "field-relationship", "condition-field", "condition-operator", "condition-expression", "condition-values", "dedupe-values", "clear-created-ref", "move-after-creator", "logic-reference"].includes(repair))
+    if (
+      !step &&
+      [
+        "detach-step",
+        "mark-child",
+        "mark-root",
+        "break-cycle",
+        "reset-condition",
+        "column-name",
+        "concatenate",
+        "missing-action",
+        "join-param",
+        "math",
+        "string-transform",
+        "field-relationship",
+        "condition-field",
+        "condition-operator",
+        "condition-expression",
+        "condition-values",
+        "dedupe-values",
+        "clear-created-ref",
+        "move-after-creator",
+        "logic-reference",
+      ].includes(repair)
+    )
       return "That logic step is no longer on the audit.";
-    if (repair === "detach-step" || repair === "break-cycle" || repair === "mark-root") {
+    if (
+      repair === "detach-step" ||
+      repair === "break-cycle" ||
+      repair === "mark-root"
+    ) {
       step.parentId = null;
       step.branchType = "root";
       return "";
@@ -2451,7 +2531,10 @@
     if (repair === "reset-condition") {
       ensureParams(step).conditions_json = JSON.stringify([
         {
-          id: typeof global.uid === "function" ? global.uid("cond") : `cond_${Date.now()}`,
+          id:
+            typeof global.uid === "function"
+              ? global.uid("cond")
+              : `cond_${Date.now()}`,
           fieldName: "",
           operator: "is equal to",
           valueMode: "values",
@@ -2494,8 +2577,11 @@
       );
       bindFixSave(fix, () => {
         if (global.workbookState)
-          global.workbookState.warnings = array(global.workbookState.warnings).filter(
-            (warning) => string(warning) !== string(data.message || entry.summary),
+          global.workbookState.warnings = array(
+            global.workbookState.warnings,
+          ).filter(
+            (warning) =>
+              string(warning) !== string(data.message || entry.summary),
           );
         commitAudit("Workbook warning dismissed.");
       });
@@ -2514,14 +2600,35 @@
       ].includes(repair)
     ) {
       const labels = {
-        "remove-source": ["Remove source", "Remove this source from the audit."],
-        "assign-step-id": ["Assign step ID", "Give this logic step a stable ID."],
-        "detach-step": ["Detach step", "Make this step top-level so it no longer points at a missing parent."],
-        "mark-child": ["Mark as child", "Mark this nested step as a child branch."],
+        "remove-source": [
+          "Remove source",
+          "Remove this source from the audit.",
+        ],
+        "assign-step-id": [
+          "Assign step ID",
+          "Give this logic step a stable ID.",
+        ],
+        "detach-step": [
+          "Detach step",
+          "Make this step top-level so it no longer points at a missing parent.",
+        ],
+        "mark-child": [
+          "Mark as child",
+          "Mark this nested step as a child branch.",
+        ],
         "mark-root": ["Mark as top-level", "Mark this step as top-level."],
-        "break-cycle": ["Break cycle", "Detach this step so the hierarchy is no longer circular."],
-        "reset-condition": ["Replace condition", "Replace the unreadable condition with a blank condition."],
-        "remove-display": ["Remove Display Field", "Remove this invalid or duplicate Display Field selection."],
+        "break-cycle": [
+          "Break cycle",
+          "Detach this step so the hierarchy is no longer circular.",
+        ],
+        "reset-condition": [
+          "Replace condition",
+          "Replace the unreadable condition with a blank condition.",
+        ],
+        "remove-display": [
+          "Remove Display Field",
+          "Remove this invalid or duplicate Display Field selection.",
+        ],
       };
       const [title, body] = labels[repair];
       const fix = openFixShell(
@@ -2540,7 +2647,11 @@
       });
       return true;
     }
-    if (repair === "column-name" || repair === "condition-expression" || data.fixKind === "text") {
+    if (
+      repair === "column-name" ||
+      repair === "condition-expression" ||
+      data.fixKind === "text"
+    ) {
       const multiline = repair === "condition-expression";
       const fix = openFixShell(
         entry,
@@ -2572,9 +2683,11 @@
           const duplicate = liveSteps().some(
             (candidate) =>
               candidate !== step &&
-              string(candidate.step_type || candidate.type) === "create_column" &&
-              string(candidate.params?.column_name || candidate.field).trim().toLocaleLowerCase() ===
-                value.toLocaleLowerCase(),
+              string(candidate.step_type || candidate.type) ===
+                "create_column" &&
+              string(candidate.params?.column_name || candidate.field)
+                .trim()
+                .toLocaleLowerCase() === value.toLocaleLowerCase(),
           );
           if (duplicate) {
             showFixError(fix, "Another created column already uses that name.");
@@ -2582,7 +2695,9 @@
           }
           ensureParams(step).column_name = value;
           step.field = value;
-        } else if (!patchCondition(step, data.conditionId, { expression: value })) {
+        } else if (
+          !patchCondition(step, data.conditionId, { expression: value })
+        ) {
           showFixError(fix, "That condition is no longer on the step.");
           return false;
         }
@@ -2590,17 +2705,27 @@
       });
       return true;
     }
-    if (repair === "condition-operator" || (repair === "join-param" && data.param === "join_type")) {
+    if (
+      repair === "condition-operator" ||
+      (repair === "join-param" && data.param === "join_type")
+    ) {
       const options =
         data.param === "join_type"
-          ? ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN", "UNION"]
+          ? [
+              "INNER JOIN",
+              "LEFT JOIN",
+              "RIGHT JOIN",
+              "FULL OUTER JOIN",
+              "UNION",
+            ]
           : operatorChoices();
       const current = step
         ? data.param === "join_type"
           ? string(step.params?.join_type)
           : string(
-              readConditions(step).find((item) => string(item.id) === string(data.conditionId))
-                ?.operator,
+              readConditions(step).find(
+                (item) => string(item.id) === string(data.conditionId),
+              )?.operator,
             )
         : "";
       const fix = openFixShell(
@@ -2621,7 +2746,9 @@
             return false;
           }
           ensureParams(step).join_type = value;
-        } else if (!patchCondition(step, data.conditionId, { operator: value })) {
+        } else if (
+          !patchCondition(step, data.conditionId, { operator: value })
+        ) {
           showFixError(fix, "That condition is no longer on the step.");
           return false;
         }
@@ -2631,13 +2758,17 @@
     }
     if (repair === "condition-values" || repair === "dedupe-values") {
       const condition = step
-        ? readConditions(step).find((item) => string(item.id) === string(data.conditionId))
+        ? readConditions(step).find(
+            (item) => string(item.id) === string(data.conditionId),
+          )
         : null;
       const current = string(condition?.compareValue || condition?.value);
       const fix = openFixShell(
         entry,
         trigger,
-        repair === "dedupe-values" ? "Remove duplicate values" : "Edit comparison values",
+        repair === "dedupe-values"
+          ? "Remove duplicate values"
+          : "Edit comparison values",
         `<label>Comparison values<textarea data-fix-text>${safeText(current)}</textarea></label>${actionRow(repair === "dedupe-values" ? "Remove duplicates" : "Save values")}`,
       );
       bindFixSave(fix, () => {
@@ -2646,13 +2777,17 @@
           .split(/\r?\n|,/)
           .map((item) => item.trim())
           .filter(Boolean);
-        const next =
-          repair === "dedupe-values" ? [...new Set(parts)] : parts;
+        const next = repair === "dedupe-values" ? [...new Set(parts)] : parts;
         if (!next.length) {
           showFixError(fix, "Enter at least one comparison value.");
           return false;
         }
-        if (!patchCondition(step, data.conditionId, { compareValue: next.join("\n"), valueMode: "values" })) {
+        if (
+          !patchCondition(step, data.conditionId, {
+            compareValue: next.join("\n"),
+            valueMode: "values",
+          })
+        ) {
           showFixError(fix, "That condition is no longer on the step.");
           return false;
         }
@@ -2669,7 +2804,9 @@
       );
       bindFixSave(fix, () => {
         const steps = liveSteps();
-        const from = steps.findIndex((item) => string(item.id) === string(data.stepId));
+        const from = steps.findIndex(
+          (item) => string(item.id) === string(data.stepId),
+        );
         if (from < 0) {
           showFixError(fix, "That logic step is no longer on the audit.");
           return false;
@@ -2680,7 +2817,10 @@
         );
         if (creator < 0) {
           steps.splice(from, 0, moved);
-          showFixError(fix, "The Create Column step is no longer on the audit.");
+          showFixError(
+            fix,
+            "The Create Column step is no longer on the audit.",
+          );
           return false;
         }
         steps.splice(creator + 1, 0, moved);
@@ -2706,7 +2846,9 @@
           showFixError(fix, "That logic step is no longer on the audit.");
           return false;
         }
-        const type = fix.root.querySelector('[data-fix-field="actionType"]').value;
+        const type = fix.root.querySelector(
+          '[data-fix-field="actionType"]',
+        ).value;
         const text = fix.root.querySelector("[data-fix-text]").value.trim();
         if (!type) {
           showFixError(fix, "Choose an action type.");
@@ -2718,7 +2860,9 @@
         }
         const params = ensureParams(step);
         params.then_action_type = type;
-        params.then_action = text || (type === "do_not_display" ? "Do not display matching records" : "");
+        params.then_action =
+          text ||
+          (type === "do_not_display" ? "Do not display matching records" : "");
         if (type === "display_text") params.then_text = text;
         step.action = params.then_action;
         commitAudit("Action updated.");
@@ -2737,10 +2881,17 @@
       const fillFields = () => {
         if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
         const selected = fieldSelect.value;
-        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
-          .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
+        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(
+          sourceSelect.value,
+        )
+          .map(
+            (name) =>
+              `<option value="${safeText(name)}">${safeText(name)}</option>`,
+          )
           .join("")}`;
-        if ([...fieldSelect.options].some((option) => option.value === selected))
+        if (
+          [...fieldSelect.options].some((option) => option.value === selected)
+        )
           fieldSelect.value = selected;
       };
       sourceSelect.addEventListener("change", fillFields);
@@ -2771,13 +2922,21 @@
       const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
       sourceSelect.addEventListener("change", () => {
         if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
-        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
-          .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
+        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(
+          sourceSelect.value,
+        )
+          .map(
+            (name) =>
+              `<option value="${safeText(name)}">${safeText(name)}</option>`,
+          )
           .join("")}`;
       });
       fix.root.querySelector("[data-fix-join]").onclick = () => {
         if (!requireFresh(fix)) return;
-        const id = typeof global.uid === "function" ? global.uid("step") : `step_${Date.now()}`;
+        const id =
+          typeof global.uid === "function"
+            ? global.uid("step")
+            : `step_${Date.now()}`;
         liveSteps().push({
           id,
           enabled: true,
@@ -2801,7 +2960,9 @@
           },
         });
         if (state) state.selectedStepId = id;
-        commitAudit("JOIN step added. Set its keys to finish the relationship.");
+        commitAudit(
+          "JOIN step added. Set its keys to finish the relationship.",
+        );
       };
       bindFixSave(fix, () => {
         if (!sourceSelect.value || !fieldSelect.value) {
@@ -2825,11 +2986,26 @@
     if (repair === "math" || repair === "string-transform") {
       const label =
         repair === "math" ? "Edit calculation" : "Edit string transformation";
-      const numeric = ["operand", "number", "divide_zero", "string_count"].includes(
+      const numeric = [
+        "operand",
+        "number",
+        "divide_zero",
+        "string_count",
+      ].includes(string(data.code));
+      const textual = ["string_destination", "malformed_json"].includes(
         string(data.code),
       );
-      const textual = ["string_destination", "malformed_json"].includes(string(data.code));
-      const sourceLike = ["source", "string_source", "field", "string_field", "unresolved_field", "math_operand_identifier", "math_operand_non_numeric_metadata", "math_operand_numeric_metadata_missing", "field_divisor"].includes(string(data.code));
+      const sourceLike = [
+        "source",
+        "string_source",
+        "field",
+        "string_field",
+        "unresolved_field",
+        "math_operand_identifier",
+        "math_operand_non_numeric_metadata",
+        "math_operand_numeric_metadata_missing",
+        "field_divisor",
+      ].includes(string(data.code));
       let body = `<label>${safeText(entry.summary || label)}${textual && data.code === "malformed_json" ? "<textarea data-fix-text></textarea>" : numeric ? '<input data-fix-text inputmode="decimal">' : "<input data-fix-text>"}</label>`;
       if (sourceLike)
         body = `${selectMarkup("source", "Source", sourceChoices())}${selectMarkup("field", "Field", [])}`;
@@ -2837,14 +3013,24 @@
         body = selectMarkup("choice", "Operator", ["+", "-", "*", "/"]);
       if (data.code === "string_source")
         body = selectMarkup("source", "Source", sourceChoices());
-      const fix = openFixShell(entry, trigger, label, `${body}${actionRow("Save")}`);
+      const fix = openFixShell(
+        entry,
+        trigger,
+        label,
+        `${body}${actionRow("Save")}`,
+      );
       const sourceSelect = fix.root.querySelector('[data-fix-field="source"]');
       const fieldSelect = fix.root.querySelector('[data-fix-field="field"]');
       if (sourceSelect && fieldSelect)
         sourceSelect.addEventListener("change", () => {
           if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
-          fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
-            .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
+          fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(
+            sourceSelect.value,
+          )
+            .map(
+              (name) =>
+                `<option value="${safeText(name)}">${safeText(name)}</option>`,
+            )
             .join("")}`;
         });
       bindFixSave(fix, () => {
@@ -2855,14 +3041,18 @@
         const params = ensureParams(step);
         if (repair === "string-transform") {
           if (data.code === "string_count") {
-            const value = fix.root.querySelector("[data-fix-text]").value.trim();
+            const value = fix.root
+              .querySelector("[data-fix-text]")
+              .value.trim();
             if (!/^[1-9]\d*$/.test(value)) {
               showFixError(fix, "Enter a positive whole number.");
               return false;
             }
             params[data.param] = value;
           } else if (data.code === "string_destination") {
-            const value = fix.root.querySelector("[data-fix-text]").value.trim();
+            const value = fix.root
+              .querySelector("[data-fix-text]")
+              .value.trim();
             if (!value) {
               showFixError(fix, "Enter a destination column.");
               return false;
@@ -2870,13 +3060,20 @@
             params[data.param] = value;
             if (data.param === "column_name") step.field = value;
           } else if (sourceSelect) {
-            if (!sourceSelect.value || (fieldSelect && !fieldSelect.value && data.code !== "string_source")) {
+            if (
+              !sourceSelect.value ||
+              (fieldSelect &&
+                !fieldSelect.value &&
+                data.code !== "string_source")
+            ) {
               showFixError(fix, "Choose a source and field.");
               return false;
             }
-            params[`${data.prefix || ""}string_source_file`] = sourceSelect.value;
+            params[`${data.prefix || ""}string_source_file`] =
+              sourceSelect.value;
             if (fieldSelect && data.code !== "string_source")
-              params[`${data.prefix || ""}string_source_field`] = fieldSelect.value;
+              params[`${data.prefix || ""}string_source_field`] =
+                fieldSelect.value;
           }
           commitAudit("String transformation updated.");
           return;
@@ -2895,21 +3092,36 @@
         ).map((item) => ({ ...object(item) }));
         if (data.code === "malformed_json") {
           try {
-            const parsed = JSON.parse(fix.root.querySelector("[data-fix-text]").value);
-            if (!Array.isArray(parsed)) throw new Error("Math operations must be a JSON array.");
+            const parsed = JSON.parse(
+              fix.root.querySelector("[data-fix-text]").value,
+            );
+            if (!Array.isArray(parsed))
+              throw new Error("Math operations must be a JSON array.");
             params[data.param] = parsed;
           } catch (error) {
-            showFixError(fix, string(error.message) || "Enter a JSON array of operations.");
+            showFixError(
+              fix,
+              string(error.message) || "Enter a JSON array of operations.",
+            );
             return false;
           }
           commitAudit("Calculation updated.");
           return;
         }
-        const index = Number.isInteger(data.operationIndex) ? data.operationIndex : 0;
-        while (operations.length <= index) operations.push({ operator: "*", operandType: "number", operand: "" });
+        const index = Number.isInteger(data.operationIndex)
+          ? data.operationIndex
+          : 0;
+        while (operations.length <= index)
+          operations.push({
+            operator: "*",
+            operandType: "number",
+            operand: "",
+          });
         const operation = operations[index];
         if (data.code === "operator") {
-          operation.operator = fix.root.querySelector('[data-fix-field="choice"]').value;
+          operation.operator = fix.root.querySelector(
+            '[data-fix-field="choice"]',
+          ).value;
           if (!operation.operator) {
             showFixError(fix, "Choose an operator.");
             return false;
@@ -2924,7 +3136,10 @@
           operation.operandFieldName = fieldSelect.value;
         } else {
           const value = fix.root.querySelector("[data-fix-text]").value.trim();
-          if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value) || (data.code === "divide_zero" && Number(value) === 0)) {
+          if (
+            !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value) ||
+            (data.code === "divide_zero" && Number(value) === 0)
+          ) {
             showFixError(fix, "Enter a non-zero numeric operand.");
             return false;
           }
@@ -2946,7 +3161,12 @@
             : repair === "clear-created-ref" && !data.referenceKind
               ? false
               : data.fixKind === "picker";
-    const fieldMode = !sourceMode || repair === "clear-created-ref" || data.referenceKind === "field" || data.referenceKind === "compare-field" || string(data.param).endsWith("_field");
+    const fieldMode =
+      !sourceMode ||
+      repair === "clear-created-ref" ||
+      data.referenceKind === "field" ||
+      data.referenceKind === "compare-field" ||
+      string(data.param).endsWith("_field");
     const fix = openFixShell(
       entry,
       trigger,
@@ -2958,8 +3178,13 @@
     if (sourceSelect && fieldSelect)
       sourceSelect.addEventListener("change", () => {
         if (!fieldSelect || fieldSelect.tagName !== "SELECT") return;
-        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(sourceSelect.value)
-          .map((name) => `<option value="${safeText(name)}">${safeText(name)}</option>`)
+        fieldSelect.innerHTML = `<option value="">Choose...</option>${fieldChoices(
+          sourceSelect.value,
+        )
+          .map(
+            (name) =>
+              `<option value="${safeText(name)}">${safeText(name)}</option>`,
+          )
           .join("")}`;
       });
     bindFixSave(fix, () => {
@@ -2974,7 +3199,9 @@
         return false;
       }
       if (repair === "join-param" && data.param) {
-        ensureParams(step)[data.param] = string(data.param).endsWith("_field") ? fieldValue : sourceValue;
+        ensureParams(step)[data.param] = string(data.param).endsWith("_field")
+          ? fieldValue
+          : sourceValue;
       } else if (repair === "clear-created-ref") {
         if (data.param) {
           const params = ensureParams(step);
@@ -2998,7 +3225,10 @@
           data.referenceKind === "compare-source"
             ? { compareSourceFile: sourceValue }
             : data.referenceKind === "compare-field"
-              ? { compareFieldName: fieldValue, compareSourceFile: sourceValue || undefined }
+              ? {
+                  compareFieldName: fieldValue,
+                  compareSourceFile: sourceValue || undefined,
+                }
               : { fieldName: fieldValue, sourceFile: sourceValue || undefined };
         if (!patchCondition(step, data.conditionId, patch)) {
           showFixError(fix, "That condition is no longer on the step.");
@@ -3064,7 +3294,10 @@
       const sourceKey = string(
         entry.target?.originalSourceKey || entry.target?.sourceKey,
       );
-      if (typeof global.atlasOpenSourceReplacement === "function" && sourceKey) {
+      if (
+        typeof global.atlasOpenSourceReplacement === "function" &&
+        sourceKey
+      ) {
         global.atlasOpenSourceReplacement({
           sourceKey,
           focusField: string(entry.target?.originalField),
@@ -3219,9 +3452,13 @@
       catalogReady: Boolean(catalog),
       audit: renderDocument,
       sources: array(global.repoLibraryState?.sourceFiles).map((source) => [
-        string(source.sourceKey || source.sourceFile || source.alias || source.name),
+        string(
+          source.sourceKey || source.sourceFile || source.alias || source.name,
+        ),
         array(source.fields).map((field) =>
-          string(field.rawFieldName || field.fieldName || field.name || field.label),
+          string(
+            field.rawFieldName || field.fieldName || field.name || field.label,
+          ),
         ),
       ]),
     });
@@ -3460,7 +3697,9 @@
       "display-fields": "Display fields",
       system: "System",
     };
-    return labels[category] || category.charAt(0).toUpperCase() + category.slice(1);
+    return (
+      labels[category] || category.charAt(0).toUpperCase() + category.slice(1)
+    );
   }
 
   function renderIssueCards(container, result, filterState, includeGroups) {
@@ -3752,8 +3991,7 @@
   }
 
   function paintIssueIndicator(host, tone) {
-    const label =
-      tone === "critical" ? "Open critical error" : "Open warning";
+    const label = tone === "critical" ? "Open critical error" : "Open warning";
     host.classList?.add("atlas-issue-indicator-host");
     let marker = directIndicator(host);
     if (!marker) {
@@ -3766,7 +4004,10 @@
       marker.append(icon);
       host.append(marker);
     }
-    if (marker.dataset.atlasIssueIndicator === tone && marker.getAttribute("aria-label") === label)
+    if (
+      marker.dataset.atlasIssueIndicator === tone &&
+      marker.getAttribute("aria-label") === label
+    )
       return;
     marker.dataset.atlasIssueIndicator = tone;
     marker.dataset.status = tone;
@@ -3776,12 +4017,14 @@
 
   function clearIssueIndicators() {
     if (typeof document === "undefined" || !document.querySelectorAll) return;
-    document.querySelectorAll("[data-atlas-issue-indicator]").forEach((node) => {
-      const host = node.parentElement;
-      node.remove?.();
-      if (host && !directIndicator(host))
-        host.classList?.remove("atlas-issue-indicator-host");
-    });
+    document
+      .querySelectorAll("[data-atlas-issue-indicator]")
+      .forEach((node) => {
+        const host = node.parentElement;
+        node.remove?.();
+        if (host && !directIndicator(host))
+          host.classList?.remove("atlas-issue-indicator-host");
+      });
   }
 
   function syncIssueIndicators() {
@@ -3806,14 +4049,16 @@
         });
       });
     });
-    document.querySelectorAll("[data-atlas-issue-indicator]").forEach((node) => {
-      const host = node.parentElement;
-      if (!host || !byHost.has(host)) {
-        node.remove?.();
-        if (host && !directIndicator(host))
-          host.classList?.remove("atlas-issue-indicator-host");
-      }
-    });
+    document
+      .querySelectorAll("[data-atlas-issue-indicator]")
+      .forEach((node) => {
+        const host = node.parentElement;
+        if (!host || !byHost.has(host)) {
+          node.remove?.();
+          if (host && !directIndicator(host))
+            host.classList?.remove("atlas-issue-indicator-host");
+        }
+      });
     byHost.forEach((issues, host) => {
       const tone = indicatorTone(issues);
       if (tone) paintIssueIndicator(host, tone);
