@@ -166,39 +166,6 @@ function parseSourceAliases(workbook) {
 }
 
 /**
- * Reads imported logic-step rows from the workbook.
- * @param {any} workbook - ExcelJS workbook object.
- */
-function parseLogicSteps(workbook) {
-  const worksheet = workbook.getWorksheet("_audit_logic_steps");
-  workbookState.logicSteps = worksheet
-    ? worksheetToObjects(worksheet)
-        .map((row) => ({
-          auditName: String(row.audit_name || row["audit_name"] || "").trim(),
-          stepId: String(row.step_id || row["step_id"] || uid("step")),
-          stepNumber: String(
-            row.step_number || row["step_number"] || "",
-          ).trim(),
-          stepType: String(
-            row.step_type || row["step_type"] || "if_then",
-          ).trim(),
-          sourceFile: String(
-            row.source_file || row["source_file"] || "",
-          ).trim(),
-          sourceAlias: String(
-            row.source_alias || row["source_alias"] || "",
-          ).trim(),
-          parentId: String(row.parent_id || row["parent_id"] || "").trim(),
-          analystLogic: String(
-            row.analyst_logic || row["analyst_logic"] || "",
-          ).trim(),
-          notes: String(row.notes || row["notes"] || "").trim(),
-        }))
-        .filter((row) => row.auditName || row.analystLogic)
-    : [];
-}
-
-/**
  * Converts an audit worksheet into field records.
  * @param {any} workbook - ExcelJS workbook object.
  * @param {any} auditName - Input used by auditSheetToFields.
@@ -303,44 +270,6 @@ function branchTypeFromAnalystLogic(text, parentId) {
 // -----------------------------------------------------------------------------
 // Imported logic conversion
 // -----------------------------------------------------------------------------
-/**
- * Converts imported logic rows into app step objects.
- * @param {any} auditName - Input used by logicRowsToSteps.
- */
-function logicRowsToSteps(auditName) {
-  const rows = workbookState.logicSteps.filter(
-    (row) => row.auditName === auditName,
-  );
-  if (!rows.length) return [];
-  const byNumber = new Map(rows.map((row) => [row.stepNumber, row]));
-  const idByNumber = new Map(
-    rows.map((row) => [row.stepNumber, row.stepId || uid("step")]),
-  );
-  return rows.map((row, index) => {
-    const parentNumber = numberToParentNumber(row.stepNumber);
-    const parentRow = byNumber.get(parentNumber);
-    const parentId =
-      row.parentId || (parentRow ? idByNumber.get(parentNumber) : null);
-    return {
-      id: idByNumber.get(row.stepNumber) || row.stepId || uid("step"),
-      enabled: true,
-      parentId: parentId || null,
-      branchType: branchTypeFromAnalystLogic(row.analystLogic, parentId),
-      sortOrder: index + 1,
-      title: row.analystLogic
-        ? row.analystLogic.slice(0, 70)
-        : `Imported Step ${index + 1}`,
-      type: parseStepType(row.stepType),
-      source: row.sourceFile || "",
-      field: "",
-      action: row.analystLogic || "",
-      notes:
-        row.notes ||
-        "Imported from workbook logic steps. Review and refine if needed.",
-      conditions: [],
-    };
-  });
-}
 
 // -----------------------------------------------------------------------------
 // Workbook audit loading

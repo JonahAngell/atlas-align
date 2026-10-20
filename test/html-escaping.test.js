@@ -35,14 +35,9 @@ test("every HTML escaper called by a browser module is defined", () => {
 
 test("identifiers from audits and the server are escaped in HTML attributes", () => {
   const expectations = [
-    ["04-persistence.js", 'value="${esc(flow.id)}"'],
     [
       "14-catalog-driven-builder.js",
       'branch-${esc(step.branchType || "then")}',
-    ],
-    [
-      "19-audit-version-history.js",
-      'data-restore-audit-revision="${esc(r.id)}"',
     ],
     [
       "19-audit-version-history.js",

@@ -288,30 +288,6 @@ function pickerSourceOptions() {
   }));
 }
 
-function pickerFieldOptions(sourceFile = "") {
-  const auditSources = atlasSelectedAuditSources();
-  const sources = sourceFile
-    ? atlasSourcesMatchingLookup(auditSources, sourceFile)
-    : auditSources;
-  return sources.flatMap((source) =>
-    (source.fields || []).map((field) => {
-      const parts = fieldDisplayParts(field, source.sourceFile);
-      return {
-        sourceFile: source.sourceFile,
-        sourceAlias: source.alias || source.sourceFile,
-        fieldName: parts.raw,
-        rawFieldName: parts.raw,
-        vanityLabel: parts.vanity,
-        label: parts.display,
-        detail: parts.alternate,
-        sourceColor: atlasSelectedSourceColor(source),
-        sourceKey: atlasSourceStableKey(source),
-        customField: atlasIsCustomField(field),
-      };
-    }),
-  );
-}
-
 function atlasSortedPickerItems(items) {
   const list = [...items];
   if (atlasFieldPickerSortMode === "alpha") {
@@ -332,73 +308,6 @@ function atlasSortedPickerItems(items) {
   );
 }
 
-function renderMiniPicker() {
-  document
-    .querySelector(".visual-picker-modal-backdrop.dynamic-mini-picker")
-    ?.remove();
-  if (!visualPickerState) return;
-  atlasEnsureAuditSourceColors();
-  const options =
-    visualPickerState.kind === "source"
-      ? pickerSourceOptions()
-      : pickerFieldOptions(visualPickerState.sourceFile);
-  const query = visualPickerState.query || "";
-  const filtered = atlasSortedPickerItems(
-    options.filter((option) =>
-      `${option.sourceFile} ${option.sourceAlias} ${option.fieldName} ${option.label}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    ),
-  );
-  const groups = new Map();
-  filtered.forEach((option) => {
-    const group =
-      atlasFieldPickerSortMode === "alpha"
-        ? firstLetter(option.label || option.fieldName || option.sourceFile)
-        : visualPickerState.kind === "source"
-          ? "Selected Sources"
-          : option.sourceFile;
-    if (!groups.has(group)) groups.set(group, []);
-    groups.get(group).push(option);
-  });
-
-  const selectedValue = String(
-    visualPickerState.target?.dataset?.currentValue ||
-      visualPickerState.target?.querySelector?.("strong")?.textContent ||
-      "",
-  ).trim();
-  const groupMarkup = [...groups.entries()]
-    .map(([group, items]) => {
-      const rows = items
-        .map((item) => {
-          const isSource = visualPickerState.kind === "source";
-          const value = isSource ? item.sourceFile : item.fieldName;
-          const selected = value === selectedValue;
-          const primary = isSource ? item.sourceAlias : item.label;
-          const secondary = isSource
-            ? item.sourceFile
-            : `${item.sourceAlias || item.sourceFile}.${item.fieldName}`;
-          const classes = [
-            "visual-picker-option",
-            isSource ? "source-picker-option" : "field-picker-option",
-            item.customField ? "custom-field-pill" : "",
-            selected ? "selected" : "",
-          ]
-            .filter(Boolean)
-            .join(" ");
-          return `<button type="button" class="${classes}" data-mini-picker-value="${esc(value)}" data-mini-picker-source="${esc(item.sourceFile)}" data-source-key="${esc(item.sourceKey || atlasSourceStableKey(item.sourceFile))}" style="--source-color:${esc(item.sourceColor)}" aria-pressed="${selected ? "true" : "false"}"><span class="source-color-dot" aria-hidden="true"></span><span class="visual-picker-option-copy"><strong>${esc(primary)}</strong><small>${esc(secondary)}</small></span>${selected ? '<span class="selection-status">Selected</span>' : ""}</button>`;
-        })
-        .join("");
-      return `<section class="visual-picker-group"><div class="visual-picker-group-title"><strong>${esc(group)}</strong><span class="badge blue">${items.length}</span></div><div class="visual-picker-option-list">${rows}</div></section>`;
-    })
-    .join("");
-
-  const root = document.createElement("div");
-  root.className = "visual-picker-modal-backdrop dynamic-mini-picker";
-  root.innerHTML = `<div class="visual-picker-modal"><div class="visual-picker-modal-header"><div><h2 class="visual-picker-modal-title">${visualPickerState.kind === "source" ? "Choose Selected Source File" : "Choose Field"}</h2><p class="visual-picker-modal-subtitle">Only sources selected for this audit are available here.</p></div><button type="button" class="visual-picker-close-button" data-close-mini-picker aria-label="Close picker">×</button></div><div class="visual-picker-search-row"><input data-mini-picker-search value="${esc(query)}" placeholder="Search selected sources and fields..."><div class="mini-picker-sort-toggle"><button type="button" class="secondary small ${atlasFieldPickerSortMode === "source" ? "active" : ""}" data-picker-sort="source">Sort by Source</button><button type="button" class="secondary small ${atlasFieldPickerSortMode === "alpha" ? "active" : ""}" data-picker-sort="alpha">A-Z</button></div></div><div class="visual-picker-content">${groupMarkup || '<div class="contacts-empty">No selected source fields match the current search.</div>'}</div></div>`;
-  document.body.append(root);
-  root.querySelector("[data-mini-picker-search]")?.focus();
-}
 // Phase 2: picker commit behavior is centralized in 15g.
 
 function atlasFieldMatchForSource(value, sourceLike) {
@@ -634,27 +543,6 @@ function renderLogicRuleCard(entry) {
   </div>`;
 }
 
-function atlasRenderFieldSortControl() {
-  return `<div class="field-picker-sort-row"><span class="small">Field picker sort</span><button type="button" class="secondary small ${atlasFieldPickerSortMode === "source" ? "active" : ""}" data-picker-sort="source">By Source</button><button type="button" class="secondary small ${atlasFieldPickerSortMode === "alpha" ? "active" : ""}" data-picker-sort="alpha">A-Z</button></div>`;
-}
-
-const atlasPreviousRenderSelectedStep = renderSelectedStep;
-renderSelectedStep = function renderSelectedStepEditorPaneCompact() {
-  const step = state.audit.steps.find(
-    (item) => item.id === state.selectedStepId,
-  );
-  const target = e.selectedStepDetails || $("selectedStepDetails");
-  if (!target) return;
-  if (!step) {
-    target.innerHTML =
-      '<p class="hint">Select or create a rule to edit step criteria.</p>';
-    setText?.("selectedRuleBadge", "No rule selected");
-    return;
-  }
-  const number = stepNumberFor(step.id) || "?";
-  setText?.("selectedRuleBadge", `Step ${number}`);
-  target.innerHTML = `<div class="logic-editor-header"><div class="logic-editor-header-main"><span class="badge blue">Step ${esc(number)}</span><strong>${esc(step.title || atlasStepTypeLabel(step))}</strong><span class="small">${esc(atlasStepTypeLabel(step))} · ${step.autoGeneratedReference ? "Generated reference step" : "Editable rule"}</span></div></div><div class="callout logic-editor-generated"><strong>Live Standardised Output</strong><div class="logic-output-text" data-live-generated-output>${renderLogicWithPills(analystLogic(step))}</div></div>${atlasRenderFieldSortControl()}${atlasRenderStepEditor(step)}`;
-};
 
 const atlasPreviousRenderGuidedBuilder = renderGuidedBuilder;
 renderGuidedBuilder = function renderGuidedBuilderSelectedSourcesOnly(step) {
