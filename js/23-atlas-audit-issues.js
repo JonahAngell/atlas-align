@@ -3913,7 +3913,7 @@
     const section = document.createElement("section");
     section.dataset.reviewFeedbackProjection = "true";
     section.className = "review-feedback-projection";
-    section.innerHTML = `<header><h3>Review Feedback</h3><span>${feedback.length}</span></header>${feedback.map((entry) => `<article class="review-feedback-card"><strong>${escapeHtml(entry.displayLabel)}</strong><p>${escapeHtml(entry.decision || (entry.threadState === "Open" ? "Open discussion" : "Feedback"))}</p>${entry.reviewerNote ? `<p>${escapeHtml(entry.reviewerNote)}</p>` : ""}<button type="button" data-review-feedback-target="${entry.reviewItemId}">View in context</button></article>`).join("")}`;
+    section.innerHTML = `<header><h3>Review Feedback</h3><span>${feedback.length}</span></header>${feedback.map((entry) => `<article class="review-feedback-card"><strong>${safeText(entry.displayLabel)}</strong><p>${safeText(entry.decision || (entry.threadState === "Open" ? "Open discussion" : "Feedback"))}</p>${entry.reviewerNote ? `<p>${safeText(entry.reviewerNote)}</p>` : ""}<button type="button" data-review-feedback-target="${safeText(entry.reviewItemId)}">View in context</button></article>`).join("")}`;
     container.append(section);
   }
 
