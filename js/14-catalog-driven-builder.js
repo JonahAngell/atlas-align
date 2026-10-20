@@ -15,6 +15,7 @@ const STEP_TYPE_OPTIONS = [
   ["join", "Join / Union Sources"],
   ["format_field", "Format Field"],
   ["sort_records", "Sort Records"],
+  ["remove_duplicates", "Remove Duplicates"],
 ];
 const LEGACY_TYPE_MAP = {
   source: "reference_source",
@@ -150,11 +151,15 @@ function normalizeCatalogStep(step, index = 0) {
         path: "app_config.logic_options.format_options",
         fallback: ["text"],
       })[0];
-  if (step.step_type === "sort_records")
+  if (step.step_type === "sort_records") {
     step.params.sort_direction = step.params.sort_direction || "Ascending";
-  if (step.step_type === "remove_duplicates")
+    atlasSyncSortFieldParams(step.params);
+  }
+  if (step.step_type === "remove_duplicates") {
     step.params.duplicate_action =
       step.params.duplicate_action || "Keep first record";
+    atlasSyncDuplicateFieldParams(step.params);
+  }
   step.id = step.id || uid("step");
   step.sortOrder = Number.isFinite(Number(step.sortOrder))
     ? step.sortOrder
@@ -223,6 +228,7 @@ function atlasNormalizeChoiceOptions(options) {
         value: String(option.value ?? ""),
         label: String(option.label ?? option.value ?? ""),
         description: String(option.description || ""),
+        icon: String(option.icon || ""),
       };
     }
     return {
@@ -235,7 +241,7 @@ function atlasNormalizeChoiceOptions(options) {
 
 function atlasChoiceOptionButton(item, selected) {
   const on = item.value === selected;
-  return `<button type="button" class="atlas-choice-option${on ? " is-selected" : ""}" role="radio" aria-checked="${on ? "true" : "false"}" data-choice-value="${esc(item.value)}" tabindex="${on ? "0" : "-1"}"><span class="atlas-choice-label">${esc(item.label)}</span>${item.description ? `<span class="atlas-choice-description">${esc(item.description)}</span>` : ""}</button>`;
+  return `<button type="button" class="atlas-choice-option${on ? " is-selected" : ""}" role="radio" aria-checked="${on ? "true" : "false"}" data-choice-value="${esc(item.value)}" tabindex="${on ? "0" : "-1"}">${item.icon && window.atlasIcon ? `<span class="atlas-choice-icon" aria-hidden="true">${window.atlasIcon(item.icon)}</span>` : ""}<span class="atlas-choice-label">${esc(item.label)}</span>${item.description ? `<span class="atlas-choice-description">${esc(item.description)}</span>` : ""}</button>`;
 }
 
 /**
@@ -243,8 +249,9 @@ function atlasChoiceOptionButton(item, selected) {
  * attribute so callers can keep reading `.value` and listening for `change`.
  * variant: "segment" for 2–4 short labels, "chips" for wrapping phrases,
  * "cards" when each option needs a description.
- * popover ("pills" or "list") renders a trigger button that opens the group
- * in an anchored panel; the group and hidden input stay in place.
+ * popover ("pills", "list", or "grid") renders a trigger button that opens
+ * the group in an anchored panel; the group and hidden input stay in place.
+ * "grid" lays options out as tiles; an option `icon` names an atlasIcon.
  */
 let atlasChoicePopoverSequence = 0;
 
@@ -268,7 +275,7 @@ function atlasChoiceControl({
     items.find((item) => item.value === current) || items[0] || null;
   const control = `<div class="atlas-choice atlas-choice-${safeVariant}" role="radiogroup" aria-label="${esc(label)}"><input type="hidden" ${attributes} value="${esc(current)}">${items.map((item) => atlasChoiceOptionButton(item, current)).join("")}</div>`;
   const title = heading || label;
-  if (popover === "pills" || popover === "list") {
+  if (["pills", "list", "grid"].includes(popover)) {
     const id = `atlas-choice-popover-${++atlasChoicePopoverSequence}`;
     return `<div class="atlas-choice-popover-field"><button type="button" class="atlas-choice-trigger" data-choice-popover-trigger aria-haspopup="true" aria-expanded="false" aria-controls="${id}" aria-label="${esc(title)}: ${esc(currentItem?.label || "Choose")}"><span class="atlas-choice-heading">${esc(title)}</span><span class="atlas-choice-current">${esc(currentItem?.label || "Choose")}</span><span class="atlas-choice-caret" aria-hidden="true">⌄</span></button><div class="atlas-choice-popover atlas-choice-popover-${popover}" id="${id}" hidden>${control}</div></div>`;
   }
@@ -313,9 +320,13 @@ function atlasPositionChoicePopover(trigger = atlasOpenChoicePopoverTrigger) {
     window.innerWidth - gutter * 2,
     Math.max(
       rect.width,
-      panel.classList.contains("atlas-choice-popover-list") ? 280 : 260,
+      panel.classList.contains("atlas-choice-popover-grid")
+        ? 360
+        : panel.classList.contains("atlas-choice-popover-list")
+          ? 280
+          : 260,
     ),
-    400,
+    panel.classList.contains("atlas-choice-popover-grid") ? 440 : 400,
   );
   panel.style.width = `${width}px`;
   panel.style.left = `${Math.min(window.innerWidth - width - gutter, Math.max(gutter, rect.left))}px`;
@@ -452,9 +463,9 @@ function atlasSortDirectionState(value) {
   };
 }
 
-function atlasSortDirectionToggle(value) {
+function atlasSortDirectionToggle(value, inputAttribute = 'data-param="sort_direction"') {
   const state = atlasSortDirectionState(value);
-  return `<input type="hidden" data-param="sort_direction" value="${esc(state.value)}"><button type="button" class="sort-direction-toggle" data-sort-direction-toggle aria-label="${esc(state.label)}" title="${esc(state.title)}">${window.atlasIcon?.(state.icon) || ""}</button>`;
+  return `<input type="hidden" ${inputAttribute} value="${esc(state.value)}"><button type="button" class="sort-direction-toggle" data-sort-direction-toggle aria-label="${esc(state.label)}" title="${esc(state.title)}">${window.atlasIcon?.(state.icon) || ""}</button>`;
 }
 
 document.addEventListener(
@@ -463,7 +474,7 @@ document.addEventListener(
     const toggle = event.target.closest?.("[data-sort-direction-toggle]");
     if (!toggle || toggle.disabled) return;
     const input = toggle.parentElement?.querySelector(
-      'input[data-param="sort_direction"]',
+      'input[data-sort-direction], input[data-param="sort_direction"]',
     );
     if (!input) return;
     event.preventDefault();
@@ -492,6 +503,13 @@ document.addEventListener(
   true,
 );
 
+/** Counts rendered grid columns so Up/Down move one row in a tile grid. */
+function atlasChoiceGridColumns(group) {
+  const template = getComputedStyle(group).gridTemplateColumns;
+  if (!template || template === "none") return 1;
+  return Math.max(1, template.trim().split(/\s+/).length);
+}
+
 document.addEventListener(
   "keydown",
   (event) => {
@@ -501,7 +519,14 @@ document.addEventListener(
     const options = [...group.querySelectorAll(".atlas-choice-option")];
     const index = options.indexOf(button);
     let next = index;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown")
+    const columns = button.closest(".atlas-choice-popover-grid")
+      ? atlasChoiceGridColumns(group)
+      : 0;
+    if (columns > 1 && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+      const step = event.key === "ArrowDown" ? columns : -columns;
+      const target = index + step;
+      next = target >= 0 && target < options.length ? target : index;
+    } else if (event.key === "ArrowRight" || event.key === "ArrowDown")
       next = (index + 1) % options.length;
     else if (event.key === "ArrowLeft" || event.key === "ArrowUp")
       next = (index - 1 + options.length) % options.length;
@@ -784,43 +809,36 @@ function renderGuidedBuilder(step) {
       },
     )}</label></div>`;
   if (step.step_type === "sort_records")
-    return `<div class="guided-builder"><h4>Sort Records</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<div class="sort-field-control"><span class="sort-field-heading">Sort Field</span><div class="sort-field-row">${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select field",
-        sourceFile: p.source_file,
-      },
-    )}${atlasSortDirectionToggle(p.sort_direction)}</div></div></div>`;
+    return `<div class="guided-builder"><h4>Sort Records</h4>${atlasSortFieldsEditorHtml(p)}</div>`;
   if (step.step_type === "remove_duplicates")
-    return `<div class="guided-builder"><h4>Remove Duplicates</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select field",
-        sourceFile: p.source_file,
-      },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
+    return `<div class="guided-builder"><h4>Remove Duplicates</h4>${atlasDuplicateFieldsEditorHtml(p)}<div class="atlas-choice-field">${atlasChoiceControl({
       options: atlasDescribedChoices(
         catalogArrayFromOptions({
           path: "app_config.logic_options.duplicate_actions",
           fallback: [
             "Keep first record",
-            "Keep last record",
             "Drop all duplicated records",
+            "Keep last record",
           ],
-        }),
+        }).map((value) => [
+          value,
+          {
+            "Keep first record": "Keep first",
+            "Drop all duplicated records": "Keep none",
+            "Keep last record": "Keep last",
+          }[value] || value,
+        ]),
         {
           "Keep first record": "Keep the earliest matching record.",
-          "Keep last record": "Keep the latest matching record.",
           "Drop all duplicated records":
-            "Remove every record that is duplicated.",
+            "Remove every record that has a duplicate.",
+          "Keep last record": "Keep the latest matching record.",
         },
       ),
       selected: p.duplicate_action,
       variant: "cards",
-      label: "Duplicate action",
-      heading: "Duplicate Action",
+      label: "Records to keep",
+      heading: "Records to Keep",
       popover: "list",
       attributes: 'data-param="duplicate_action"',
     })}</div></div>`;
@@ -1482,6 +1500,155 @@ function atlasNumericFieldOptionsHtml(sourceFile = "", selected = "") {
       return `<option value="${esc(parts.raw)}" ${selected === parts.raw || selected === parts.vanity ? "selected" : ""}>${esc(label)}</option>`;
     }),
   ].join("");
+}
+
+/**
+ * Rewrites duplicate_fields_json from the stored list (migrating the legacy
+ * single field) and mirrors the first column into field_name/source_file so
+ * reference checks that read those params keep working.
+ * @param {any} params - Remove Duplicates step params, updated in place.
+ */
+function atlasSyncDuplicateFieldParams(params = {}) {
+  const fields = atlasDuplicateFieldsFromParams(params);
+  const legacyField = String(params.field_name || "").trim();
+  // A repair that rewrote the mirrored params wins over the first entry.
+  if (fields.length && legacyField) {
+    const first = fields[0];
+    const legacySource = String(params.source_file || "").trim();
+    if (first.fieldName !== legacyField || first.sourceFile !== legacySource)
+      fields[0] = atlasNormalizeDuplicateField({
+        sourceFile: legacySource,
+        sourceAlias: params.source_alias,
+        fieldName: legacyField,
+      });
+  }
+  atlasApplyDuplicateFields(params, fields);
+  return params;
+}
+
+/** Stores a Remove Duplicates column list and its first-column mirror. */
+function atlasApplyDuplicateFields(params = {}, fields = []) {
+  params.duplicate_fields_json = atlasSerializeDuplicateFields(fields);
+  const first = atlasDuplicateFieldsFromParams(params)[0];
+  params.source_file = first?.sourceFile || "";
+  params.source_alias = first?.sourceAlias || "";
+  params.field_name = first?.fieldName || "";
+  return params;
+}
+
+function atlasDuplicateFieldRowHtml(item) {
+  const sourceLabel =
+    item.sourceAlias || sourceAliasFor?.(item.sourceFile) || item.sourceFile;
+  const color =
+    typeof atlasSelectedSourceColor === "function"
+      ? atlasSelectedSourceColor(item.sourceFile)
+      : "";
+  const style = color ? ` style="--source-color:${esc(color)}"` : "";
+  const key = atlasDuplicateFieldKey(item);
+  const removeLabel = sourceLabel
+    ? `Remove column ${item.fieldName} from file ${sourceLabel}`
+    : `Remove column ${item.fieldName}`;
+  return `<li class="duplicate-field-row" data-duplicate-field="${esc(key)}">${sourceLabel ? `<span class="visual-picker-pill duplicate-field-source"${style}><span class="visual-picker-pill-main">${esc(sourceLabel)}</span></span>` : ""}<span class="duplicate-field-name">${esc(item.fieldName)}</span><button type="button" class="secondary small duplicate-field-remove" data-remove-duplicate-field="${esc(key)}" aria-label="${esc(removeLabel)}">Remove</button></li>`;
+}
+
+/**
+ * Renders the Remove Duplicates column list editor.
+ * @param {any} params - Step params.
+ */
+function atlasDuplicateFieldsEditorHtml(params = {}) {
+  const fields = atlasDuplicateFieldsFromParams(params);
+  const first = fields[0] || {};
+  const list = fields.length
+    ? `<ul class="duplicate-field-list" aria-label="Columns that must match">${fields.map((item) => atlasDuplicateFieldRowHtml(item)).join("")}</ul>`
+    : `<div class="empty-state duplicate-fields-empty"><p>No columns selected yet. Add the columns that must all match for a record to count as a duplicate.</p></div>`;
+  return `<div class="duplicate-fields-editor" data-duplicate-editor>
+    <input type="hidden" data-param="duplicate_fields_json" data-duplicate-json value="${esc(atlasSerializeDuplicateFields(fields))}">
+    <input type="hidden" data-param="source_file" value="${esc(first.sourceFile || "")}">
+    <input type="hidden" data-param="source_alias" value="${esc(first.sourceAlias || "")}">
+    <input type="hidden" data-param="field_name" value="${esc(first.fieldName || "")}">
+    <div class="duplicate-fields-header"><span class="atlas-choice-heading">Columns to Match</span><span class="hint">A record is a duplicate when every selected column matches another record.</span></div>
+    ${list}
+    <div class="duplicate-fields-actions"><button type="button" class="secondary small" data-add-duplicate-field>Add Columns</button></div>
+  </div>`;
+}
+
+/**
+ * Reconciles the Sort Records field list with its first-field mirror params
+ * (source_file, source_alias, field_name, sort_direction) so validation and
+ * reference checks that read those params keep working.
+ * @param {any} params - Sort Records step params, updated in place.
+ */
+function atlasSyncSortFieldParams(params = {}) {
+  const fields = atlasSortFieldsFromParams(params);
+  const legacyField = String(params.field_name || "").trim();
+  // A repair that rewrote the mirrored params wins over the first entry.
+  const firstIndex = fields.findIndex((item) => item.fieldName);
+  if (firstIndex >= 0 && legacyField) {
+    const first = fields[firstIndex];
+    const legacySource = String(params.source_file || "").trim();
+    if (first.fieldName !== legacyField || first.sourceFile !== legacySource)
+      fields[firstIndex] = atlasNormalizeSortField({
+        ...first,
+        sourceFile: legacySource,
+        sourceAlias: params.source_alias,
+        fieldName: legacyField,
+      });
+  }
+  atlasApplySortFields(params, fields);
+  return params;
+}
+
+/** Stores a Sort Records field list and its first-field mirror. */
+function atlasApplySortFields(params = {}, fields = []) {
+  params.sort_fields_json = atlasSerializeSortFields(fields);
+  const first = atlasSortFieldsFromParams(params).find((item) => item.fieldName);
+  params.source_file = first?.sourceFile || "";
+  params.source_alias = first?.sourceAlias || "";
+  params.field_name = first?.fieldName || "";
+  params.sort_direction = first?.direction || "Ascending";
+  return params;
+}
+
+function atlasSortFieldRowHtml(item = {}, position = 1) {
+  const entry = atlasNormalizeSortField(item);
+  const sourceLabel = entry.fieldName
+    ? entry.sourceAlias ||
+      sourceAliasFor?.(entry.sourceFile) ||
+      entry.sourceFile
+    : "";
+  const fieldLabel = entry.fieldName || "Select field...";
+  const name = entry.fieldName || `sort field ${position}`;
+  return `<div class="sort-field-row" data-sort-row data-sort-id="${esc(entry.id)}">
+    <span class="sort-field-position" data-sort-position aria-hidden="true">${position}</span>
+    <div class="sort-field-picker">
+      <input type="hidden" data-sort-source value="${esc(entry.sourceFile)}">
+      <input type="hidden" data-sort-field value="${esc(entry.fieldName)}">
+      <button type="button" class="visual-picker-trigger-button field-token ${entry.fieldName ? "" : "empty"}" data-open-mini-picker="field" data-param-name="sort_field" data-picker-source="" aria-label="${esc(`Choose ${name}`)}"><span class="visual-picker-trigger-copy"><strong>${esc(fieldLabel)}</strong>${sourceLabel ? `<small>${esc(sourceLabel)}</small>` : ""}</span><span aria-hidden="true">⌄</span></button>
+    </div>
+    <div class="sort-field-direction">${atlasSortDirectionToggle(entry.direction, "data-sort-direction")}</div>
+    <button type="button" class="secondary small sort-field-remove" data-remove-sort-field aria-label="${esc(`Remove ${name}`)}">Remove</button>
+  </div>`;
+}
+
+/**
+ * Renders the Sort Records multi-field editor.
+ * @param {any} params - Step params.
+ */
+function atlasSortFieldsEditorHtml(params = {}) {
+  const fields = atlasSortFieldsFromParams(params);
+  const rows = fields.length ? fields : [atlasNormalizeSortField({})];
+  const first = fields.find((item) => item.fieldName) || {};
+  return `<div class="sort-fields-editor" data-sort-editor>
+    <input type="hidden" data-param="sort_fields_json" data-sort-json value="${esc(atlasSerializeSortFields(rows))}">
+    <input type="hidden" data-param="source_file" value="${esc(first.sourceFile || "")}">
+    <input type="hidden" data-param="source_alias" value="${esc(first.sourceAlias || "")}">
+    <input type="hidden" data-param="field_name" value="${esc(first.fieldName || "")}">
+    <input type="hidden" data-param="sort_direction" value="${esc(first.direction || "Ascending")}">
+    <div class="sort-fields-header"><strong>Sort fields</strong><button type="button" class="secondary small" data-add-sort-field>Add Field</button></div>
+    <p class="hint">Fields are applied in listed order. Later fields break ties in earlier ones.</p>
+    <div class="sort-field-list">${rows.map((item, index) => atlasSortFieldRowHtml(item, index + 1)).join("")}</div>
+    <div class="empty-state sort-fields-empty" data-sort-empty hidden><p>No sort fields yet. Add a field to choose how records are ordered.</p></div>
+  </div>`;
 }
 
 function atlasMathOperatorOptions(selected = "*") {

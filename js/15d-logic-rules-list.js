@@ -355,6 +355,9 @@ atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithMath(
   root,
   step,
 ) {
+  root.querySelectorAll("[data-sort-editor]").forEach((editor) => {
+    atlasSyncSortEditor?.(editor, { commit: false });
+  });
   root.querySelectorAll("[data-math-editor]").forEach((editor) => {
     const hidden = editor.querySelector("[data-math-json]");
     if (hidden)

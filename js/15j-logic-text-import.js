@@ -4,7 +4,7 @@
  * The parser is pure. The dialog maps file and column tokens onto audit sources.
  */
 const ATLAS_IMPORT_UNRECOGNIZED =
-  'This text could not be read as a Logic Builder step. Use a sentence the builder already writes, such as: If file "sap.hi0256" column "Nationality" is equal to text values "US" or "Minor Outl. Isl." THEN do not display. Reference source, Create new column, Join, UNION, Format, Split, Sort records, and filter sentences are also supported.';
+  'This text could not be read as a Logic Builder step. Use a sentence the builder already writes, such as: If file "sap.hi0256" column "Nationality" is equal to text values "US" or "Minor Outl. Isl." THEN do not display. Reference source, Create new column, Join, UNION, Format, Split, Sort records, Remove duplicate records, and filter sentences are also supported.';
 
 const ATLAS_IMPORT_TITLES = {
   reference_source: "Reference Source",
@@ -59,10 +59,16 @@ const ATLAS_IMPORT_FORMATS = [
 const ATLAS_IMPORT_SORTS = ["Ascending", "Descending"];
 
 const ATLAS_IMPORT_DUPLICATES = [
-  "Drop all duplicated records",
   "Keep first record",
+  "Drop all duplicated records",
   "Keep last record",
 ];
+
+const ATLAS_IMPORT_DUPLICATE_KEEP_CLAUSES = {
+  "keeping the first record": "Keep first record",
+  "keeping the last record": "Keep last record",
+  "keeping none of the duplicated records": "Drop all duplicated records",
+};
 
 const ATLAS_IMPORT_FILTERS = ["Keep matching rows", "Exclude matching rows"];
 
@@ -1461,6 +1467,119 @@ function atlasImportParseSort(text) {
   );
 }
 
+function atlasImportDuplicateActionControl(action) {
+  return atlasImportSelectControl(
+    "duplicate-action",
+    "Records to keep",
+    action,
+    ATLAS_IMPORT_DUPLICATES,
+    "params.duplicate_action",
+  );
+}
+
+function atlasImportParseMatchingDuplicates(text) {
+  const lead = /^remove duplicate records with matching values in\s+/i.exec(
+    text,
+  );
+  if (!lead) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
+  const columns = [];
+  let rest = text.slice(lead[0].length);
+  while (true) {
+    const column = atlasImportReadTableColumn(rest);
+    if (!column)
+      return atlasImportFail(
+        'Remove Duplicates needs each column written as file "name" column "name".',
+      );
+    if (!columns.length && !column.sourceToken)
+      return atlasImportFail(
+        "Remove Duplicates needs a file before the first column.",
+      );
+    columns.push(column);
+    rest = rest.slice(column.end);
+    const joiner = /^\s*(?:,\s*and|,|and)\s+(?=(?:file|column)\s)/i.exec(rest);
+    if (!joiner) break;
+    rest = rest.slice(joiner[0].length);
+  }
+  const keep = /^\s*,\s*(keeping\s.+?)\s*\.?\s*$/i.exec(rest);
+  const action = keep
+    ? ATLAS_IMPORT_DUPLICATE_KEEP_CLAUSES[keep[1].toLowerCase()]
+    : "";
+  if (!action)
+    return atlasImportFail(
+      "Remove Duplicates needs keeping the first record, keeping the last record, or keeping none of the duplicated records.",
+    );
+  const references = [];
+  let sourceRefId = "";
+  columns.forEach((column, index) => {
+    const idPrefix = `dup${index}`;
+    const base = `params.duplicate_fields.${index}`;
+    if (column.sourceToken) {
+      sourceRefId = `${idPrefix}-source`;
+      references.push(
+        atlasImportSourceReference(
+          sourceRefId,
+          column.sourceToken,
+          `Column ${index + 1} file`,
+          {
+            fileBind: `${base}.sourceFile`,
+            aliasBind: `${base}.sourceAlias`,
+          },
+        ),
+      );
+    }
+    references.push(
+      atlasImportFieldReference(
+        `${idPrefix}-field`,
+        column.fieldToken,
+        `Column ${index + 1}`,
+        sourceRefId,
+        `${base}.fieldName`,
+      ),
+    );
+  });
+  return atlasImportDraft("remove_duplicates", {
+    params: { duplicate_action: action },
+    references,
+    controls: [atlasImportDuplicateActionControl(action)],
+  });
+}
+
+function atlasImportFinishDuplicateFields(params) {
+  const list = Array.isArray(params.duplicate_fields)
+    ? params.duplicate_fields
+    : params.field_name
+      ? [
+          {
+            sourceFile: params.source_file || "",
+            sourceAlias: params.source_alias || "",
+            fieldName: params.field_name,
+          },
+        ]
+      : [];
+  delete params.duplicate_fields;
+  let previous = { sourceFile: "", sourceAlias: "" };
+  const fields = list
+    .filter((item) => item && item.fieldName)
+    .map((item) => {
+      if (item.sourceFile) previous = item;
+      return {
+        sourceFile: item.sourceFile || previous.sourceFile || "",
+        sourceAlias:
+          item.sourceAlias ||
+          (item.sourceFile ? "" : previous.sourceAlias) ||
+          item.sourceFile ||
+          previous.sourceFile ||
+          "",
+        fieldName: item.fieldName,
+      };
+    });
+  params.duplicate_fields_json = JSON.stringify(fields);
+  const first = fields[0] || {};
+  params.source_file = first.sourceFile || "";
+  params.source_alias = first.sourceAlias || "";
+  params.field_name = first.fieldName || "";
+}
+
 function atlasImportParseDuplicates(text) {
   return atlasImportParseSimpleColumnStep(
     text,
@@ -1485,15 +1604,7 @@ function atlasImportParseDuplicates(text) {
       return {
         ok: true,
         params: { duplicate_action: action },
-        controls: [
-          atlasImportSelectControl(
-            "duplicate-action",
-            "Duplicate action",
-            action,
-            ATLAS_IMPORT_DUPLICATES,
-            "params.duplicate_action",
-          ),
-        ],
+        controls: [atlasImportDuplicateActionControl(action)],
       };
     },
   );
@@ -1656,6 +1767,8 @@ function atlasParseImportedLogicText(value) {
   if (head.startsWith("format ")) return atlasImportParseFormat(text);
   if (head.startsWith("split ")) return atlasImportParseSplit(text);
   if (head.startsWith("sort records")) return atlasImportParseSort(text);
+  if (head.startsWith("remove duplicate records"))
+    return atlasImportParseMatchingDuplicates(text);
   if (/^if\b/i.test(text) && /appears more than once/i.test(text))
     return atlasImportParseDuplicates(text);
   if (head.startsWith("else")) return atlasImportParseElse(text);
@@ -1946,6 +2059,8 @@ function atlasImportMaterialize(draft, choices = {}) {
     if (draft.stepType === "if_then")
       cloned.params.conditions_json = JSON.stringify(cloned.conditions);
   }
+  if (draft.stepType === "remove_duplicates")
+    atlasImportFinishDuplicateFields(cloned.params);
   const params = cloned.params;
   const step = {
     id: "",

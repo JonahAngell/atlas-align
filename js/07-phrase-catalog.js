@@ -662,6 +662,47 @@ function atlasJoinReadableList(items = []) {
   return `${filtered.slice(0, -1).join(", ")}, or ${filtered.at(-1)}`;
 }
 
+/** Joins phrases with "and" ("A and B", "A, B, and C"). */
+function atlasJoinReadableAndList(items = []) {
+  const filtered = items.filter(Boolean);
+  if (!filtered.length) return "";
+  if (filtered.length === 1) return filtered[0];
+  if (filtered.length === 2) return `${filtered[0]} and ${filtered[1]}`;
+  return `${filtered.slice(0, -1).join(", ")}, and ${filtered.at(-1)}`;
+}
+
+/**
+ * Lists the Remove Duplicates columns, naming each file only once in a row:
+ * file "X" column "A" and column "B".
+ * @param {any} params - Step params.
+ */
+function atlasDuplicateColumnListPhrase(params = {}) {
+  const fields =
+    typeof atlasDuplicateFieldsFromParams === "function"
+      ? atlasDuplicateFieldsFromParams(params)
+      : [];
+  let previousSource = null;
+  const phrases = fields.map((item) => {
+    const sameSource = previousSource !== null && previousSource === item.sourceFile;
+    previousSource = item.sourceFile;
+    return tableColumnPlain(item.sourceFile, item.sourceAlias, item.fieldName, sameSource);
+  });
+  return (
+    atlasJoinReadableAndList(phrases) ||
+    phrasePlaceholder("duplicate_columns", "[selected columns]")
+  );
+}
+
+/** Maps a stored duplicate_action to its sentence ending. */
+function atlasDuplicateKeepClause(action = "") {
+  const stored = String(action || "").trim() || "Keep first record";
+  const clause = getCatalogValue(
+    "analyst_logic.remove_duplicates.keep_clauses",
+    {},
+  )?.[stored];
+  return typeof clause === "string" && clause ? clause : "keeping the first record";
+}
+
 function atlasSourceFieldMathPhrase(p = {}) {
   const sourceField = atlasReadableSourceFieldName(p);
   const operations =
@@ -801,23 +842,47 @@ function analystLogic(step) {
       split_part: params.split_part || "",
       output_column: quotePhraseValue(params.output_column || ""),
     });
-  if (stepType === "sort_records")
-    return renderCatalogPhrase("analyst_logic.sort_records.default", {
+  if (stepType === "sort_records") {
+    const fields = (
+      typeof atlasSortFieldsFromParams === "function"
+        ? atlasSortFieldsFromParams(params)
+        : []
+    ).filter((item) => item.fieldName);
+    const first = fields[0] || {
+      sourceFile: params.source_file,
+      sourceAlias: params.source_alias,
+      fieldName: params.field_name,
+      direction: params.sort_direction,
+    };
+    const phrase = renderCatalogPhrase("analyst_logic.sort_records.default", {
       table_column: tableColumnPlain(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
+        first.sourceFile,
+        first.sourceAlias,
+        first.fieldName,
       ),
-      sort_direction: params.sort_direction || "Ascending",
+      sort_direction: first.direction || "Ascending",
     });
+    if (fields.length < 2) return phrase;
+    let previousSource = first.sourceFile;
+    const thenClauses = fields.slice(1).map((item) => {
+      const sameSource = previousSource === item.sourceFile;
+      previousSource = item.sourceFile;
+      return renderCatalogPhrase("analyst_logic.sort_records.then_clause", {
+        table_column: tableColumnPlain(
+          item.sourceFile,
+          item.sourceAlias,
+          item.fieldName,
+          sameSource,
+        ),
+        sort_direction: item.direction,
+      });
+    });
+    return `${phrase.replace(/\.$/, "")}${thenClauses.join("")}.`;
+  }
   if (stepType === "remove_duplicates")
     return renderCatalogPhrase("analyst_logic.remove_duplicates.default", {
-      table_column: tableColumnPlain(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
-      ),
-      duplicate_action: params.duplicate_action || "Keep first record",
+      column_list: atlasDuplicateColumnListPhrase(params),
+      keep_clause: atlasDuplicateKeepClause(params.duplicate_action),
     });
   if (stepType === "filter_rows")
     return renderCatalogPhrase("analyst_logic.filter_rows.default", {

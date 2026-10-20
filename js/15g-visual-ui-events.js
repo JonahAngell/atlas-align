@@ -779,6 +779,7 @@ function atlasNewRuleTypeOptions() {
     ["join", "Join/Union Sources"],
     ["format_field", "Format Field"],
     ["sort_records", "Sort Records"],
+    ["remove_duplicates", "Remove Duplicates"],
   ];
   return selectableTypes.filter(([value]) =>
     (STEP_TYPE_OPTIONS || []).some(([catalogValue]) => catalogValue === value),
@@ -877,8 +878,8 @@ function atlasRuleTypeDescription(stepType) {
     join: "Combine sources with Join or Union logic.",
     format_field: "Format values in a selected field.",
     split_field: "Split a field into a derived output.",
-    sort_records: "Sort records by a selected field.",
-    remove_duplicates: "Handle duplicate records.",
+    sort_records: "Sort records by one or more fields.",
+    remove_duplicates: "Remove records whose selected columns all match.",
     filter_rows: "Keep or exclude matching rows.",
     flag_records: "Flag matching records or hide them.",
   };
@@ -1488,6 +1489,157 @@ document.addEventListener(
   true,
 );
 
+function atlasDuplicateEditorFields(editor) {
+  return atlasDuplicateFieldsFromParams({
+    duplicate_fields_json:
+      editor?.querySelector("[data-duplicate-json]")?.value || "[]",
+  });
+}
+
+function atlasReplaceDuplicateEditor(editor, fields, focusSelector = "") {
+  if (!editor) return;
+  const params = {};
+  atlasApplyDuplicateFields(params, fields);
+  const holder = document.createElement("div");
+  holder.innerHTML = atlasDuplicateFieldsEditorHtml(params);
+  const next = holder.firstElementChild;
+  if (!next) return;
+  editor.replaceWith(next);
+  atlasCommitLiveEditor?.({ rerender: false });
+  atlasRequestRender?.({ preview: true, logicTable: true, validation: true });
+  scheduleAutosave?.();
+  const focusTarget =
+    (focusSelector && next.querySelector(focusSelector)) ||
+    next.querySelector("[data-add-duplicate-field]");
+  focusTarget?.focus?.();
+}
+
+function atlasDuplicatePickerEntries(selectedKeys) {
+  const referenceSource = atlasReferenceChildSource(
+    stepById?.(state.selectedStepId),
+  );
+  return pickerFieldOptions(referenceSource || "").map((item) => {
+    const sourceFile = item.sourceFile || "";
+    const sourceAlias = item.sourceAlias || sourceFile || "Other";
+    const fieldName = item.fieldName || "";
+    const sourceKey =
+      item.sourceKey ||
+      atlasStableSourceKey({ alias: sourceAlias, sourceFile }) ||
+      sourceFile;
+    const sourceLabelText = atlasSourceDisambiguatedLabel({
+      sourceFile,
+      alias: sourceAlias,
+      sourceKey,
+      sourceMetadata: { sourceTitle: sourceFile },
+    });
+    const selected = selectedKeys.has(
+      atlasDuplicateFieldKey({ sourceFile, fieldName }),
+    );
+    return {
+      key: `${sourceKey}::${fieldName}`,
+      label: item.vanityLabel || item.label || fieldName,
+      rawName: fieldName,
+      sourceKey,
+      sourceLabel:
+        sourceFile === ATLAS_CREATED_SOURCE
+          ? ATLAS_CREATED_LABEL
+          : sourceLabelText,
+      sourceColor:
+        item.sourceColor || atlasSelectedSourceColor(sourceKey) || "#7da2d8",
+      custom: Boolean(item.isCreatedField),
+      badge: item.isCreatedField ? "Custom" : "",
+      disabled: selected,
+      disabledReason: selected ? "Already selected" : "",
+      pickerValue: fieldName,
+      pickerSource: sourceKey,
+      duplicateField: { sourceFile, sourceAlias, fieldName },
+    };
+  });
+}
+
+function atlasOpenDuplicateFieldPicker(editor) {
+  if (!window.ATLASVisualPicker?.open) {
+    console.error("ATLAS Remove Duplicates: shared Visual Picker is unavailable.");
+    status?.(
+      "The column picker is unavailable. Reload the page and try again.",
+      "error",
+    );
+    return false;
+  }
+  const stepId = state.selectedStepId;
+  const selectedKeys = new Set(
+    atlasDuplicateEditorFields(editor).map(atlasDuplicateFieldKey),
+  );
+  return window.ATLASVisualPicker.open({
+    mode: "field",
+    title: "Columns to Match",
+    guidance:
+      "Select every column that must match for a record to count as a duplicate.",
+    searchPlaceholder: "Search selected sources and columns...",
+    entries: atlasDuplicatePickerEntries(selectedKeys),
+    sort: "source",
+    multiple: true,
+    selectAll: true,
+    selectionNoun: "column",
+    closeOnSelect: false,
+    onSelect(entry) {
+      const picked = (Array.isArray(entry) ? entry : entry ? [entry] : [])
+        .map((item) => item?.duplicateField)
+        .filter(Boolean);
+      if (!picked.length || state.selectedStepId !== stepId) return;
+      const live =
+        document.querySelector("[data-duplicate-editor]") || editor;
+      const fields = atlasDuplicateEditorFields(live);
+      const keys = new Set(fields.map(atlasDuplicateFieldKey));
+      picked.forEach((item) => {
+        const key = atlasDuplicateFieldKey(item);
+        if (keys.has(key)) return;
+        keys.add(key);
+        fields.push(item);
+      });
+      atlasReplaceDuplicateEditor(live, fields);
+    },
+  });
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const add = event.target.closest(
+      "[data-duplicate-editor] [data-add-duplicate-field]",
+    );
+    if (add) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      atlasOpenDuplicateFieldPicker(add.closest("[data-duplicate-editor]"));
+      return;
+    }
+    const remove = event.target.closest(
+      "[data-duplicate-editor] [data-remove-duplicate-field]",
+    );
+    if (!remove) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const editor = remove.closest("[data-duplicate-editor]");
+    const key = remove.dataset.removeDuplicateField || "";
+    const fields = atlasDuplicateEditorFields(editor);
+    const index = fields.findIndex(
+      (item) => atlasDuplicateFieldKey(item) === key,
+    );
+    if (index < 0) return;
+    fields.splice(index, 1);
+    const neighbor = fields[Math.min(index, fields.length - 1)];
+    atlasReplaceDuplicateEditor(
+      editor,
+      fields,
+      neighbor
+        ? `[data-remove-duplicate-field="${CSS.escape(atlasDuplicateFieldKey(neighbor))}"]`
+        : "",
+    );
+  },
+  true,
+);
+
 document.addEventListener(
   "change",
   (event) => {
@@ -1532,6 +1684,87 @@ document.addEventListener(
   true,
 );
 // ATLAS-MATH-OPERATIONS-UPDATE:END
+
+// ATLAS-SORT-FIELDS:BEGIN
+/** Writes the Sort Records rows into the editor's JSON and first-field mirror inputs. */
+function atlasSyncSortEditor(editor, { commit = true } = {}) {
+  if (!editor) return;
+  const rows = [...editor.querySelectorAll("[data-sort-row]")];
+  rows.forEach((row, index) => {
+    const position = row.querySelector("[data-sort-position]");
+    if (position) position.textContent = String(index + 1);
+  });
+  editor
+    .querySelector("[data-sort-empty]")
+    ?.toggleAttribute("hidden", rows.length > 0);
+  const params = {};
+  atlasApplySortFields(params, atlasSortFieldsFromContainer(editor));
+  const set = (selector, value) => {
+    const input = editor.querySelector(selector);
+    if (input) input.value = value;
+  };
+  set("[data-sort-json]", params.sort_fields_json);
+  set('[data-param="source_file"]', params.source_file);
+  set('[data-param="source_alias"]', params.source_alias);
+  set('[data-param="field_name"]', params.field_name);
+  set('[data-param="sort_direction"]', params.sort_direction);
+  if (commit) {
+    atlasCommitLiveEditor?.({ rerender: false });
+    atlasRequestRender?.({ preview: true, logicTable: true, validation: true });
+    scheduleAutosave?.();
+  }
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const add = event.target.closest("[data-add-sort-field]");
+    if (add) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const editor = add.closest("[data-sort-editor]");
+      const list = editor?.querySelector(".sort-field-list");
+      if (!list) return;
+      list.insertAdjacentHTML(
+        "beforeend",
+        atlasSortFieldRowHtml(
+          { id: uid("sort") },
+          list.querySelectorAll("[data-sort-row]").length + 1,
+        ),
+      );
+      atlasSyncSortEditor(editor, { commit: false });
+      list.lastElementChild
+        ?.querySelector('[data-open-mini-picker="field"]')
+        ?.focus();
+      return;
+    }
+    const remove = event.target.closest("[data-remove-sort-field]");
+    if (remove) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const editor = remove.closest("[data-sort-editor]");
+      const row = remove.closest("[data-sort-row]");
+      const focusTarget =
+        row?.nextElementSibling?.querySelector("[data-remove-sort-field]") ||
+        row?.previousElementSibling?.querySelector("[data-remove-sort-field]") ||
+        editor?.querySelector("[data-add-sort-field]");
+      row?.remove();
+      atlasSyncSortEditor(editor);
+      focusTarget?.focus();
+    }
+  },
+  true,
+);
+
+document.addEventListener(
+  "change",
+  (event) => {
+    if (!event.target.matches?.("[data-sort-direction]")) return;
+    atlasSyncSortEditor(event.target.closest("[data-sort-editor]"));
+  },
+  true,
+);
+// ATLAS-SORT-FIELDS:END
 
 // ATLAS-STRING-TRANSFORM-UPDATE:BEGIN
 const atlasRenderThenActionBuilderBeforeStringTransform =
@@ -1943,7 +2176,7 @@ function atlasFieldPickerEligibilityPolicy(picker, step) {
     return { mode: "reference-source", sourceFile: referenceSource };
   const name =
     picker?.dataset?.paramName || picker?.dataset?.conditionName || "";
-  if (picker?.closest?.("[data-math-row]"))
+  if (picker?.closest?.("[data-math-row], [data-sort-row]"))
     return { mode: "all-selected", sourceFile: "" };
   const multiSourceNames = new Set([
     "fieldName",
@@ -1989,6 +2222,28 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
     atlasSyncMathEditor(mathRow.closest("[data-math-editor]"));
     visualPickerState = null;
     window.ATLASVisualPicker?.close?.("select");
+    return;
+  }
+  const sortRow = target?.closest("[data-sort-row]");
+  if (sortRow && context.kind === "field") {
+    const fieldControl = sortRow.querySelector("[data-sort-field]");
+    const sourceControl = sortRow.querySelector("[data-sort-source]");
+    if (fieldControl) fieldControl.value = value;
+    if (sourceControl) sourceControl.value = sourceFile;
+    const editor = sortRow.closest("[data-sort-editor]");
+    atlasSyncSortEditor(editor);
+    visualPickerState = null;
+    window.ATLASVisualPicker?.close?.("select");
+    // Re-render the row so its trigger shows the chosen field and file.
+    const position =
+      [...editor.querySelectorAll("[data-sort-row]")].indexOf(sortRow) + 1;
+    const item = atlasSortFieldsFromContainer(editor)[position - 1];
+    sortRow.outerHTML = atlasSortFieldRowHtml(item, position);
+    editor
+      .querySelector(
+        `[data-sort-id="${CSS.escape(item.id)}"] [data-open-mini-picker="field"]`,
+      )
+      ?.focus();
     return;
   }
   const option =
