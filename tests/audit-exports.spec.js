@@ -5,7 +5,7 @@ test("21-21.3 validates exposed export controls and downloads", async ({
   page,
   ownedAudit,
 }, testInfo) => {
-  await openPage(page, "publication-preview");
+  await openPage(page, "save");
   const buttons = await page
     .getByRole("button")
     .evaluateAll((nodes) =>

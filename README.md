@@ -38,7 +38,7 @@ Workflow stages stay off until each `ATLAS_WORKFLOW_*_ENABLED` flag is the liter
 | `.launch/migrations` | Ordered PostgreSQL migrations applied by Launch and by the local database container. |
 | `local-db/` | Local init script and synthetic seed data. |
 | `test/` | Node contract tests (`npm test`). |
-| `tests/` | Playwright checks against a deployed Preview URL. |
+| `tests/` | Playwright checks; run against a local server by default, or a deployed Preview when `PLAYWRIGHT_BASE_URL` is set. |
 
 [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) lists every application file and the behavior it owns.
 

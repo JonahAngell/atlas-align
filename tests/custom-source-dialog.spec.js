@@ -1,6 +1,8 @@
-import ExcelJS from "exceljs";
-import { test, expect } from "@playwright/test";
-import { openPage, waitForAtlasReady } from "./helpers/ui.js";
+import { createRequire } from "node:module";
+// Playwright's ESM loader cannot link exceljs's CommonJS dependency chain; load it with require.
+const ExcelJS = createRequire(import.meta.url)("exceljs");
+import { test, expect } from "./fixtures/atlas.fixture.js";
+import { openPage } from "./helpers/ui.js";
 
 async function workbookBuffer() {
   const workbook = new ExcelJS.Workbook();
@@ -12,9 +14,8 @@ async function workbookBuffer() {
   return Buffer.from(await workbook.xlsx.writeBuffer());
 }
 
+// Sources is an audit page, so callers hold an ownedAudit.
 async function openDialog(page) {
-  await page.goto("/");
-  await waitForAtlasReady(page);
   await openPage(page, "fields");
   await page.locator("#addCustomSourceBtn").click();
   const dialog = page.getByRole("dialog", { name: "Add Custom Source" });
@@ -26,7 +27,9 @@ const displayInputs = (dialog) => dialog.locator("[data-field-display]");
 
 test("custom source dialog adds fields in bulk, imports a row, and saves symbols", async ({
   page,
+  ownedAudit,
 }) => {
+  expect(ownedAudit.id).toBeTruthy();
   const dialog = await openDialog(page);
   const count = dialog.locator("#customSourceFieldCount");
   await expect(displayInputs(dialog)).toHaveCount(1);
