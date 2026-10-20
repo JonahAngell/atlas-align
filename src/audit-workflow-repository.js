@@ -53,7 +53,7 @@ const SQL = Object.freeze({
     import.meta.url,
   ),
   lockApprovalRequestForRescind: loadSql(
-    "../sql/audit-workflow-repository/lock-approval-request-for-rescind.sql",
+    "../sql/audit-workflow-repository/lock-approval-request-for-decision.sql",
     import.meta.url,
   ),
   lockDraftReviewSessionForRescind: loadSql(
