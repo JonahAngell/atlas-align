@@ -120,7 +120,7 @@ async function refreshSaved() {
     ? state.savedFlows
         .map(
           (flow) =>
-            `<option value="${flow.id}">${esc(flow.name)} — ${new Date(flow.updatedAt).toLocaleString()}</option>`,
+            `<option value="${esc(flow.id)}">${esc(flow.name)} — ${new Date(flow.updatedAt).toLocaleString()}</option>`,
         )
         .join("")
     : '<option value="">No saved audits yet</option>';

@@ -96,7 +96,7 @@ async function atlasOpenAuditHistory() {
   const rows = payload.revisions
     .map(
       (r) =>
-        `<tr><td>${r.number}</td><td>${esc(r.changeType)}</td><td>${esc(r.changeSummary || "")}</td><td>${esc(r.createdByFullName || r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-view-audit-revision="${r.id}">View</button> <button class="btn secondary small" data-compare-audit-revision="${r.id}">Compare</button> <button class="btn danger small" data-restore-audit-revision="${r.id}">Restore</button></td></tr>`,
+        `<tr><td>${r.number}</td><td>${esc(r.changeType)}</td><td>${esc(r.changeSummary || "")}</td><td>${esc(r.createdByFullName || r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-view-audit-revision="${esc(r.id)}">View</button> <button class="btn secondary small" data-compare-audit-revision="${esc(r.id)}">Compare</button> <button class="btn danger small" data-restore-audit-revision="${esc(r.id)}">Restore</button></td></tr>`,
     )
     .join("");
   const root = atlasShowHistoryModal(
@@ -181,7 +181,7 @@ async function atlasOpenStepHistory() {
   const rows = payload.revisions
     .map(
       (r) =>
-        `<tr><td>${r.number}</td><td>${esc(r.operation)}</td><td>${esc(r.changeSummary || "")}</td><td>${esc(r.createdByFullName || r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-compare-step-revision="${r.id}">Compare</button> <button class="btn danger small" data-restore-step-revision="${r.id}">Restore</button></td></tr>`,
+        `<tr><td>${r.number}</td><td>${esc(r.operation)}</td><td>${esc(r.changeSummary || "")}</td><td>${esc(r.createdByFullName || r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-compare-step-revision="${esc(r.id)}">Compare</button> <button class="btn danger small" data-restore-step-revision="${esc(r.id)}">Restore</button></td></tr>`,
     )
     .join("");
   const root = atlasShowHistoryModal(

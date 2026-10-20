@@ -1086,7 +1086,7 @@ function renderStepsCatalogDrivenBase() {
   e.stepsList.innerHTML = entries
     .map((entry) => {
       const step = entry.step;
-      return `<div class="card step-card ${state.selectedStepId === step.id ? "selected" : ""} ${step.parentId ? `branch-${step.branchType || "then"}` : "branch-root"}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || "")}" style="--depth:${entry.level}"><div class="step-header"><span class="step-title"><span class="step-number">${esc(entry.number)}</span>${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span><span class="badge branch-badge">${esc(entry.branchLabel)}</span><span class="badge">${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span></div><div class="hierarchy-controls"><label>Parent Step<select data-step-parent>${parentOptionsForStep(
+      return `<div class="card step-card ${state.selectedStepId === step.id ? "selected" : ""} ${step.parentId ? `branch-${esc(step.branchType || "then")}` : "branch-root"}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || "")}" style="--depth:${entry.level}"><div class="step-header"><span class="step-title"><span class="step-number">${esc(entry.number)}</span>${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span><span class="badge branch-badge">${esc(entry.branchLabel)}</span><span class="badge">${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span></div><div class="hierarchy-controls"><label>Parent Step<select data-step-parent>${parentOptionsForStep(
         step,
       )
         .map(
@@ -1392,7 +1392,7 @@ function renderStepsAuditWorkspace() {
         <div class="row hierarchy-buttons"><button class="secondary small" data-select-step>Select</button></div>
       </div>`;
       }
-      return `<div class="card step-card ${state.selectedStepId === step.id ? "selected" : ""} ${step.parentId ? `branch-${step.branchType || "then"}` : "branch-root"}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || "")}" style="--depth:${entry.level}">
+      return `<div class="card step-card ${state.selectedStepId === step.id ? "selected" : ""} ${step.parentId ? `branch-${esc(step.branchType || "then")}` : "branch-root"}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || "")}" style="--depth:${entry.level}">
       <div class="step-header"><span class="step-title"><span class="step-number">${esc(entry.number)}</span>${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span><span class="badge branch-badge">${esc(entry.branchLabel)}</span><span class="badge">${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span></div>
       <div class="hierarchy-controls"><label>Parent Step<select data-step-parent>${parentOptionsForStep(
         step,

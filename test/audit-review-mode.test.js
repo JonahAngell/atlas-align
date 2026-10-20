@@ -233,7 +233,7 @@ test("generated References present and edit their linked direct Source decision"
   assert.match(source, /linked\.length === 1 \? linked\[0\] : null/);
   assert.match(
     source,
-    /data-review-id="\$\{authority\.id\}" data-review-presentation-id="\$\{item\.id\}"/,
+    /data-review-id="\$\{escHtml\(authority\.id\)\}" data-review-presentation-id="\$\{escHtml\(item\.id\)\}"/,
   );
   assert.match(source, /const authority = decisionAuthority\(item\)/);
   assert.doesNotMatch(source, /data-review-id="\$\{item\.id\}" aria-pressed/);
