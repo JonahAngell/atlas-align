@@ -192,6 +192,7 @@ function atlasWorkflowDialog(title, body, actions = "") {
   });
   wrap.addEventListener("keydown", (e) => {
     if (e.key === "Escape") close();
+    atlasTrapTabKey(e, wrap.querySelector(".workflow-dialog"));
   });
   wrap.querySelector("input,textarea,select,button")?.focus();
   return { wrap, close };

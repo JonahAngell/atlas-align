@@ -308,7 +308,13 @@ atlasRenderJoinPickerModal =
 document.addEventListener(
   "keydown",
   (event) => {
-    if (event.key !== "Escape" || !atlasJoinPickerState) return;
+    if (!atlasJoinPickerState) return;
+    if (event.key === "Tab" && typeof atlasTrapTabKey === "function")
+      return atlasTrapTabKey(
+        event,
+        document.querySelector(".join-picker-modal"),
+      );
+    if (event.key !== "Escape") return;
     event.preventDefault();
     event.stopImmediatePropagation();
     atlasCloseJoinPicker();

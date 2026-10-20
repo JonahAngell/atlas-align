@@ -45,8 +45,13 @@
       `Switch to ${label}?${pending}\n\nSelect OK to Switch User or Cancel to keep the current identity.`,
     );
   }
+  let returnFocus = null;
   function closeDialog() {
-    document.getElementById("atlas-impersonation-dialog")?.remove();
+    const dialog = document.getElementById("atlas-impersonation-dialog");
+    if (!dialog) return;
+    dialog.remove();
+    returnFocus?.focus?.();
+    returnFocus = null;
   }
   function profileLabel(profile) {
     return profile.fullName || profile.username || profile.id;
@@ -120,6 +125,7 @@
   async function openPicker() {
     if (!activeInfo().enabled) return;
     closeDialog();
+    returnFocus = document.activeElement;
     const payload = await request(`${API}/profiles`);
     const profiles = (payload.items || []).slice().sort(
       (a, b) =>
@@ -187,6 +193,11 @@
     });
     overlay.addEventListener("keydown", (e) => {
       if (e.key === "Escape") closeDialog();
+      if (typeof globalThis.atlasTrapTabKey === "function")
+        globalThis.atlasTrapTabKey(
+          e,
+          overlay.querySelector(".atlas-impersonation-panel"),
+        );
     });
     refresh();
     input.focus();

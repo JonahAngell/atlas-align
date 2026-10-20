@@ -85,6 +85,10 @@ function atlasShowHistoryModal(title, content) {
     if (e.target === root || e.target.closest("[data-close-history]"))
       atlasHistoryClose();
   });
+  root.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") atlasHistoryClose();
+    atlasTrapTabKey(e, root.querySelector(".audit-history-modal"));
+  });
   return root;
 }
 async function atlasViewAuditRevision(id, compare) {
