@@ -6495,6 +6495,7 @@ body.dark .compact-action-menu-panel {
   align-items: center;
   gap: 6px;
 }
+
 #page-steps #splitLogicConnectorsBtn .app-icon {
   width: 18px;
   height: 18px;
@@ -12180,6 +12181,7 @@ body.dark .created-column-token {
   gap: 0.35rem;
 }
 
+
 .atlas-choice-popover-grid .atlas-choice-option {
   min-height: 44px;
   display: grid;
@@ -12201,19 +12203,23 @@ body.dark .created-column-token {
     border-color 120ms ease-out;
 }
 
+
 .atlas-choice-popover-grid .atlas-choice-option:hover {
   background: color-mix(in srgb, var(--surface2) 88%, var(--text));
   border-color: var(--primary);
 }
 
+
 .atlas-choice-popover-grid .atlas-choice-option:active {
   transform: scale(0.98);
 }
+
 
 .atlas-choice-popover-grid .atlas-choice-option.is-selected {
   background: var(--accent2);
   border-color: var(--primary);
 }
+
 
 .atlas-choice-popover-grid .atlas-choice-icon {
   grid-area: icon;
@@ -12221,19 +12227,23 @@ body.dark .created-column-token {
   color: var(--muted);
 }
 
+
 .atlas-choice-popover-grid .atlas-choice-option.is-selected .atlas-choice-icon {
   color: var(--primary);
 }
+
 
 .atlas-choice-icon svg {
   width: 20px;
   height: 20px;
 }
 
+
 .atlas-choice-popover-grid .atlas-choice-label {
   grid-area: label;
   font-weight: 850;
 }
+
 
 .atlas-choice-popover-grid .atlas-choice-description {
   grid-area: description;
@@ -12339,10 +12349,12 @@ body.dark .created-column-token {
   background: var(--surface2);
 }
 
+
 .duplicate-fields-header {
   display: grid;
   gap: 0.2rem;
 }
+
 
 .duplicate-field-list {
   display: grid;
@@ -12351,6 +12363,7 @@ body.dark .created-column-token {
   padding: 0;
   list-style: none;
 }
+
 
 .duplicate-field-row {
   display: flex;
@@ -12364,6 +12377,7 @@ body.dark .created-column-token {
   background: var(--surface);
 }
 
+
 .duplicate-field-name {
   flex: 1 1 8rem;
   min-width: 0;
@@ -12371,10 +12385,12 @@ body.dark .created-column-token {
   overflow-wrap: anywhere;
 }
 
+
 .duplicate-field-source {
   flex: 0 1 auto;
   min-width: 0;
 }
+
 
 .duplicate-field-source .visual-picker-pill-main {
   overflow: hidden;
@@ -12382,19 +12398,23 @@ body.dark .created-column-token {
   white-space: nowrap;
 }
 
+
 .duplicate-fields-editor .duplicate-field-remove,
 .duplicate-fields-editor [data-add-duplicate-field] {
   min-height: 44px;
   min-width: 44px;
 }
 
+
 .duplicate-fields-empty {
   margin: 0;
 }
 
+
 .duplicate-fields-empty p {
   margin: 0;
 }
+
 
 .duplicate-fields-actions {
   display: flex;
@@ -12519,5 +12539,4 @@ body.dark .created-column-token {
     animation: none;
   }
 }
-
 
