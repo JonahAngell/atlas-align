@@ -71,14 +71,6 @@ async function atlasLoadCurrentUser(options = {}) {
   }
   return state.currentUser;
 }
-async function atlasSearchUsers(query, options = {}) {
-  const q = String(query || "").trim();
-  if (q.length < 2) return { items: [] };
-  return atlasAuditApi(
-    `/api/users?q=${encodeURIComponent(q)}&page=${options.page || 1}&size=${Math.min(25, options.size || 10)}`,
-    { signal: options.signal },
-  );
-}
 function atlasSetAuditLibraryLoading(loading) {
   const spinner = document.querySelector("[data-audit-loading-spinner]");
   if (spinner) spinner.hidden = !loading;
@@ -531,12 +523,6 @@ async function atlasImportAuditDocuments(
   renderActiveAuditSelect?.();
   updateDashboardMetrics?.();
   return payload;
-}
-async function atlasImportAuditDocument(
-  document,
-  summary = "Imported JSON audit",
-) {
-  return atlasImportAuditDocuments([document], summary);
 }
 async function atlasImportAuditJsonFile(file) {
   const json = JSON.parse(await file.text());

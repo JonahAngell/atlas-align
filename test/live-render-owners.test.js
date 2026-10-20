@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import vm from "node:vm";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 const scripts = [
@@ -53,8 +54,23 @@ test("sourceAliasFor and alpha helpers have one live definition", () => {
   ]);
 });
 
-test("stepTypeLabel keeps both the legacy string helper and the step-object helper", () => {
-  const hits = filesMatching(/function stepTypeLabel\b/);
-  assert.ok(hits.includes("js/00-config-utils.js"));
-  assert.ok(hits.includes("js/15c-source-field-picker.js"));
+test("stepTypeLabel has one live definition for step objects and legacy type strings", () => {
+  assert.deepEqual(filesMatching(/function stepTypeLabel\b/), [
+    "js/15c-source-field-picker.js",
+  ]);
+  const source = readFileSync(
+    new URL("../js/15c-source-field-picker.js", import.meta.url),
+    "utf8",
+  );
+  const body = source.slice(
+    source.indexOf("function stepTypeLabel"),
+    source.indexOf("function renderLiveSourceOptions"),
+  );
+  const context = vm.createContext({
+    STEP_TYPE_OPTIONS: [["if_then", "If/Then"]],
+  });
+  vm.runInContext(`${body}; globalThis.label = stepTypeLabel;`, context);
+  assert.equal(context.label({ step_type: "if_then" }), "If/Then");
+  assert.equal(context.label("if"), "If / Then");
+  assert.equal(context.label("create"), "Create Field");
 });

@@ -87,34 +87,6 @@ function atlasShowHistoryModal(title, content) {
   });
   return root;
 }
-async function atlasOpenAuditHistory() {
-  if (!state.auditPersistence.auditId)
-    return status("Save this audit before opening version history.", "warn");
-  const payload = await atlasAuditApi(
-    `/api/audits/${encodeURIComponent(state.audit.id)}/revisions`,
-  );
-  const rows = payload.revisions
-    .map(
-      (r) =>
-        `<tr><td>${r.number}</td><td>${esc(r.changeType)}</td><td>${esc(r.changeSummary || "")}</td><td>${esc(r.createdByFullName || r.createdByUsername)}</td><td>${new Date(r.createdAt).toLocaleString()}</td><td><button class="btn secondary small" data-view-audit-revision="${esc(r.id)}">View</button> <button class="btn secondary small" data-compare-audit-revision="${esc(r.id)}">Compare</button> <button class="btn danger small" data-restore-audit-revision="${esc(r.id)}">Restore</button></td></tr>`,
-    )
-    .join("");
-  const root = atlasShowHistoryModal(
-    `Version History: ${state.audit.name}`,
-    `<table class="revision-table"><thead><tr><th>Revision</th><th>Type</th><th>Summary</th><th>Saved by</th><th>Saved at</th><th>Actions</th></tr></thead><tbody>${rows || '<tr><td colspan="6">No revisions.</td></tr>'}</tbody></table>`,
-  );
-  root.addEventListener("click", async (e) => {
-    const view = e.target.closest("[data-view-audit-revision]");
-    const compare = e.target.closest("[data-compare-audit-revision]");
-    const restore = e.target.closest("[data-restore-audit-revision]");
-    if (view)
-      await atlasViewAuditRevision(view.dataset.viewAuditRevision, false);
-    if (compare)
-      await atlasViewAuditRevision(compare.dataset.compareAuditRevision, true);
-    if (restore)
-      await atlasRestoreAuditRevision(restore.dataset.restoreAuditRevision);
-  });
-}
 async function atlasViewAuditRevision(id, compare) {
   if (!compare) {
     const revision = await atlasAuditApi(

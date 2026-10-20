@@ -79,55 +79,6 @@ function atlasResolveSourceIdentity(sourceLike = {}, catalog = null) {
   );
   return { sourceKey, sourceFile, alias, catalogSource: match, ambiguous };
 }
-function atlasNormalizeAuditSourceIdentity(audit) {
-  if (!audit || typeof audit !== "object") return audit;
-  audit.sources = Array.isArray(audit.sources) ? audit.sources : [];
-  audit.sources = audit.sources.map((source) => {
-    const identity = atlasResolveSourceIdentity(source);
-    return {
-      ...source,
-      sourceKey: identity.sourceKey,
-      sourceFile: identity.sourceFile,
-      alias: identity.alias,
-      name:
-        source.name ||
-        identity.alias ||
-        identity.sourceFile ||
-        identity.sourceKey,
-    };
-  });
-  const byAnyIdentity = (value) => atlasResolveSourceIdentity(value);
-  (Array.isArray(audit.fields) ? audit.fields : []).forEach((field) => {
-    const identity = byAnyIdentity(
-      field.sourceKey || field.sourceFile || field.sourceAlias || field.source,
-    );
-    if (identity.sourceKey) field.sourceKey = identity.sourceKey;
-    if (identity.sourceFile) field.sourceFile = identity.sourceFile;
-    if (identity.alias) field.sourceAlias = identity.alias;
-  });
-  (Array.isArray(audit.steps) ? audit.steps : []).forEach((step) => {
-    const params =
-      step.params && typeof step.params === "object"
-        ? step.params
-        : (step.params = {});
-    const identity = byAnyIdentity(
-      step.sourceKey ||
-        params.source_key ||
-        step.source ||
-        params.source_file ||
-        params.source_alias,
-    );
-    if (!identity.sourceKey) return;
-    step.sourceKey = identity.sourceKey;
-    step.sourceFile = identity.sourceFile;
-    step.sourceAlias = identity.alias;
-    step.source = identity.sourceKey;
-    params.source_key = identity.sourceKey;
-    params.source_file = identity.sourceFile;
-    params.source_alias = identity.alias;
-  });
-  return audit;
-}
 
 let atlasSourceDerivedVersion = 0;
 let atlasSourceCatalogCache = {
@@ -573,50 +524,6 @@ function atlasRemoveSourceState(sourceKeyOrFile) {
     sourceFile,
     selectedStepRemoved: generatedStepIds.size > 0 && !state.selectedStepId,
   };
-}
-
-function atlasCommitSourceMutationFallback(action, sourceKeyOrFile) {
-  const previousSelectedStepId = state.selectedStepId;
-  const result =
-    action === "remove"
-      ? atlasRemoveSourceState(sourceKeyOrFile)
-      : atlasAddSourceState(sourceKeyOrFile);
-  if (!result.changed) return result;
-
-  syncAutoReferenceSteps();
-  if (
-    state.selectedStepId &&
-    !state.audit.steps.some((step) => step.id === state.selectedStepId)
-  ) {
-    state.selectedStepId = state.audit.steps[0]?.id || null;
-  }
-  if (!state.selectedStepId && previousSelectedStepId) {
-    state.selectedStepId = state.audit.steps[0]?.id || null;
-  }
-
-  atlasMarkFieldPickerDirty?.();
-  atlasInvalidatePages?.(["fields", "steps", "preview", "review"]);
-  atlasRenderActivePage?.({ force: true });
-  scheduleAutosave();
-  status(
-    `${action === "remove" ? "Removed" : "Added"} ${result.sourceFile || sourceKeyOrFile} ${action === "remove" ? "from" : "to"} this audit.`,
-    "ok",
-  );
-  return result;
-}
-
-function addSourceFileToAudit(sourceKeyOrFile) {
-  if (typeof atlasCommitAuditSourceChange === "function") {
-    return atlasCommitAuditSourceChange({ action: "add", sourceKeyOrFile });
-  }
-  return atlasCommitSourceMutationFallback("add", sourceKeyOrFile);
-}
-
-function removeSourceFileFromAudit(sourceKeyOrFile) {
-  if (typeof atlasCommitAuditSourceChange === "function") {
-    return atlasCommitAuditSourceChange({ action: "remove", sourceKeyOrFile });
-  }
-  return atlasCommitSourceMutationFallback("remove", sourceKeyOrFile);
 }
 
 function referenceStepForSource(source, index) {

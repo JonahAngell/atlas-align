@@ -34,27 +34,6 @@ function atlasStepOrderGroup(step) {
   return 40;
 }
 /**
- * Returns a label for a numeric step order group.
- * @param {any} group - Group key or label.
- */
-function atlasStepOrderGroupLabel(group) {
-  if (group === 10) return "Reference steps";
-  if (group === 20) return "Join steps";
-  if (group === 30) return "Create custom columns";
-  return "Other logic steps";
-}
-/**
- * Returns the compact label for the step order group.
- * @param {any} step - Logic step object being read or modified.
- */
-function atlasStepOrderGroupShortLabel(step) {
-  const group = atlasStepOrderGroup(step);
-  if (group === 10) return "Reference";
-  if (group === 20) return "Join";
-  if (group === 30) return "Create Column";
-  return "Other";
-}
-/**
  * Returns children of a parent sorted by required group, sortOrder, then original array order.
  * @param {any} parentId - Id of the parent step, or empty/null for top-level steps.
  */
@@ -98,53 +77,6 @@ function atlasNormalizeStepOrderGroups() {
     });
   });
   return changed;
-}
-/**
- * Returns sibling steps that can be reordered with the given step.
- * @param {any} step - Logic step object being read or modified.
- */
-function atlasMovableSiblingsForStep(step) {
-  if (!step) return [];
-  const group = atlasStepOrderGroup(step);
-  return childrenOf(step.parentId || null).filter(
-    (candidate) => atlasStepOrderGroup(candidate) === group,
-  );
-}
-/**
- * Returns whether a step can move up within its group.
- * @param {any} step - Logic step object being read or modified.
- */
-function atlasCanMoveStepUp(step) {
-  const siblings = atlasMovableSiblingsForStep(step);
-  return siblings.findIndex((candidate) => candidate.id === step?.id) > 0;
-}
-/**
- * Returns whether a step can move down within its group.
- * @param {any} step - Logic step object being read or modified.
- */
-function atlasCanMoveStepDown(step) {
-  const siblings = atlasMovableSiblingsForStep(step);
-  const index = siblings.findIndex((candidate) => candidate.id === step?.id);
-  return index >= 0 && index < siblings.length - 1;
-}
-/**
- * Swaps a step with a sibling in the same order group.
- * @param {any} stepId - Id of the target logic step.
- * @param {any} direction - Direction to move a step.
- */
-function atlasMoveStepWithinGroup(stepId, direction) {
-  const step = stepById(stepId);
-  const siblings = atlasMovableSiblingsForStep(step);
-  const index = siblings.findIndex((candidate) => candidate.id === stepId);
-  if (index < 0) return false;
-  const swapIndex = direction === "up" ? index - 1 : index + 1;
-  if (swapIndex < 0 || swapIndex >= siblings.length) return false;
-  const other = siblings[swapIndex];
-  const currentOrder = Number(step.sortOrder) || index + 1;
-  step.sortOrder = Number(other.sortOrder) || swapIndex + 1;
-  other.sortOrder = currentOrder;
-  atlasNormalizeStepOrderGroups();
-  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -223,22 +155,6 @@ function branchTypeOptions(step) {
         `<option value="${value}" ${step.branchType === value ? "selected" : ""}>${label}</option>`,
     )
     .join("");
-}
-
-/**
- * Calculates a step nesting level.
- * @param {any} step - Logic step object being read or modified.
- */
-function stepLevel(step) {
-  let level = 0;
-  let current = stepById(step.parentId);
-  const seen = new Set([step.id]);
-  while (current && !seen.has(current.id)) {
-    seen.add(current.id);
-    level += 1;
-    current = stepById(current.parentId);
-  }
-  return level;
 }
 
 /**

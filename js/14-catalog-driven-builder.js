@@ -554,55 +554,11 @@ function atlasDescribedChoices(options, descriptions = {}) {
   });
 }
 /**
- * Renders a field picker input using an options object.
- * Explicit property names keep call sites readable and avoid positional-argument ambiguity.
- * @param {Object} options - Field-picker rendering options.
- * @param {string} options.name - Parameter name written to data-param.
- * @param {string} options.value - Currently selected field value.
- * @param {string} options.placeholder - Empty-state label used by visual overrides.
- * @param {string} options.sourceFile - Source file used to scope available fields.
- */
-function fieldInputFromOptions({
-  name = "",
-  value = "",
-  placeholder = "Select field",
-  sourceFile = "",
-} = {}) {
-  return `<select data-param="${esc(name)}">${fieldOptionsHtml(sourceFile, value || "")}</select>`;
-}
-/**
- * Renders a source picker input using an options object.
- * Explicit property names keep call sites readable and avoid positional-argument ambiguity.
- * @param {Object} options - Source-picker rendering options.
- * @param {string} options.name - Parameter name written to data-param.
- * @param {string} options.value - Currently selected source value.
- * @param {string} options.placeholder - Empty-state label used by visual overrides.
- */
-function sourceInputFromOptions({
-  name = "",
-  value = "",
-  placeholder = "Select source file",
-} = {}) {
-  return `<select data-param="${esc(name)}">${sourceOptionsHtml(value || "")}</select>`;
-}
-/**
  * Renders hidden source alias input markup.
  * @param {any} params - Step params object.
  */
 function sourceAliasHidden(params) {
   return `<input type="hidden" data-param="source_alias" value="${esc(params.source_alias || sourceAliasFor(params.source_file || ""))}">`;
-}
-
-/**
- * Normalizes newline-delimited comparison input into one value per line.
- * @param {any} value - Raw comparison value list.
- */
-function valuesToLines(value) {
-  return String(value || "")
-    .split(/\r?\n/)
-    .map((item) => item.trim())
-    .filter(Boolean)
-    .join("\n");
 }
 
 /**
@@ -956,93 +912,6 @@ function renderCreateModeInputs(p) {
     },
   )}</label><label>Number of Characters<input data-param="character_count" value="${esc(p.character_count || "")}"></label>`;
 }
-function compareMathOperationsForCondition(condition = {}) {
-  return typeof parseSourceMathOperations === "function"
-    ? parseSourceMathOperations(
-        condition.compareMathJson ||
-          condition.compare_math_json ||
-          condition.compareMath ||
-          [],
-      )
-    : [];
-}
-
-function compareMathOperatorOptions(selected = "*") {
-  return (
-    typeof ATLAS_SOURCE_MATH_OPERATORS !== "undefined"
-      ? ATLAS_SOURCE_MATH_OPERATORS
-      : ["+", "-", "*", "/"]
-  )
-    .map(
-      (operator) =>
-        `<option value="${esc(operator)}" ${operator === selected ? "selected" : ""}>${esc(operator)}</option>`,
-    )
-    .join("");
-}
-
-function renderCompareMathOperationRow(
-  operation = {},
-  fallbackSourceFile = "",
-) {
-  const id = operation.id || uid("math");
-  const operator =
-    typeof ATLAS_SOURCE_MATH_OPERATORS !== "undefined" &&
-    ATLAS_SOURCE_MATH_OPERATORS.includes(operation.operator)
-      ? operation.operator
-      : "*";
-  const operandType = operation.operandType === "field" ? "field" : "number";
-  const operandSource = operation.operandSourceFile || fallbackSourceFile;
-  return `<div class="compare-math-operation-row condition-value-row" data-compare-math-row data-compare-math-id="${esc(id)}">
-    <select data-compare-math-operator aria-label="Math operator">${compareMathOperatorOptions(operator)}</select>
-    <select data-compare-math-operand-type aria-label="Operand type"><option value="number" ${operandType === "number" ? "selected" : ""}>Number</option><option value="field" ${operandType === "field" ? "selected" : ""}>Field</option></select>
-    <input data-compare-math-operand value="${esc(operation.operand || "")}" placeholder="Value" inputmode="decimal" ${operandType === "field" ? "hidden" : ""}>
-    <select data-compare-math-operand-source ${operandType === "field" ? "" : "hidden"}>${sourceOptionsHtml(operandSource)}</select>
-    <select data-compare-math-operand-field ${operandType === "field" ? "" : "hidden"}>${fieldOptionsHtml(operandSource, operation.operandFieldName || "")}</select>
-    <button type="button" class="secondary small" data-remove-compare-math-operation>Remove</button>
-  </div>`;
-}
-
-function renderCompareMathEditor(condition = {}, compareSourceFile = "") {
-  const operations = compareMathOperationsForCondition(condition);
-  const hiddenValue = JSON.stringify(operations);
-  return `<div class="compare-math-editor condition-values-editor" data-compare-math-editor>
-    <div class="condition-values-header"><label>Compare Field Math<input type="hidden" data-condition-field="compareMathJson" value="${esc(hiddenValue)}"></label><button type="button" class="secondary small" data-add-compare-math-operation>Add Operation</button></div>
-    <p class="hint full">Optional operations are applied to the compare field in order.</p>
-    <div class="compare-math-operations-list condition-values-list" data-compare-math-list>${operations.map((operation) => renderCompareMathOperationRow(operation, compareSourceFile)).join("")}</div>
-  </div>`;
-}
-
-/**
- * Renders one guided IF/THEN condition row.
- * @param {any} condition - Condition object to format or render.
- * @param {any} index - Zero-based index used for ordering or display.
- */
-function renderConditionRow(condition, index) {
-  const sourceFile = condition.sourceFile || "";
-  const valueMode = condition.valueMode || "values";
-  const compareSource = condition.compareSourceFile || sourceFile;
-  return `<div class="guided-condition-row" data-condition-index="${index}" data-condition-id="${esc(condition.id || uid("cond"))}">
-    <select data-condition-field="connector"><option ${index === 0 ? "selected" : ""}>IF</option><option ${condition.connector === "AND" ? "selected" : ""}>AND</option><option ${condition.connector === "OR" ? "selected" : ""}>OR</option></select>
-    <label>Source File<select data-condition-field="sourceFile">${sourceOptionsHtml(sourceFile)}</select></label>
-    <label>Field<select data-condition-field="fieldName">${fieldOptionsHtml(sourceFile, condition.fieldName || "")}</select></label>
-    <label>Operator<select data-condition-field="operator">${optionsHtml(
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.operators",
-        fallback: ["is equal to"],
-      }),
-      condition.operator,
-    )}</select></label>
-    <label>Value Mode<select data-condition-field="valueMode"><option value="values" ${valueMode === "values" ? "selected" : ""}>Values</option><option value="field" ${valueMode === "field" ? "selected" : ""}>Compare to Field</option><option value="blank" ${valueMode === "blank" ? "selected" : ""}>Blank / Null</option></select></label>
-    ${
-      valueMode === "field"
-        ? `<label>Compare Source<select data-condition-field="compareSourceFile">${sourceOptionsHtml(compareSource)}</select></label><label>Compare Field<select data-condition-field="compareFieldName">${fieldOptionsHtml(compareSource, condition.compareFieldName || "")}</select></label>${renderCompareMathEditor(condition, compareSource)}`
-        : valueMode === "blank"
-          ? `<div class="logic-editor-callout">No comparison value required.</div>`
-          : `<label>Values<textarea data-condition-field="compareValue" placeholder="One value per line">${esc(condition.compareValue || condition.expression || "")}</textarea></label>`
-    }
-    <button type="button" class="danger small" data-guided-delete-condition>Delete</button>
-  </div>`;
-}
 
 /**
  * Renders THEN/ELSE action controls.
@@ -1077,29 +946,6 @@ function renderThenActionBuilder(p, prefix = "THEN") {
 // -----------------------------------------------------------------------------
 // Base catalog-driven rules rendering
 // -----------------------------------------------------------------------------
-/**
- * Handles the renderSteps portion of the ATLAS Align client-side workflow.
- */
-function renderStepsCatalogDrivenBase() {
-  state.audit.steps.forEach((step, index) => normalizeCatalogStep(step, index));
-  const entries = hierarchicalStepEntries({ includeDisabled: true });
-  e.stepsList.innerHTML = entries
-    .map((entry) => {
-      const step = entry.step;
-      return `<div class="card step-card ${state.selectedStepId === step.id ? "selected" : ""} ${step.parentId ? `branch-${esc(step.branchType || "then")}` : "branch-root"}" data-id="${esc(step.id)}" data-parent-id="${esc(step.parentId || "")}" style="--depth:${entry.level}"><div class="step-header"><span class="step-title"><span class="step-number">${esc(entry.number)}</span>${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span><span class="badge branch-badge">${esc(entry.branchLabel)}</span><span class="badge">${esc(STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || step.step_type)}</span></div><div class="hierarchy-controls"><label>Parent Step<select data-step-parent>${parentOptionsForStep(
-        step,
-      )
-        .map(
-          (option) =>
-            `<option value="${esc(option.id)}" ${(step.parentId || "") === option.id ? "selected" : ""}>${esc(option.label)}</option>`,
-        )
-        .join(
-          "",
-        )}</select></label><label>Branch Type<select data-step-branch>${branchTypeOptions(step)}</select></label></div><input type="hidden" data-step-title value="${esc(step.title || STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] || "Logic Step")}"><label>SWAT Step Type<select data-step-type>${optionsHtml(STEP_TYPE_OPTIONS, step.step_type)}</select></label><input type="hidden" data-step-source value="${esc(step.source || "")}"><input type="hidden" data-step-field value="${esc(step.field || "")}"><input type="hidden" data-step-action value="${esc(step.action || "")}">${renderGuidedBuilder(step)}<label>Manual Notes<textarea data-step-notes>${esc(step.notes || "")}</textarea></label><label><span class="check"><input type="checkbox" data-step-enabled ${step.enabled !== false ? "checked" : ""}> Enabled</span></label><div class="logic-preview-small"><strong>Generated Analyst Logic</strong><p>${esc(analystLogic(step))}</p></div><div class="row hierarchy-buttons"><button class="secondary small" data-select-step>Select</button><button class="small" data-add-child-step>Add Child Step</button><button class="secondary small" data-indent>Indent</button><button class="secondary small" data-outdent>Outdent</button><button class="danger small" data-delete-step>Delete Step</button></div></div>`;
-    })
-    .join("");
-  renderSelectedStep();
-}
 
 // -----------------------------------------------------------------------------
 // Catalog-driven capture override
@@ -1228,107 +1074,6 @@ function atlasInverseElseSortOrder(sourceStep) {
   const next = siblings[index + 1];
   if (next) return (current + (Number(next.sortOrder) || index + 2)) / 2;
   return current + 1;
-}
-
-function syncInverseElseStepsForSource(ifStepId) {
-  const sourceStep = state.audit.steps.find(
-    (step) => step.id === ifStepId && step.step_type === "if_then",
-  );
-  if (!sourceStep) return false;
-  let changed = false;
-  (state.audit.steps || []).forEach((step) => {
-    if (
-      step?.params?.inverse_else !== "Yes" ||
-      step.params.inverse_of_step_id !== ifStepId
-    )
-      return;
-    const conditions = atlasCloneInverseConditionsForTarget(sourceStep, step);
-    const sourceFile = atlasSourceForInverseStep(sourceStep, conditions);
-    const sourceAlias = sourceAliasFor(sourceFile);
-    step.params =
-      step.params && typeof step.params === "object" ? step.params : {};
-    atlasWriteLiveEditorConditions(step, conditions);
-    step.params.source_file = sourceFile;
-    step.params.source_alias = sourceAlias;
-    step.source = sourceFile;
-    changed = true;
-  });
-  return changed;
-}
-
-function createInverseElseStepForIf(stepId) {
-  capture?.();
-  const sourceStep = state.audit.steps.find((step) => step.id === stepId);
-  if (
-    !sourceStep ||
-    sourceStep.autoGeneratedReference ||
-    sourceStep.step_type !== "if_then"
-  ) {
-    status?.(
-      "Create inverse step (ELSE) is only available for manual IF steps.",
-      "warn",
-    );
-    return null;
-  }
-  normalizeCatalogStep(sourceStep);
-  const conditions = atlasCloneInverseConditionsForTarget(sourceStep);
-  const sourceFile = atlasSourceForInverseStep(sourceStep, conditions);
-  const sourceAlias = sourceAliasFor(sourceFile);
-  const inverseStep = {
-    id: uid("step"),
-    enabled: true,
-    parentId: sourceStep.parentId || null,
-    branchType:
-      sourceStep.branchType || (sourceStep.parentId ? "then" : "root"),
-    sortOrder: atlasInverseElseSortOrder(sourceStep),
-    title: "Inverse ELSE",
-    type: "if",
-    step_type: "if_then",
-    source: sourceFile,
-    field: "",
-    action: "",
-    notes: "",
-    conditions: atlasConditionSummaries(conditions),
-    params: {
-      inverse_else: "Yes",
-      inverse_of_step_id: sourceStep.id,
-      source_file: sourceFile,
-      source_alias: sourceAlias,
-      conditions_json: JSON.stringify(conditions),
-      then_action_type: "freeform",
-      then_action: "",
-    },
-  };
-  const entries = hierarchicalStepEntries({ includeDisabled: true });
-  const sourceEntryIndex = entries.findIndex(
-    (entry) => entry.step.id === sourceStep.id,
-  );
-  let afterStep = sourceStep;
-  for (
-    let index = sourceEntryIndex + 1;
-    index >= 0 && index < entries.length;
-    index += 1
-  ) {
-    if (isDescendantOf(sourceStep.id, entries[index].step.id))
-      afterStep = entries[index].step;
-    else break;
-  }
-  const steps = state.audit.steps || [];
-  const insertIndex = Math.max(
-    steps.findIndex((step) => step.id === afterStep.id),
-    steps.findIndex((step) => step.id === sourceStep.id),
-  );
-  if (insertIndex >= 0) steps.splice(insertIndex + 1, 0, inverseStep);
-  else steps.push(inverseStep);
-  state.audit.steps = steps;
-  syncInverseElseStepsForSource(sourceStep.id);
-  atlasNormalizeStepOrderGroups?.();
-  state.selectedStepId = inverseStep.id;
-  renderAll();
-  showSection?.("steps");
-  scheduleAutosave();
-  status?.("Created inverse ELSE step.", "ok");
-  return inverseStep;
 }
 
 function createOrUpdateElseStep(ifStep) {
@@ -1491,22 +1236,6 @@ normalizeCatalogStep = function normalizeCatalogStepWithMath(step, index = 0) {
   return normalized;
 };
 
-function atlasNumericFieldOptionsHtml(sourceFile = "", selected = "") {
-  const fields = (
-    typeof fieldsForSource === "function" ? fieldsForSource(sourceFile) : []
-  ).filter(atlasIsNumericField);
-  return [
-    '<option value="">Select numeric field...</option>',
-    ...fields.map((field) => {
-      const parts = fieldDisplayParts(field, sourceFile);
-      const label = parts.alternate
-        ? `${parts.display} (${parts.alternate})`
-        : parts.display;
-      return `<option value="${esc(parts.raw)}" ${selected === parts.raw || selected === parts.vanity ? "selected" : ""}>${esc(label)}</option>`;
-    }),
-  ].join("");
-}
-
 /**
  * Rewrites duplicate_fields_json from the stored list (migrating the legacy
  * single field) and mirrors the first column into field_name/source_file so
@@ -1656,13 +1385,6 @@ function atlasSortFieldsEditorHtml(params = {}) {
     <div class="sort-field-list">${rows.map((item, index) => atlasSortFieldRowHtml(item, index + 1)).join("")}</div>
     <div class="empty-state sort-fields-empty" data-sort-empty hidden><p>No sort fields yet. Add a field to choose how records are ordered.</p></div>
   </div>`;
-}
-
-function atlasMathOperatorOptions(selected = "*") {
-  return ATLAS_SOURCE_MATH_OPERATORS.map(
-    (value) =>
-      `<option value="${value}" ${value === selected ? "selected" : ""}>${value}</option>`,
-  ).join("");
 }
 
 function atlasMathEditorHtml(name, value, baseSourceFile = "") {

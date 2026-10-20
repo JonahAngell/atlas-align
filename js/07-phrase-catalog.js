@@ -622,12 +622,6 @@ function atlasRoundingDirectionText(roundingMode) {
   return renderCatalogPhrase(path, {});
 }
 
-function atlasReadableSourceFieldName(p = {}) {
-  return (
-    quotePhraseValue?.(p.field_name || "") || `"${esc(p.field_name || "")}"`
-  );
-}
-
 function atlasMathOperationPhrase(operator, index, operand, sourceField) {
   const first = index === 0;
   const path = {
@@ -647,23 +641,6 @@ function atlasMathOperationPhrase(operator, index, operand, sourceField) {
     operand,
     source_field: sourceField,
   });
-}
-
-function atlasSourceMathOperationPhrase(operation, index, sourceField) {
-  return atlasMathOperationPhrase(
-    operation?.operator,
-    index,
-    String(operation?.operand || "").trim(),
-    sourceField,
-  );
-}
-
-function atlasJoinReadableList(items = []) {
-  const filtered = items.filter(Boolean);
-  if (!filtered.length) return "";
-  if (filtered.length === 1) return filtered[0];
-  if (filtered.length === 2) return `${filtered[0]} or ${filtered[1]}`;
-  return `${filtered.slice(0, -1).join(", ")}, or ${filtered.at(-1)}`;
 }
 
 /** Joins phrases with "and" ("A and B", "A, B, and C"). */
@@ -713,19 +690,6 @@ function atlasDuplicateKeepClause(action = "") {
   return typeof clause === "string" && clause
     ? clause
     : "keeping the first record";
-}
-
-function atlasSourceFieldMathPhrase(p = {}) {
-  const sourceField = atlasReadableSourceFieldName(p);
-  const operations =
-    typeof parseSourceMathOperations === "function"
-      ? parseSourceMathOperations(p)
-      : [];
-  return atlasJoinReadableList(
-    operations.map((operation, index) =>
-      atlasSourceMathOperationPhrase(operation, index, sourceField),
-    ),
-  );
 }
 
 // -----------------------------------------------------------------------------

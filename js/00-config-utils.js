@@ -93,22 +93,6 @@ function downloadJson(name, obj) {
 // -----------------------------------------------------------------------------
 // Legacy logic text helpers
 // -----------------------------------------------------------------------------
-/**
- * Maps an internal legacy step type to a user-facing label.
- * @param {any} type - MIME type, step type, or classification value.
- */
-function stepTypeLabel(type) {
-  return (
-    {
-      source: "Source",
-      create: "Create Field",
-      if: "If / Then",
-      compare: "Compare",
-      join: "Join",
-      transform: "Manipulation",
-    }[type] || type
-  );
-}
 
 /**
  * Formats a legacy condition object as a plain sentence fragment.
