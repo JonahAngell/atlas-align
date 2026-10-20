@@ -1,4 +1,7 @@
-/** Reads one decoded cookie value. Returns an empty string when it is absent. */
+/**
+ * Reads one decoded cookie value. Returns an empty string when it is absent
+ * or not valid percent-encoding, so a malformed cookie reads as signed out.
+ */
 export function cookieValue(request, name) {
   const cookies = String(request.headers.cookie || "").split(";");
   for (const cookie of cookies) {
@@ -6,7 +9,11 @@ export function cookieValue(request, name) {
     if (separator < 0) continue;
     const key = cookie.slice(0, separator).trim();
     if (key !== name) continue;
-    return decodeURIComponent(cookie.slice(separator + 1));
+    try {
+      return decodeURIComponent(cookie.slice(separator + 1));
+    } catch {
+      return "";
+    }
   }
   return "";
 }
@@ -37,11 +44,7 @@ export function profileAccessToken(req) {
 export function refreshAccessToken(req) {
   const authorization = String(req.headers.authorization || "");
   if (authorization.startsWith("Bearer ")) return authorization.slice(7);
-  const cookie = String(req.headers.cookie || "")
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith("access_token="));
-  return cookie ? decodeURIComponent(cookie.slice("access_token=".length)) : "";
+  return cookieValue(req, "access_token");
 }
 
 /** StudioShare JSON request used by profile lookup. Preserves upstream error text. */

@@ -163,6 +163,16 @@ if (!studioshareApiUrl && !isLocalAppEnv()) {
 }
 
 const pool = new Pool({ connectionString: databaseUrl, max: 5 });
+// pg emits "error" when the server drops an idle client; without a listener that crashes the process.
+pool.on("error", (error) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      event: "database_pool_error",
+      message: error.message,
+    }),
+  );
+});
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { files: 1, fileSize: 8 * 1024 * 1024 },
