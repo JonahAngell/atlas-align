@@ -455,9 +455,11 @@ function renderWorkbookAuditSelector() {
  * @param {any} file - Browser File object to import.
  */
 async function importWorkbookFile(file) {
-  if (!window.ExcelJS) {
+  try {
+    await atlasEnsureExcelJs();
+  } catch {
     status(
-      "ExcelJS is not loaded. Check the ExcelJS script reference in index.html.",
+      "The Excel reader could not load. Check your connection, then import the workbook again.",
       "bad",
     );
     return;

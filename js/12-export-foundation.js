@@ -50,8 +50,14 @@ function safeFileName(name) {
  */
 async function exportAuditExcel() {
   capture();
-  if (!window.ExcelJS)
-    return status("ExcelJS is not loaded; Excel export is unavailable.", "bad");
+  try {
+    await atlasEnsureExcelJs();
+  } catch {
+    return status(
+      "The Excel library could not load. Check your connection, then export again.",
+      "bad",
+    );
+  }
   const workbook = new ExcelJS.Workbook();
   workbook.creator = ATLAS_APP_NAME;
   const fields = workbook.addWorksheet("Fields");
@@ -175,8 +181,13 @@ function cloneExcelStyle(style) {
  * Loads the qTest Excel template workbook.
  */
 async function loadQtestTemplateWorkbook() {
-  if (!window.ExcelJS) {
-    status("ExcelJS is not loaded; Qtest Excel export is unavailable.", "bad");
+  try {
+    await atlasEnsureExcelJs();
+  } catch {
+    status(
+      "The Excel library could not load. Check your connection, then export again.",
+      "bad",
+    );
     return null;
   }
   const response = await fetch(QTEST_TEMPLATE_PATH);
