@@ -765,7 +765,7 @@ These paths are not architectural authority and are not listed file by file: `no
 - `.dockerignore` — Keeps tests, docs, tooling, and generated bundles out of the build context.
 - `.nvmrc` — Node major version used by CI.
 - `docker-compose.yml` — Local PostgreSQL 17 and app. Publishes the app on host port 8081 and sets `ATLAS_APP_ENV=local`.
-- `package.json` — Package metadata and scripts for start, test, version sync, local Compose, and the git hook.
+- `package.json` — Package `atlas-align`, versioned with the app. Scripts for start, checks, test, version sync, local Compose, and the git hook.
 - `package-lock.json` — Locked npm dependency tree.
 - `build-css.mjs` — Validates `css/` source units and writes generated root `styles.css` from `css/manifest.json`.
 - `playwright.config.js` — Playwright project for the deployed Preview URL. Chromium is serial.
@@ -916,7 +916,7 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 ### Tools (`tools/`)
 
 - `tools/check-syntax.mjs` — Runs `node --check` on every first-party script; backs `npm run check`.
-- `tools/sync-app-version.mjs` — Reads `ATLAS_APP_VERSION` and updates the marked Markdown targets.
+- `tools/sync-app-version.mjs` — Reads `ATLAS_APP_VERSION` and updates the marked Markdown targets plus the `package.json` and `package-lock.json` versions (npm form, without the leading `v`).
 - `tools/install-git-hooks.mjs` — Installs `.githooks/pre-commit` as the repo hook.
 - `tools/analyze-css-cascade.mjs` — Reports CSS declarations overridden later in the manifest.
 - `tools/create-review-bundle.mjs` — Builds a review bundle from `review-bundle-files.txt`.
