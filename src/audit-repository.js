@@ -58,7 +58,7 @@ const SQL = Object.freeze({
     import.meta.url,
   ),
   nextDeletedStepRevisionNumber: loadSql(
-    "../sql/audit-repository/next-deleted-step-revision-number.sql",
+    "../sql/audit-repository/next-step-revision-number.sql",
     import.meta.url,
   ),
   insertDeletedStepRevision: loadSql(
@@ -90,19 +90,19 @@ const SQL = Object.freeze({
     import.meta.url,
   ),
   nextRestorationDeletedStepRevisionNumber: loadSql(
-    "../sql/audit-repository/next-restoration-deleted-step-revision-number.sql",
+    "../sql/audit-repository/next-step-revision-number.sql",
     import.meta.url,
   ),
   insertRestorationDeletedStepRevision: loadSql(
-    "../sql/audit-repository/insert-restoration-deleted-step-revision.sql",
+    "../sql/audit-repository/insert-deleted-step-revision.sql",
     import.meta.url,
   ),
   markRestorationStepDeleted: loadSql(
-    "../sql/audit-repository/mark-restoration-step-deleted.sql",
+    "../sql/audit-repository/mark-step-deleted.sql",
     import.meta.url,
   ),
   updateRestoredAuditCurrentRevision: loadSql(
-    "../sql/audit-repository/update-restored-audit-current-revision.sql",
+    "../sql/audit-repository/update-audit-current-revision.sql",
     import.meta.url,
   ),
   getRestorationAuditRevision: loadSql(
