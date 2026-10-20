@@ -334,6 +334,9 @@ function bindEvents() {
     toggleFieldDisplayMode?.();
     renderFieldDisplayModeButton?.();
   });
+  on("splitLogicConnectorsBtn", "click", () =>
+    setSplitLogicConnectors?.(!state.splitLogicConnectors),
+  );
   on("themeBtn", "click", () =>
     setTheme(themeMode() === "dark" ? "light" : "dark"),
   );

@@ -20,6 +20,7 @@
     "display-fields": `<rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M3.5 9h17M9.2 9v11M14.8 9v11"/>`,
     "requirements-preview": `<path d="m4.5 7 1.4 1.4L8.5 5.8"/><path d="M11 7.2h8.5"/><path d="m4.5 12.5 1.4 1.4 2.6-2.6"/><path d="M11 12.7h8.5"/><path d="m4.5 18 1.4 1.4 2.6-2.6"/><path d="M11 18.2h8.5"/>`,
     "readiness-review": `<circle cx="12" cy="12" r="8"/><path d="m8.4 12.2 2.5 2.5 4.8-5.4"/>`,
+    "split-lines": `<path d="M4 6h16"/><path d="M8 12h12"/><path d="M8 18h12"/><path d="M4 9v6.5a1.5 1.5 0 0 0 1.5 1.5H6"/>`,
     "sort-asc": `<path d="M6 19.5V4.5M3 7.5l3-3 3 3"/><path d="M12 6h3.5M12 12h6M12 18h8.5"/>`,
     "sort-desc": `<path d="M6 4.5v15M3 16.5l3 3 3-3"/><path d="M12 6h8.5M12 12h6M12 18h3.5"/>`,
     "publication-preview": `<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4M7 8.5h10M7 12h6"/>`,
