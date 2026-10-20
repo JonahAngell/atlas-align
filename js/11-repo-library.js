@@ -174,6 +174,10 @@ async function loadRepoLibrary(options = {}) {
     repoLibraryState.sourceFileCache.clear();
     repoLibraryState.index = null;
     repoLibraryState.audits = [];
+    // The field library does not depend on the catalogs; fetch it alongside
+    // them, but apply it after them as before.
+    const sourceFiles = loadSourceFileLibrary();
+    sourceFiles.catch(() => {});
     const [vanity, aliases] = await Promise.all([
       fetchJsonGracefully(
         "catalogs/vanity-labels.json",
@@ -195,7 +199,7 @@ async function loadRepoLibrary(options = {}) {
         ? aliases
         : [];
     if (refreshAudits) await atlasRefreshDatabaseAudits?.();
-    await loadSourceFileLibrary();
+    await sourceFiles;
     repoLibraryState.loaded = true;
     state.repoLibrary = repoLibraryState;
     atlasInvalidateSourceDerivedState?.();

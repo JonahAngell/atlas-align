@@ -515,6 +515,11 @@ async function init() {
   updateNavigationLockState?.();
   renderFlowNavControls?.();
 
+  // The library catalogs and field library do not depend on the user or the
+  // audits, so request them alongside the essential startup data.
+  const repoLibraryStartup = Promise.allSettled([
+    loadRepoLibrary?.({ render: false, refreshAudits: false }),
+  ]);
   const essentialStartup = await Promise.allSettled([
     initPhraseCatalog?.(),
     atlasInitSourceDatabase?.(),
@@ -526,7 +531,8 @@ async function init() {
   renderMyAudits?.();
   renderStepTemplateOptions?.();
 
-  await loadRepoLibrary?.({ render: false, refreshAudits: false });
+  // A field library outage is a startup warning, not a reason to stay unready.
+  const [libraryStartup] = await repoLibraryStartup;
   await inspectAutosaveRecovery().catch((error) => {
     state.recoveryCandidate = null;
     status(`Browser recovery could not be inspected: ${error.message}`, "warn");
@@ -541,7 +547,7 @@ async function init() {
   renderActiveAuditSelect?.();
   renderFieldDisplayModeButton?.();
 
-  const startupFailures = essentialStartup.filter(
+  const startupFailures = [...essentialStartup, libraryStartup].filter(
     (result) => result.status === "rejected",
   );
   showSection("my-audits");
