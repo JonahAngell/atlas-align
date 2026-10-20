@@ -191,6 +191,20 @@ function atlasSetApplicationReady(ready) {
     document.dispatchEvent(new CustomEvent("atlas:ready"));
 }
 
+/** Workspace pages: navigating to one closes Reviewer Mode. */
+const ATLAS_WORKSPACE_PAGES = new Set([
+  "my-audits",
+  "inbox",
+  "history",
+  "recently-deleted-publications",
+]);
+/** Pages that work without a selected audit. History is per-audit, so it is not one. */
+const ATLAS_AUDIT_FREE_PAGES = new Set([
+  "my-audits",
+  "inbox",
+  "recently-deleted-publications",
+]);
+
 function hasSelectedAudit() {
   return !!state.auditSelected;
 }
@@ -382,9 +396,10 @@ function showSection(section) {
   // Resolve the requested section into the canonical page name used by the app.
   let page = pageForSection(section);
 
-  // If no audit is selected, keep users on an allowed landing/setup page.
-  // This prevents navigation into audit-specific pages before an audit context exists.
-  if (!hasSelectedAudit() && page !== "my-audits") page = "my-audits";
+  // Audit pages need an audit context; without one, fall back to My Audits.
+  // Inbox and Deleted Publications stay reachable.
+  if (!hasSelectedAudit() && !ATLAS_AUDIT_FREE_PAGES.has(page))
+    page = "my-audits";
 
   // Update the active state for navigation buttons in both the top nav and rail.
   // Each button may identify its target through section, page, or panel metadata.

@@ -464,12 +464,7 @@ async function atlasNavigateToSection(section) {
   const target = pageForSection(section);
   const current = document.querySelector(".page.active")?.dataset.page || "";
   if (target === current) return;
-  const workspacePages = new Set([
-    "my-audits",
-    "inbox",
-    "history",
-    "recently-deleted-publications",
-  ]);
+  const workspacePages = ATLAS_WORKSPACE_PAGES;
   if (workspacePages.has(target) && window.ATLASAuditReview?.isActive?.())
     await window.ATLASAuditReview.close({ restoreFocus: false });
   showSection(target);
