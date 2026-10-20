@@ -14,30 +14,64 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version-file: .nvmrc
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Check script syntax
+        run: npm run check
+      - name: Check app version references
+        run: npm run version:check
+      - name: Check generated CSS
+        run: npm run css:check
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
       - name: Run unit tests
         run: npm test
       - name: Check diff whitespace
         run: git diff --check
 
   playwright:
-    # Disabled temporarily: fails on PLAYWRIGHT_BASE_URL. See docs/BACKLOG.md.
-    if: ${{ false }}
-    timeout-minutes: 60
+    # Runs the end-to-end suite against server.js in ATLAS_APP_ENV=local mode,
+    # backed by a throwaway PostgreSQL service with the migrations and seed data.
+    timeout-minutes: 30
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: atlas
+          POSTGRES_USER: atlas
+          POSTGRES_PASSWORD: atlas-local-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U atlas -d atlas"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      STUDIOSHARE_DB_URL: postgresql://atlas:atlas-local-only@localhost:5432/atlas
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: lts/*
+          node-version-file: .nvmrc
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+      - name: Apply migrations and seed data
+        env:
+          PGHOST: localhost
+          PGPASSWORD: atlas-local-only
+          POSTGRES_USER: atlas
+          POSTGRES_DB: atlas
+          ATLAS_MIGRATIONS_DIR: .launch/migrations
+        run: |
+          sh local-db/init-local-db.sh
+          psql -v ON_ERROR_STOP=1 -U atlas -d atlas -f local-db/seed.sql
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
       - name: Run Playwright tests
         run: npx playwright test
       - uses: actions/upload-artifact@v4

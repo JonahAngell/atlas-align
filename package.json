@@ -1,15 +1,15 @@
 {
-  "name": "atlas-field-library-backend",
-  "version": "1.0.0",
+  "name": "atlas-align",
+  "version": "3.1.7",
   "private": true,
-  "description": "Standalone StudioShare PostgreSQL backend for atomic ATLAS Field Library CSV replacement",
+  "description": "ATLAS Align audit logic builder: Express server, PostgreSQL storage, and browser application for StudioShare Launch",
   "type": "module",
   "scripts": {
     "start": "node server.js",
     "start:linux": "/usr/bin/node server.js",
     "dev:proxy": "launch dev",
     "dev:local": "bash -c 'set -e; launch dev & proxy_pid=$!; cleanup() { kill $proxy_pid $app_pid 2>/dev/null || true; }; trap cleanup EXIT INT TERM; STUDIOSHARE_API_URL=http://localhost:7070 /usr/bin/node server.js & app_pid=$!; wait -n $proxy_pid $app_pid'",
-    "check": "node --check server.js && node --check src/field-library.js && node --check src/field-library-source.js && node --check src/field-library-workbook.js && node --check src/sharepoint-client.js && node --check src/load-env.js && node --check src/schema.js && node --check src/custom-source.js && node --check src/custom-source-repository.js && node --check src/routes/source-library-routes.js && node --check public/app.js",
+    "check": "node tools/check-syntax.mjs",
     "version:sync": "node tools/sync-app-version.mjs",
     "version:check": "node tools/sync-app-version.mjs --check",
     "test": "node --test",
@@ -20,15 +20,19 @@
     "review:bundle": "node tools/create-review-bundle.mjs --files review-bundle-files.txt --title \"ATLAS ALIGN FEATURE REVIEW BUNDLE\"",
     "version:bump": "node tools/sync-app-version.mjs --bump",
     "version:hook": "node tools/sync-app-version.mjs --hook",
-    "hooks:install": "node tools/install-git-hooks.mjs"
+    "hooks:install": "node tools/install-git-hooks.mjs",
+    "css:check": "node build-css.mjs --check"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
+    "compression": "^1.8.2",
     "csv-parse": "^7.0.2",
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.1.0",
     "multer": "^2.4.0",
     "pg": "^8.13.3"
   },
@@ -38,5 +42,9 @@
     "postcss": "^8.5.26",
     "prettier": "3.9.6",
     "prettier-plugin-sql": "^0.20.0"
+  },
+  "overrides": {
+    "ip-address": "10.7.3",
+    "uuid": "11.1.1"
   }
 }

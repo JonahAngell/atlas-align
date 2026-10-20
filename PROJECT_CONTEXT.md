@@ -32,7 +32,7 @@ The reviewed implementation uses:
 
 ### Deployment and process model
 
-`server.js` is the application entry point. It reads the database URL from `STUDIOSHARE_DB_URL`. The production Docker image installs runtime dependencies, copies `server.js`, `src/`, `sql/`, root browser assets, `css/`, `sections/`, `js/`, `vendor/`, `tutorials/`, catalogs, and `logic_phrase_catalog.json`, exposes port 8080, and starts `node server.js`.
+`server.js` is the application entry point. It reads the database URL from `STUDIOSHARE_DB_URL`. The production Docker image installs locked runtime dependencies, copies `server.js`, `src/`, `sql/`, root browser assets, `css/`, `sections/`, `js/`, `vendor/`, `tutorials/`, `validation/`, `catalogs/`, and `.launch/`, runs as UID 1000, exposes port 8080, and starts `node server.js`.
 
 Local Docker Compose starts:
 
@@ -322,7 +322,7 @@ An error rolls back the transaction, including the live-table replacement. The S
 
 **Hierarchy and ordering.** `js/02-hierarchy.js` owns stable step parent/child relationships, branch types, grouped sibling ordering, numbering, indentation, parent eligibility, child creation, movement, and outdent behavior. The audit's complete `steps` collection remains authoritative. Manual movement is constrained to eligible siblings and order groups.
 
-**Rule categories and guided builders.** The active authoring implementation is layered through `js/14-catalog-driven-builder.js` and the later-loaded `15a` through `15g` scripts. Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the supported catalog-normalized legacy step forms. `logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. `js/15-visual-ui-upgrades.js` exists in the repository tree but is not loaded by the reviewed `index.html`; the split `15a`-`15h` files are active.
+**Rule categories and guided builders.** The active authoring implementation is layered through `js/14-catalog-driven-builder.js` and the later-loaded `15a` through `15g` scripts. Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the supported catalog-normalized legacy step forms. `catalogs/logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. The split `15a`-`15j` files are active.
 
 **Conditions and branches.** Conditions support operator-specific value modes, multiple values, field-to-field comparison, and structured math on the comparison side. IF/THEN editing uses the final tabbed builder from `js/15g-visual-ui-events.js`. Linked inverse ELSE steps are synchronized from the source IF conditions unless the step explicitly opts out with `params.inverse_else === "Yes"`; legacy inverse steps are migrated through the same later layer.
 
@@ -671,7 +671,7 @@ Display Fields order and canonical Fields composition remain owned by Requiremen
 - `local-db/init-local-db.sh` applies migration `migrate:up` sections with `ON_ERROR_STOP`; `local-db/seed.sql` creates synthetic local-only profiles, audit, and initial revision.
 - `package.json` owns start, Launch proxy, Docker, test, version, hook, and review-bundle commands; `.vscode/tasks.json` owns editor CSS tasks.
 
-`npm run check` syntax-checks `server.js`, `src/field-library.js`, `src/schema.js`, and `public/app.js`. That last file is the Field Library administration client, not the ATLAS Align browser.
+`npm run check` runs `tools/check-syntax.mjs`, which syntax-checks `server.js`, `build-css.mjs`, and every script under `src/`, `js/`, `tutorials/`, `validation/`, and `tools/`.
 
 ## Data and Persistence Architecture
 
@@ -749,25 +749,27 @@ Security rules are consolidated here and referenced from functional areas.
 
 Many tests are static or contract-oriented. They do not by themselves prove live PostgreSQL concurrency, browser accessibility, cross-browser layout, production StudioShare identity, or Inbox delivery.
 
-Recognized validation commands are `npm test`, `npm run version:check`, `node build-css.mjs --check`, and `docker compose up --build`. `npm run check` syntax-checks `server.js`, `src/field-library.js`, `src/schema.js`, and `public/app.js`. `public/app.js` is the Field Library administration page, not the ATLAS Align browser in `js/`.
+Recognized validation commands are `npm test`, `npm run version:check`, `node build-css.mjs --check`, and `docker compose up --build`. `npm run check` syntax-checks every first-party script through `tools/check-syntax.mjs`, and `npm run css:check` runs `node build-css.mjs --check`. CI runs all of these plus `npm audit --omit=dev --audit-level=high`.
 
 ## File catalog
 
 Each line is one current application file. Browser scripts are listed in `index.html` load order. SQL files are the statements loaded by the repository of the same directory name.
 
-These paths are not architectural authority and are not listed file by file: `node_modules/`, `updates/`, `REVIEW_BUNDLE.txt`, `REVIEW_BUNDLE_MIGRATIONS.txt`, `logs/`, `secret/`, `playwright-report/`, `test-results/`, vendored `vendor/`, generated root `styles.css`, and the sample audit JSON under `audits/`. `PROJECT_CONTEXT_NEW.md` is an older snapshot. `docs/` holds the workflow contract and Field Library samples; it is not the file catalog.
+These paths are not architectural authority and are not listed file by file: `node_modules/`, generated `REVIEW_BUNDLE*.txt` (git-ignored), `logs/`, `secret/`, `playwright-report/`, `test-results/`, vendored `vendor/`, generated root `styles.css`, and the sample audit JSON under `audits/`. `docs/` holds the workflow contract and Field Library samples; it is not the file catalog.
 
 ### Root
 
 - `server.js` — Express process. Serves `index.html` and static browser assets, connects to PostgreSQL with `STUDIOSHARE_DB_URL`, and owns authentication, audit, workflow, review, discussion, inbox, and field-library routes.
 - `index.html` — Application shell and the classic-script load order.
-- `Dockerfile` — Production image. Installs production npm dependencies and starts `node server.js` on port 8080.
+- `Dockerfile` — Production image. Installs locked production dependencies with `npm ci`, copies the app and `.launch/`, runs as UID 1000, health-checks `/api/health`, and starts `node server.js` on port 8080.
+- `.dockerignore` — Keeps tests, docs, tooling, and generated bundles out of the build context.
+- `.nvmrc` — Node major version used by CI.
 - `docker-compose.yml` — Local PostgreSQL 17 and app. Publishes the app on host port 8081 and sets `ATLAS_APP_ENV=local`.
-- `package.json` — Package metadata and scripts for start, test, version sync, local Compose, and the git hook.
+- `package.json` — Package `atlas-align`, versioned with the app. Scripts for start, checks, test, version sync, local Compose, and the git hook.
 - `package-lock.json` — Locked npm dependency tree.
 - `build-css.mjs` — Validates `css/` source units and writes generated root `styles.css` from `css/manifest.json`.
 - `playwright.config.js` — Playwright project for the deployed Preview URL. Chromium is serial.
-- `logic_phrase_catalog.json` — Phrase catalog the Logic Builder uses for analyst and developer wording.
+- `catalogs/logic_phrase_catalog.json` — Phrase catalog the Logic Builder uses for analyst and developer wording.
 - `audit-index.json` — Static index of sample audit JSON files under `audits/`.
 - `README.md` — GitHub overview.
 - `README-local.md` — Local Compose, seed users, and the optional StudioShare `launch dev` path.
@@ -776,13 +778,14 @@ These paths are not architectural authority and are not listed file by file: `no
 - `ste-blueprints.sh` — StudioShare blueprint helper script.
 - `.launch/config` — Launch application id `atlas-align-db-a7dz`.
 - `.githooks/pre-commit` — Formats staged files, rebuilds `styles.css`, and runs the version hook.
-- `.github/workflows/playwright.yml` — Runs Playwright on pushes and pull requests to the default branch.
+- `.github/workflows/playwright.yml` — On pushes and pull requests to the default branch, runs the syntax, version, CSS, dependency-audit, and unit-test checks. The Playwright job is disabled until it can authenticate without a headed MyID login.
 - `sql/.prettierrc` — Prettier settings for SQL.
 
 ### Server modules (`src/`)
 
 - `src/00-global-variables.js` — Role slugs `atlas-align-admin` and `atlas-admin-team`, and the field-library table and column contract.
 - `src/local-development.js` — Fail-closed `ATLAS_APP_ENV=local` check, the signed-in development user, and the rule for trusting a stored role snapshot.
+- `src/http-security.js` — Helmet security headers and CSP, per-token `/api` rate limits, and the JSON body limits (1 MB default, 12 MB on audit and review document routes).
 - `src/sql.js` — Loads a UTF-8 SQL file relative to the calling module.
 - `src/schema.js` — Identifier quoting and field-library schema helpers.
 - `src/field-library.js` — Validates a 33-column field-library table and replaces the live table in one transaction. CSV upload and the SharePoint workbook use the same validator.
@@ -808,7 +811,6 @@ These paths are not architectural authority and are not listed file by file: `no
 
 Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 
-- `js/.gitkeep` — Keeps the `js/` directory present for Git when it would otherwise be empty. It is not loaded.
 - `js/00-html-partials-loader.js` — Synchronously inserts the ordered HTML partials before later scripts cache the DOM.
 - `js/00-config-utils.js` — Shared helpers and the authoritative `ATLAS_APP_VERSION`.
 - `js/00-exceljs-loader.js` — Loads ExcelJS the first time a workbook feature needs it.
@@ -853,7 +855,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 
 ### HTML partials (`sections/`)
 
-The loader inserts these, in order, except `group-landing.html` and `combined_html.txt`.
+The loader inserts these, in order, except `group-landing.html`.
 
 - `sections/my-audits.html` — My Audits library, filters, and New Audit.
 - `sections/inbox.html` — Inbox page.
@@ -869,7 +871,6 @@ The loader inserts these, in order, except `group-landing.html` and `combined_ht
 - `sections/audit-issues.html` — Audit Issues list.
 - `sections/publication-preview.html` — Formal publication form and export actions.
 - `sections/group-landing.html` — Group landing markup. The current partial loader does not request it.
-- `sections/combined_html.txt` — Concatenated section markup. The loader does not request it.
 
 ### CSS source (`css/`)
 
@@ -903,7 +904,7 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 - `tutorials/tutorial-logic-builder.js` — Logic Builder tutorial steps.
 - `tutorials/tutorial-save-export.js` — Save and export tutorial steps.
 
-### Catalogs, validation, and the field-library page
+### Catalogs and validation
 
 - `catalogs/audit-issue-rules.json` — Declarative audit-issue rules evaluated by `js/22-audit-issue-engine.js`.
 - `catalogs/source-fields.json` — Source field catalog.
@@ -911,13 +912,11 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 - `catalogs/source-table-aliases.json` — Source alias map.
 - `catalogs/vanity-labels.json` — Display labels for source fields.
 - `validation/validation-read-only-isolation.js` — Declarative Read-Only Isolation suite served only when preview validation is enabled.
-- `public/index.html` — Field Library replacement page.
-- `public/app.js` — Client for that page: signed-in user, summary, and CSV upload.
-- `public/styles.css` — Styles for the Field Library page only.
 
 ### Tools (`tools/`)
 
-- `tools/sync-app-version.mjs` — Reads `ATLAS_APP_VERSION` and updates the marked Markdown targets.
+- `tools/check-syntax.mjs` — Runs `node --check` on every first-party script; backs `npm run check`.
+- `tools/sync-app-version.mjs` — Reads `ATLAS_APP_VERSION` and updates the marked Markdown targets plus the `package.json` and `package-lock.json` versions (npm form, without the leading `v`).
 - `tools/install-git-hooks.mjs` — Installs `.githooks/pre-commit` as the repo hook.
 - `tools/analyze-css-cascade.mjs` — Reports CSS declarations overridden later in the manifest.
 - `tools/create-review-bundle.mjs` — Builds a review bundle from `review-bundle-files.txt`.
@@ -1222,7 +1221,7 @@ These run against a deployed Preview URL, separate from `npm test`.
 - Live multi-session concurrency, production Inbox delivery, and production feature-flag settings are not established by the Node suite.
 - Attachment binaries are not stored by the workflow, review, or discussion repositories.
 - Workbook import and qTest export do not have a dedicated Node test file. `templates/qtest-test-design-template.xlsx` is a runtime template referenced by export code and is not a schema document.
-- Root `styles.css` is generated. Do not edit it. `node_modules/`, `updates/`, review bundles, `logs/`, `secret/`, Playwright reports, `vendor/`, and sample JSON under `audits/` are not architectural authority.
+- Root `styles.css` is generated. Do not edit it. `node_modules/`, review bundles, `logs/`, `secret/`, Playwright reports, `vendor/`, and sample JSON under `audits/` are not architectural authority.
 
 ## Maintenance Checklist
 

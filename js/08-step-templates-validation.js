@@ -165,50 +165,12 @@ function renderStepTemplateOptions() {
   ).join("");
 }
 
-/**
- * Inserts the selected legacy step template.
- */
-function insertSelectedStepTemplate() {
-  capture();
-  const selected = $("stepTemplateSelect")?.value;
-  const template =
-    STEP_TEMPLATES.find((item) => item.id === selected) || STEP_TEMPLATES[0];
-  if (!template) return;
-  const step = template.step();
-  state.audit.steps.push(step);
-  state.selectedStepId = step.id;
-  atlasInvalidatePages?.(["steps", "preview", "review"]);
-  showSection("steps");
-  atlasRenderActivePage?.({ force: true });
-  scheduleAutosave();
-  status(`Inserted template: ${template.label}`, "ok");
-}
-
 // -----------------------------------------------------------------------------
 // Audit validation
 // -----------------------------------------------------------------------------
 /**
  * Builds validation issues for audit setup and step consistency.
  */
-
-function atlasKnownFieldOptionValues() {
-  const values = new Set();
-  (state.audit.fields || []).forEach((field) => {
-    if (field.name) values.add(field.name);
-    if (field.rawFieldName) values.add(field.rawFieldName);
-  });
-  (repoLibraryState?.sourceFiles || []).forEach((source) => {
-    if (source.sourceKey) values.add(source.sourceKey);
-    (source.fields || []).forEach((field) => {
-      const raw =
-        field.fieldName || field.rawFieldName || field.name || field.label;
-      if (raw) values.add(raw);
-      if (field.vanityLabel) values.add(field.vanityLabel);
-      if (field.label) values.add(field.label);
-    });
-  });
-  return values;
-}
 
 function validateAudit() {
   return window.ATLASAuditIssues?.legacyIssues?.() || [];

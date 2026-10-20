@@ -76,17 +76,6 @@ function sourceCatalogDisplayName(source = {}) {
 }
 
 /**
- * Builds source metadata subtitle text used to distinguish duplicate sourceFile values.
- * @param {any} source - Source file record.
- */
-function sourceCatalogSubtitle(source = {}) {
-  const meta = source.sourceMetadata || {};
-  return [source.alias, meta.sourceSystem, meta.population, meta.frequency]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-/**
  * Loads and caches detailed source metadata from a source index entry.
  * @param {any} entry - Input used by loadSourceFileDetail.
  */
@@ -174,6 +163,10 @@ async function loadRepoLibrary(options = {}) {
     repoLibraryState.sourceFileCache.clear();
     repoLibraryState.index = null;
     repoLibraryState.audits = [];
+    // The field library does not depend on the catalogs; fetch it alongside
+    // them, but apply it after them as before.
+    const sourceFiles = loadSourceFileLibrary();
+    sourceFiles.catch(() => {});
     const [vanity, aliases] = await Promise.all([
       fetchJsonGracefully(
         "catalogs/vanity-labels.json",
@@ -195,7 +188,7 @@ async function loadRepoLibrary(options = {}) {
         ? aliases
         : [];
     if (refreshAudits) await atlasRefreshDatabaseAudits?.();
-    await loadSourceFileLibrary();
+    await sourceFiles;
     repoLibraryState.loaded = true;
     state.repoLibrary = repoLibraryState;
     atlasInvalidateSourceDerivedState?.();
@@ -372,16 +365,6 @@ async function loadSelectedLibraryAudit() {
     "Only database audits can be loaded from the Audit Library.",
     "warn",
   );
-}
-/**
- * Asks how to handle unsaved changes before switching audits.
- */
-async function confirmAuditSwitchSaveBehavior() {
-  if (!auditHasUnsavedChanges()) return "discard";
-  if (confirm("Save changes to the current audit before switching?"))
-    return "save";
-  if (confirm("Switch without saving changes?")) return "discard";
-  return "cancel";
 }
 
 // -----------------------------------------------------------------------------

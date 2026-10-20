@@ -2883,7 +2883,7 @@ function atlasLogicImportOnClick(event) {
   if (choice) {
     event.preventDefault();
     const select = root.querySelector(
-      `[data-logic-import-library="${choice.dataset.logicImportUseChoice}"]`,
+      `[data-logic-import-library="${atlasLogicImportCssEscape(choice.dataset.logicImportUseChoice)}"]`,
     );
     atlasUseImportedLogicSource(select?.value || "");
     return;

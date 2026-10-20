@@ -7,6 +7,8 @@ const VERSION_FILES = [
   VERSION_SOURCE,
   "FEATURE_REQUEST_TEMPLATE.md",
   "PROJECT_CONTEXT.md",
+  "package.json",
+  "package-lock.json",
 ];
 const VERSION_PATTERN = /^v\d+\.\d+(?:\.\d+)?$/;
 const BUMP_PATTERN = /^v(\d+)\.(\d)(?:\.(\d))?$/;
@@ -33,6 +35,22 @@ const TARGETS = [
     file: "PROJECT_CONTEXT.md",
     id: "PROJECT-CONTEXT",
     render: (v) => `**Current Version:** ${v}`,
+  },
+  {
+    file: "package.json",
+    id: "package",
+    pattern: /^(  "version": ")([^"]*)(")/m,
+  },
+  {
+    file: "package-lock.json",
+    id: "lockfile",
+    pattern: /^(  "version": ")([^"]*)(")/m,
+  },
+  {
+    file: "package-lock.json",
+    id: "lockfile-root-package",
+    pattern:
+      /("packages": \{\s*"": \{\s*"name": "[^"]*",\s*"version": ")([^"]*)(")/,
   },
 ];
 
@@ -103,6 +121,23 @@ function replaceManagedRegion(content, target, version) {
     expected,
   };
 }
+/** npm needs MAJOR.MINOR.PATCH without the leading "v". */
+function npmVersion(version) {
+  const parts = version.slice(1).split(".");
+  while (parts.length < 3) parts.push("0");
+  return parts.join(".");
+}
+function replacePackageVersion(content, target, version) {
+  const match = content.match(target.pattern);
+  if (!match)
+    fail(`${target.file}: expected a package version field (${target.id}).`);
+  const expected = npmVersion(version);
+  return {
+    content: content.replace(target.pattern, `$1${expected}$3`),
+    current: match[2],
+    expected,
+  };
+}
 async function atomicWrite(file, content) {
   const temporary = `${file}.atlas-version-${process.pid}.tmp`;
   try {
@@ -164,11 +199,10 @@ async function loadPlan(root, version, { replaceSource = false } = {}) {
     );
   const drift = [];
   for (const target of TARGETS) {
-    const result = replaceManagedRegion(
-      outputs.get(target.file),
-      target,
-      version,
-    );
+    const replace = target.pattern
+      ? replacePackageVersion
+      : replaceManagedRegion;
+    const result = replace(outputs.get(target.file), target, version);
     outputs.set(target.file, result.content);
     if (result.current !== result.expected)
       drift.push(`${target.file} (${target.id})`);

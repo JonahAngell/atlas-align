@@ -9,7 +9,7 @@ const SQL = Object.freeze({
     import.meta.url,
   ),
   auditRevisionForRestoration: loadSql(
-    "../sql/audit-preview-repository/get-audit-revision-for-restoration.sql",
+    "../sql/audit-preview-repository/get-audit-revision-for-history.sql",
     import.meta.url,
   ),
   stepRevisionForRestoration: loadSql(

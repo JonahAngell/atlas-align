@@ -65,3 +65,16 @@ If `/api/me` returns 401, confirm the app container has `ATLAS_APP_ENV=local`. A
 ## Local workflow rollout
 
 Compose enables all eight `ATLAS_WORKFLOW_*_ENABLED` flags in dependency order. Use the literal value `true` only. Disable a stage in `docker-compose.yml` to exercise non-destructive rollback; do not remove the workflow migration or local workflow records.
+
+## End-to-end tests
+
+Playwright starts `server.js` itself in local mode, so it only needs a migrated, seeded database. With Compose running, reuse its database:
+
+```bash
+npx playwright install chromium
+STUDIOSHARE_DB_URL=postgresql://atlas:atlas-local-only@localhost:5432/atlas npx playwright test
+```
+
+The test server listens on port 8095 (`PLAYWRIGHT_LOCAL_PORT` changes it) with every workflow flag and impersonation enabled. Assignment and approver searches default to the seeded `local.user` and `local.reviewer`. Specs that need inputs the seed does not provide, such as `PLAYWRIGHT_SOURCE_ONE` and `PLAYWRIGHT_SOURCE_TWO`, skip with the variable they need. Tests create audits, so reset the database (`npm run local:reset`, then `npm run local:up`) for a clean run.
+
+To run against a deployed Preview instead, set `PLAYWRIGHT_BASE_URL` to its HTTPS URL; `tests/auth.setup.js` then signs in through MyID.

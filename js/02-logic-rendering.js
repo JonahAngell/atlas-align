@@ -8,23 +8,6 @@
 // -----------------------------------------------------------------------------
 // Base preview data helpers
 // -----------------------------------------------------------------------------
-/**
- * Generates notes for a step when manual notes are not provided.
- * @param {any} step - Logic step object being read or modified.
- * @param {any} index - Zero-based index used for ordering or display.
- */
-function noteText(step, index) {
-  return step.notes;
-}
-
-/**
- * Returns enabled steps in hierarchy order.
- */
-function orderedSteps() {
-  return hierarchicalStepEntries({ includeDisabled: false }).map(
-    (entry) => entry.step,
-  );
-}
 
 /**
  * Builds data rows for the requirements preview and exports.
@@ -766,21 +749,6 @@ function atlasMeasure(name, fn) {
 }
 
 /**
- * Wraps a mutable render function once so later calls appear in browser performance tooling.
- * @param {string} name - Friendly operation name.
- * @param {Function} fn - Function to wrap.
- */
-function atlasWrapWithPerf(name, fn) {
-  if (typeof fn !== "function" || fn.__atlasPerfWrapped) return fn;
-  const wrapped = function atlasPerformanceWrappedFunction(...args) {
-    return atlasMeasure(name, () => fn.apply(this, args));
-  };
-  wrapped.__atlasPerfWrapped = true;
-  wrapped.__atlasOriginal = fn;
-  return wrapped;
-}
-
-/**
  * Flushes a batched render request using the smallest requested UI surface.
  */
 function atlasFlushRequestedRender() {
@@ -903,82 +871,6 @@ function atlasRequestStructuralStepRender() {
 const ATLAS_SOURCE_MATH_OPERATORS = ["+", "-", "*", "/"];
 
 /**
- * Parses Create Column source-field math operations from params or a JSON string.
- * @param {any} params - Step params object or raw JSON string.
- */
-function parseSourceMathOperations(params = {}) {
-  const raw = Array.isArray(params)
-    ? params
-    : typeof params === "string"
-      ? params
-      : params.source_math_json ||
-        params.compareMathJson ||
-        params.compare_math_json ||
-        params.compareMath ||
-        params.math_json;
-  if (!raw) return [];
-  try {
-    const parsed = Array.isArray(raw) ? raw : JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .map((item) => {
-        const operandType =
-          String(item?.operandType || item?.operand_type || "number").trim() ===
-          "field"
-            ? "field"
-            : "number";
-        const operator = String(item?.operator || "").trim();
-        const operand = String(item?.operand ?? "").trim();
-        const operandSourceFile = String(
-          item?.operandSourceFile || item?.operand_source_file || "",
-        ).trim();
-        const operandFieldName = String(
-          item?.operandFieldName || item?.operand_field_name || "",
-        ).trim();
-        const operandSourceAlias = String(
-          item?.operandSourceAlias ||
-            item?.operand_source_alias ||
-            sourceAliasFor?.(operandSourceFile) ||
-            operandSourceFile ||
-            "",
-        ).trim();
-        return {
-          id:
-            item?.id ||
-            uid?.("math") ||
-            `math_${Math.random().toString(36).slice(2)}`,
-          operator,
-          operandType,
-          operand,
-          operandSourceFile,
-          operandSourceAlias,
-          operandFieldName,
-        };
-      })
-      .filter(
-        (item) =>
-          ATLAS_SOURCE_MATH_OPERATORS.includes(item.operator) &&
-          (item.operandType === "field"
-            ? item.operandFieldName
-            : item.operand) &&
-          !(
-            item.operator === "/" &&
-            item.operandType !== "field" &&
-            Number(item.operand) === 0
-          ),
-      );
-  } catch (_err) {
-    return [];
-  }
-}
-
-function atlasIsZeroMathOperand(operation = {}) {
-  if ((operation.operandType || "number") === "field") return false;
-  const value = String(operation.operand ?? "").trim();
-  return value !== "" && Number(value) === 0;
-}
-
-/**
  * Converts a decimal-place value into a safe non-negative integer string.
  * @param {any} value - Raw decimal-place value.
  * @param {string} fallback - Fallback when value is blank or invalid.
@@ -1016,74 +908,6 @@ function renderHeader() {
   }
 }
 
-/**
- * Builds source color palette controls.
- * @param {any} source - Source file record.
- */
-function renderColorPalette(source) {
-  const current = source.color || SOURCE_COLOR_PALETTE[0];
-  return `<div class="color-panel-inline" data-source-id="${esc(source.id)}">
-    <div class="color-swatch-row">
-      ${SOURCE_COLOR_PALETTE.map((color) => `<button type="button" class="color-swatch ${current === color ? "active" : ""}" title="${esc(color)}" aria-label="Select ${esc(color)}" data-source-palette-color="${esc(color)}" style="background:${esc(color)}"></button>`).join("")}
-      <label class="custom-color-label">Custom <input type="color" data-source-custom-color value="${esc(current)}"></label>
-    </div>
-  </div>`;
-}
-
-/**
- * Renders selected audit source files.
- */
-function renderSources() {
-  const audit = atlasDisplayDocument?.() || state.audit;
-  const sources = audit.sources || [];
-  if (!sources.length) {
-    e.sourcesList.innerHTML =
-      '<p class="hint">No source files selected yet. Search the Source Library above and choose Use Source in Audit.</p>';
-    return;
-  }
-  e.sourcesList.innerHTML = sources
-    .map((source) => {
-      const fieldCount = fieldsForSource(source.name).length;
-      const color = source.color || SOURCE_COLOR_PALETTE[0];
-      return `<div class="card selected-source-card" data-id="${esc(source.id)}" style="--source-color:${esc(color)}">
-      <div class="selected-source-header"><strong>${esc(source.name)}</strong><span class="badge">${esc(source.alias || sourceAliasFor?.(source.name) || source.name)}</span><span class="badge">${fieldCount} fields</span></div>
-      ${renderColorPalette(source)}
-      <button type="button" class="danger small" data-remove-selected-source="${esc(source.name)}">Remove Source From Audit</button>
-    </div>`;
-    })
-    .join("");
-}
-
-/**
- * Renders selected field summaries.
- */
-function renderFields() {
-  const audit = atlasDisplayDocument?.() || state.audit;
-  const sources = audit.sources || [];
-  if (!sources.length) {
-    e.fieldsList.innerHTML =
-      '<p class="hint">Selected source fields will appear here after you add source files to the audit.</p>';
-    return;
-  }
-  e.fieldsList.innerHTML = sources
-    .map((source) => {
-      const fields = fieldsForSource(source.name);
-      return `<details class="selected-source-fields" open>
-      <summary>${esc(source.name)} <span class="badge">${fields.length} fields</span></summary>
-      <div class="selected-field-list">${fields
-        .slice(0, 120)
-        .map((field) => {
-          const raw = field.fieldName || field.name || field.label || "";
-          const label = field.vanityLabel || field.label || raw;
-          return `<div class="selected-field-row"><strong>${esc(label)}</strong><span>${esc(raw)}</span></div>`;
-        })
-        .join("")}</div>
-      ${fields.length > 120 ? `<p class="hint">Showing 120 of ${fields.length} fields. Use source search to find a specific field.</p>` : ""}
-    </details>`;
-    })
-    .join("");
-}
-
 // -----------------------------------------------------------------------------
 // Base logic text rendering
 // -----------------------------------------------------------------------------
@@ -1112,21 +936,6 @@ function renderDefaultLogicPillToken(value) {
 }
 
 let renderLogicPillToken = renderDefaultLogicPillToken;
-
-/**
- * Renders analyst logic with visually styled field/source pills.
- * @param {any} text - Input used by renderLogicWithPills.
- */
-function renderLogicWithPills(text) {
-  const parts = String(text || "").split(/("[^"]+")/g);
-  return parts
-    .map((part) => {
-      if (!part.startsWith('"') || !part.endsWith('"')) return esc(part);
-      const value = part.slice(1, -1);
-      return renderLogicPillToken(value);
-    })
-    .join("");
-}
 
 // Connectors that start a new line when the Rules "Split AND/OR" view is on.
 const ATLAS_LOGIC_LINE_BREAK_CONNECTORS = ["AND", "OR"];
@@ -1157,13 +966,6 @@ function renderStepCardLogic(text) {
 }
 
 /**
- * Default selected-step empty-state markup.
- */
-function renderNoSelectedStepContent() {
-  return '<p class="hint">Select or create a step to edit details.</p>';
-}
-
-/**
  * Default selected-step detail markup. Visual modules can replace this content
  * renderer without redefining the full renderSelectedStep orchestration.
  * @param {any} step - Logic step object being read or modified.
@@ -1180,26 +982,6 @@ function renderDefaultSelectedStepContent(step, number) {
 
 let renderSelectedStepContent = renderDefaultSelectedStepContent;
 let afterRenderSelectedStep = null;
-
-/**
- * Renders the selected step editor/details pane.
- */
-function renderSelectedStep() {
-  const target = e.selectedStepDetails || $("selectedStepDetails");
-  if (!target) return;
-  const step = ((atlasDisplayDocument?.() || state.audit).steps || []).find(
-    (item) => item.id === state.selectedStepId,
-  );
-  if (!step) {
-    target.innerHTML = renderNoSelectedStepContent();
-    setText?.("selectedRuleBadge", "No rule selected");
-    return;
-  }
-  const number = stepNumberFor(step.id) || "?";
-  setText?.("selectedRuleBadge", `Step ${number}`);
-  target.innerHTML = renderSelectedStepContent(step, number);
-  afterRenderSelectedStep?.(step, number, target);
-}
 
 /**
  * Renders the Requirements Preview table.
@@ -1314,12 +1096,6 @@ function joinTypeDisplayName(joinType) {
  * @param {any} step - Logic step object being read or modified.
  */
 const SOURCE_MATH_OPERATORS = ["+", "-", "*", "/"];
-
-function parseDeveloperSourceMathOperations(params = {}) {
-  return typeof parseSourceMathOperations === "function"
-    ? parseSourceMathOperations(params)
-    : [];
-}
 
 function excelStructuredReference(fieldName = "") {
   const safe = String(fieldName || "").replace(/]/g, "]]");
@@ -1618,39 +1394,6 @@ function applySqlServerRounding(expression, roundingMode, decimalPlaces) {
     return `CEILING((${base}) * POWER(10.0, ${decimalPlaces})) / POWER(10.0, ${decimalPlaces})`;
   }
   return expression;
-}
-
-function createColumnSourceFieldDeveloperLogic(step, params = {}) {
-  if (
-    step?.step_type !== "create_column" ||
-    params.value_mode !== "Source field value"
-  )
-    return "";
-  const operations = parseDeveloperSourceMathOperations(params);
-  const roundingMode = sourceFieldRoundingMode(params);
-  if (!operations.length && roundingMode === "none") return "";
-  const sourceField = params.field_name || step.field || "[source field]";
-  const decimals = sourceFieldDecimalPlaces(params);
-  const excelExpression = buildSequentialMathExpression(
-    excelStructuredReference(sourceField),
-    operations,
-  );
-  const sqlExpression = buildSequentialMathExpression(
-    sqlBracketIdentifier(sourceField),
-    operations,
-    { sql: true },
-  );
-  const excelFormula = applyExcelRounding(
-    excelExpression,
-    roundingMode,
-    decimals,
-  );
-  const sqlFormula = applySqlServerRounding(
-    sqlExpression,
-    roundingMode,
-    decimals,
-  );
-  return developerFormulaBlock(excelFormula, sqlFormula);
 }
 
 function developerLogic(step) {

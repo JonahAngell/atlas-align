@@ -74,6 +74,12 @@ const lockCases = [
 ];
 
 test.describe.serial("Read-Only Isolation and Persistence", () => {
+  // Its assertions compare against an existing editable audit and review
+  // session; automatic provisioning cannot satisfy them yet (docs/BACKLOG.md).
+  test.skip(
+    !process.env.PLAYWRIGHT_REVIEW_SESSION_ID?.trim(),
+    "Set PLAYWRIGHT_REVIEW_EDITABLE_AUDIT_ID and PLAYWRIGHT_REVIEW_SESSION_ID to run Read-Only Isolation",
+  );
   test("1-6 detached state and ordinary persistence remain unchanged", async ({
     page,
     reviewerConfig,

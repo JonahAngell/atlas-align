@@ -97,33 +97,6 @@ function atlasOpenJoinPicker(stepId) {
   atlasRenderJoinPickerModal();
 }
 
-function atlasRenderJoinPickerModal() {
-  document.querySelector(".join-picker-backdrop")?.remove();
-  if (!atlasJoinPickerState) return;
-  const step = state.audit.steps.find(
-    (item) => item.id === atlasJoinPickerState.stepId,
-  );
-  if (!step) return;
-  const p = step.params || {};
-  const joinType = atlasJoinTypeDisplayName(
-    atlasJoinPickerState.pendingJoinType,
-  );
-  const leftColor =
-    atlasSelectedSourceColor?.(p.left_source) ||
-    SOURCE_COLOR_PALETTE?.[0] ||
-    "#4d6fa9";
-  const rightColor =
-    atlasSelectedSourceColor?.(p.right_source) ||
-    SOURCE_COLOR_PALETTE?.[1] ||
-    "#b54b4b";
-  const leftLabel = atlasJoinSourceLabel(p.left_source);
-  const rightLabel = atlasJoinSourceLabel(p.right_source);
-  const root = document.createElement("div");
-  root.className = "join-picker-backdrop";
-  root.innerHTML = `<div class="join-picker-modal" role="dialog" aria-modal="true"><div class="join-picker-header"><div><h2 class="join-picker-title">Choose Join Type</h2><p class="hint">Preview which data will be kept before confirming the JOIN type.</p></div><button type="button" class="btn ghost small" data-close-join-picker>Cancel</button></div><div class="join-picker-body"><section class="join-picker-stage"><div class="join-venn-wrap" data-join-type="${esc(joinType)}" style="--join-left-color:${esc(leftColor)};--join-right-color:${esc(rightColor)}"><div class="join-venn-circle join-venn-left"></div><div class="join-venn-circle join-venn-right"></div><div class="join-venn-intersection"></div><div class="join-venn-label left">${esc(leftLabel)}</div><div class="join-venn-label right">${esc(rightLabel)}</div></div><div class="join-picker-option-grid">${["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"].map((type) => `<button type="button" class="join-picker-option ${type === joinType ? "active" : ""}" data-join-type-option="${esc(type)}">${esc(type)}</button>`).join("")}</div></section><section class="join-picker-details"><div class="join-picker-summary-card"><strong>${esc(joinType)}</strong><p>${esc(atlasJoinKeptRowsDescription(joinType))}</p></div><div class="join-picker-table-wrap"><table><thead><tr><th>Join Input</th><th>Dynamic Label</th><th>Join Key</th></tr></thead><tbody><tr><td>Left Source</td><td>${esc(leftLabel)}</td><td>${esc(p.left_field || "[left key not selected]")}</td></tr><tr><td>Right Source</td><td>${esc(rightLabel)}</td><td>${esc(p.right_field || "[right key not selected]")}</td></tr><tr><td>Developer Logic</td><td colspan="2">${esc(atlasJoinDeveloperLogic({ ...step, params: { ...p, join_type: joinType } }))}</td></tr></tbody></table></div></section></div><div class="join-picker-footer"><p class="hint">Confirm is required to preserve the selected JOIN type.</p><div class="toolbar compact-toolbar"><button type="button" class="btn ghost" data-close-join-picker>Cancel</button><button type="button" class="btn primary" data-confirm-join-picker>Confirm</button></div></div></div>`;
-  document.body.append(root);
-}
-
 function atlasCloseJoinPicker({ restoreFocus = true } = {}) {
   const stepId = atlasJoinPickerState?.stepId || "";
   atlasJoinPickerState = null;
@@ -335,7 +308,13 @@ atlasRenderJoinPickerModal =
 document.addEventListener(
   "keydown",
   (event) => {
-    if (event.key !== "Escape" || !atlasJoinPickerState) return;
+    if (!atlasJoinPickerState) return;
+    if (event.key === "Tab" && typeof atlasTrapTabKey === "function")
+      return atlasTrapTabKey(
+        event,
+        document.querySelector(".join-picker-modal"),
+      );
+    if (event.key !== "Escape") return;
     event.preventDefault();
     event.stopImmediatePropagation();
     atlasCloseJoinPicker();

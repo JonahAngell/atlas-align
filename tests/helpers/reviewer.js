@@ -225,11 +225,11 @@ export function assertReviewerOverrides(config) {
   }
 }
 
-async function chooseVisibleOption(page, pattern, label) {
-  const candidate = page
+async function chooseVisibleOption(scope, pattern, label) {
+  const candidate = scope
     .getByRole("option", { name: pattern })
-    .or(page.getByRole("menuitem", { name: pattern }))
-    .or(page.getByRole("button", { name: pattern }))
+    .or(scope.getByRole("menuitem", { name: pattern }))
+    .or(scope.getByRole("button", { name: pattern }))
     .filter({ visible: true })
     .first();
   await expect(candidate, `${label} must be available`).toBeVisible();
@@ -260,7 +260,13 @@ export async function createDeterministicNestedLogic(page, count = 28) {
   const create = async (typePattern) => {
     const beforeIds = await readStepIds();
     await add.click();
-    await chooseVisibleOption(page, typePattern, `Logic step ${typePattern}`);
+    // Scope to the Add-step menu: a selected step's editor also shows a
+    // "Step Type: Create Column" button that would otherwise match first.
+    await chooseVisibleOption(
+      page.getByRole("menu", { name: "Choose rule type" }),
+      typePattern,
+      `Logic step ${typePattern}`,
+    );
     await expect
       .poll(readStepIds, {
         message: `Expected ${typePattern} to add a Logic step`,
@@ -357,7 +363,7 @@ export async function switchEffectiveProfile(page, query) {
     .getByRole("searchbox", { name: /Search profiles/i })
     .fill(expected);
   const card = dialog
-    .locator("[data-profile-id]")
+    .locator("button.atlas-impersonation-profile")
     .filter({ hasText: expected })
     .first();
   await expect(card, `Expected profile matching ${expected}`).toBeVisible();
@@ -365,15 +371,16 @@ export async function switchEffectiveProfile(page, query) {
     const url = new URL(response.url());
     return (
       response.request().method() === "POST" &&
-      /\/api\/impersonation\/(start|switch)$/.test(url.pathname)
+      url.pathname === "/api/impersonation"
     );
   });
+  await acceptNextConfirmation(page);
   await card.click();
   const response = await request;
   expect(response.ok(), "Effective identity switch must succeed").toBeTruthy();
+  // The page reloads under the new identity, so the response body is gone.
   await page.waitForLoadState("domcontentloaded");
   await waitForAtlasReady(page);
-  return response.json();
 }
 
 export async function restoreOriginalProfile(page) {
@@ -388,10 +395,11 @@ export async function restoreOriginalProfile(page) {
   const request = page.waitForResponse((response) => {
     const url = new URL(response.url());
     return (
-      response.request().method() === "POST" &&
-      /\/api\/impersonation\/(return|stop)$/.test(url.pathname)
+      response.request().method() === "DELETE" &&
+      url.pathname === "/api/impersonation"
     );
   });
+  await acceptNextConfirmation(page);
   await back.click();
   const response = await request;
   expect(
@@ -432,9 +440,12 @@ async function selectPersonFromPicker(page, trigger, query, label) {
     trigger,
     `${label} picker trigger must be visible`,
   ).toBeVisible();
+  // Pin the picker that this click opens. A lazy .last() would re-resolve to
+  // an underlying dialog once the picker closes on selection.
+  const openDialogs = await page.getByRole("dialog").count();
   await trigger.click();
 
-  const dialog = page.getByRole("dialog").last();
+  const dialog = page.getByRole("dialog").nth(openDialogs);
   await expect(dialog, `${label} picker must open`).toBeVisible();
   const search = dialog
     .getByRole("searchbox")
@@ -568,7 +579,10 @@ async function submitAutomaticAudit(page, fixture, config) {
     request.id || request.requestId || payload.requestId || "",
   );
   const submittedRevisionId = String(
-    request.submittedRevisionId || payload.submittedRevisionId || "",
+    request.submittedRevisionId ||
+      request.submitted_revision_id ||
+      payload.submittedRevisionId ||
+      "",
   );
   expect(
     requestId,
@@ -585,7 +599,8 @@ async function openAutomaticReview(page, fixture, config) {
   const reviewerQuery = config.reviewerProfileQuery || config.approverQuery;
   await switchEffectiveProfile(page, reviewerQuery);
 
-  const inboxButton = page.getByRole("button", { name: /^Inbox/i });
+  // The top-bar button; the sidebar also has an "Inbox" nav item.
+  const inboxButton = page.locator("#atlasTopbarInbox");
   await expect(inboxButton, "Reviewer Inbox must be available").toBeEnabled();
   await inboxButton.click();
 

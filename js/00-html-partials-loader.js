@@ -28,7 +28,12 @@
   void boot();
 
   async function boot() {
+    // Download every boot script while the partials load. Scripts still execute
+    // one at a time below, but each one is then served from the preload cache
+    // instead of costing a sequential round trip.
+    const preloaded = documentParsed().then(preloadBootScripts);
     const html = await Promise.all(sectionFiles.map(loadPartial));
+    await preloaded;
     sectionRoot.insertAdjacentHTML("beforebegin", html.join(""));
     sectionRoot.remove();
     window.atlasMountIcons?.(document);
@@ -38,8 +43,25 @@
     for (const node of bootScripts) await executeBootScript(node);
   }
 
+  function documentParsed() {
+    if (document.readyState !== "loading") return Promise.resolve();
+    return new Promise((resolve) =>
+      document.addEventListener("DOMContentLoaded", resolve, { once: true }),
+    );
+  }
+
+  function preloadBootScripts() {
+    for (const node of document.querySelectorAll("script[data-atlas-boot]")) {
+      const link = document.createElement("link");
+      link.rel = "preload";
+      link.as = "script";
+      link.href = node.getAttribute("src");
+      document.head.appendChild(link);
+    }
+  }
+
   async function loadPartial(file) {
-    const response = await fetch(file, { cache: "no-store" });
+    const response = await fetch(file, { cache: "no-cache" });
     if (!response.ok) {
       throw new Error(
         `Could not load HTML partial ${file}. HTTP ${response.status}.`,

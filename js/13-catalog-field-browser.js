@@ -72,82 +72,10 @@ function atlasCatalogFieldSearchText(field) {
     .join(" ")
     .toLowerCase();
 }
-/**
- * Builds searchable text for a source and its fields.
- * @param {any} source - Source file record.
- */
-function sourceSearchText(source) {
-  return [
-    source.sourceFile,
-    source.alias,
-    atlasCatalogTextValue(source.sourceMetadata),
-    ...(source.fields || []).map(atlasCatalogFieldSearchText),
-  ]
-    .join(" ")
-    .toLowerCase();
-}
-/**
- * Renders source metadata details.
- * @param {any} source - Source file record.
- */
-function atlasCatalogSourceMetadataHtml(source) {
-  const meta = source.sourceMetadata || {};
-  return [
-    atlasCatalogMetaLine("Source System", meta.sourceSystem),
-    atlasCatalogMetaLine("Source Title", meta.sourceTitle),
-    atlasCatalogMetaLine("Frequency", meta.frequency),
-    atlasCatalogMetaLine("Population", meta.population),
-    atlasCatalogMetaLine("File Format", meta.sourceFileFormat),
-    atlasCatalogMetaLine("Source Owner", meta.sourceOwner),
-  ]
-    .filter(Boolean)
-    .join("");
-}
-/**
- * Renders field metadata details.
- * @param {any} field - Field record.
- */
-function atlasCatalogFieldMetadataHtml(field) {
-  const matching = atlasCatalogListHtml(field.matchingKeys);
-  const samples = atlasCatalogListHtml(field.sampleValues);
-  const governance = field.governance || {};
-  return `<div class="hint source-field-metadata">
-    ${atlasCatalogMetaLine("Business Description", field.businessDescription)}
-    ${atlasCatalogMetaLine("Data Category", field.dataCategory)}
-    ${atlasCatalogMetaLine("Field Format", field.fieldFormat)}
-    ${atlasCatalogMetaLine("Authority Type", field.authorityType)}
-    ${matching ? `<div class="small"><strong>Related mappings:</strong> ${matching}</div>` : ""}
-    ${samples ? `<div class="small"><strong>Sample Values:</strong> ${samples}</div>` : ""}
-    ${atlasCatalogMetaLine("Governance Owner", governance.governanceOwner || governance.fieldOwner)}
-    ${atlasCatalogMetaLine("Last Validated", governance.lastValidatedDate)}
-    ${atlasCatalogMetaLine("Validation Notes", governance.validationNotes)}
-  </div>`;
-}
 
 // -----------------------------------------------------------------------------
 // Catalog field browser rendering
 // -----------------------------------------------------------------------------
-/**
- * Handles the renderSourceFieldBrowser portion of the ATLAS Align client-side workflow.
- */
-function getSourceFieldBrowserModel() {
-  const query = ($("sourceFieldSearch")?.value || "").toLowerCase().trim();
-  const selected = new Set(
-    (state.audit.sources || []).map((source) => sourceCatalogKey(source)),
-  );
-  const allSources = sourceCatalogEntries();
-
-  return {
-    query,
-    selected,
-    allSources,
-  };
-}
-
-function sourceFieldBrowserMatchesSearch(source, query) {
-  if (!query) return true;
-  return sourceSearchText(source).includes(query);
-}
 
 // -----------------------------------------------------------------------------
 // Catalog field browser events
