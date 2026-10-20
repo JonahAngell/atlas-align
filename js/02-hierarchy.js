@@ -318,15 +318,16 @@ function setStepParent(step, parentId) {
 }
 
 /**
- * Indents a step under the previous visible step.
+ * Indents a step one level, nesting it under its previous sibling.
+ * Uses the sibling rather than the previous flattened entry so a step never
+ * jumps into the deepest descendant of the step above it.
  * @param {any} step - Logic step object being read or modified.
  */
 function makeChildOfPrevious(step) {
-  const entries = hierarchicalStepEntries({ includeDisabled: true });
-  const index = entries.findIndex((entry) => entry.step.id === step.id);
+  const siblings = childrenOf(step.parentId);
+  const index = siblings.findIndex((item) => item.id === step.id);
   if (index <= 0) return false;
-  const previous = entries[index - 1].step;
-  return setStepParent(step, previous.id);
+  return setStepParent(step, siblings[index - 1].id);
 }
 
 /**

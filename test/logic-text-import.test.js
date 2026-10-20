@@ -313,3 +313,67 @@ test("mapping source and field controls open the visual picker and keep the chos
   opened.onSelect({ ...nationality, pickerValue: "Nationality" });
   assert.equal(fieldInput.value, "Nationality");
 });
+
+test("multi-column remove duplicates sentence imports every column and keep option", () => {
+  const sentence =
+    'Remove duplicate records with matching values in file "sap.hi0256" column "Employee ID" and column "Pay Date", keeping the last record.';
+  const draft = atlasParseImportedLogicText(sentence);
+  assert.equal(draft.ok, true, draft.message);
+  assert.equal(draft.stepType, "remove_duplicates");
+  assert.equal(draft.params.duplicate_action, "Keep last record");
+  assert.deepEqual(
+    Array.from(draft.references, (reference) => reference.token),
+    ["sap.hi0256", "Employee ID", "Pay Date"],
+  );
+  const built = sandbox.atlasImportMaterialize(draft, {
+    sources: {
+      "dup0-source": { sourceFile: "HI0256", sourceAlias: "sap.hi0256" },
+    },
+    fields: { "dup0-field": "Employee ID", "dup1-field": "Pay Date" },
+  });
+  assert.equal(built.ok, true, built.message);
+  const fields = JSON.parse(built.step.params.duplicate_fields_json);
+  assert.deepEqual(
+    Array.from(fields, (field) => [field.sourceFile, field.fieldName]),
+    [
+      ["HI0256", "Employee ID"],
+      ["HI0256", "Pay Date"],
+    ],
+  );
+  assert.equal(built.step.params.field_name, "Employee ID");
+
+  const none = atlasParseImportedLogicText(
+    'Remove duplicate records with matching values in file "a" column "X", file "b" column "Y", and column "Z", keeping none of the duplicated records.',
+  );
+  assert.equal(none.ok, true, none.message);
+  assert.equal(none.params.duplicate_action, "Drop all duplicated records");
+  assert.equal(
+    none.references.filter((reference) => reference.kind === "field").length,
+    3,
+  );
+
+  const missingKeep = atlasParseImportedLogicText(
+    'Remove duplicate records with matching values in file "a" column "X".',
+  );
+  assert.equal(missingKeep.ok, false);
+});
+
+test("legacy remove duplicates sentence imports as a one-column list", () => {
+  const draft = atlasParseImportedLogicText(
+    'If file "sap.hi0256" column "Nationality" value appears more than once in the column, Keep first record.',
+  );
+  const built = sandbox.atlasImportMaterialize(draft, {
+    sources: {
+      "subject-source": { sourceFile: "HI0256", sourceAlias: "sap.hi0256" },
+    },
+    fields: { "subject-field": "Nationality" },
+  });
+  assert.equal(built.ok, true, built.message);
+  assert.deepEqual(
+    Array.from(
+      JSON.parse(built.step.params.duplicate_fields_json),
+      (field) => field.fieldName,
+    ),
+    ["Nationality"],
+  );
+});

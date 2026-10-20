@@ -1815,6 +1815,144 @@ function atlasMathOperationsFromContainer(
   );
 }
 
+/**
+ * Normalizes one Remove Duplicates column entry.
+ * @param {any} item - Raw entry with sourceFile, sourceAlias, and fieldName.
+ */
+function atlasNormalizeDuplicateField(item = {}) {
+  const fieldName = String(item?.fieldName || "").trim();
+  if (!fieldName) return null;
+  const sourceFile = String(item?.sourceFile || "").trim();
+  return {
+    sourceFile,
+    sourceAlias: String(
+      item?.sourceAlias ||
+        (typeof sourceAliasFor === "function" ? sourceAliasFor(sourceFile) : "") ||
+        "",
+    ).trim(),
+    fieldName,
+  };
+}
+
+/**
+ * Reads the Remove Duplicates column list from step params.
+ * Falls back to the legacy single-column params so older audits keep working.
+ * @param {any} params - Step params.
+ */
+function atlasDuplicateFieldsFromParams(params = {}) {
+  let raw = params?.duplicate_fields_json;
+  if (typeof raw === "string") {
+    try {
+      raw = raw.trim() ? JSON.parse(raw) : null;
+    } catch (_error) {
+      raw = null;
+    }
+  }
+  if (Array.isArray(raw)) {
+    const seen = new Set();
+    return raw
+      .map((item) => atlasNormalizeDuplicateField(item))
+      .filter((item) => {
+        if (!item) return false;
+        const key = atlasDuplicateFieldKey(item);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+  }
+  const legacy = atlasNormalizeDuplicateField({
+    sourceFile: params?.source_file,
+    sourceAlias: params?.source_alias,
+    fieldName: params?.field_name,
+  });
+  return legacy ? [legacy] : [];
+}
+
+/** Stable identity for a Remove Duplicates column entry. */
+function atlasDuplicateFieldKey(item = {}) {
+  return `${item.sourceFile || ""}::${item.fieldName || ""}`;
+}
+
+function atlasSerializeDuplicateFields(fields = []) {
+  return JSON.stringify(
+    (fields || [])
+      .map((item) => atlasNormalizeDuplicateField(item))
+      .filter(Boolean),
+  );
+}
+
+/**
+ * Normalizes one Sort Records field entry. Rows without a field are kept so a
+ * freshly added row survives until the analyst picks its field.
+ * @param {any} item - Raw entry with id, sourceFile, sourceAlias, fieldName, and direction.
+ */
+function atlasNormalizeSortField(item = {}) {
+  const sourceFile = String(item?.sourceFile || "").trim();
+  const fieldName = String(item?.fieldName || "").trim();
+  return {
+    id: String(item?.id || "").trim() || uid("sort"),
+    sourceFile: fieldName ? sourceFile : "",
+    sourceAlias: fieldName
+      ? String(
+          item?.sourceAlias ||
+            (typeof sourceAliasFor === "function"
+              ? sourceAliasFor(sourceFile)
+              : "") ||
+            "",
+        ).trim()
+      : "",
+    fieldName,
+    direction: item?.direction === "Descending" ? "Descending" : "Ascending",
+  };
+}
+
+/**
+ * Reads the Sort Records field list from step params.
+ * Falls back to the legacy single-field params so older audits keep working.
+ * @param {any} params - Step params.
+ */
+function atlasSortFieldsFromParams(params = {}) {
+  let raw = params?.sort_fields_json;
+  if (typeof raw === "string") {
+    try {
+      raw = raw.trim() ? JSON.parse(raw) : null;
+    } catch (_error) {
+      raw = null;
+    }
+  }
+  if (Array.isArray(raw))
+    return raw
+      .filter((item) => item && typeof item === "object")
+      .map((item) => atlasNormalizeSortField(item));
+  if (!String(params?.field_name || "").trim()) return [];
+  return [
+    atlasNormalizeSortField({
+      sourceFile: params?.source_file,
+      sourceAlias: params?.source_alias,
+      fieldName: params?.field_name,
+      direction: params?.sort_direction,
+    }),
+  ];
+}
+
+function atlasSerializeSortFields(fields = []) {
+  return JSON.stringify(
+    (fields || []).map((item) => atlasNormalizeSortField(item)),
+  );
+}
+
+function atlasSortFieldsFromContainer(container) {
+  if (!container) return [];
+  return [...container.querySelectorAll("[data-sort-row]")].map((row) =>
+    atlasNormalizeSortField({
+      id: row.dataset.sortId,
+      sourceFile: row.querySelector("[data-sort-source]")?.value || "",
+      fieldName: row.querySelector("[data-sort-field]")?.value || "",
+      direction: row.querySelector("[data-sort-direction]")?.value,
+    }),
+  );
+}
+
 function atlasFindFieldRecord(sourceFile = "", fieldName = "") {
   const match = (
     typeof fieldsForSource === "function" ? fieldsForSource(sourceFile) : []

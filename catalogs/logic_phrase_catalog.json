@@ -63,6 +63,7 @@
     "left_key": "[left key]",
     "right_key": "[right key]",
     "positive_whole_number": "[positive whole number]",
+    "duplicate_columns": "[selected columns]",
     "error_message_column": "Error Message"
   },
   "developer_logic": {
@@ -97,10 +98,16 @@
       "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}."
     },
     "sort_records": {
-      "default": "Sort records by {table_column} in {sort_direction} order."
+      "default": "Sort records by {table_column} in {sort_direction} order.",
+      "then_clause": ", then by {table_column} in {sort_direction} order"
     },
     "remove_duplicates": {
-      "default": "If {table_column} value appears more than once in the column, {duplicate_action}."
+      "default": "Remove duplicate records with matching values in {column_list}, {keep_clause}.",
+      "keep_clauses": {
+        "Keep first record": "keeping the first record",
+        "Keep last record": "keeping the last record",
+        "Drop all duplicated records": "keeping none of the duplicated records"
+      }
     },
     "create_column": {
       "default": "Create new column {column_name}.",
@@ -319,8 +326,8 @@
       "sort_directions": ["Ascending", "Descending"],
       "duplicate_actions": [
         "Keep first record",
-        "Keep last record",
-        "Drop all duplicated records"
+        "Drop all duplicated records",
+        "Keep last record"
       ],
       "create_value_modes": [
         "Static value",

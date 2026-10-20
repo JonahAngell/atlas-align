@@ -55,6 +55,30 @@ function cleanName(value, { label, max, required }) {
 }
 
 /**
+ * Display names accept any printable character, including ? ! _ * $ and other
+ * symbols. Control characters are still rejected by cleanText.
+ */
+function cleanDisplayName(value, { label, max, required }) {
+  return cleanText(value, { label, max, required });
+}
+
+/**
+ * Derives a source field name that satisfies NAME_PATTERN from a display name.
+ * @param {string} displayName
+ * @param {number} position 1-based field position used when nothing usable remains
+ */
+export function fieldNameFromDisplayName(displayName, position) {
+  const cleaned = String(displayName || "")
+    .replace(/[^\p{L}\p{N} .,&'’_:/()+-]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .slice(0, 200)
+    .trim();
+  return cleaned || `field_${position}`;
+}
+
+/**
  * Builds a unique custom.* key from the source name.
  * @param {string} sourceName
  * @param {Iterable<string>} takenKeys
@@ -104,7 +128,9 @@ export function customSourceCreator(user) {
 
 export function validateCustomSourceInput(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
-    throw new CustomSourceValidationError("Custom source details are required.");
+    throw new CustomSourceValidationError(
+      "Custom source details are required.",
+    );
   }
   const sourceName = cleanName(body.sourceName, {
     label: "Source name",
@@ -129,11 +155,14 @@ export function validateCustomSourceInput(body) {
     if (!field || typeof field !== "object" || Array.isArray(field)) {
       throw new CustomSourceValidationError(`${label} is missing its details.`);
     }
-    const vanityLabel = cleanName(field.vanityLabel ?? field.displayName, {
-      label: `${label} display name`,
-      max: 200,
-      required: true,
-    });
+    const vanityLabel = cleanDisplayName(
+      field.vanityLabel ?? field.displayName,
+      {
+        label: `${label} display name`,
+        max: 200,
+        required: true,
+      },
+    );
     const rawName = cleanName(field.fieldName, {
       label: `${label} source field name`,
       max: 200,
@@ -156,7 +185,7 @@ export function validateCustomSourceInput(body) {
       allowNewlines: true,
     });
     return {
-      fieldName: rawName || vanityLabel,
+      fieldName: rawName || fieldNameFromDisplayName(vanityLabel, index + 1),
       vanityLabel,
       fieldFormat,
       businessDescription,
@@ -252,7 +281,9 @@ export function mergeCustomSources(catalogSources, customSources) {
   const catalog = Array.isArray(catalogSources) ? catalogSources : [];
   const custom = Array.isArray(customSources) ? customSources : [];
   const taken = new Set(
-    catalog.map((source) => String(source?.sourceKey || "").trim()).filter(Boolean),
+    catalog
+      .map((source) => String(source?.sourceKey || "").trim())
+      .filter(Boolean),
   );
   const extras = [];
   for (const source of custom) {

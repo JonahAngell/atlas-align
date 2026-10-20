@@ -134,16 +134,197 @@
           type="text"
         />
       </label>
-      <div
-        aria-label="Fields"
-        class="custom-source-fields"
-        id="customSourceFields"
-        role="group"
-      ></div>
-      <button class="btn secondary" id="addCustomSourceFieldBtn" type="button">
-        Add Field
-      </button>
-      <p aria-live="assertive" class="custom-source-error" id="customSourceError" role="alert"></p>
+      <section
+        aria-labelledby="customSourceFieldsHeading"
+        class="custom-source-fields-section"
+      >
+        <div class="custom-source-fields-header">
+          <h3 id="customSourceFieldsHeading">
+            Fields
+            <span class="badge blue" id="customSourceFieldCount">1 field</span>
+          </h3>
+          <div
+            aria-label="Add fields"
+            class="custom-source-toolbar"
+            role="toolbar"
+          >
+            <button
+              class="btn secondary"
+              id="addCustomSourceFieldBtn"
+              type="button"
+            >
+              <span data-atlas-icon="add"></span>
+              Add Field
+            </button>
+            <button
+              aria-controls="customSourceBulkPanel"
+              aria-expanded="false"
+              class="btn secondary"
+              id="customSourceBulkToggle"
+              type="button"
+            >
+              <span data-atlas-icon="add-list"></span>
+              Add Several
+            </button>
+            <button
+              aria-controls="customSourceImportPanel"
+              aria-expanded="false"
+              class="btn secondary"
+              id="customSourceImportToggle"
+              type="button"
+            >
+              <span data-atlas-icon="upload"></span>
+              Import from Excel
+            </button>
+          </div>
+        </div>
+        <div
+          aria-labelledby="customSourceBulkTitle"
+          class="custom-source-panel"
+          hidden
+          id="customSourceBulkPanel"
+          role="region"
+        >
+          <h4 id="customSourceBulkTitle">Add several fields</h4>
+          <label class="custom-source-label" for="customSourceBulkNames">
+            Display names
+            <span class="hint" id="customSourceBulkHint"
+              >One per line. Paste a column from a spreadsheet or type each
+              name. Blank lines are skipped.</span
+            >
+            <textarea
+              aria-describedby="customSourceBulkHint"
+              class="input full-input"
+              id="customSourceBulkNames"
+              rows="5"
+            ></textarea>
+          </label>
+          <div class="custom-source-panel-actions">
+            <button
+              class="btn secondary"
+              data-close-custom-panel="customSourceBulkPanel"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn primary"
+              disabled
+              id="customSourceBulkAddBtn"
+              type="button"
+            >
+              Add Fields
+            </button>
+          </div>
+        </div>
+        <div
+          aria-labelledby="customSourceImportTitle"
+          class="custom-source-panel"
+          hidden
+          id="customSourceImportPanel"
+          role="region"
+        >
+          <h4 id="customSourceImportTitle">Import field names from Excel</h4>
+          <p class="hint">
+            Choose a file, then the row that holds your field names. Each filled
+            cell in that row becomes one field.
+          </p>
+          <div class="custom-source-file-picker">
+            <button
+              class="btn secondary"
+              id="customSourceImportChooseBtn"
+              type="button"
+            >
+              Choose File
+            </button>
+            <span class="hint" id="customSourceImportFileName"
+              >.xlsx, .xlsm, or .csv, up to 10 MB</span
+            >
+            <input
+              accept=".xlsx,.xlsm,.csv"
+              class="visually-hidden"
+              id="customSourceImportFile"
+              tabindex="-1"
+              type="file"
+            />
+          </div>
+          <div class="custom-source-import-controls">
+            <label class="custom-source-label" for="customSourceImportSheet">
+              Sheet
+              <select
+                class="input full-input"
+                disabled
+                id="customSourceImportSheet"
+              ></select>
+            </label>
+            <label class="custom-source-label" for="customSourceImportRow">
+              Row number
+              <input
+                class="input full-input"
+                disabled
+                id="customSourceImportRow"
+                inputmode="numeric"
+                min="1"
+                step="1"
+                type="number"
+                value="1"
+              />
+            </label>
+          </div>
+          <p
+            aria-live="assertive"
+            class="custom-source-error"
+            id="customSourceImportError"
+            role="alert"
+          ></p>
+          <div
+            aria-live="polite"
+            class="custom-source-import-preview"
+            id="customSourceImportPreview"
+          ></div>
+          <div class="custom-source-panel-actions">
+            <button
+              class="btn secondary"
+              data-close-custom-panel="customSourceImportPanel"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="btn primary"
+              disabled
+              id="customSourceImportAddBtn"
+              type="button"
+            >
+              Add Fields
+            </button>
+          </div>
+        </div>
+        <div
+          aria-live="polite"
+          class="custom-source-notice"
+          id="customSourceNotice"
+        ></div>
+        <div aria-hidden="true" class="custom-source-field-head">
+          <span>#</span>
+          <span>Display name</span>
+          <span>Source field name</span>
+          <span>Format</span>
+          <span></span>
+        </div>
+        <div
+          aria-labelledby="customSourceFieldsHeading"
+          class="custom-source-fields"
+          id="customSourceFields"
+          role="group"
+        ></div>
+      </section>
+      <p
+        aria-live="assertive"
+        class="custom-source-error"
+        id="customSourceError"
+        role="alert"
+      ></p>
       <div class="custom-source-actions">
         <button class="btn secondary" id="customSourceCancelBtn" type="button">
           Cancel

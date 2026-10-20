@@ -9,6 +9,7 @@ import {
   customSourceCreator,
   customSourceFromRecord,
   CustomSourceValidationError,
+  fieldNameFromDisplayName,
   mergeCustomSources,
   validateCustomSourceInput,
 } from "../src/custom-source.js";
@@ -373,4 +374,62 @@ test("the custom source form offers the server field formats", () => {
   assert.ok(match);
   const formats = vm.runInNewContext(match[1]);
   assert.equal(formats.join("\n"), CUSTOM_FIELD_FORMATS.join("\n"));
+});
+
+test("display names accept special characters", () => {
+  const input = validateCustomSourceInput({
+    sourceName: "Bonus File",
+    fields: [{ vanityLabel: "Pay? $Rate! *_v2", fieldFormat: "Text" }],
+  });
+  assert.equal(input.fields[0].vanityLabel, "Pay? $Rate! *_v2");
+  assert.equal(input.fields[0].fieldName, "Pay Rate _v2");
+});
+
+test("display names still reject control characters", () => {
+  assert.throws(
+    () =>
+      validateCustomSourceInput({
+        sourceName: "Bonus File",
+        fields: [{ vanityLabel: "Pay\u0007Rate", fieldFormat: "Text" }],
+      }),
+    /Field 1 display name contains characters that cannot be stored/,
+  );
+});
+
+test("source names and source field names keep the strict rules", () => {
+  assert.throws(
+    () =>
+      validateCustomSourceInput({
+        sourceName: "Bonus?",
+        fields: [{ vanityLabel: "Amount", fieldFormat: "Text" }],
+      }),
+    /Source name can use letters, numbers/,
+  );
+  assert.throws(
+    () =>
+      validateCustomSourceInput({
+        sourceName: "Bonus File",
+        fields: [
+          { vanityLabel: "Amount", fieldName: "Amount$", fieldFormat: "Text" },
+        ],
+      }),
+    /Field 1 source field name can use letters, numbers/,
+  );
+});
+
+test("a blank source field name is derived safely from the display name", () => {
+  assert.equal(
+    fieldNameFromDisplayName("  ¿Total* (USD)?  ", 1),
+    "Total (USD)",
+  );
+  assert.equal(fieldNameFromDisplayName("?!*$", 4), "field_4");
+  const input = validateCustomSourceInput({
+    sourceName: "Bonus File",
+    fields: [
+      { vanityLabel: "Amount", fieldFormat: "Text" },
+      { vanityLabel: "$$$", fieldFormat: "Currency" },
+    ],
+  });
+  assert.equal(input.fields[1].fieldName, "field_2");
+  assert.equal(input.fields[1].vanityLabel, "$$$");
 });

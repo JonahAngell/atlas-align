@@ -11,10 +11,7 @@ function loadStepCardLogic(splitLogicConnectors) {
     "utf8",
   );
   const start = source.indexOf("const ATLAS_LOGIC_LINE_BREAK_CONNECTORS");
-  const end = source.indexOf(
-    "\n}\n",
-    source.indexOf("function renderStepCardLogic"),
-  );
+  const end = source.indexOf("\n}\n", source.indexOf("function renderStepCardLogic"));
   const context = {
     state: { splitLogicConnectors },
     // Stand-in pill renderer: escapes text and wraps quoted names in a span.
@@ -29,10 +26,7 @@ function loadStepCardLogic(splitLogicConnectors) {
         .join(""),
   };
   vm.createContext(context);
-  vm.runInContext(
-    `${source.slice(start, end + 2)}\nthis.renderStepCardLogic = renderStepCardLogic;`,
-    context,
-  );
+  vm.runInContext(`${source.slice(start, end + 2)}\nthis.renderStepCardLogic = renderStepCardLogic;`, context);
   return context;
 }
 
@@ -47,20 +41,14 @@ test("split view off renders exactly like the pill renderer", () => {
 test("split view on starts AND and OR on new lines", () => {
   const ctx = loadStepCardLogic(true);
   const html = ctx.renderStepCardLogic(logic);
-  assert.ok(
-    html.includes(
-      `<span class="pill">East</span>${BREAK}AND <span class="pill">Sales</span>`,
-    ),
-  );
+  assert.ok(html.includes(`<span class="pill">East</span>${BREAK}AND <span class="pill">Sales</span>`));
   assert.ok(html.includes(`> 10${BREAK}OR <span class="pill">Returns</span>`));
   assert.equal(html.split(BREAK).length, 3);
 });
 
 test("split view leaves quoted names and lowercase words alone", () => {
   const ctx = loadStepCardLogic(true);
-  const html = ctx.renderStepCardLogic(
-    'IF "Sales AND Returns" = "black or white" and more',
-  );
+  const html = ctx.renderStepCardLogic('IF "Sales AND Returns" = "black or white" and more');
   assert.ok(!html.includes(BREAK));
   assert.ok(html.includes('<span class="pill">Sales AND Returns</span>'));
 });
