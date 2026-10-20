@@ -47,3 +47,20 @@ The `test` job (`npm ci`, `npm test`, `git diff --check`) passed in the same run
 6. Open a PR and confirm the `playwright` job is green before merging.
 
 ---
+
+## qTest export template missing
+
+**Status:** Open. The qTest export is offered in the export menu (`js/16-page-shell.js:1387`) but fails.
+
+**Why:** `exportQtestExcel()` loads `./templates/qtest-test-design-template.xlsx` (`QTEST_TEMPLATE_PATH` in `js/12-export-foundation.js`). That file has never been committed, and `server.js` does not serve a `templates/` directory. Users see "Could not load Qtest template workbook: 404".
+
+**What the template must contain:** sheets named `Guide - Start Here` and `UAT - Disney3`; generated rows start at row 5 of the UAT sheet (`QTEST_FIRST_DATA_ROW`).
+
+### Fix steps
+
+1. Get the current qTest test-design template workbook from the qTest owners.
+2. Commit it as `templates/qtest-test-design-template.xlsx`.
+3. Serve it: add a `/templates` static mount in `server.js` with the same options as the other mounts, and `COPY --chown=1000:1000 templates ./templates` in the `Dockerfile`.
+4. Export from an audit with logic steps and confirm the workbook opens in Excel with rows from row 5 of `UAT - Disney3`.
+
+---
