@@ -1827,7 +1827,9 @@ function atlasNormalizeDuplicateField(item = {}) {
     sourceFile,
     sourceAlias: String(
       item?.sourceAlias ||
-        (typeof sourceAliasFor === "function" ? sourceAliasFor(sourceFile) : "") ||
+        (typeof sourceAliasFor === "function"
+          ? sourceAliasFor(sourceFile)
+          : "") ||
         "",
     ).trim(),
     fieldName,

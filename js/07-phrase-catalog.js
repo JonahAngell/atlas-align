@@ -40,7 +40,10 @@ async function initPhraseCatalog() {
     const json = await response.json();
     validateCatalogShape(json);
     phraseCatalog = json;
-    status("Phrase catalog loaded from catalogs/logic_phrase_catalog.json.", "ok");
+    status(
+      "Phrase catalog loaded from catalogs/logic_phrase_catalog.json.",
+      "ok",
+    );
   } catch (error) {
     phraseCatalog = {};
     catalogLoadWarnings.push(
@@ -59,7 +62,9 @@ async function initPhraseCatalog() {
  */
 function validateCatalogShape(catalog) {
   if (!catalog || typeof catalog !== "object" || Array.isArray(catalog))
-    throw new Error("catalogs/logic_phrase_catalog.json must contain a JSON object.");
+    throw new Error(
+      "catalogs/logic_phrase_catalog.json must contain a JSON object.",
+    );
   const missing = REQUIRED_CATALOG_KEYS.filter((key) => !(key in catalog));
   if (missing.length)
     throw new Error(
@@ -164,7 +169,6 @@ function quotePhraseValue(value) {
   const clean = String(value ?? "").trim();
   return clean ? `"${clean}"` : '""';
 }
-
 
 /**
  * Formats a source/field pair as standardized column text.
@@ -683,9 +687,15 @@ function atlasDuplicateColumnListPhrase(params = {}) {
       : [];
   let previousSource = null;
   const phrases = fields.map((item) => {
-    const sameSource = previousSource !== null && previousSource === item.sourceFile;
+    const sameSource =
+      previousSource !== null && previousSource === item.sourceFile;
     previousSource = item.sourceFile;
-    return tableColumnPlain(item.sourceFile, item.sourceAlias, item.fieldName, sameSource);
+    return tableColumnPlain(
+      item.sourceFile,
+      item.sourceAlias,
+      item.fieldName,
+      sameSource,
+    );
   });
   return (
     atlasJoinReadableAndList(phrases) ||
@@ -700,7 +710,9 @@ function atlasDuplicateKeepClause(action = "") {
     "analyst_logic.remove_duplicates.keep_clauses",
     {},
   )?.[stored];
-  return typeof clause === "string" && clause ? clause : "keeping the first record";
+  return typeof clause === "string" && clause
+    ? clause
+    : "keeping the first record";
 }
 
 function atlasSourceFieldMathPhrase(p = {}) {

@@ -1559,7 +1559,9 @@ function atlasDuplicatePickerEntries(selectedKeys) {
 
 function atlasOpenDuplicateFieldPicker(editor) {
   if (!window.ATLASVisualPicker?.open) {
-    console.error("ATLAS Remove Duplicates: shared Visual Picker is unavailable.");
+    console.error(
+      "ATLAS Remove Duplicates: shared Visual Picker is unavailable.",
+    );
     status?.(
       "The column picker is unavailable. Reload the page and try again.",
       "error",
@@ -1587,8 +1589,7 @@ function atlasOpenDuplicateFieldPicker(editor) {
         .map((item) => item?.duplicateField)
         .filter(Boolean);
       if (!picked.length || state.selectedStepId !== stepId) return;
-      const live =
-        document.querySelector("[data-duplicate-editor]") || editor;
+      const live = document.querySelector("[data-duplicate-editor]") || editor;
       const fields = atlasDuplicateEditorFields(live);
       const keys = new Set(fields.map(atlasDuplicateFieldKey));
       picked.forEach((item) => {
@@ -1746,7 +1747,9 @@ document.addEventListener(
       const row = remove.closest("[data-sort-row]");
       const focusTarget =
         row?.nextElementSibling?.querySelector("[data-remove-sort-field]") ||
-        row?.previousElementSibling?.querySelector("[data-remove-sort-field]") ||
+        row?.previousElementSibling?.querySelector(
+          "[data-remove-sort-field]",
+        ) ||
         editor?.querySelector("[data-add-sort-field]");
       row?.remove();
       atlasSyncSortEditor(editor);

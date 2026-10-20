@@ -463,7 +463,10 @@ function atlasSortDirectionState(value) {
   };
 }
 
-function atlasSortDirectionToggle(value, inputAttribute = 'data-param="sort_direction"') {
+function atlasSortDirectionToggle(
+  value,
+  inputAttribute = 'data-param="sort_direction"',
+) {
   const state = atlasSortDirectionState(value);
   return `<input type="hidden" ${inputAttribute} value="${esc(state.value)}"><button type="button" class="sort-direction-toggle" data-sort-direction-toggle aria-label="${esc(state.label)}" title="${esc(state.title)}">${window.atlasIcon?.(state.icon) || ""}</button>`;
 }
@@ -811,37 +814,39 @@ function renderGuidedBuilder(step) {
   if (step.step_type === "sort_records")
     return `<div class="guided-builder"><h4>Sort Records</h4>${atlasSortFieldsEditorHtml(p)}</div>`;
   if (step.step_type === "remove_duplicates")
-    return `<div class="guided-builder"><h4>Remove Duplicates</h4>${atlasDuplicateFieldsEditorHtml(p)}<div class="atlas-choice-field">${atlasChoiceControl({
-      options: atlasDescribedChoices(
-        catalogArrayFromOptions({
-          path: "app_config.logic_options.duplicate_actions",
-          fallback: [
-            "Keep first record",
-            "Drop all duplicated records",
-            "Keep last record",
-          ],
-        }).map((value) => [
-          value,
+    return `<div class="guided-builder"><h4>Remove Duplicates</h4>${atlasDuplicateFieldsEditorHtml(p)}<div class="atlas-choice-field">${atlasChoiceControl(
+      {
+        options: atlasDescribedChoices(
+          catalogArrayFromOptions({
+            path: "app_config.logic_options.duplicate_actions",
+            fallback: [
+              "Keep first record",
+              "Drop all duplicated records",
+              "Keep last record",
+            ],
+          }).map((value) => [
+            value,
+            {
+              "Keep first record": "Keep first",
+              "Drop all duplicated records": "Keep none",
+              "Keep last record": "Keep last",
+            }[value] || value,
+          ]),
           {
-            "Keep first record": "Keep first",
-            "Drop all duplicated records": "Keep none",
-            "Keep last record": "Keep last",
-          }[value] || value,
-        ]),
-        {
-          "Keep first record": "Keep the earliest matching record.",
-          "Drop all duplicated records":
-            "Remove every record that has a duplicate.",
-          "Keep last record": "Keep the latest matching record.",
-        },
-      ),
-      selected: p.duplicate_action,
-      variant: "cards",
-      label: "Records to keep",
-      heading: "Records to Keep",
-      popover: "list",
-      attributes: 'data-param="duplicate_action"',
-    })}</div></div>`;
+            "Keep first record": "Keep the earliest matching record.",
+            "Drop all duplicated records":
+              "Remove every record that has a duplicate.",
+            "Keep last record": "Keep the latest matching record.",
+          },
+        ),
+        selected: p.duplicate_action,
+        variant: "cards",
+        label: "Records to keep",
+        heading: "Records to Keep",
+        popover: "list",
+        attributes: 'data-param="duplicate_action"',
+      },
+    )}</div></div>`;
   if (step.step_type === "filter_rows" || step.step_type === "flag_records")
     return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {
@@ -1601,7 +1606,9 @@ function atlasSyncSortFieldParams(params = {}) {
 /** Stores a Sort Records field list and its first-field mirror. */
 function atlasApplySortFields(params = {}, fields = []) {
   params.sort_fields_json = atlasSerializeSortFields(fields);
-  const first = atlasSortFieldsFromParams(params).find((item) => item.fieldName);
+  const first = atlasSortFieldsFromParams(params).find(
+    (item) => item.fieldName,
+  );
   params.source_file = first?.sourceFile || "";
   params.source_alias = first?.sourceAlias || "";
   params.field_name = first?.fieldName || "";
