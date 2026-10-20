@@ -129,6 +129,11 @@ import { createFieldLibraryRouter } from "./src/routes/field-library-routes.js";
 import { createPreviewRouter } from "./src/routes/preview-routes.js";
 import { createWorkflowRouter } from "./src/routes/workflow-routes.js";
 import { createReviewRouter } from "./src/routes/review-routes.js";
+import {
+  apiRateLimits,
+  securityHeaders,
+  useJsonBodyParsers,
+} from "./src/http-security.js";
 
 const { Pool } = pg;
 const __filename = fileURLToPath(import.meta.url);
@@ -163,7 +168,7 @@ const upload = multer({
 });
 
 app.disable("x-powered-by");
-app.use(express.json({ limit: "12mb" }));
+app.use(securityHeaders({ local: isLocalAppEnv() }));
 
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
@@ -178,6 +183,7 @@ app.use(
   express.static(path.join(__dirname, "sections"), {
     index: false,
     dotfiles: "deny",
+    fallthrough: false,
   }),
 );
 app.use(
@@ -193,6 +199,7 @@ app.use(
   express.static(path.join(__dirname, "js"), {
     index: false,
     dotfiles: "deny",
+    fallthrough: false,
   }),
 );
 
@@ -201,6 +208,7 @@ app.use(
   express.static(path.join(__dirname, "vendor"), {
     index: false,
     dotfiles: "deny",
+    fallthrough: false,
   }),
 );
 
@@ -209,6 +217,7 @@ app.use(
   express.static(path.join(__dirname, "tutorials"), {
     index: false,
     dotfiles: "deny",
+    fallthrough: false,
   }),
 );
 
@@ -217,8 +226,16 @@ app.use(
   express.static(path.join(__dirname, "catalogs"), {
     index: false,
     dotfiles: "deny",
+    fallthrough: false,
   }),
 );
+
+// API traffic only: static assets above are neither rate limited nor body parsed.
+const rateLimits = apiRateLimits();
+app.use("/api", rateLimits.api, rateLimits.writes);
+app.use("/api/admin/field-library/replace", rateLimits.uploads);
+
+useJsonBodyParsers(app);
 
 async function resolveUserRoleSlugs(accessToken, user) {
   const existing = normalizedRoleSlugs(user);
@@ -742,6 +759,24 @@ app.use((error, _req, res, _next) => {
       error:
         multerErrors[error.code] ||
         "The multipart upload request could not be processed.",
+    });
+  }
+
+  if (error?.type === "entity.too.large") {
+    return res.status(413).json({ error: "The request body is too large." });
+  }
+
+  if (error?.type === "entity.parse.failed") {
+    return res
+      .status(400)
+      .json({ error: "The request body is not valid JSON." });
+  }
+
+  // Client errors (missing static files, fail(4xx) from routers) keep their status.
+  const status = Number(error?.status || error?.statusCode);
+  if (Number.isInteger(status) && status >= 400 && status < 500) {
+    return res.status(status).json({
+      error: error.expose === false ? "The request failed." : error.message,
     });
   }
 
