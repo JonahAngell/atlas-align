@@ -1,8 +1,8 @@
 {
-  "name": "atlas-field-library-backend",
-  "version": "1.0.0",
+  "name": "atlas-align",
+  "version": "3.1.7",
   "private": true,
-  "description": "Standalone StudioShare PostgreSQL backend for atomic ATLAS Field Library CSV replacement",
+  "description": "ATLAS Align audit logic builder: Express server, PostgreSQL storage, and browser application for StudioShare Launch",
   "type": "module",
   "scripts": {
     "start": "node server.js",

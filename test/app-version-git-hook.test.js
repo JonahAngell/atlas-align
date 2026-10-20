@@ -22,6 +22,8 @@ async function repo() {
     "js/00-config-utils.js",
     "FEATURE_REQUEST_TEMPLATE.md",
     "PROJECT_CONTEXT.md",
+    "package.json",
+    "package-lock.json",
     "build-css.mjs",
     "css/manifest.json",
     "css/display-fields.css",
@@ -62,6 +64,8 @@ test("normal commit bumps once and stages managed files", async () => {
       "utf8",
     );
     assert.match(src, new RegExp(nextVersion.replaceAll(".", "\\.")));
+    const committed = JSON.parse(git(root, "show", "HEAD:package.json").stdout);
+    assert.equal(committed.version, nextVersion.slice(1));
   } finally {
     await rm(root, { recursive: true, force: true });
   }
