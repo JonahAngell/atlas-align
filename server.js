@@ -2,6 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadEnvFile } from "./src/load-env.js";
 import express from "express";
+import compression from "compression";
 import multer from "multer";
 import pg from "pg";
 import {
@@ -169,6 +170,7 @@ const upload = multer({
 
 app.disable("x-powered-by");
 app.use(securityHeaders({ local: isLocalAppEnv() }));
+app.use(compression());
 
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
