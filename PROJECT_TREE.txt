@@ -1542,6 +1542,7 @@
 │   ├── field-library-workbook.js
 │   ├── field-library.js
 │   ├── http-error.js
+│   ├── http-security.js
 │   ├── load-env.js
 │   ├── local-development.js
 │   ├── schema.js
@@ -1584,8 +1585,11 @@
 │   ├── audit-workflow-repository.test.js
 │   ├── audit-workflow-routes.test.js
 │   ├── authorization-role-matrix.test.js
+│   ├── boot-loader.test.js
 │   ├── custom-source.test.js
 │   ├── display-fields-bulk.test.js
+│   ├── html-escaping.test.js
+│   ├── http-security.test.js
 │   ├── in-app-validation-config.test.js
 │   ├── in-app-validation-runner.test.js
 │   ├── in-app-validation-storage.test.js
@@ -1599,6 +1603,7 @@
 │   ├── logic-step-editor-join.test.js
 │   ├── logic-step-indent.test.js
 │   ├── logic-text-import.test.js
+│   ├── modal-focus-trap.test.js
 │   ├── my-audits-render.test.js
 │   ├── pending-approval-rescind.test.js
 │   ├── publication-deletion-ui.test.js
@@ -1607,20 +1612,25 @@
 │   ├── recently-deleted-publications-ui.test.js
 │   ├── render-scheduling.test.js
 │   ├── schema.test.js
+│   ├── server-robustness.test.js
 │   ├── sharepoint-field-library.test.js
 │   ├── source-library-authorization.test.js
 │   ├── source-library-identity.test.js
 │   ├── source-replace.test.js
+│   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
 │   ├── user-impersonation.test.js
 │   ├── user-profile-persistence.test.js
 │   ├── user-profile-role-refresh.test.js
+│   ├── vendor-exceljs.test.js
 │   ├── workflow-browser-rollout.test.js
 │   ├── workflow-feature-flags.test.js
 │   ├── workflow-lock-dom.test.js
 │   ├── workflow-rollout-contract.test.js
+│   ├── workflow-summary-capabilities.test.js
 │   ├── workflow-ui-contract.test.js
-│   └── workflow-validation-matrix.test.js
+│   ├── workflow-validation-matrix.test.js
+│   └── workspace-navigation.test.js
 ├── test-results
 │   ├── read-only-isolation-persis-f17d3-ersistence-remain-unchanged-chromium
 │   │   ├── error-context.md
@@ -1653,6 +1663,7 @@
 │   └── smoke.spec.js
 ├── tools
 │   ├── analyze-css-cascade.mjs
+│   ├── check-syntax.mjs
 │   ├── clear_database.sql
 │   ├── create-review-bundle.mjs
 │   ├── install-git-hooks.mjs
@@ -1698,6 +1709,8 @@
 ├── .env
 ├── .env.example
 ├── .gitignore
+├── .nvmrc
+├── .prettierignore
 ├── audit-index.json
 ├── build-css.mjs
 ├── docker-compose.yml

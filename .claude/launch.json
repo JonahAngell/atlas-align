@@ -1,0 +1,65 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static-ui",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8765", "--bind", "127.0.0.1"],
+      "port": 8765
+    },
+    {
+      "name": "static-ui-alt",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8766", "--bind", "127.0.0.1"],
+      "port": 8766
+    },
+    {
+      "name": "static-ui-display-text",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8771", "--bind", "127.0.0.1"],
+      "port": 8771
+    },
+    {
+      "name": "static-ui-readiness",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8772", "--bind", "127.0.0.1"],
+      "port": 8772
+    },
+    {
+      "name": "static-ui-display-issue",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8773", "--bind", "127.0.0.1"],
+      "port": 8773
+    },
+    {
+      "name": "static-ui-display-bulk",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8774", "--bind", "127.0.0.1"],
+      "port": 8774
+    },
+    {
+      "name": "static-ui-custom-source",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8775", "--bind", "127.0.0.1"],
+      "port": 8775
+    },
+    {
+      "name": "static-ui-duplicates",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8776", "--bind", "127.0.0.1"],
+      "port": 8776
+    },
+    {
+      "name": "static-ui-sort",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8777", "--bind", "127.0.0.1"],
+      "port": 8777
+    },
+    {
+      "name": "static-ui-split-logic",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8778", "--bind", "127.0.0.1"],
+      "port": 8778
+    }
+  ]
+}

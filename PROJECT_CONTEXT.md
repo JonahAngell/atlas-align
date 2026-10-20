@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.1.7
+**Current Version:** v3.1.9
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
