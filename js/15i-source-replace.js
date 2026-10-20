@@ -983,8 +983,14 @@ if (typeof document !== "undefined" && document.addEventListener) {
   document.addEventListener(
     "keydown",
     (event) => {
-      if (event.key !== "Escape" || event.defaultPrevented) return;
+      if (event.defaultPrevented) return;
       if (!document.querySelector(".source-replace-backdrop")) return;
+      if (event.key === "Tab" && typeof atlasTrapTabKey === "function")
+        return atlasTrapTabKey(
+          event,
+          document.querySelector(".source-replace-modal"),
+        );
+      if (event.key !== "Escape") return;
       event.preventDefault();
       atlasCloseSourceReplacement();
     },

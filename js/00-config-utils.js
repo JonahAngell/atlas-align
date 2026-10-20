@@ -65,6 +65,34 @@ const today = () => new Date().toISOString().slice(0, 10);
  * Escapes a value for a CSV cell.
  * @param {any} s - Input used by csvEscape.
  */
+/**
+ * Keeps Tab and Shift+Tab focus inside a modal. Call it from the modal's
+ * keydown handler; non-Tab keys are ignored.
+ */
+function atlasTrapTabKey(event, container) {
+  if (event.key !== "Tab" || !container) return;
+  const focusable = [
+    ...container.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ].filter((node) => !node.closest("[hidden]") && node.getClientRects().length);
+  if (!focusable.length) {
+    event.preventDefault();
+    container.focus?.();
+    return;
+  }
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  const outside = !container.contains(document.activeElement);
+  if (event.shiftKey && (outside || document.activeElement === first)) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (outside || document.activeElement === last)) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
 const csvEscape = (s) => `"${String(s ?? "").replace(/"/g, '""')}"`;
 
 /**
