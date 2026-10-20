@@ -867,14 +867,15 @@ export async function getAuditWorkflowSummary(pool, { auditId, user }) {
           },
         }
       : null,
+    pendingRequest = currentRequest?.status === "Pending",
     capabilities = auditAccessForUser(user, audit, {
       selectedApprover: currentRequest?.selectedApprover || null,
+      // Only a pending request pins a revision. Drafts, and drafts reopened
+      // after a denied or rescinded request, are always the exact revision.
       exactRevision:
-        Boolean(currentRequest) &&
-        currentRequest.status === "Pending" &&
+        !pendingRequest ||
         currentRequest.submittedRevisionId === Number(a.current_revision_id),
-      exactRequest:
-        Boolean(currentRequest) && currentRequest.status === "Pending",
+      exactRequest: pendingRequest,
     });
   return {
     auditId: a.id,
