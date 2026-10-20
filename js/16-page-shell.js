@@ -341,7 +341,6 @@ const AUDIT_FLOW_PAGES = [
  * Locks or unlocks navigation based on active audit state.
  */
 function updateNavigationLockState() {
-  const unlockedPages = new Set(["my-audits"]);
   const locked = !hasSelectedAudit();
   document.body.classList.toggle("audit-selected", !locked);
   document.body.classList.toggle("audit-not-selected", locked);
@@ -352,7 +351,7 @@ function updateNavigationLockState() {
         button.dataset.panel ||
         "",
     );
-    const shouldLock = locked && !unlockedPages.has(targetPage);
+    const shouldLock = locked && !ATLAS_AUDIT_FREE_PAGES.has(targetPage);
     button.classList.toggle("is-locked", shouldLock);
     if (shouldLock) {
       button.setAttribute("aria-disabled", "true");
