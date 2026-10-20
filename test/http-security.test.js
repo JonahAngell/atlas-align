@@ -138,6 +138,8 @@ test("server wires security middleware before routers and maps client errors", (
   const routers = source.indexOf("app.use(createIdentityRouter(");
   assert.ok(headers > 0 && headers < limits && limits < parsers);
   assert.ok(parsers < routers);
+  const compress = source.indexOf("app.use(compression())");
+  assert.ok(compress > headers && compress < source.indexOf('"/css"'));
   assert.doesNotMatch(source, /express\.json\(\{ limit: "12mb" \}\)/);
   assert.match(source, /entity\.too\.large/);
   assert.match(source, /status >= 400 && status < 500/);
