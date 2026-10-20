@@ -1,1 +1,27 @@
 .env
+.git
+.github
+.githooks
+.vscode
+.claude
+.cursor
+.ste
+node_modules
+public
+updates
+docs
+evidence
+test
+tests
+tools
+local-db
+playwright
+playwright-report
+test-results
+Audit Review Update
+REVIEW_BUNDLE*.txt
+review-bundle-files.txt
+PROJECT_*.md
+PROJECT_TREE.txt
+*.md
+sections/combined_html.txt
