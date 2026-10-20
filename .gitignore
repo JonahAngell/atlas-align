@@ -7,3 +7,4 @@ logs/
 playwright-report/
 test-results/
 playwright/.auth/
+REVIEW_BUNDLE*.txt
