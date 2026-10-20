@@ -299,6 +299,22 @@ function renderFieldDisplayModeButton() {
   button.setAttribute("aria-label", button.title);
   button.setAttribute("aria-pressed", String(vanityOn));
   button.classList.toggle("active", vanityOn);
+  renderSplitLogicConnectorsButton();
+}
+
+/**
+ * Renders the display-only AND/OR line-break toggle button.
+ */
+function renderSplitLogicConnectorsButton() {
+  const button = $("splitLogicConnectorsBtn");
+  if (!button) return;
+
+  const splitOn = !!state.splitLogicConnectors;
+  button.title = splitOn
+    ? "Show AND / OR inline"
+    : "Show AND / OR on separate lines";
+  button.setAttribute("aria-pressed", String(splitOn));
+  button.classList.toggle("active", splitOn);
 }
 
 // -----------------------------------------------------------------------------
@@ -680,10 +696,15 @@ let atlasAuditSwitcherQuery = null;
 let atlasAuditSwitcherActiveIndex = 0;
 
 function atlasAuditSwitcherMatches(query = "") {
-  const wanted = String(query || "").trim().toLowerCase();
+  const wanted = String(query || "")
+    .trim()
+    .toLowerCase();
   return atlasTopbarAuditOptions.filter(
     (option) =>
-      !wanted || String(option.label || "").toLowerCase().includes(wanted),
+      !wanted ||
+      String(option.label || "")
+        .toLowerCase()
+        .includes(wanted),
   );
 }
 
@@ -713,7 +734,10 @@ function atlasHighlightAuditSwitcherOption() {
   });
 }
 
-function atlasRenderAuditSwitcherResults(query = "", { resetIndex = false } = {}) {
+function atlasRenderAuditSwitcherResults(
+  query = "",
+  { resetIndex = false } = {},
+) {
   const results = $("activeAuditResults");
   const search = $("activeAuditSearch");
   if (!results) return;
@@ -791,8 +815,9 @@ document.addEventListener("input", (event) => {
 document.addEventListener("keydown", (event) => {
   if (event.target?.id !== "activeAuditSearch") return;
   const options = [
-    ...($("activeAuditResults")?.querySelectorAll("[data-audit-switch-value]") ||
-      []),
+    ...($("activeAuditResults")?.querySelectorAll(
+      "[data-audit-switch-value]",
+    ) || []),
   ];
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
@@ -801,8 +826,9 @@ document.addEventListener("keydown", (event) => {
       atlasRenderAuditSwitcherResults("", { resetIndex: true });
     }
     const list = [
-      ...($("activeAuditResults")?.querySelectorAll("[data-audit-switch-value]") ||
-        []),
+      ...($("activeAuditResults")?.querySelectorAll(
+        "[data-audit-switch-value]",
+      ) || []),
     ];
     if (!list.length) return;
     const delta = event.key === "ArrowDown" ? 1 : -1;
@@ -814,7 +840,8 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
     const option = options[atlasAuditSwitcherActiveIndex] || options[0];
-    if (option) atlasChooseAuditSwitcherValue(option.dataset.auditSwitchValue || "");
+    if (option)
+      atlasChooseAuditSwitcherValue(option.dataset.auditSwitchValue || "");
     return;
   }
   if (event.key === "Escape") {
@@ -827,7 +854,9 @@ document.addEventListener("keydown", (event) => {
 document.addEventListener(
   "mousedown",
   (event) => {
-    if (event.target.closest?.(".topbar-audit-switcher [data-audit-switch-value]"))
+    if (
+      event.target.closest?.(".topbar-audit-switcher [data-audit-switch-value]")
+    )
       event.preventDefault();
   },
   true,

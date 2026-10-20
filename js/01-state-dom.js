@@ -103,6 +103,10 @@ const state = {
   // Requirements Preview display mode. Nested is the default; complete is display-only.
   previewStatementMode:
     localStorage.getItem("atlasAlignPreviewStatementMode") || "nested",
+
+  // Display-only: starts AND/OR connectors on new lines in Rules step cards.
+  splitLogicConnectors:
+    localStorage.getItem("atlasAlignSplitLogicConnectors") === "true",
 };
 
 const e = {
@@ -329,6 +333,22 @@ function setFieldDisplayMode(mode) {
   atlasInvalidatePages?.(["fields", "steps", "preview", "review"]);
   atlasRenderActivePage?.({ force: true });
   renderFieldDisplayModeButton?.();
+}
+
+/**
+ * Updates and persists the display-only AND/OR line-break mode for step cards.
+ * Step data and generated logic text are not changed.
+ * @param {boolean} enabled - Whether connectors start new lines.
+ */
+function setSplitLogicConnectors(enabled) {
+  state.splitLogicConnectors = !!enabled;
+  localStorage.setItem(
+    "atlasAlignSplitLogicConnectors",
+    String(state.splitLogicConnectors),
+  );
+  atlasInvalidatePages?.(["steps"]);
+  atlasRenderActivePage?.({ force: true });
+  renderSplitLogicConnectorsButton?.();
 }
 
 /**

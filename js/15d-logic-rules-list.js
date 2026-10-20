@@ -92,7 +92,7 @@ function atlasRefreshLogicRuleCard(step) {
     ".compact-rule-logic, .logic-rule-summary",
   );
   if (logicTarget) {
-    logicTarget.innerHTML = renderLogicWithPills(analystLogic(step));
+    logicTarget.innerHTML = renderStepCardLogic(analystLogic(step));
   }
 
   card.classList.toggle("selected", state.selectedStepId === step.id);

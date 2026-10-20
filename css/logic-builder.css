@@ -1161,7 +1161,8 @@ body.dark .join-venn-area-label {
 }
 /* ATLAS-SOURCE-UNIT:u0439:END */
 /* ATLAS-SOURCE-UNIT:u0493:BEGIN */ /* Rules toolbar display-mode toggle */
-#page-steps #fieldDisplayModeBtn {
+#page-steps #fieldDisplayModeBtn,
+#page-steps #splitLogicConnectorsBtn {
   display: inline-flex !important;
 }
 
@@ -2751,7 +2752,8 @@ body.dark .compact-action-menu-panel {
 /* ATLAS-SOURCE-UNIT:u0726:END */ /* ATLAS-SOURCE-UNIT:u0740:BEGIN */
 
 /* Field-name display mode restoration */
-#page-steps #fieldDisplayModeBtn {
+#page-steps #fieldDisplayModeBtn,
+#page-steps #splitLogicConnectorsBtn {
   box-sizing: border-box;
   width: auto !important;
   min-width: 0;
@@ -2766,17 +2768,21 @@ body.dark .compact-action-menu-panel {
   font-weight: 700;
   cursor: pointer;
 }
-#page-steps #fieldDisplayModeBtn:hover {
+#page-steps #fieldDisplayModeBtn:hover,
+#page-steps #splitLogicConnectorsBtn:hover {
   filter: brightness(0.97);
 }
-#page-steps #fieldDisplayModeBtn:focus-visible {
+#page-steps #fieldDisplayModeBtn:focus-visible,
+#page-steps #splitLogicConnectorsBtn:focus-visible {
   outline: 3px solid
     color-mix(in srgb, var(--primary, #5b5bd6) 45%, transparent);
   outline-offset: 2px;
 }
 /* ATLAS-SOURCE-UNIT:u0740:END */ /* ATLAS-SOURCE-UNIT:u0741:BEGIN */
 #page-steps #fieldDisplayModeBtn.active,
-#page-steps #fieldDisplayModeBtn[aria-pressed="true"] {
+#page-steps #fieldDisplayModeBtn[aria-pressed="true"],
+#page-steps #splitLogicConnectorsBtn.active,
+#page-steps #splitLogicConnectorsBtn[aria-pressed="true"] {
   border-color: var(--primary, #5b5bd6) !important;
   background: color-mix(
     in srgb,
@@ -2785,7 +2791,17 @@ body.dark .compact-action-menu-panel {
   ) !important;
   color: var(--primary, #4f46c8) !important;
 }
-/* ATLAS-SOURCE-UNIT:u0741:END */ /* ATLAS-SOURCE-UNIT:u0742:BEGIN */
+/* ATLAS-SOURCE-UNIT:u0741:END */ /* ATLAS-SOURCE-UNIT:u1499:BEGIN */
+#page-steps #splitLogicConnectorsBtn {
+  align-items: center;
+  gap: 6px;
+}
+/* ATLAS-SOURCE-UNIT:u1499:END */ /* ATLAS-SOURCE-UNIT:u1500:BEGIN */
+#page-steps #splitLogicConnectorsBtn .app-icon {
+  width: 18px;
+  height: 18px;
+}
+/* ATLAS-SOURCE-UNIT:u1500:END */ /* ATLAS-SOURCE-UNIT:u0742:BEGIN */
 @media (max-width: 700px) {
   #page-steps #fieldDisplayModeBtn {
     min-width: 0;

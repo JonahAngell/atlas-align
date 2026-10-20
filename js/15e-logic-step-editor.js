@@ -612,7 +612,7 @@ function renderLogicRuleCard(entry) {
       <span class="drag-handle compact-dragger" title="Drag to reorder">⋮⋮</span>
       ${hasChildren ? `<button type="button" class="step-collapse-button" data-toggle-step-children="${esc(step.id)}" aria-expanded="${collapsed ? "false" : "true"}" aria-label="${collapsed ? "Expand" : "Collapse"} children of step ${esc(entry.number)}" title="${collapsed ? "Expand child steps" : "Collapse child steps"}"><span aria-hidden="true">${collapsed ? "▸" : "▾"}</span></button>` : '<span class="step-collapse-spacer" aria-hidden="true"></span>'}
       <span class="step-number compact-step-number">${esc(entry.number)}</span>
-      <div class="compact-rule-logic" data-select-step>${linkedInverse ? `<div class="linked-inverse-subtitle inverse-else-subtitle">Complete inverse of Step ${esc(originalStepNumber)}</div>` : ""}${renderLogicWithPills(analystLogic(step))}</div>
+      <div class="compact-rule-logic" data-select-step>${linkedInverse ? `<div class="linked-inverse-subtitle inverse-else-subtitle">Complete inverse of Step ${esc(originalStepNumber)}</div>` : ""}${renderStepCardLogic(analystLogic(step))}</div>
       <span class="badge ${statusClass} compact-status-badge">${statusLabel}</span>
       <details class="compact-action-menu"><summary title="Step actions" aria-label="Step actions" aria-haspopup="menu" aria-expanded="false" data-rule-menu-toggle="${esc(step.id)}">⋯</summary><div class="compact-action-menu-panel" role="menu" data-rule-menu-panel="${esc(step.id)}" hidden>
         ${availability.indent ? '<button type="button" role="menuitem" data-indent>Indent</button>' : ""}

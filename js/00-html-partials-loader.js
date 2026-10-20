@@ -31,6 +31,7 @@
     const html = await Promise.all(sectionFiles.map(loadPartial));
     sectionRoot.insertAdjacentHTML("beforebegin", html.join(""));
     sectionRoot.remove();
+    window.atlasMountIcons?.(document);
     const bootScripts = [
       ...document.querySelectorAll("script[data-atlas-boot]"),
     ];

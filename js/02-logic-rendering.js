@@ -1128,6 +1128,34 @@ function renderLogicWithPills(text) {
     .join("");
 }
 
+// Connectors that start a new line when the Rules "Split AND/OR" view is on.
+const ATLAS_LOGIC_LINE_BREAK_CONNECTORS = ["AND", "OR"];
+const ATLAS_LOGIC_LINE_BREAK_MARKER = "\u2028";
+
+/**
+ * Renders step-card logic. When the split view is on, each AND/OR connector
+ * outside quoted names starts a new line. Display only: the text is not stored.
+ * @param {any} text - Analyst logic text for one step.
+ */
+function renderStepCardLogic(text) {
+  if (!state.splitLogicConnectors) return renderLogicWithPills(text);
+  const connector = new RegExp(
+    `\\s+\\b(${ATLAS_LOGIC_LINE_BREAK_CONNECTORS.join("|")})\\b\\s+`,
+    "g",
+  );
+  const marked = String(text || "")
+    .split(/("[^"]+")/g)
+    .map((part) =>
+      part.startsWith('"') && part.endsWith('"')
+        ? part
+        : part.replace(connector, `${ATLAS_LOGIC_LINE_BREAK_MARKER}$1 `),
+    )
+    .join("");
+  return renderLogicWithPills(marked)
+    .split(ATLAS_LOGIC_LINE_BREAK_MARKER)
+    .join('<br class="logic-connector-break">');
+}
+
 /**
  * Default selected-step empty-state markup.
  */
