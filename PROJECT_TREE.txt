@@ -1169,17 +1169,6 @@
 │   └── project-id
 ├── .vscode
 │   └── tasks.json
-├── Audit Review Update
-│   ├── 01_feature_request_portable_engine_and_rule_schema.txt
-│   ├── 01_file_list_portable_engine_and_rule_schema.txt
-│   ├── 02_feature_request_atlas_evaluator_migration.txt
-│   ├── 02_file_list_atlas_evaluator_migration.txt
-│   ├── 03_feature_request_floating_ui_and_readiness_sync.txt
-│   ├── 03_file_list_floating_ui_and_readiness_sync.txt
-│   ├── 04_feature_request_navigation_fixes_cleanup_release.txt
-│   ├── 04_file_list_navigation_fixes_cleanup_release.txt
-│   ├── 05_feature_request_final_validation_alignment.txt
-│   └── 05_file_list_final_validation_alignment.txt
 ├── audits
 │   ├── active-employees-in-sap-not-wd.json
 │   ├── core-connector-worker-idoc.json
@@ -1237,7 +1226,6 @@
 │   ├── me-response-sanitized.txt
 │   └── source-library-access-response.txt
 ├── js
-│   ├── .gitkeep
 │   ├── 00-config-utils.js
 │   ├── 00-exceljs-loader.js
 │   ├── 00-html-partials-loader.js
@@ -1331,17 +1319,12 @@
 │   │   ├── uiMode.html
 │   │   └── xtermModule.kHJ-D0s7.css
 │   └── index.html
-├── public
-│   ├── app.js
-│   ├── index.html
-│   └── styles.css
 ├── secret
 │   └── courier-secret.txt
 ├── sections
 │   ├── audit-history.html
 │   ├── audit-issues.html
 │   ├── audit-overview.html
-│   ├── combined_html.txt
 │   ├── display-fields.html
 │   ├── inbox.html
 │   ├── logic-builder.html
@@ -1371,7 +1354,6 @@
 │   ├── audit-preview-repository
 │   │   ├── get-approval-request.sql
 │   │   ├── get-audit-revision-for-history.sql
-│   │   ├── get-audit-revision-for-restoration.sql
 │   │   ├── get-current-audit-revision.sql
 │   │   ├── get-publication.sql
 │   │   ├── get-step-revision-for-restoration.sql
@@ -1397,7 +1379,6 @@
 │   │   ├── insert-audit.sql
 │   │   ├── insert-deleted-step-revision.sql
 │   │   ├── insert-restoration-audit-revision.sql
-│   │   ├── insert-restoration-deleted-step-revision.sql
 │   │   ├── insert-step-revision.sql
 │   │   ├── list-archived-audits.sql
 │   │   ├── list-audit-revisions.sql
@@ -1407,15 +1388,11 @@
 │   │   ├── lock-archived-audit-for-restore.sql
 │   │   ├── lock-audit-for-save.sql
 │   │   ├── lock-restoration-audit.sql
-│   │   ├── mark-restoration-step-deleted.sql
 │   │   ├── mark-step-deleted.sql
-│   │   ├── next-deleted-step-revision-number.sql
-│   │   ├── next-restoration-deleted-step-revision-number.sql
 │   │   ├── next-step-revision-number.sql
 │   │   ├── restore-archived-audit.sql
 │   │   ├── set-current-step-revision.sql
 │   │   ├── update-audit-current-revision.sql
-│   │   ├── update-restored-audit-current-revision.sql
 │   │   └── upsert-audit-step.sql
 │   ├── audit-review-repository
 │   │   ├── approve-approval-request.sql
@@ -1479,7 +1456,6 @@
 │   │   ├── list-inbox-items.sql
 │   │   ├── lock-approval-for-publication.sql
 │   │   ├── lock-approval-request-for-decision.sql
-│   │   ├── lock-approval-request-for-rescind.sql
 │   │   ├── lock-audit.sql
 │   │   ├── lock-draft-review-session-for-rescind.sql
 │   │   ├── lock-publication-for-delete.sql
@@ -1674,31 +1650,6 @@
 │   ├── tutorial-global.js
 │   ├── tutorial-logic-builder.js
 │   └── tutorial-save-export.js
-├── updates
-│   ├── 0-load-atlas-sources-from-database.diff.txt
-│   ├── 1-durable-audit-storage-1.diff.txt
-│   ├── 10-spinner-style.diff.txt
-│   ├── 11-vendor.diff.txt
-│   ├── 12-version.diff.txt
-│   ├── 13-sources-pane.diff.txt
-│   ├── 14-colours.diff.txt
-│   ├── 15-profile.diff.txt
-│   ├── 16-rule-action-menu.diff.txt
-│   ├── 17-profile-debug.diff.txt
-│   ├── 18-project-context.diff.txt
-│   ├── 19-audit-issues-lifecycle.diff.txt
-│   ├── 2-durable-audit-storage-2.diff.txt
-│   ├── 20-logic-builder-context.diff.txt
-│   ├── 21-approver-picker-topbar-inbox.diff.txt
-│   ├── 22-sql.diff.txt
-│   ├── 23-logic-review-controls-fix.diff.txt
-│   ├── 3-durable-audit-storage-3.diff.txt
-│   ├── 4-logic-phrase-catalog-1.diff.txt
-│   ├── 5-logic-phrase-catalog-2.diff.txt
-│   ├── 6-spinner.diff.txt
-│   ├── 7-index.diff.txt
-│   ├── 8-save.diff.txt
-│   └── 9-style.diff.txt
 ├── validation
 │   └── validation-read-only-isolation.js
 ├── vendor
@@ -1720,13 +1671,10 @@
 ├── package-lock.json
 ├── package.json
 ├── playwright.config.js
-├── PROJECT_CONTEXT_NEW.md
 ├── PROJECT_CONTEXT.md
 ├── README-AUTHORIZATION-ROLE-MATRIX-TEST.md
 ├── README-local.md
 ├── README.md
-├── REVIEW_BUNDLE_MIGRATIONS.txt
-├── REVIEW_BUNDLE.txt
 ├── review-bundle-files.txt
 ├── server.js
 ├── SHAREPOINT_ENV_GUIDE_NO_BINDING.md
