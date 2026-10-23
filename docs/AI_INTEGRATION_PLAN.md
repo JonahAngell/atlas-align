@@ -130,8 +130,9 @@ This is a port of `ai_client.py`.
 - **Enabled** when `STUDIOSHARE_AI_GATEWAY_URL` is set and a token source is available (below). Otherwise every AI call returns `unavailable`.
 - **Endpoint.** Posts to `${STUDIOSHARE_AI_GATEWAY_URL}/v1/chat/completions`. The API is OpenAI-compatible, so the request shape matches the reference client.
 - **Models.** Tries each model in `STUDIOSHARE_AI_MODELS` in order. The default is `anthropic/claude-sonnet-4-6`, the model used in the Launch AI guide.
-- **Status check.** `/api/ai/status` calls `GET ${URL}/v1/models` (cached for a few minutes) and reports whether the configured models are listed. A model that is missing usually means the app lacks **Use** permission on that model's provider in the AI console (§3.4).
+- **Status check.** `/api/ai/status` calls `GET ${URL}/v1/models` (cached for a few minutes) and reports whether the configured models are listed. The gateway filters this list by the app's provider permissions, so a model that is missing usually means the app lacks **Use** permission on that model's provider in the AI console (§3.4).
 - **Reference.** The `demo-app-ai` repository shows the same pattern: server-side proxy, model list and streaming chat. Streaming is supported by the gateway, but v1 does not need it because every endpoint returns one validated JSON object.
+- **Not used in v1.** The gateway also supports tool calling on `/v1/chat/completions` (translated for Bedrock, passed through for Ollama, ignored by Mock), `POST /v1/embeddings`, `POST /v1/invoke` with `GET /v1/tasks/{id}`, and `POST /v1/images/generations`. v1 sends no tools (§7.3) and ranks sources deterministically. Embeddings are a later option for source search.
 
 #### Token handling
 
@@ -146,7 +147,7 @@ The gateway accepts `Authorization: Bearer <token>` with three token types. ATLA
 Rules:
 
 - Precedence: `STUDIOSHARE_OIDC_TOKEN`, then `STUDIOSHARE_OIDC_URL`, then `STUDIOSHARE_AI_API_KEY` (local only).
-- The mint response is `{ token, expiresAt, issuer, subject, audience }`. The subject is `app:{slug}:environment:{production|preview}`.
+- The mint response is `{ token, expiresAt, issuer, subject, audience }`. The subject is `app:{slug}:environment:{env}`, where `{env}` is `production`, `preview` or a custom environment name.
 - Tokens last up to 60 minutes. The sidecar caches and reuses a token until 15 minutes before expiry, so ATLAS caches `{ token, expiresAt }` for the same window. A missing or unparseable `expiresAt` falls back to a short TTL.
 - A failed mint skips the gateway for that call and returns `unavailable`.
 - A 401 clears the cached token and skips the remaining gateway models.
@@ -226,9 +227,9 @@ Add these to `.env.example` with blank values. Launch injects the two Studioshar
 - Outbound traffic is allowed by default (Launch firewall).
 - Call the gateway through the injected `STUDIOSHARE_AI_GATEWAY_URL`. Do not hard-code the internal `http://ai-gateway.launch.internal/v1` address: the service mesh overwrites the `Authorization` header, which would replace the bearer token.
 
-#### Preview status
+#### Resilience
 
-The AI Gateway is labelled Preview in the Launch docs. Its API, model list and limits may change. The degraded states in §3.10 cover an outage, and the feature flag can turn AI off without a deploy.
+The gateway is an external dependency, and the models it lists depend on AI console permissions. The degraded states in §3.10 cover an outage or a missing model, and the feature flag can turn AI off without a deploy.
 
 #### Health
 
@@ -703,7 +704,7 @@ Each phase is shippable on its own behind `ATLAS_AI_ENABLED` plus `ATLAS_AI_FEAT
 
 | # | Question | Decision |
 | --- | --- | --- |
-| D1 | Gateway access from Launch | Use the auto-injected `STUDIOSHARE_AI_GATEWAY_URL` (`/v1`, OpenAI-compatible) with an app OIDC token from the auto-injected `STUDIOSHARE_OIDC_URL`. Do not use the internal mesh address, because the mesh overwrites `Authorization` (§3.1, §3.4). Source: Launch guide, AI section. |
+| D1 | Gateway access from Launch | Use the auto-injected `STUDIOSHARE_AI_GATEWAY_URL` (`/v1`, OpenAI-compatible) with an app OIDC token from the auto-injected `STUDIOSHARE_OIDC_URL`. Do not use the internal mesh address, because the mesh overwrites `Authorization` (§3.1, §3.4). Source: https://developer.studioshare.wds.io/docs/guides/launch#ai (reviewed 2026-10-23). |
 | D2 | Model list | Default `STUDIOSHARE_AI_MODELS=anthropic/claude-sonnet-4-6`. Check availability with `GET /v1/models`. The app needs **Use** permission on the provider in the AI console. |
 | D3 | OpenRouter fallback | Dropped. The gateway is the only provider, including for local development, which uses `STUDIOSHARE_OIDC_TOKEN` or a personal access token. |
 | D4 | Data classification review | Required. Security and Privacy sign-off is a gate before Phase 1 (§7.4, §9). |
@@ -711,7 +712,7 @@ Each phase is shippable on its own behind `ATLAS_AI_ENABLED` plus `ATLAS_AI_FEAT
 
 ### 10.2 Open questions
 
-1. **Q-A User JWT vs app token.** The gateway can track usage per user when called with the user's `access_token`. v1 uses the app OIDC token so user tokens never leave ATLAS. Is per-user gateway usage reporting needed enough to change this?
+1. **Q-A User JWT vs app token.** The gateway can track usage per user when called with the user's `access_token`. The guide's Node example does this, passing `req.cookies.access_token` as the API key, so it is the documented pattern. v1 still uses the app OIDC token so user tokens never leave ATLAS. Is per-user gateway usage reporting needed enough to change this?
 2. **Q-B Approved models for HR data.** The D2 default is the model from the Launch guide. Does the D4 review restrict which providers in the AI console may receive audit metadata?
 3. **Q5 Bulk accept.** Should chat allow "Apply all" for several display fields? It is excluded from v1.
 4. **Q7 Feedback telemetry.** Can we record anonymous accept, reject and undo counts per proposal kind to tune prompts?
