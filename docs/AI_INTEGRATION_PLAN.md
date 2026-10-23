@@ -115,6 +115,7 @@ js/15b … "Describe what you need"        ▼
                                     src/ai/json.js      (parse + repair)
                                     src/ai/validate.js  (schemas + grounding vs data model)
                                     src/ai/cache.js     (bounded LRU)
+                                    src/ai/types.js     (shared JSDoc contracts, §9.1)
                                          ▼
                          Studioshare AI Gateway  (only provider, every environment)
 ```
@@ -695,6 +696,57 @@ Each phase is shippable on its own behind `ATLAS_AI_ENABLED` plus `ATLAS_AI_FEAT
 | **3. Suggest a fix** | `/issue-resolution`, card button, inline proposals | M | **Blocked on BACKLOG Audit Issues Phase 4.** Issues clear after apply in Playwright. |
 | **4. Assistant: explain** | Panel, `/chat` with `explain` proposals only, history, a11y | M | axe clean, light and dark. Reviewer and locked modes verified. |
 | **5. Assistant: suggest** | All proposal kinds in chat, held proposals, preview routing | L | Eval grounded rate ≥ 95 %. Security review sign-off. Production enablement. |
+
+### 9.1 Implementation team: subagents and models
+
+These are the Claude Code subagents and models used to **build** the feature. They are separate from the runtime model ATLAS calls through the gateway (`STUDIOSHARE_AI_MODELS`, §3.1). No subagent ever calls the gateway itself.
+
+#### Roster
+
+Model choice follows the risk of the work. Opus 5.5 handles code where a subtle mistake leaks data or tokens: token handling, redaction, grounding and security review. Sonnet 5.5 handles code that follows existing patterns: routes, UI and tests. Haiku 5.5 handles read-only lookups and test runs.
+
+| Subagent | Type | Model | Owns (only writer) | Phases |
+| --- | --- | --- | --- | --- |
+| `ai-lead` | Main session (orchestrator) | Opus 5.5 | This plan; shared contracts in `src/ai/types.js` (envelope, `Proposal`, `createAiClient` signature); integration and commits | All |
+| `ai-core` | New definition, `.claude/agents/ai-core.md` | Opus 5.5 | `src/ai/client.js`, `src/ai/json.js`, `src/ai/cache.js`; `test/ai-client.test.js`, `test/ai-json.test.js` | 0 |
+| `ai-guard` | New definition, `.claude/agents/ai-guard.md` | Opus 5.5 | `src/ai/context.js`, `src/ai/validate.js`, `src/ai/prompts.js`; `test/ai-context.test.js`, `test/ai-validate.test.js`, `test/ai-prompts.test.js` | 0–5 |
+| `ai-api` | New definition, `.claude/agents/ai-api.md` | Sonnet 5.5 | `src/routes/ai-routes.js`, `aiLimiter`, server wiring, `.env.example`; `test/ai-routes.test.js` | 0–5 |
+| `ai-ui` | New definition, `.claude/agents/ai-ui.md` | Sonnet 5.5 | `js/25-ai-assistant.js`; the AI additions in `js/15j`, `js/23`, `js/15b`; AI styles; the shared undo helper (§5.4); `test/ai-assistant-ui.test.js` | 1–5 |
+| `ai-e2e` | New definition, `.claude/agents/ai-e2e.md` | Sonnet 5.5 | `tests/ai-*.spec.js`, stub provider server, axe checks (§8.2) | 1–5 |
+| `ai-eval` | New definition, `.claude/agents/ai-eval.md` | Sonnet 5.5 | Eval set and scoring script from seed audits (§8.3) | 1, 5 |
+| `ai-security-reviewer` | New definition, read-only (Read, Grep, Glob, Bash for tests) | Opus 5.5 | Nothing. Reviews each phase's diff against §7 and `security.md` and reports findings | 0–5 |
+| `ai-scout` | Built-in `lookup` / `Explore` | Haiku 5.5 | Nothing. Finds existing helpers (`atlasParseImportedLogicText`, `auditAccessForUser`, `atlasAuditIsWorkflowLocked`) for other agents | All |
+| `ai-test-runner` | Built-in `researcher` | Haiku 5.5 | Nothing. Runs `node --test`, Playwright and Prettier and summarizes failures | All |
+
+Each new definition sets `model:` and a `tools:` allow-list in its frontmatter, for example:
+
+```markdown
+---
+name: ai-guard
+description: Owns AI context minimization, redaction, prompts and output validation for ATLAS Align.
+model: opus
+tools: Read, Grep, Glob, Edit, Write, Bash
+---
+```
+
+#### Assignments per phase
+
+| Phase | Order of work |
+| --- | --- |
+| **0. Foundation** | `ai-lead` writes `src/ai/types.js` first. Then `ai-core`, `ai-guard` (context and validate skeletons) and `ai-api` (`/status`, limiter, env template) work in parallel. `ai-test-runner` runs the unit suite and `ai-security-reviewer` reviews before merge. |
+| **Gate** | No agent work. Security and Privacy sign-off is a human decision (D4). |
+| **1. Draft step with AI** | `ai-guard` (import prompt, `add_step` validation) and `ai-api` (`/import-draft`) in parallel, then `ai-ui` (dialog, candidates, undo helper). Then `ai-e2e`, and `ai-eval` builds the step-request set. |
+| **2. Source search** | `ai-guard` (catalog-only grounding), `ai-api` (`/source-search`), `ai-ui` (toggle). Then `ai-e2e`. |
+| **3. Suggest a fix** | Same split as Phase 2 for `/issue-resolution`. Does not start until BACKLOG Audit Issues Phase 4 lands. |
+| **4. Assistant: explain** | `ai-api` (`/chat`, explain only) and `ai-ui` (panel, history, a11y) in parallel. Then `ai-e2e` with axe in light and dark at both widths. |
+| **5. Assistant: suggest** | `ai-guard` (all proposal kinds, held proposals), `ai-api`, `ai-ui`. Then `ai-eval` re-runs the full set and `ai-security-reviewer` does a full review before production enablement. |
+
+#### Rules for agents
+
+- **One writer per file.** The Owns column is exclusive. Agents that run in parallel each work in their own worktree. A change to `src/ai/types.js` goes through `ai-lead` only.
+- **No real data or tokens.** Agents use seed or synthetic audits and the injected-`fetch` test seam. `STUDIOSHARE_OIDC_TOKEN` and `STUDIOSHARE_AI_API_KEY` are never set in an agent's environment.
+- **Commits.** `ai-lead` commits on a `feature-<ISSUE>-…` branch with Conventional Commits and no AI attribution (contributing.md). Subagents do not commit, push or open merge requests.
+- **Humans decide.** A person reviews and approves every merge request. `ai-security-reviewer` findings feed that review but do not replace the D4 gate or the Phase 5 sign-off.
 
 ---
 
