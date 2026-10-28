@@ -53,7 +53,8 @@
 │   │   ├── 20260915150000_add_canonical_review_object_metadata.sql
 │   │   ├── 20260915170000_add_persistent_audit_review_discussions.sql
 │   │   ├── 20260915190000_add_rescinded_approval_request_state.sql
-│   │   └── 20261013120000_create_atlas_custom_sources.sql
+│   │   ├── 20261013120000_create_atlas_custom_sources.sql
+│   │   └── 20261028120000_add_manual_audit_lock_publications.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
@@ -113,8 +114,10 @@
 │   ├── ATLAS_AUDIT_WORKFLOW_CONTRACT.md
 │   ├── atlas-logo.png
 │   ├── BACKLOG.md
+│   ├── COPILOT_AUDIT_IMPORT_GUIDE.md
 │   ├── field_table.html
-│   └── sample_field_table.html
+│   ├── sample_field_table.html
+│   └── SOURCE_LIBRARY_LIVE_DEBUG.md
 ├── evidence
 │   ├── me-response-sanitized.txt
 │   └── source-library-access-response.txt
@@ -333,6 +336,8 @@
 │   │   ├── create-approval-request.sql
 │   │   ├── create-approval.sql
 │   │   ├── create-inbox-item.sql
+│   │   ├── create-lock-publication.sql
+│   │   ├── create-lock-revision.sql
 │   │   ├── create-publication.sql
 │   │   ├── create-unlock-revision.sql
 │   │   ├── decide-approval-request.sql
@@ -364,6 +369,7 @@
 │   │   ├── set-audit-approved.sql
 │   │   ├── set-audit-draft-after-denial.sql
 │   │   ├── set-audit-draft-revision.sql
+│   │   ├── set-audit-locked.sql
 │   │   ├── set-audit-pending-approval.sql
 │   │   ├── set-audit-published.sql
 │   │   ├── share-lock-current-revision.sql
@@ -426,6 +432,8 @@
 │   ├── user-profile-repository.js
 │   ├── user-profile-routes.js
 │   └── workflow-feature-flags.js
+├── templates
+│   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
 │   │   └── authorization-role-matrix.fixture.json
@@ -440,6 +448,7 @@
 │   ├── audit-history-timeline.test.js
 │   ├── audit-history-ui.test.js
 │   ├── audit-issue-engine.test.js
+│   ├── audit-lock-repository.test.js
 │   ├── audit-preview-repository.test.js
 │   ├── audit-preview-routes.test.js
 │   ├── audit-repository.test.js
@@ -458,6 +467,8 @@
 │   ├── boot-loader.test.js
 │   ├── custom-source.test.js
 │   ├── display-fields-bulk.test.js
+│   ├── export-logic-indent.test.js
+│   ├── export-page.test.js
 │   ├── html-escaping.test.js
 │   ├── http-security.test.js
 │   ├── in-app-validation-config.test.js
@@ -477,7 +488,6 @@
 │   ├── my-audits-render.test.js
 │   ├── pending-approval-rescind.test.js
 │   ├── publication-deletion-ui.test.js
-│   ├── publication-ui.test.js
 │   ├── published-locking.test.js
 │   ├── qtest-export.test.js
 │   ├── recently-deleted-publications-ui.test.js
@@ -509,8 +519,6 @@
 │   │   ├── trace.zip
 │   │   └── video.webm
 │   └── .last-run.json
-├── templates
-│   └── qtest-test-design-template.xlsx
 ├── tests
 │   ├── fixtures
 │   │   ├── atlas.fixture.js
