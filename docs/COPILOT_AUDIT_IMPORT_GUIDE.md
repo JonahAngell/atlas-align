@@ -502,7 +502,7 @@ Check every item. Fix failures before you show the JSON.
 - [ ] `sortOrder` runs 1, 2, 3 with no gaps or repeats, in top-to-bottom order.
 - [ ] Every `step_type` comes from Section 5.2, with the matching `type`.
 - [ ] Every source name used in a step or field matches a `sources[].name` exactly, including case and spaces.
-- [ ] Every source has a `reference_source` step before any step that uses it.
+- [ ] Every source has exactly one top-level `reference_source` step (`parentId: null`), before any step that uses it. The app treats these as its generated reference steps, so never add a second one for the same source.
 - [ ] Every `customSources` and `sourceMappings` entry's `source` matches a `sources[].name` or `alias` exactly, and no source has both.
 - [ ] Every `customSources` field has a `fieldFormat` from Section 4.4, and every `fieldName` matches a `rawFieldName` in the audit.
 - [ ] Every `sourceMappings.targetSource` came from the user or the document. Never guess a library key.
