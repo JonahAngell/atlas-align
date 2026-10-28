@@ -101,4 +101,12 @@
     border: 3px solid Highlight;
   }
 }
-/* ATLAS-SOURCE-UNIT:u0975:END */
+/* ATLAS-SOURCE-UNIT:u0975:END *//* ATLAS-SOURCE-UNIT:u1564:BEGIN */
+.history-entry-reason {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+/* ATLAS-SOURCE-UNIT:u1564:END */

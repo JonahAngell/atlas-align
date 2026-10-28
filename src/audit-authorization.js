@@ -117,7 +117,14 @@ export function auditAccessForUser(user, audit = null, context = {}) {
 
     canApprove: adminRevision && selected && isPendingApproval && exactRequest,
     canPublish: adminRevision && isApproved && exactApproval,
-    canUnlock: adminRevision && isPublished && exactPublication,
+    // Lock and unlock are open to the admin team, including Assigned Analysts.
+    canLock: authenticated && adminTeam && exactRevision && !isPublished,
+    canUnlock:
+      authenticated &&
+      adminTeam &&
+      exactRevision &&
+      isPublished &&
+      exactPublication,
 
     canDeletePublication: authenticated && alignAdmin,
     canViewHistory: authenticated && (assigned || adminTeam || alignAdmin),

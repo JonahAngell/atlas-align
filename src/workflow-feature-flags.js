@@ -50,6 +50,7 @@ export function reduceWorkflowCapabilities(capabilities = {}, flags = {}) {
     ),
     canApprove: Boolean(capabilities.canApprove && flags.decisions),
     canPublish: Boolean(capabilities.canPublish && flags.publication),
+    canLock: Boolean(capabilities.canLock && flags.publication),
     canUnlock: Boolean(capabilities.canUnlock && flags.unlock),
     canDeletePublication: Boolean(
       capabilities.canDeletePublication && flags.publicationDeletion,

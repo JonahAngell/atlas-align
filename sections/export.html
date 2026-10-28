@@ -1,0 +1,60 @@
+<section class="page" data-page="export" id="page-export">
+  <div class="export-pagehead">
+    <h1>Export</h1>
+    <p class="subtitle">
+      Download or copy the selected audit. Changes are saved before each
+      export, so files always match the stored audit.
+    </p>
+  </div>
+  <section
+    class="card export-lock-card"
+    id="atlasAuditLockCard"
+    aria-labelledby="atlasAuditLockHeading"
+  >
+    <span class="export-lock-icon" data-atlas-icon="lock"></span>
+    <div class="export-lock-copy">
+      <h2 id="atlasAuditLockHeading">Lock audit</h2>
+      <p class="hint" id="atlasAuditLockDescription">
+        Checking lock status…
+      </p>
+    </div>
+    <label class="export-lock-switch">
+      <input
+        aria-describedby="atlasAuditLockDescription"
+        disabled
+        id="atlasAuditLockToggle"
+        role="switch"
+        type="checkbox"
+      />
+      <span class="export-lock-switch-track" aria-hidden="true"></span>
+      <span class="export-lock-switch-label" id="atlasAuditLockState"
+        >Unlocked</span
+      >
+    </label>
+  </section>
+  <section class="export-formats" aria-labelledby="atlasExportFormatsHeading">
+    <h2 class="visually-hidden" id="atlasExportFormatsHeading">
+      Export formats
+    </h2>
+    <div class="export-grid" id="atlasExportGrid" role="list"></div>
+  </section>
+  <section
+    aria-labelledby="atlasExportPreviewHeading"
+    class="card export-preview"
+    hidden
+    id="atlasExportPreview"
+  >
+    <div class="export-preview-head">
+      <h2 id="atlasExportPreviewHeading">Preview</h2>
+      <button
+        class="btn secondary small"
+        data-export-preview-close
+        type="button"
+      >
+        Close Preview
+      </button>
+    </div>
+    <p class="hint" id="atlasExportPreviewNote"></p>
+    <div class="export-preview-body" id="atlasExportPreviewBody"></div>
+  </section>
+</section>

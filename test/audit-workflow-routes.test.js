@@ -16,6 +16,7 @@ for (const route of [
   "/api/audits/:auditId/approval-requests/:requestId/approve",
   "/api/audits/:auditId/approval-requests/:requestId/deny",
   "/api/audits/:auditId/publish",
+  "/api/audits/:auditId/lock",
   "/api/audits/:auditId/unlock",
 ])
   test(`registers ${route}`, () => assert.ok(source.includes(route)));
@@ -48,4 +49,16 @@ test("legacy direct approval route fails closed in favor of review finalization"
     /Approval must be completed through the item-level review session/,
   );
   assert.match(source, /review-sessions\/:sessionId\/finalize-approval/);
+});
+
+test("lock route is authenticated and guarded by the publication stage", () => {
+  const routes = readFileSync(
+    new URL("../src/routes/workflow-routes.js", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    routes,
+    /"\/api\/audits\/:auditId\/lock",\s*requireCurrentUser,\s*workflowFeature\("publication"\)/,
+  );
+  assert.match(routes, /lockAuditRevision\(pool, \{/);
 });

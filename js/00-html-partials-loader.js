@@ -19,7 +19,7 @@
     "./sections/requirements-preview.html",
     "./sections/readiness-review.html",
     "./sections/audit-issues.html",
-    "./sections/publication-preview.html",
+    "./sections/export.html",
   ];
 
   if (!sectionRoot)

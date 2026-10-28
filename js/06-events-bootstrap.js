@@ -236,22 +236,6 @@ function bindEvents() {
     }
   });
 
-  on("exportCurrentBtn", "click", exportCurrent);
-  on("downloadDocBtn", "click", exportCurrent);
-  on("downloadCsvBtn", "click", exportCsv);
-  on("downloadExcelBtn", "click", () =>
-    exportAuditExcel().catch((err) =>
-      status(`Excel export failed: ${err.message}`, "bad"),
-    ),
-  );
-  on("downloadQtestExcelBtn", "click", () =>
-    exportQtestExcel().catch((err) =>
-      status(`Qtest Excel export failed: ${err.message}`, "bad"),
-    ),
-  );
-  on("downloadHtmlBtn", "click", exportAuditHtml);
-  on("copyHtmlBtn", "click", () => copyAuditHtml());
-  on("copyMarkdownBtn", "click", copyMarkdown);
   on("completeStatementsToggle", "change", () => {
     state.previewStatementMode = e.completeStatements?.checked
       ? "complete"
@@ -277,9 +261,6 @@ function bindEvents() {
       status(`Database audit refresh failed: ${err.message}`, "bad"),
     ),
   );
-  on("saveFlowBtn", "click", () =>
-    saveFlow().catch((err) => status(err.message, "bad")),
-  );
   if (!document.__atlasSaveShortcutBound) {
     document.addEventListener("keydown", (event) => {
       const isSaveShortcut =
@@ -296,19 +277,6 @@ function bindEvents() {
     });
     document.__atlasSaveShortcutBound = true;
   }
-  on("loadFlowBtn", "click", () =>
-    loadFlow().catch((err) => status(err.message, "bad")),
-  );
-  on("deleteFlowBtn", "click", () =>
-    deleteFlow().catch((err) => status(err.message, "bad")),
-  );
-  on("exportAllBtn", "click", exportAll);
-  on("clearAutosaveBtn", "click", () => clearAutosave());
-  on("resetLocalDataBtn", "click", () =>
-    resetLocalAppData().catch((err) =>
-      status(`Clear saved data failed: ${err.message}`, "bad"),
-    ),
-  );
   on("activeAuditSelect", "change", () => {
     state.pendingActiveAuditValue = $("activeAuditSelect")?.value || "";
     renderActiveAuditSelect?.();
@@ -344,21 +312,7 @@ function bindEvents() {
   on("auditTutorialBtn", "click", () => startTutorial("audit"));
   on("fieldsTutorialBtn", "click", () => startTutorial("fields"));
   on("stepsTutorialBtn", "click", () => startTutorial("steps"));
-  on("saveTutorialBtn", "click", () => startTutorial("save"));
 
-  const importAllFile = $("importAllFile");
-  if (importAllFile) {
-    importAllFile.onchange = async (event) => {
-      const file = event.target.files[0];
-      try {
-        if (file) await atlasImportAuditJsonFile(file);
-      } catch (err) {
-        status(`Audit import failed: ${err.message}`, "bad");
-      } finally {
-        event.target.value = "";
-      }
-    };
-  }
   const importCurrentFile = $("importCurrentFile");
   if (importCurrentFile) {
     importCurrentFile.onchange = async (event) => {

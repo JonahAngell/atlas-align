@@ -1,7 +1,8 @@
 /**
  * 12-export-foundation.js
  *
- * Export utilities for current audit outputs, including Excel, HTML, clipboard HTML, and qTest template generation.
+ * File builders for current audit exports: Excel table view, HTML, and the qTest template.
+ * The Export page (29-export-dashboard.js) registers these builders as export formats.
  * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
  */
 
@@ -45,19 +46,25 @@ function safeFileName(name) {
 // -----------------------------------------------------------------------------
 // Excel export
 // -----------------------------------------------------------------------------
+const ATLAS_EXCEL_LIBRARY_ERROR =
+  "The Excel library could not load. Check your connection, then export again.";
+
 /**
- * Exports the current audit to an Excel workbook.
+ * Loads ExcelJS, throwing a user-facing error when it is unavailable.
  */
-async function exportAuditExcel() {
-  capture();
+async function atlasRequireExcelJs() {
   try {
     await atlasEnsureExcelJs();
   } catch {
-    return status(
-      "The Excel library could not load. Check your connection, then export again.",
-      "bad",
-    );
+    throw new Error(ATLAS_EXCEL_LIBRARY_ERROR);
   }
+}
+
+/**
+ * Builds the Excel table-view workbook for the current audit.
+ */
+async function buildAuditExcelWorkbook() {
+  await atlasRequireExcelJs();
   const workbook = new ExcelJS.Workbook();
   workbook.creator = ATLAS_APP_NAME;
   const fields = workbook.addWorksheet("Fields");
@@ -95,25 +102,22 @@ async function exportAuditExcel() {
       if (rowNumber > 1) row.alignment = { vertical: "top", wrapText: true };
     });
   });
-  const buffer = await workbook.xlsx.writeBuffer();
-  downloadBlob(
-    `${safeFileName(state.audit.name)}_audit_logic_${today()}.xlsx`,
-    buffer,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  );
-  status("Excel table view exported.", "ok");
+  return workbook;
 }
 
 // -----------------------------------------------------------------------------
 // HTML export
 // -----------------------------------------------------------------------------
 /**
- * Builds Confluence-friendly HTML for the current audit.
+ * Escapes a table cell value for the HTML export, keeping line breaks.
  */
 function auditHtmlCell(value) {
   return esc(value).replace(/\n/g, "<br>");
 }
 
+/**
+ * Builds Confluence-friendly HTML for the current audit.
+ */
 function auditHtmlDocument() {
   const fieldRows = requirementsFieldRows()
     .map(
@@ -128,34 +132,6 @@ function auditHtmlDocument() {
     )
     .join("");
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.audit.name)} Audit Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;color:#172b4d}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9e2ef;padding:8px;vertical-align:top;text-align:left}th{background:#0747a6;color:#fff}td{white-space:normal}</style></head><body><h1>${esc(state.audit.name)}</h1><p>${esc(state.audit.purpose || "")}</p><h2>Fields</h2><table><thead><tr><th aria-label="Row number"></th><th>Unique ID</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Display</th><th>Notes</th></tr></thead><tbody>${fieldRows}</tbody></table><h2>Audit Logic</h2><table><thead><tr><th>Step</th><th>Branch</th><th>Analyst Logic</th><th>Developer Logic</th><th>Notes</th></tr></thead><tbody>${logicRows}</tbody></table></body></html>`;
-}
-/**
- * Downloads the audit HTML document.
- */
-function exportAuditHtml() {
-  capture();
-  downloadBlob(
-    `${safeFileName(state.audit.name)}_confluence_${today()}.html`,
-    auditHtmlDocument(),
-    "text/html",
-  );
-  status("Confluence-friendly HTML exported.", "ok");
-}
-/**
- * Copies the audit HTML document to the clipboard.
- */
-async function copyAuditHtml() {
-  capture();
-  const html = auditHtmlDocument();
-  try {
-    await navigator.clipboard?.writeText(html);
-    status("Confluence-friendly HTML copied to clipboard.", "ok");
-  } catch {
-    status(
-      "Clipboard copy failed. Use Download Confluence HTML instead.",
-      "warn",
-    );
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -209,27 +185,24 @@ function cloneExcelStyle(style) {
   return style ? JSON.parse(JSON.stringify(style)) : {};
 }
 
+let qtestTemplateBytes = null;
+
 /**
- * Loads the qTest Excel template workbook.
+ * Loads the qTest Excel template workbook. The template bytes are fetched once
+ * and reused, since the Export page builds the workbook on each visit.
  */
 async function loadQtestTemplateWorkbook() {
-  try {
-    await atlasEnsureExcelJs();
-  } catch {
-    status(
-      "The Excel library could not load. Check your connection, then export again.",
-      "bad",
-    );
-    return null;
+  await atlasRequireExcelJs();
+  if (!qtestTemplateBytes) {
+    const response = await fetch(QTEST_TEMPLATE_PATH);
+    if (!response.ok)
+      throw new Error(
+        `Could not load Qtest template workbook: ${response.status}`,
+      );
+    qtestTemplateBytes = await response.arrayBuffer();
   }
-  const response = await fetch(QTEST_TEMPLATE_PATH);
-  if (!response.ok)
-    throw new Error(
-      `Could not load Qtest template workbook: ${response.status}`,
-    );
-  const buffer = await response.arrayBuffer();
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  await workbook.xlsx.load(qtestTemplateBytes.slice(0));
   return workbook;
 }
 
@@ -804,7 +777,6 @@ function keepOnlyQtestSheets(workbook) {
  */
 async function buildQtestWorkbook() {
   const workbook = await loadQtestTemplateWorkbook();
-  if (!workbook) return null;
   workbook.creator = ATLAS_APP_NAME;
   workbook.modified = new Date();
   const guide = workbook.getWorksheet(QTEST_GUIDE_SHEET);
@@ -821,26 +793,17 @@ async function buildQtestWorkbook() {
 }
 
 /**
- * Exports the qTest workbook populated from current logic.
+ * Builds the qTest workbook bytes and a completion message for the export.
  */
-async function exportQtestExcel() {
-  capture();
-  status("Building the Qtest Excel workbook...", "");
+async function buildQtestExportFile() {
   const built = await buildQtestWorkbook();
-  if (!built) return;
-  const buffer = await built.workbook.xlsx.writeBuffer();
-  downloadBlob(
-    `${safeFileName(state.audit.name)}_qtest_template_${today()}.xlsx`,
-    buffer,
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  );
-  if (!built.scenarioCount)
-    return status(
-      "Qtest Excel exported without scenarios because this audit has no enabled logic steps. Add logic steps, then export again.",
-      "warn",
-    );
-  status(
-    `Qtest Excel exported with ${built.scenarioCount} scenario${built.scenarioCount === 1 ? "" : "s"}.`,
-    "ok",
-  );
+  const count = built.scenarioCount;
+  return {
+    workbook: built.workbook,
+    content: await built.workbook.xlsx.writeBuffer(),
+    message: count
+      ? `Qtest Excel exported with ${count} scenario${count === 1 ? "" : "s"}.`
+      : "Qtest Excel exported without scenarios because this audit has no enabled logic steps. Add logic steps, then export again.",
+    kind: count ? "ok" : "warn",
+  };
 }

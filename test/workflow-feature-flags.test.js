@@ -39,6 +39,17 @@ test("flags only reduce capabilities", () => {
   assert.equal(c.canSubmit, false);
   assert.equal(c.canApprove, false);
   assert.equal(c.canPublish, true);
+  assert.equal(
+    reduceWorkflowCapabilities({ canLock: true }, { publication: false })
+      .canLock,
+    false,
+    "locking follows the publication flag",
+  );
+  assert.equal(
+    reduceWorkflowCapabilities({ canLock: true }, { publication: true })
+      .canLock,
+    true,
+  );
 });
 test("disabled middleware rejects direct calls", () => {
   let code, body;

@@ -11,7 +11,7 @@ window.ATLAS_TUTORIALS.global = [
   {
     selector: ".app-sidebar",
     title: "Move through the app by page",
-    body: "Use the sidebar to move through the workflow: My Audits, Fields, Logic Builder, Requirements Preview, Readiness & Review, and Publication Preview.",
+    body: "Use the sidebar to move through the workflow: My Audits, Fields, Logic Builder, Requirements Preview, Readiness & Review, and Export.",
     placement: "right",
   },
   {
@@ -36,10 +36,10 @@ window.ATLAS_TUTORIALS.global = [
     page: "steps",
   },
   {
-    selector: "#page-save",
-    title: "Save and export the finished audit",
-    body: "Use Publication Preview to save the audit locally and export the documentation package. The focused Save / Export tutorial is available from this section.",
+    selector: "#page-export",
+    title: "Export or lock the finished audit",
+    body: "Use Export to download the audit as JSON, Excel, Qtest, or HTML, or to copy HTML for Confluence. Turn on Lock audit to make the audit read-only for everyone and set its Status to Complete.",
     placement: "left",
-    page: "save",
+    page: "export",
   },
 ];

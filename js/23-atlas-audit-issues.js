@@ -2002,7 +2002,7 @@
       "display-fields",
       "preview",
       "review",
-      "save",
+      "export",
     ]);
     if (typeof global.renderAll === "function") global.renderAll();
     else if (typeof renderAll === "function") renderAll();
@@ -4136,7 +4136,7 @@
         "display-fields",
         "preview",
         "review",
-        "save",
+        "export",
       ].includes(activePage);
     if (elements.root) elements.root.hidden = !floatingSurfaceEligible;
     if (!floatingSurfaceEligible) closeIssuePanel(false);

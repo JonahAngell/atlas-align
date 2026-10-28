@@ -157,3 +157,56 @@ test("missing forbidden and malformed role resolution fail closed", () => {
       String(roleResolutionStatus),
     );
 });
+
+test("admin team members, including Assigned Analysts, may lock and unlock", () => {
+  const analyst = {
+    id: "analyst",
+    username: "analyst",
+    roles: ["atlas-admin-team"],
+    roleResolutionStatus: "resolved",
+  };
+  const reviewer = {
+    id: "reviewer",
+    username: "reviewer",
+    resolvedRoleSlugs: ["atlas-admin-team"],
+    roleResolutionStatus: "resolved",
+  };
+  for (const user of [analyst, reviewer]) {
+    for (const status of ["Draft", "Draft Revision", "Pending Approval", "Approved"]) {
+      const access = auditAccessForUser(user, audit(status));
+      assert.equal(access.canLock, true, `${user.id} locks ${status}`);
+      assert.equal(access.canUnlock, false, `${user.id} unlock ${status}`);
+    }
+    const published = auditAccessForUser(user, audit("Published"));
+    assert.equal(published.canLock, false);
+    assert.equal(published.canUnlock, true);
+    assert.equal(published.canEdit, false, "a locked audit is read-only");
+  }
+});
+test("lock and unlock require the verified admin team role and exact identity", () => {
+  const viewer = {
+    id: "viewer",
+    username: "viewer",
+    roles: [],
+    roleResolutionStatus: "resolved",
+  };
+  assert.equal(auditAccessForUser(viewer, audit()).canLock, false);
+  assert.equal(auditAccessForUser(viewer, audit("Published")).canUnlock, false);
+  const unverified = {
+    id: "analyst",
+    username: "analyst",
+    roles: ["atlas-admin-team"],
+    roleResolutionStatus: "unavailable",
+  };
+  assert.equal(auditAccessForUser(unverified, audit()).canLock, false);
+  const admin = { ...unverified, roleResolutionStatus: "resolved" };
+  assert.equal(
+    auditAccessForUser(admin, audit(), { exactRevision: false }).canLock,
+    false,
+  );
+  assert.equal(
+    auditAccessForUser(admin, audit("Published"), { exactPublication: false })
+      .canUnlock,
+    false,
+  );
+});

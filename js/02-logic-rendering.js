@@ -582,7 +582,7 @@ const atlasPageRenderState = {
     "display-fields",
     "preview",
     "review",
-    "save",
+    "export",
   ]),
   initialized: new Set(),
 };
@@ -605,7 +605,7 @@ function atlasMarkAllPagesDirty() {
     "steps",
     "preview",
     "review",
-    "save",
+    "export",
   ]);
 }
 
@@ -643,8 +643,8 @@ function atlasRenderPage(page, options = {}) {
       renderLogicTablePreviewRows?.();
     } else if (target === "review") {
       renderValidationPanel?.();
-    } else if (target === "save") {
-      renderFlowSelect?.();
+    } else if (target === "export") {
+      atlasRenderExportDashboard?.();
     }
   });
   atlasPageRenderState.dirty.delete(target);
@@ -678,7 +678,7 @@ function atlasRenderPreviewWhenUseful() {
 
 /** Explicit invalidation contract for source mutations. */
 function atlasInvalidateSourceMutation(options = {}) {
-  atlasInvalidatePages(["fields", "steps", "preview", "review", "save"]);
+  atlasInvalidatePages(["fields", "steps", "preview", "review", "export"]);
   atlasRequestRender({
     sources: true,
     fields: true,
@@ -690,7 +690,7 @@ function atlasInvalidateSourceMutation(options = {}) {
 
 /** Explicit invalidation contract for logic-step mutations. */
 function atlasInvalidateStepMutation(options = {}) {
-  atlasInvalidatePages(["steps", "preview", "review", "save"]);
+  atlasInvalidatePages(["steps", "preview", "review", "export"]);
   atlasRequestRender({
     steps: options.selectedOnly !== true,
     selectedStep: options.selectedOnly === true,
@@ -779,7 +779,6 @@ function atlasFlushRequestedRender() {
     if (atlasIsPreviewVisible()) renderLogicTablePreviewRows?.();
   }
   if (flags.validation) renderValidationPanel?.();
-  if (flags.flowSelect) renderFlowSelect?.();
 }
 
 /**
@@ -1071,13 +1070,6 @@ function atlasBindPreviewPaneSwitch() {
 }
 
 atlasBindPreviewPaneSwitch();
-
-/**
- * Refreshes saved flow choices.
- */
-function renderFlowSelect() {
-  refreshSaved().catch(() => {});
-}
 
 // -----------------------------------------------------------------------------
 // Join developer logic overrides

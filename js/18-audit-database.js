@@ -36,6 +36,9 @@ function atlasApplyLoadedAudit(payload, source = "database", options = {}) {
     conflict: null,
   };
   markAuditSelected();
+  // The baseline below captures the overview controls, so sync them first;
+  // otherwise a load that targets another page keeps the previous name, purpose, and status.
+  renderHeader?.();
   atlasInvalidateSourceDerivedState?.();
   globalThis.ATLASAuditIssues?.invalidate?.();
   atlasMarkAllPagesDirty?.();
@@ -108,14 +111,16 @@ async function atlasRefreshDatabaseAudits(options = {}) {
   }
 }
 let atlasAuditLoadSequence = 0;
-async function atlasLoadDatabaseAudit(id) {
+async function atlasLoadDatabaseAudit(id, options = {}) {
   const sequence = ++atlasAuditLoadSequence;
   return atlasMeasure?.("atlas.audit.load", async () => {
     const payload = await atlasAuditApi(
       `/api/audits/${encodeURIComponent(id)}`,
     );
     if (sequence !== atlasAuditLoadSequence) return null;
-    atlasApplyLoadedAudit(payload, "database", { targetPage: "overview" });
+    atlasApplyLoadedAudit(payload, "database", {
+      targetPage: options.targetPage || "overview",
+    });
     scheduleAutosave({ database: false });
     return payload;
   });
@@ -169,9 +174,6 @@ function atlasHasPendingDatabaseWrite() {
       atlasDatabaseWriteCoordinator.editGeneration >
         atlasDatabaseWriteCoordinator.acknowledgedGeneration)
   );
-}
-function atlasSetDatabaseSaveStatus(message) {
-  if (e.saveStatus) e.saveStatus.textContent = message;
 }
 function atlasPatchDatabaseAuditListEntry(payload, snapshot) {
   const audit = payload?.audit || snapshot;
@@ -282,7 +284,6 @@ function atlasScheduleDatabaseWrite(reason = "edit") {
       ATLAS_DATABASE_MAX_DIRTY_MS,
     );
   }
-  atlasSetDatabaseSaveStatus("Changes pending database save.");
 }
 async function atlasPerformDatabaseWrite(changeSummary) {
   if (window.ATLASAuditReview?.isActive?.()) return;
@@ -302,9 +303,6 @@ async function atlasPerformDatabaseWrite(changeSummary) {
   const sentGeneration = atlasDatabaseWriteCoordinator.editGeneration;
   const expectedRevisionId = exists ? state.auditPersistence.revisionId : null;
   state.auditPersistence.saving = true;
-  atlasSetDatabaseSaveStatus(
-    exists ? "Saving to database…" : "Creating database audit…",
-  );
   try {
     const payload = await atlasAuditApi(
       exists ? `/api/audits/${encodeURIComponent(auditId)}` : "/api/audits",
@@ -318,9 +316,6 @@ async function atlasPerformDatabaseWrite(changeSummary) {
       },
     );
     atlasApplyAuditSaveMetadata(payload, snapshot, sentGeneration);
-    atlasSetDatabaseSaveStatus(
-      `Saved to database as revision ${payload.revision.number}.`,
-    );
     status?.(
       `Saved ${snapshot.name} as revision ${payload.revision.number}.`,
       "ok",
@@ -335,7 +330,7 @@ async function atlasPerformDatabaseWrite(changeSummary) {
       atlasClearDatabaseWriteTimers();
       atlasDatabaseWriteCoordinator.acknowledgedGeneration =
         atlasDatabaseWriteCoordinator.editGeneration;
-      atlasSetDatabaseSaveStatus(error.message);
+      status?.(error.message, "warn");
       await window.ATLASWorkflow?.refresh?.();
       return false;
     }
@@ -344,13 +339,9 @@ async function atlasPerformDatabaseWrite(changeSummary) {
       state.auditPersistence.conflict = {
         currentRevisionId: error.currentRevisionId,
       };
-      atlasSetDatabaseSaveStatus(
-        "Database save conflict. Review the conflict before retrying.",
-      );
       atlasOpenConflictDialog?.(error);
       return false;
     }
-    atlasSetDatabaseSaveStatus(`Database save failed: ${error.message}`);
     throw error;
   } finally {
     if (state.audit?.id === auditId) state.auditPersistence.saving = false;

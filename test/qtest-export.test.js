@@ -167,11 +167,11 @@ async function runExport(audit) {
       { filename: file },
     );
   await vm.runInContext("initPhraseCatalog()", sandbox);
-  await vm.runInContext("exportQtestExcel()", sandbox);
-  assert.equal(downloads.length, 1, JSON.stringify(statuses));
+  const file = await vm.runInContext("buildQtestExportFile()", sandbox);
+  assert.equal(downloads.length, 0, "building a file never downloads it");
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(downloads[0].buffer);
-  return { workbook, download: downloads[0], statuses };
+  await workbook.xlsx.load(file.content);
+  return { workbook, file, statuses };
 }
 
 function sheetRows(sheet) {
@@ -198,10 +198,8 @@ test("Qtest export keeps only the two template sheets", () => {
     exported.workbook.worksheets.map((sheet) => sheet.name),
     ["Guide - Start Here", "UAT - Disney3"],
   );
-  assert.equal(
-    exported.download.name,
-    "Management_Chain_NAA__qtest_template_2026-10-28.xlsx",
-  );
+  assert.equal(exported.file.kind, "ok");
+  assert.match(exported.file.message, /^Qtest Excel exported with \d+ scenarios\.$/);
 });
 
 test("Guide sheet exports exactly as the template", () => {
@@ -324,8 +322,9 @@ test("UAT result columns have Pass/Fail dropdowns only on scenario rows", () => 
 });
 
 test("Qtest export warns when the audit has no enabled logic steps", async () => {
-  const { workbook, statuses } = await runExport({ name: "Empty", steps: [] });
+  const { workbook, file } = await runExport({ name: "Empty", steps: [] });
   const sheet = workbook.getWorksheet("UAT - Disney3");
   assert.equal(sheet.actualRowCount, 3);
-  assert.equal(statuses.at(-1)[1], "warn");
+  assert.equal(file.kind, "warn");
+  assert.match(file.message, /no enabled logic steps/);
 });

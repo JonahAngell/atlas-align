@@ -11,6 +11,7 @@ export function createWorkflowRouter(ctx) {
     listAuditActivity,
     listAuditPublications,
     listInboxItems,
+    lockAuditRevision,
     markInboxItemRead,
     pool,
     previewApprovalRequest,
@@ -140,6 +141,24 @@ export function createWorkflowRouter(ctx) {
           versionTitle: req.body.versionTitle,
           description: req.body.description,
           changeSummary: req.body.changeSummary,
+          ...workflowOptions(req),
+        }),
+      );
+    } catch (e) {
+      workflowError(res, e);
+    }
+  },
+);
+  router.post(
+  "/api/audits/:auditId/lock",
+  requireCurrentUser,
+  workflowFeature("publication"),
+  async (req, res) => {
+    try {
+      res.status(201).json(
+        await lockAuditRevision(pool, {
+          auditId: req.params.auditId,
+          expectedRevisionId: req.body.expectedRevisionId,
           ...workflowOptions(req),
         }),
       );

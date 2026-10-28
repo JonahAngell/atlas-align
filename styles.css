@@ -759,7 +759,8 @@ label {
 
 
 .hidden-backing-select,
-.visually-hidden {
+.visually-hidden,
+.sr-only {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -830,13 +831,6 @@ body.dark .callout {
   border-radius: 10px;
   margin: 8px 0;
   background: var(--surface);
-}
-
-
-.package-heading {
-  margin-top: 1rem;
-  padding-top: 0.5rem;
-  border-top: 1px solid var(--border);
 }
 
 
@@ -1791,6 +1785,11 @@ body.dark .btn.ghost,
 body.dark .secondary,
 body.dark .ghost {
   color: var(--text) !important;
+}
+
+body.dark .btn.secondary,
+body.dark button.secondary {
+  background: var(--surface2) !important;
 }
 
 
@@ -3233,6 +3232,25 @@ body.tutorial-active .tutorial-card button {
 
 #page-my-audits .import-label {
   margin-bottom: 0;
+}
+
+
+#page-my-audits .import-label[hidden] {
+  display: none;
+}
+
+#page-my-audits .import-label input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  display: block;
+}
+
+#page-my-audits .import-label:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 
@@ -10514,6 +10532,14 @@ body.dark #customSourceDialog .btn.secondary:hover:not(:disabled) {
   }
 }
 
+.history-entry-reason {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 .inbox-filters {
   display: flex;
   flex-wrap: wrap;
@@ -10589,8 +10615,8 @@ body.dark #customSourceDialog .btn.secondary:hover:not(:disabled) {
   width: min(760px, 100%);
   max-height: 90vh;
   overflow: auto;
-  background: var(--panel, #fff);
-  color: var(--text, #111);
+  background: var(--surface);
+  color: var(--text);
   border-radius: 14px;
   padding: 1.25rem;
 }
@@ -10609,17 +10635,6 @@ body.dark #customSourceDialog .btn.secondary:hover:not(:disabled) {
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 1rem;
-}
-
-.publication-form {
-  display: grid;
-  gap: 0.75rem;
-}
-
-.publication-separator {
-  margin-block: 2rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
 }
 
 @media (max-width: 700px) {
@@ -12540,3 +12555,418 @@ body.dark .created-column-token {
   }
 }
 
+#page-export {
+  --export-gap: 1rem;
+  --export-switch-off: var(--muted);
+  --export-switch-thumb: #ffffff;
+  --export-locked-surface: color-mix(in srgb, var(--primary) 9%, var(--surface));
+}
+
+body.dark #page-export {
+  --export-switch-off: color-mix(in srgb, var(--muted) 45%, var(--surface));
+}
+
+#page-export.active {
+  display: flex;
+  flex-direction: column;
+  gap: var(--export-gap);
+}
+
+#page-export .export-pagehead h1 {
+  margin-bottom: 0.25rem;
+}
+
+#page-export .export-pagehead .subtitle {
+  margin: 0;
+  max-width: 70ch;
+}
+
+#page-export .export-lock-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem 1rem;
+  margin: 0;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+
+#page-export .export-lock-card.is-locked {
+  background: var(--export-locked-surface);
+  border-color: var(--primary);
+}
+
+#page-export .export-lock-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  color: var(--primary);
+  background: var(--accent2);
+}
+
+#page-export .export-lock-copy {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#page-export .export-lock-copy h2 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+}
+
+#page-export .export-lock-copy .hint {
+  margin: 0;
+}
+
+#page-export .export-lock-switch {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding-inline: 0.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#page-export .export-lock-switch input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+#page-export .export-lock-switch input:disabled {
+  cursor: not-allowed;
+}
+
+#page-export .export-lock-switch-track {
+  display: inline-flex;
+  width: 2.9rem;
+  height: 1.6rem;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: var(--export-switch-off);
+  transition: background-color 160ms ease-out;
+}
+
+#page-export .export-lock-switch-track::after {
+  content: "";
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: var(--export-switch-thumb);
+  box-shadow: var(--shadow);
+  transition: transform 160ms ease-out;
+}
+
+#page-export .export-lock-switch input:checked + .export-lock-switch-track {
+  background: var(--primary);
+}
+
+#page-export
+  .export-lock-switch
+  input:checked
+  + .export-lock-switch-track::after {
+  transform: translateX(1.3rem);
+}
+
+#page-export
+  .export-lock-switch
+  input:focus-visible
+  + .export-lock-switch-track {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+#page-export .export-lock-switch input:disabled + .export-lock-switch-track {
+  background: var(--border);
+}
+
+#page-export .export-lock-switch input:disabled ~ .export-lock-switch-label {
+  color: var(--muted);
+}
+
+#page-export .export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  gap: var(--export-gap);
+}
+
+#page-export .export-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+  margin: 0;
+}
+
+#page-export .export-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+#page-export .export-card-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  color: var(--primary);
+  background: var(--accent2);
+}
+
+#page-export .export-card-heading {
+  min-width: 0;
+}
+
+#page-export .export-card-title {
+  margin: 0 0 0.2rem;
+  font-size: 1.05rem;
+}
+
+#page-export .export-card-description {
+  margin: 0;
+}
+
+#page-export .export-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#page-export .export-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+#page-export .export-card-meta dt {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+#page-export .export-card-meta dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+#page-export .export-filename {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+#page-export .export-filename label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+#page-export .export-filename-field {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+
+#page-export .export-filename-field .input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#page-export .export-filename-extension {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: 0.65rem;
+  border: 1px solid var(--border);
+  border-left: 0;
+  border-radius: 0 9px 9px 0;
+  color: var(--muted);
+  background: var(--surface2);
+  font-size: 0.85rem;
+}
+
+#page-export .export-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+#page-export .export-card-actions .btn {
+  min-height: 44px;
+}
+
+#page-export .export-card-actions .btn:disabled {
+  cursor: not-allowed;
+}
+
+#page-export .export-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  animation: export-preview-enter 180ms ease-out;
+}
+
+#page-export .export-preview[hidden] {
+  display: none;
+}
+
+#page-export .export-preview-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+#page-export .export-preview-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+#page-export .export-preview-head h2:focus {
+  outline: none;
+}
+
+#page-export #atlasExportPreviewNote:empty {
+  display: none;
+}
+
+#page-export .export-preview-text {
+  max-height: 60vh;
+  margin: 0;
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  white-space: pre;
+  font-size: 0.8rem;
+}
+
+#page-export .export-preview-frame {
+  width: 100%;
+  height: 60vh;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+#page-export .export-preview-sheet h3 {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+#page-export .export-preview-table td {
+  min-width: 6rem;
+  max-width: 24rem;
+  vertical-align: top;
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+}
+
+#page-export .export-preview-error {
+  margin: 0;
+  color: var(--danger);
+}
+
+#page-export .export-skeleton {
+  color: transparent;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 0%,
+    var(--border) 50%,
+    var(--surface2) 100%
+  );
+  background-size: 200% 100%;
+  animation: export-skeleton-pulse 1.2s linear infinite;
+}
+
+#page-export dd.export-skeleton {
+  width: 5rem;
+}
+
+#page-export .export-preview-skeleton {
+  height: 12rem;
+}
+
+@keyframes export-skeleton-pulse {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes export-preview-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 700px) {
+  #page-export .export-lock-card {
+    flex-wrap: wrap;
+  }
+
+  #page-export .export-lock-copy {
+    flex-basis: calc(100% - 3.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page-export .export-lock-card,
+  #page-export .export-lock-switch-track,
+  #page-export .export-lock-switch-track::after {
+    transition-duration: 0ms;
+  }
+
+  #page-export .export-preview {
+    animation: none;
+  }
+
+  #page-export .export-skeleton {
+    animation: none;
+  }
+}
+
+.workflow-field-error {
+  margin: 0.35rem 0 0;
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.workflow-field-error[hidden] {
+  display: none;
+}

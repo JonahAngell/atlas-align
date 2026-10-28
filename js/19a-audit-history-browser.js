@@ -39,7 +39,8 @@ function atlasHistoryEventLabel(t) {
       "audit.restored": "Audit restored",
       "step.restored": "Step restored",
       "audit.published": "Publication created",
-      "audit.published_unlocked": "Published audit unlocked",
+      "audit.locked": "Audit locked",
+      "audit.published_unlocked": "Audit unlocked",
       "publication.sent_to_recently_deleted":
         "Publication sent to Recently Deleted",
     }[t] || String(t || "Activity event").replace(/[._]/g, " ")
@@ -105,7 +106,7 @@ function atlasHistoryRenderTimeline() {
     atlasHistoryTimeline()
       .map(
         (x) =>
-          `<button class="history-entry" type="button" role="listitem" data-history-kind="${esc(x.kind)}" data-history-id="${esc(x.id)}" ${x.kind === "current" ? 'aria-current="true"' : ""}><span class="history-entry-title">${esc(x.title)}</span><span class="history-entry-meta">${esc(x.actorUsername || x.createdByFullName || x.createdByUsername || x.publisherUsername || "")} ${atlasHistoryTime(x) ? `· ${esc(new Date(atlasHistoryTime(x)).toLocaleString())}` : ""}</span></button>`,
+          `<button class="history-entry" type="button" role="listitem" data-history-kind="${esc(x.kind)}" data-history-id="${esc(x.id)}" ${x.kind === "current" ? 'aria-current="true"' : ""}><span class="history-entry-title">${esc(x.title)}</span><span class="history-entry-meta">${esc(x.actorUsername || x.createdByFullName || x.createdByUsername || x.publisherUsername || "")} ${atlasHistoryTime(x) ? `· ${esc(new Date(atlasHistoryTime(x)).toLocaleString())}` : ""}</span>${x.kind === "activity" && x.reason ? `<span class="history-entry-reason">Reason: ${esc(x.reason)}</span>` : ""}</button>`,
       )
       .join("") || '<p class="hint">No history records are available.</p>';
   document.getElementById("atlasHistoryMore").hidden =
