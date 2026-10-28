@@ -517,11 +517,21 @@ async function atlasImportAuditDocuments(
 }
 async function atlasImportAuditJsonFile(file) {
   const json = JSON.parse(await file.text());
-  const documents = atlasAuditDocumentsFromJson(json);
-  if (!documents.length)
+  const parsed = atlasAuditDocumentsFromJson(json);
+  if (!parsed.length)
     throw new Error(
       "The selected JSON file does not contain an audit or saved audit bundle.",
     );
+  if (!state.currentUser?.access?.canCreate)
+    throw new Error(
+      "The verified atlas-admin-team role is required to import audits.",
+    );
+  // Sources missing from the Source Library are created or mapped first.
+  const documents = await atlasReviewImportSources(json, parsed, file.name);
+  if (!documents) {
+    status("Import canceled. No audits or sources were saved.", "warn");
+    return { imported: [], skipped: [], failed: [], canceled: true };
+  }
   const result = await atlasImportAuditDocuments(
     documents,
     `Imported from ${file.name}`,

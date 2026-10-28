@@ -40,6 +40,7 @@
     "add-list": `<path d="M4 6h10M4 12h10M4 18h6"/><path d="M18 14v6M15 17h6"/>`,
     upload: `<path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/>`,
     close: `<path d="M6 6l12 12M18 6 6 18"/>`,
+    warning: `<path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 10v4.5"/><path d="M12 17.25h.01"/>`,
   };
 
   const filled = {

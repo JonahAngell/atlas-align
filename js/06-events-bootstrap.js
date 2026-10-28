@@ -34,6 +34,7 @@ function shouldSkipBaseBodyEditEvent(event) {
     ".visual-picker-modal-backdrop",
     ".join-picker-backdrop",
     ".source-replace-backdrop",
+    ".import-source-review-backdrop",
     ".field-replace-backdrop",
     ".condition-repair-backdrop",
     ".logic-issue-panel",

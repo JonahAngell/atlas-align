@@ -151,6 +151,7 @@
 │   ├── 15h-visual-picker.js
 │   ├── 15i-source-replace.js
 │   ├── 15j-logic-text-import.js
+│   ├── 15k-audit-import-sources.js
 │   ├── 16-page-shell.js
 │   ├── 16a-user-impersonation.js
 │   ├── 17-source-database.js
@@ -447,6 +448,7 @@
 │   ├── audit-history-read-only.test.js
 │   ├── audit-history-timeline.test.js
 │   ├── audit-history-ui.test.js
+│   ├── audit-import-sources.test.js
 │   ├── audit-issue-engine.test.js
 │   ├── audit-lock-repository.test.js
 │   ├── audit-preview-repository.test.js
