@@ -141,7 +141,9 @@ function contextFor(elements) {
     atlasRescindApprovalRequest: async () => {
       calls.rescind += 1;
     },
+    atlasLockAudit: async () => {},
     atlasUnlockAudit: async () => {},
+    atlasRenderAuditLockCard: () => {},
     atlasOpenAuditHistory: async () => {
       calls.history += 1;
     },

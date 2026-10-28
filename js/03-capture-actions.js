@@ -106,11 +106,11 @@ function exportCurrent() {
 }
 
 /**
- * Exports preview rows as CSV.
+ * Builds preview rows as CSV text.
  */
-function exportCsv() {
+function auditCsvDocument() {
   const rows = previewRows();
-  const csv = [
+  return [
     "Step,Analyst Logic,Developer Logic,Notes",
     ...rows.map((row) =>
       [row.step, row.analyst, row.developer, row.notes]
@@ -118,15 +118,6 @@ function exportCsv() {
         .join(","),
     ),
   ].join("\n");
-  downloadBlob(`audit_logic_${today()}.csv`, csv, "text/csv");
-}
-
-/**
- * Copies the Markdown export to the clipboard.
- */
-function copyMarkdown() {
-  navigator.clipboard?.writeText(markdown());
-  status("Markdown copied to clipboard.", "ok");
 }
 
 // ATLAS-MATH-OPERATIONS-UPDATE:BEGIN

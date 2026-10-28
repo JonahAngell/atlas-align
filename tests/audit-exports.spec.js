@@ -5,12 +5,12 @@ test("21-21.3 validates exposed export controls and downloads", async ({
   page,
   ownedAudit,
 }, testInfo) => {
-  await openPage(page, "save");
+  await openPage(page, "export");
   const buttons = await page
-    .getByRole("button")
+    .locator("#page-export [data-export-action]")
     .evaluateAll((nodes) =>
       nodes
-        .map((n) => (n.textContent || "").trim())
+        .map((n) => n.getAttribute("aria-label") || "")
         .filter((t) => /json|excel|html|markdown|qtest/i.test(t)),
     );
   expect(

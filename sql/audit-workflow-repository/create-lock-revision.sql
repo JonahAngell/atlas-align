@@ -1,0 +1,31 @@
+INSERT INTO
+  atlas_audit_revisions (
+    audit_id,
+    revision_number,
+    parent_revision_id,
+    document,
+    document_sha256,
+    change_type,
+    change_summary,
+    created_by_user_id,
+    created_by_username,
+    created_by_full_name,
+    created_by_email
+  )
+VALUES
+  (
+    $1,
+    $2,
+    $3,
+    $4::jsonb,
+    $5,
+    'lock',
+    $6,
+    $7,
+    $8,
+    $8,
+    NULL
+  )
+RETURNING
+  id,
+  revision_number

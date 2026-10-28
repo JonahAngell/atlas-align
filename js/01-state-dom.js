@@ -124,13 +124,10 @@ const e = {
   logicPreview: $("logicPreview"),
   selectedStepDetails: $("selectedStepDetails"),
 
-  // General status and save status indicators.
+  // General status indicator.
   status: $("status"),
-  saveStatus: $("saveStatus"),
-  autosaveStatus: $("autosaveStatus"),
 
-  // Flow selection and preview configuration controls.
-  flowSelect: $("flowSelect"),
+  // Preview configuration controls.
   previewStyle: $("previewStyle"),
   includeNotes: $("includeNotesToggle"),
   completeStatements: $("completeStatementsToggle"),
@@ -379,7 +376,7 @@ function toggleFieldDisplayMode() {
 function pageForSection(section) {
   if (section === "audit") return "overview";
   if (section === "logic") return "steps";
-  if (section === "publication") return "save";
+  if (section === "publication" || section === "save") return "export";
   if (section === "sources") return "fields";
   if (section === "group") return "my-audits";
   return section || "my-audits";

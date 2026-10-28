@@ -792,7 +792,8 @@ label {
 /* ATLAS-SOURCE-UNIT:u0090:END */
 /* ATLAS-SOURCE-UNIT:u0091:BEGIN */
 .hidden-backing-select,
-.visually-hidden {
+.visually-hidden,
+.sr-only {
   position: absolute !important;
   width: 1px !important;
   height: 1px !important;
@@ -1532,6 +1533,11 @@ body.dark .btn.ghost,
 body.dark .secondary,
 body.dark .ghost {
   color: var(--text) !important;
+}
+
+body.dark .btn.secondary,
+body.dark button.secondary {
+  background: var(--surface2) !important;
 }
 
 /* ATLAS-SOURCE-UNIT:u0219:END */

@@ -56,13 +56,13 @@
       {
         id: "read-only-isolation-04",
         checklist: "4",
-        title: "Publication Preview navigation",
+        title: "Export navigation",
         purpose:
-          "Confirm that viewing the publication preview does not mutate protected state.",
+          "Confirm that viewing the Export page does not mutate protected state.",
         instructions:
-          "Select Go to step, review the publication preview without exporting or saving, then select Check.",
-        page: "save",
-        selector: '[data-section="save"]',
+          "Select Go to step, review the Export page without exporting, locking, or saving, then select Check.",
+        page: "export",
+        selector: '[data-section="export"]',
         expected:
           "Audit, persistence, revision, and autosave snapshots remain unchanged.",
         observations: ["state.audit", "persistence", "revision", "autosave"],

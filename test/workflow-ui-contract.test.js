@@ -13,8 +13,10 @@ const ui = readFileSync(
 test("workflow UI uses server capabilities and exact tokens", () => {
   assert.match(ui, /capabilities/);
   assert.match(ui, /expectedRevisionId/);
-  assert.match(ui, /expectedApprovalId/);
   assert.match(ui, /expectedPublicationId/);
+  assert.match(ui, /\/lock`/);
+  assert.match(ui, /atlasWorkflowCan\("canLock"\)/);
+  assert.match(ui, /atlasWorkflowCan\("canUnlock"\)/);
 });
 test("scripts load after history and before bootstrap", () => {
   assert.ok(

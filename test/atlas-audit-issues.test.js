@@ -814,7 +814,7 @@ test("floating Audit Issues visibility is limited to Current Audit pages", () =>
     "display-fields",
     "preview",
     "review",
-    "save",
+    "export",
   ];
   assert.ok(adapterSource.includes("const floatingSurfaceEligible"));
   expectedPages.forEach((page) =>

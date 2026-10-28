@@ -92,7 +92,6 @@ async function atlasLoadWorkflowSummary() {
     atlasWorkflowLoadState = "ready";
     atlasApplyWorkflowFeatureVisibility();
     atlasRenderWorkflowCard();
-    atlasRenderPublicationFlow();
     atlasApplyPublishedLock();
     return summary;
   } catch (error) {
@@ -106,7 +105,6 @@ async function atlasLoadWorkflowSummary() {
     atlasWorkflowLoadError = error;
     atlasWorkflowLoadState = error.status === 403 ? "unavailable" : "error";
     atlasRenderWorkflowCard();
-    atlasRenderPublicationFlow();
     atlasApplyPublishedLock();
     status(error.message, "bad");
     return null;
@@ -116,6 +114,7 @@ function atlasWorkflowText(value, fallback = "Not available") {
   return value == null || value === "" ? fallback : String(value);
 }
 function atlasRenderWorkflowCard() {
+  atlasRenderAuditLockCard();
   const host = document.getElementById("atlasWorkflowCardBody");
   if (!host) return;
   const activeAuditId = atlasActiveAuditId();
@@ -168,16 +167,19 @@ function atlasRenderWorkflowCard() {
     ${atlasWorkflowCan("canViewApprovalRequest") && w.currentRequestId ? '<button class="btn secondary" data-workflow-action="view-request" type="button">View Approval Request</button>' : ""}
     ${atlasWorkflowCan("canRescindApprovalRequest") && w.currentRequestId ? '<button class="btn danger" data-workflow-action="rescind" type="button">Rescind Approval Request</button>' : ""}
     ${atlasWorkflowCan("canApprove") && w.currentRequestId ? '<button class="btn primary" data-workflow-action="approve" type="button">Approve Audit</button><button class="btn danger" data-workflow-action="return" type="button">Return to Analyst</button>' : ""}
-    ${atlasWorkflowCan("canPublish") ? '<button class="btn primary" data-workflow-action="publish" type="button">Publish Version</button>' : ""}
+    ${atlasWorkflowCan("canLock") ? '<button class="btn secondary" data-workflow-action="lock" type="button">Lock Audit</button>' : ""}
     ${atlasWorkflowCan("canUnlock") ? '<button class="btn secondary" data-workflow-action="unlock" type="button">Unlock Audit</button>' : ""}
     ${atlasWorkflowCan("canViewHistory") ? '<button class="btn secondary" data-workflow-action="history" type="button">View Audit History</button><button class="btn secondary" data-workflow-action="publications" type="button">View Published Versions</button>' : ""}
     ${atlasWorkflowCan("canDeletePublication") ? '<button class="btn secondary" data-workflow-action="deleted-publications" type="button">Administer Deleted Publications</button>' : ""}
   </div>`;
 }
-function atlasWorkflowDialog(title, body, actions = "") {
-  const host =
-    document.getElementById("atlasWorkflowDialogHost") || document.body;
-  const previous = document.activeElement;
+function atlasWorkflowDialog(title, body, actions = "", options = {}) {
+  // The host lives on Audit Overview; dialogs opened from other pages use the body.
+  const overviewHost = document.getElementById("atlasWorkflowDialogHost");
+  const host = overviewHost?.closest(".page.active")
+    ? overviewHost
+    : document.body;
+  const previous = options.returnFocus || document.activeElement;
   const wrap = document.createElement("div");
   wrap.className = "workflow-dialog-backdrop";
   wrap.innerHTML = `<section class="workflow-dialog" role="dialog" aria-modal="true" aria-labelledby="atlasWorkflowDialogTitle"><h2 id="atlasWorkflowDialogTitle">${esc(title)}</h2><div>${body}</div><div class="workflow-dialog-actions">${actions}<button class="btn secondary" data-close-workflow-dialog type="button">Close</button></div></section>`;
@@ -524,48 +526,179 @@ async function atlasRescindApprovalRequest() {
       }
     });
 }
-async function atlasUnlockAudit() {
+let atlasAuditLockBusy = false;
+/**
+ * Renders the Export page lock switch from the workflow summary. The switch
+ * shows the server state; turning it on or off asks for confirmation first.
+ */
+function atlasRenderAuditLockCard() {
+  const toggle = document.getElementById("atlasAuditLockToggle"),
+    label = document.getElementById("atlasAuditLockState"),
+    description = document.getElementById("atlasAuditLockDescription"),
+    card = document.getElementById("atlasAuditLockCard");
+  if (!toggle || !label || !description) return;
+  const activeAuditId = atlasActiveAuditId();
+  const current = atlasWorkflowAuditId === activeAuditId;
+  const w =
+    atlasWorkflowSummary?.auditId === activeAuditId ? atlasWorkflowSummary : null;
+  const locked = Boolean(
+    w?.workflowStatus === "Published" && w?.publishedLocked,
+  );
+  const loading = current && atlasWorkflowLoadState === "loading";
+  let text;
+  let enabled = false;
+  if (!activeAuditId)
+    text = "Save this audit to the database before locking it.";
+  else if (current && ["unavailable", "error"].includes(atlasWorkflowLoadState))
+    text = `Lock status is unavailable. ${atlasWorkflowLoadError?.message || "Try again later."}`;
+  else if (!w) text = "Checking lock status…";
+  else if (locked) {
+    enabled = atlasWorkflowCan("canUnlock");
+    text = enabled
+      ? "This audit is read-only for all users and its Status is Complete. Turning the lock off requires a reason, which is recorded in Audit History, and returns Status to Draft."
+      : "This audit is read-only for all users and its Status is Complete. Only atlas-admin-team members can unlock it.";
+  } else {
+    enabled = atlasWorkflowCan("canLock");
+    text = enabled
+      ? `Locking makes this audit read-only for all users and sets its Status to Complete. You can turn the lock off later by giving a reason.${w.workflowStatus === "Pending Approval" ? " Locking now cancels the pending approval request." : ""}`
+      : "Locking makes an audit read-only for all users. Only atlas-admin-team members can lock it.";
+  }
+  toggle.checked = locked;
+  toggle.disabled = !enabled || atlasAuditLockBusy;
+  if (loading || atlasAuditLockBusy) toggle.setAttribute("aria-busy", "true");
+  else toggle.removeAttribute("aria-busy");
+  label.textContent = locked ? "Locked" : "Unlocked";
+  description.textContent = text;
+  card?.classList.toggle("is-locked", locked);
+}
+/** Reloads the audit document after the server created a lock or unlock revision. */
+async function atlasReloadAuditAfterLockChange(auditId) {
+  await atlasLoadDatabaseAudit(auditId, {
+    targetPage: atlasActivePage?.() || "export",
+  });
+  await refreshSaved?.();
+  window.ATLASInbox?.refresh?.();
+}
+async function atlasRunAuditLockChange(work) {
+  atlasAuditLockBusy = true;
+  atlasRenderAuditLockCard();
+  try {
+    return await work();
+  } finally {
+    atlasAuditLockBusy = false;
+    atlasRenderAuditLockCard();
+    // Re-rendering can drop focus; keep keyboard users on the switch.
+    const toggle = document.getElementById("atlasAuditLockToggle");
+    const focusLost =
+      !document.activeElement || document.activeElement === document.body;
+    if (focusLost && !toggle?.disabled && toggle?.closest(".page.active"))
+      toggle.focus();
+  }
+}
+async function atlasLockAudit() {
+  const trigger = document.activeElement;
+  if (typeof atlasSaveIfDirty === "function" && !(await atlasSaveIfDirty("lock")))
+    throw new Error(
+      "The audit could not be saved, so it was not locked. Resolve the save problem, then try again.",
+    );
   const w = await atlasLoadWorkflowSummary();
+  if (!w || !atlasWorkflowCan("canLock"))
+    throw new Error("Locking is not available for this audit.");
+  const name = state.audit?.name || "this audit";
   const dialog = atlasWorkflowDialog(
-    "Unlock published audit",
-    `<p>The existing publication remains immutable. Unlocking creates a Draft Revision that requires fresh approval.</p><label>Unlock reason<input id="atlasUnlockReason" required></label><label><input id="atlasUnlockConfirm" type="checkbox"> I understand the publication remains immutable.</label>`,
-    '<button class="btn danger" data-confirm-unlock type="button">Unlock Audit</button>',
+    "Lock audit",
+    `<p>Everyone, including you, will be able to view and export <strong>${esc(name)}</strong>, but no one can edit it. Its Status will change to Complete.</p>${w.workflowStatus === "Pending Approval" ? "<p>The pending approval request will be cancelled.</p>" : ""}<p class="hint">You can unlock it later by giving a reason.</p>`,
+    '<button class="btn primary" data-confirm-lock type="button">Lock Audit</button>',
+    { returnFocus: trigger },
   );
   dialog.wrap
-    .querySelector("[data-confirm-unlock]")
-    .addEventListener("click", async (e) => {
-      const reason = dialog.wrap
-        .querySelector("#atlasUnlockReason")
-        .value.trim();
-      if (
-        !reason ||
-        !dialog.wrap.querySelector("#atlasUnlockConfirm").checked
-      ) {
-        status("Provide a reason and confirm publication immutability.", "bad");
-        return;
-      }
-      e.currentTarget.disabled = true;
+    .querySelector("[data-confirm-lock]")
+    .addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      button.disabled = true;
       try {
-        await atlasAuditApi(
-          `/api/audits/${encodeURIComponent(w.auditId)}/unlock`,
-          {
-            method: "POST",
-            body: JSON.stringify({
-              expectedRevisionId: w.currentRevisionId,
-              expectedPublicationId: w.currentPublicationId,
-              reason,
-            }),
-          },
-        );
-        dialog.close();
-        await atlasLoadWorkflowSummary();
-        status("Audit unlocked as Draft Revision.", "ok");
+        await atlasRunAuditLockChange(async () => {
+          await atlasAuditApi(
+            `/api/audits/${encodeURIComponent(w.auditId)}/lock`,
+            {
+              method: "POST",
+              body: JSON.stringify({ expectedRevisionId: w.currentRevisionId }),
+            },
+          );
+          dialog.close();
+          await atlasReloadAuditAfterLockChange(w.auditId);
+        });
+        status("Audit locked. It is read-only and its Status is Complete.", "ok");
       } catch (error) {
-        e.currentTarget.disabled = false;
+        button.disabled = false;
+        if (error.status === 409) await atlasLoadWorkflowSummary();
         status(error.message, "bad");
       }
     });
 }
+async function atlasUnlockAudit() {
+  const trigger = document.activeElement;
+  const w = await atlasLoadWorkflowSummary();
+  if (!w || !atlasWorkflowCan("canUnlock"))
+    throw new Error("Unlocking is not available for this audit.");
+  const dialog = atlasWorkflowDialog(
+    "Unlock audit",
+    `<p>The audit becomes editable again and its Status returns to Draft. The locked version stays in Audit History.</p><label for="atlasUnlockReason">Reason for unlocking (required)</label><textarea id="atlasUnlockReason" required aria-describedby="atlasUnlockReasonHelp atlasUnlockReasonError"></textarea><p class="hint" id="atlasUnlockReasonHelp">The reason is recorded in Audit History.</p><p class="workflow-field-error" id="atlasUnlockReasonError" hidden>Enter a reason before unlocking.</p>`,
+    '<button class="btn primary" data-confirm-unlock type="button">Unlock Audit</button>',
+    { returnFocus: trigger },
+  );
+  const field = dialog.wrap.querySelector("#atlasUnlockReason");
+  const fieldError = dialog.wrap.querySelector("#atlasUnlockReasonError");
+  field.addEventListener("input", () => {
+    if (!field.value.trim()) return;
+    field.removeAttribute("aria-invalid");
+    fieldError.hidden = true;
+  });
+  dialog.wrap
+    .querySelector("[data-confirm-unlock]")
+    .addEventListener("click", async (event) => {
+      const reason = field.value.trim();
+      if (!reason) {
+        field.setAttribute("aria-invalid", "true");
+        fieldError.hidden = false;
+        field.focus();
+        return;
+      }
+      const button = event.currentTarget;
+      button.disabled = true;
+      try {
+        await atlasRunAuditLockChange(async () => {
+          await atlasAuditApi(
+            `/api/audits/${encodeURIComponent(w.auditId)}/unlock`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                expectedRevisionId: w.currentRevisionId,
+                expectedPublicationId: w.currentPublicationId,
+                reason,
+              }),
+            },
+          );
+          dialog.close();
+          await atlasReloadAuditAfterLockChange(w.auditId);
+        });
+        status("Audit unlocked. It is editable and its Status is Draft.", "ok");
+      } catch (error) {
+        button.disabled = false;
+        if (error.status === 409) await atlasLoadWorkflowSummary();
+        status(error.message, "bad");
+      }
+    });
+}
+document.addEventListener("change", (event) => {
+  if (event.target?.id !== "atlasAuditLockToggle") return;
+  const wantsLock = event.target.checked;
+  // The switch keeps showing the server state until the change is confirmed.
+  event.target.checked = !wantsLock;
+  (wantsLock ? atlasLockAudit() : atlasUnlockAudit()).catch((error) =>
+    status(error.message, "bad"),
+  );
+});
 const ATLAS_WORKFLOW_LOCK_DESCRIPTION_ID = "atlasWorkflowLockDescription";
 const ATLAS_WORKFLOW_LOCK_TOOLTIP_ID = "atlasWorkflowLockTooltip";
 let atlasWorkflowLockTooltipTarget = null;
@@ -660,7 +793,7 @@ function atlasWorkflowLockMessage() {
   if (atlasWorkflowSummary?.workflowStatus === "Pending Approval")
     return "This audit is read-only and locked while an approval request is pending. An assigned analyst may rescind the request to resume editing.";
   if (atlasWorkflowSummary?.workflowStatus === "Published")
-    return "Published audits are read-only. Unlock the audit to create a Draft Revision.";
+    return "This audit is locked and read-only. Turn off Lock audit on the Export page to make changes.";
   return "";
 }
 function atlasWorkflowAllowedAction(element) {
@@ -897,7 +1030,7 @@ function atlasApplyPublishedLock() {
           : pendingApproval
             ? "Approval pending: this audit is read-only while the submitted revision is under review. An assigned analyst may rescind the request to resume editing."
             : atlasWorkflowSummary?.workflowStatus === "Published"
-              ? "Published audit: this view is read-only. History, publications, navigation, and exports remain available."
+              ? "Locked audit: this view is read-only. History, navigation, and exports remain available. Turn off Lock audit on the Export page to make changes."
               : "Read-only access: you can inspect, navigate, and export this audit, but the verified atlas-admin-team role is required for changes.";
         page.prepend(n);
       }
@@ -984,7 +1117,7 @@ async function atlasHandleWorkflowAction(e) {
       await atlasRunStructuredReviewAction("approve");
     else if (action === "return")
       await atlasRunStructuredReviewAction("return");
-    else if (action === "publish") showSection("save");
+    else if (action === "lock") await atlasLockAudit();
     else if (action === "unlock") await atlasUnlockAudit();
     else if (action === "history") await atlasOpenAuditHistory();
     else if (action === "publications")
@@ -1005,6 +1138,10 @@ window.ATLASWorkflow = {
   isMutationControl: atlasAuditMutationControl,
   isAllowedAction: atlasWorkflowAllowedAction,
   render: atlasRenderWorkflowCard,
+  renderLock: atlasRenderAuditLockCard,
+  get loadState() {
+    return atlasWorkflowLoadState;
+  },
   showApprovalReview: atlasShowApprovalReview,
   runStructuredReviewAction: atlasRunStructuredReviewAction,
   feature: atlasWorkflowFeature,
@@ -1031,75 +1168,6 @@ for (const name of [
     return original.apply(this, args);
   };
 }
-async function atlasRenderPublicationFlow() {
-  const meta = document.getElementById("atlasPublicationMetadata"),
-    snap = document.getElementById("atlasPublicationSnapshot"),
-    form = document.getElementById("atlasPublicationForm");
-  if (!meta || !snap || !form) return;
-  const w = atlasWorkflowSummary;
-  if (!w) {
-    meta.innerHTML =
-      '<p class="hint">Load an audit to view publication details.</p>';
-    form.hidden = true;
-    return;
-  }
-  form.hidden = !atlasWorkflowCan("canPublish");
-  meta.innerHTML = `<div class="workflow-grid"><div><span class="hint">Approved revision</span><div class="workflow-value">${esc(atlasWorkflowText(w.currentRevisionNumber))} (ID ${esc(atlasWorkflowText(w.currentRevisionId))})</div></div><div><span class="hint">Approval</span><div class="workflow-value">${esc(atlasWorkflowText(w.currentApprovalId))}</div></div><div><span class="hint">Next version</span><div class="workflow-value">Assigned by server</div></div></div>`;
-  if (atlasWorkflowCan("canPublish")) {
-    try {
-      const preview = await atlasAuditApi(
-        `/api/audits/${encodeURIComponent(w.auditId)}/previews/approval-requests/${encodeURIComponent(w.currentRequestId)}`,
-      );
-      snap.textContent = JSON.stringify(
-        preview.source?.document || preview.source || {},
-        null,
-        2,
-      );
-    } catch (error) {
-      snap.textContent = error.message;
-    }
-  } else
-    snap.textContent =
-      "Publication is available only for an approved revision and eligible publisher.";
-}
-document
-  .getElementById("atlasPublicationForm")
-  ?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const w = await atlasLoadWorkflowSummary(),
-      title = document.getElementById("atlasPublicationTitle").value.trim(),
-      button = document.getElementById("atlasPublishButton");
-    if (!title) {
-      status("Version title is required.", "bad");
-      return;
-    }
-    button.disabled = true;
-    try {
-      const result = await atlasAuditApi(
-        `/api/audits/${encodeURIComponent(w.auditId)}/publish`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            expectedRevisionId: w.currentRevisionId,
-            expectedApprovalId: w.currentApprovalId,
-            versionTitle: title,
-            description: document
-              .getElementById("atlasPublicationDescription")
-              .value.trim(),
-          }),
-        },
-      );
-      await atlasLoadWorkflowSummary();
-      status(
-        `Published version ${result.publication?.versionNumber || "created"}.`,
-        "ok",
-      );
-    } catch (error) {
-      status(error.message, "bad");
-    } finally {
-      button.disabled = false;
-    }
-  });
 if (typeof atlasApplyLoadedAudit === "function") {
   const atlasApplyLoadedAuditBeforeWorkflow = atlasApplyLoadedAudit;
   atlasApplyLoadedAudit = async function (...args) {
@@ -1112,7 +1180,7 @@ const atlasShowSectionBeforeWorkflow = showSection;
 showSection = function (section) {
   const result = atlasShowSectionBeforeWorkflow(section);
   if (
-    (section === "overview" || section === "save") &&
+    (section === "overview" || section === "export") &&
     !window.ATLASAuditReview?.isActive?.()
   )
     atlasLoadWorkflowSummary().catch(() => null);

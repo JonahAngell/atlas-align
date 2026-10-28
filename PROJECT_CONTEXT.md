@@ -155,7 +155,7 @@ JSON import is normalized and validated by `src/audit-repository.js`. If an exis
 
 `scheduleAutosave()` waits 500 ms after the latest edit, captures current controls, clones the audit, and writes the recovery record. The record includes the audit snapshot, theme, timestamp, and available database/base revision identity. Startup inspects this record without applying it. Empty default Untitled Audit records are ignored; meaningful recovery is presented as an explicit browser-local choice and is applied only after user activation.
 
-Browser recovery is suppressed while Reviewer Mode reports itself active and while autosave is explicitly paused. Clearing local application data removes IndexedDB and app-prefixed local/session storage, but does not alter repository files or downloaded exports. PostgreSQL remains authoritative, and recovery does not silently overwrite a database audit.
+Browser recovery is suppressed while Reviewer Mode reports itself active and while autosave is explicitly paused. The recovery offer on My Audits can clear the recovery draft. There is no browser-local saved-audit library, bundle export, or Clear All Saved Data action. PostgreSQL remains authoritative, and recovery does not silently overwrite a database audit.
 
 #### Durable PostgreSQL write coordination
 
@@ -467,7 +467,9 @@ Two verified publication paths exist:
 
 Version allocation uses the next value derived for the audit inside the publication transaction. Publications are not edited in place. Older publications remain immutable across later Draft Revision cycles and republishing.
 
-Published audits are locked against ordinary edits. Unlock requires an exact current revision and publication, an eligible non-assigned `atlas-admin-team` user, and a nonblank reason. The transaction locks the audit, share-locks the current revision, creates a new child revision with the same document/hash and an `unlock` change, sets the audit to Draft Revision with `workingFromPublicationId`, and records `audit.published_unlocked`. A later submit, review, approval, and publication creates a new numbered snapshot; it does not rewrite the prior one.
+A third path is the manual audit lock, the Lock audit switch on the Export page. `lockAuditRevision()` is available from Draft, Draft Revision, Pending Approval, or Approved to any verified `atlas-admin-team` user, Assigned Analysts included, on an exact current revision. It locks the audit row; for Pending Approval it invalidates the request with reason `Audit locked`, resolves its Inbox item, and rescinds a draft review session; for Approved it keeps the active approval as the snapshot source. It then creates a `lock` revision whose document `status` is `Complete`, publishes that revision as the next numbered snapshot with `lock_source = 'Manual'` (no approval is required, so `source_approval_id` and `approver_username` may be null), sets the audit to Published and published-locked, and records `audit.locked`. `POST /api/audits/:auditId/lock` is guarded by the `publication` stage.
+
+Published audits are locked against ordinary edits for every user. Unlock requires an exact current revision and publication, a verified `atlas-admin-team` user (Assigned Analysts included), and a nonblank reason. The transaction locks the audit, share-locks the current revision, creates a new child revision with an `unlock` change whose document `status` is reset to `Draft`, sets the audit to Draft Revision with `workingFromPublicationId`, and records `audit.published_unlocked` with the reason, which Audit History shows on the timeline entry. A later lock, or a submit, review, approval, and publication, creates a new numbered snapshot; it does not rewrite the prior one.
 
 Publication deletion is separate from audit archive/deletion. An authenticated `atlas-align-admin` supplies explicit confirmation, reason, exact current revision, expected publication ID, and version number. The repository locks the audit and publication, changes the publication lifecycle to Recently Deleted, and records `publication.sent_to_recently_deleted`. It does not archive or permanently delete the audit document or its revisions. `sections/recently-deleted-publications.html`, `css/recently-deleted-publications.css`, and `js/26-recently-deleted-publications.js` own the administrative browser surface.
 
@@ -542,7 +544,7 @@ Workflow rollout is fail-closed and dependency ordered through `src/workflow-fea
 
 #### Frontend and test ownership
 
-- Workflow and browser locking: `sections/audit-overview.html`, `sections/publication-preview.html`, `css/audit-overview.css`, `css/publication-preview.css`, `js/24-audit-workflow-ui.js`.
+- Workflow and browser locking: `sections/audit-overview.html`, `sections/export.html` (Lock audit switch), `css/audit-overview.css`, `css/export.css`, `js/24-audit-workflow-ui.js`.
 - Inbox: `sections/inbox.html`, `css/inbox.css`, `js/25-inbox.js`.
 - Recently Deleted publications: `sections/recently-deleted-publications.html`, `css/recently-deleted-publications.css`, `js/26-recently-deleted-publications.js`.
 - Reviewer Mode and feedback: existing feature partials plus `css/audit-review.css` and `js/27-audit-review-mode.js`.
@@ -557,7 +559,7 @@ Relevant reviewed tests include authorization, workflow repository/routes/UI, lo
 
 Audit and Logic-step history are immutable, repository-backed records. `src/audit-repository.js` owns audit-revision and step-revision lists, reads, and restoration. Audit revisions retain parent and restoration lineage; restored step revisions retain `restored_from_step_revision_id`. `js/19-audit-version-history.js` owns audit-level and step-level history actions, while semantic comparison is backend-owned; `atlasSimpleDiff()` is only a supplemental technical display utility.
 
-`sections/audit-history.html`, `css/audit-history.css`, and `js/19a-audit-history-browser.js` provide one read-only timeline containing workflow activity, unmatched revisions, unmatched publications, and current state. Mapped activity includes submission, approval, denial, invalidation, audit and step restoration, publication, unlock, and publication soft-deletion lifecycle entries. Unknown activity types remain visible through a generic label. Timeline reconciliation prefers explicit activity relationships: revision and publication IDs linked by activity suppress duplicate standalone rows, while unmatched records remain visible. Activity pagination retains its `beforeId` cursor.
+`sections/audit-history.html`, `css/audit-history.css`, and `js/19a-audit-history-browser.js` provide one read-only timeline containing workflow activity, unmatched revisions, unmatched publications, and current state. Mapped activity includes submission, approval, denial, invalidation, audit and step restoration, publication, lock, unlock, and publication soft-deletion lifecycle entries. An activity reason, such as the unlock reason, appears on its timeline entry. Unknown activity types remain visible through a generic label. Timeline reconciliation prefers explicit activity relationships: revision and publication IDs linked by activity suppress duplicate standalone rows, while unmatched records remain visible. Activity pagination retains its `beforeId` cursor.
 
 Historical documents are detached from editable audit state. `historyView` deep-clones selected revision or publication documents and does not assign them to `state.audit`, call `atlasApplyLoadedAudit()`, capture controls, write recovery data, or schedule durable persistence. Audit-ID and monotonically increasing generation checks reject stale load and selection responses.
 
@@ -641,7 +643,7 @@ Invalid, expired, feature-disabled, switched-profile, returned-to-profile, and f
 
 #### Imports
 
-JSON import is handled through the Audit Library and `js/18-audit-database.js`. One audit object or an array is normalized and submitted through the audit API. `src/audit-repository.js` validates and hashes each document. Equal canonical content returns `unchanged`; changed content uses the revision-aware save path with change type `import`. Import does not create a publication or bypass authorization, workflow locks, or conflict checks.
+JSON import is handled through the My Audits Import JSON button and `js/18-audit-database.js`; the button is shown only to users who can create audits, and the imported audit opens after import. One audit object or an array is normalized and submitted through the audit API. `src/audit-repository.js` validates and hashes each document. Equal canonical content returns `unchanged`; changed content uses the revision-aware save path with change type `import`. Import does not create a publication or bypass authorization, workflow locks, or conflict checks.
 
 `js/00-exceljs-loader.js` lazy-loads `vendor/exceljs.min.js` when an Excel feature is first requested, memoizes the promise, reports load failure, and permits retry after failure. `js/09-workbook-import.js` classifies `Vanity Labels`, `Source Table Aliases`, `_audit_logic_steps`, and audit sheets containing `Source File` and `Field Name`. Missing metadata sheets produce warnings; absence of an audit sheet produces a user-visible warning.
 
@@ -651,15 +653,18 @@ Workbook data first populates transient `workbookState`. Selecting an audit cons
 
 #### Exports
 
-`js/03-capture-actions.js` captures active controls before complete-audit JSON, preview-row CSV, and Markdown or clipboard Markdown exports. `js/12-export-foundation.js` owns structured exports:
+The Export page (`sections/export.html`, `css/export.css`, `js/29-export-dashboard.js`) is a dashboard for the selected audit. `js/29-export-dashboard.js` keeps a format registry: `ATLASExportFormats.register({ id, label, description, extension, build, fileName, actions, preview, tags, hidden })` adds a format, and the page renders one card per visible format with its size, an editable file name (unsafe characters and a repeated extension are removed), Download or Copy actions, and a preview (text, sandboxed HTML iframe, or workbook table). The My Audits Export menu uses the same registry. Visible formats are JSON, Excel, Qtest, and HTML; CSV and Markdown are registered but hidden. Before each export the page saves pending changes with `atlasSaveIfDirty`; a failed save stops the export. A locked audit is never saved, and if another session locked a newer revision, that revision is reloaded first. Read-only users export what they see.
 
+`js/03-capture-actions.js` builds the hidden CSV and Markdown formats. `js/12-export-foundation.js` builds the structured files:
+
+- Complete-audit JSON is the only format that includes disabled logic steps.
 - Requirements Excel creates `Fields` from the canonical Requirements field inventory and `Audit Logic` from preview rows.
-- HTML creates one escaped Fields and Audit Logic document for download or clipboard.
+- HTML creates one escaped Fields and Audit Logic document for download or clipboard; it can be added directly to Confluence.
 - qTest loads `templates/qtest-test-design-template.xlsx` (served from `/templates`), requires `Guide - Start Here` and `UAT - Disney3`, and keeps only those sheets. The Guide sheet is exported unchanged. On the UAT sheet, the title names the audit, the sample scenarios, merges, dropdowns, and highlights are cleared, and one row is written per enabled logic step, including Reference and ELSE steps. Rows are grouped under the template's lettered sections (A-G) by step type and outcome and numbered sequentially across sections; the number is a qTest reference, not the ATLAS step number. Column B is the derived test type, D the analyst logic, F a generic five-step script naming the audit, G and H expected outcomes generated from the step, and O the step's manual notes (blank when none); C, E, and the tester/result columns stay blank. The Pass/Fail columns get Pass/Fail/Blocked/N/A dropdowns and the template's Pass/Fail highlights on scenario rows only.
 
 Display Fields order and canonical Fields composition remain owned by Requirements Preview and `js/21-display-fields.js`; exporters do not create a competing model. Excel outputs require ExcelJS. User-visible errors cover loader failure, workbook/template fetch failure, missing required qTest sheets, unrecognized workbook structure, and invalid logic parameters.
 
-`safeFileName()` retains letters, digits, underscore, and hyphen. Structured filenames use `<audit>_audit_logic_<date>.xlsx`, `<audit>_confluence_<date>.html`, and `<audit>_qtest_template_<date>.xlsx`. Exports are client-generated files. Publication remains the immutable workflow-controlled database snapshot.
+`safeFileName()` retains letters, digits, underscore, and hyphen. Default filenames are `<audit>.json`, `<audit>_audit_logic_<date>.xlsx`, `<audit>_<date>.html`, and `<audit>_qtest_template_<date>.xlsx`. Exports are client-generated files. Publication remains the immutable workflow-controlled database snapshot.
 
 #### Tutorials and tools
 
@@ -726,7 +731,7 @@ Audit assignments, selected sources, steps, and `displayFields` persist inside t
 Security rules are consolidated here and referenced from functional areas.
 
 - **Server enforcement is authoritative.** Protected routes apply authenticated identity plus the relevant feature middleware, audit capability, recipient check, workflow/review validation, or administrative middleware. Hidden or disabled browser controls, read-only notices, navigation guards, and feature-driven visibility never replace server authorization.
-- **Audit capability ownership.** `src/audit-authorization.js` owns coarse audit capabilities. Pending Approval and Published lock ordinary mutation. Assigned Analysts may submit an exact Draft or Draft Revision and may rescind the exact pending request. A verified, non-assigned `atlas-admin-team` selected approver receives state- and relationship-specific approve, publish, or unlock capabilities. `atlas-align-admin` governs publication deletion and Deleted Items. Disabled users and unavailable or malformed privileged role resolution fail closed.
+- **Audit capability ownership.** `src/audit-authorization.js` owns coarse audit capabilities. Pending Approval and Published lock ordinary mutation. Assigned Analysts may submit an exact Draft or Draft Revision and may rescind the exact pending request. A verified, non-assigned `atlas-admin-team` selected approver receives state- and relationship-specific approve or publish capabilities. Any verified `atlas-admin-team` user, Assigned Analysts included, may lock an unlocked audit and unlock a locked one. `atlas-align-admin` governs publication deletion and Deleted Items. Disabled users and unavailable or malformed privileged role resolution fail closed.
 - **Workflow and review authority.** Transactional repositories re-read and lock authoritative audit, request, approval, revision, review-session, publication, Inbox, and discussion records as required. Inbox items are projections, not authority. Reviewer Mode decisions and discussions use separate request/session-bound APIs and do not authorize audit-document mutation.
 - **Source Library administration.** `src/source-library-authorization.js`, server middleware, and OPA require the verified `atlas-align-admin` role for Field Library replacement. Opaque role IDs are not role slugs; unavailable or malformed role resolution does not grant access.
 - **OPA.** `.launch/opa/authz.rego` defaults to deny, permits root GET, requires authentication for non-admin application routes, and applies role checks to reviewed administrative routes. Application middleware and repositories remain responsible for resource-specific and transaction-time enforcement.
@@ -818,14 +823,15 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/02-hierarchy.js` — Logic step parent/child order, numbering, and child creation.
 - `js/02-logic-rendering.js` — Base `renderAll()` and the targeted render scheduler. Later scripts may replace individual surfaces.
 - `js/03-capture-actions.js` — Reads the open controls back into `state` before save, export, and autosave.
-- `js/04-persistence.js` — IndexedDB crash recovery and local bundles. PostgreSQL is the shared store.
+- `js/04-persistence.js` — IndexedDB crash recovery. PostgreSQL is the shared store.
 - `js/05-tutorials.js` — Positions tutorial cards and handles tutorial navigation. Tutorial step lists live in `tutorials/`.
 - `js/07-phrase-catalog.js` — Loads `logic_phrase_catalog.json` and formats analyst and developer phrases.
 - `js/08-step-templates-validation.js` — Legacy step templates and the validation panel.
 - `js/09-workbook-import.js` — Parses an Excel workbook into sources, vanity labels, and logic rows.
 - `js/10-field-picker.js` — Resolves source identity against the catalog, keeping key, file name, and alias separate.
 - `js/11-repo-library.js` — Loads repository catalog JSON and normalizes audits from those files.
-- `js/12-export-foundation.js` — Excel, HTML, clipboard, and qTest export of the current audit.
+- `js/12-export-foundation.js` — Excel, HTML, and qTest file builders for the current audit.
+- `js/29-export-dashboard.js` — Export format registry and the Export page dashboard.
 - `js/13-catalog-field-browser.js` — Searchable source and field browser.
 - `js/14-catalog-driven-builder.js` — Catalog-driven normalization and base rendering for each logic step type.
 - `js/15a-audit-library-ui.js` — Visual UI base for picker, condition, and rule rendering. Must stay before `15b` through `15h`.
@@ -843,7 +849,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/19-audit-version-history.js` — Audit and step revision history actions.
 - `js/19a-audit-history-browser.js` — Detached read-only history browser.
 - `js/20-database-only-audits.js` — Overrides that keep the library on database audits.
-- `js/24-audit-workflow-ui.js` — Submit, decision, publish, unlock, and published-lock controls.
+- `js/24-audit-workflow-ui.js` — Submit, decision, lock, unlock, and published-lock controls.
 - `js/27-audit-review-mode.js` — Detached Reviewer Mode for a submitted revision.
 - `js/26-recently-deleted-publications.js` — Administrative list of soft-deleted publications.
 - `js/25-inbox.js` — Recipient Inbox.
@@ -869,7 +875,7 @@ The loader inserts these, in order, except `group-landing.html`.
 - `sections/requirements-preview.html` — Requirements preview.
 - `sections/readiness-review.html` — Readiness and review landing.
 - `sections/audit-issues.html` — Audit Issues list.
-- `sections/publication-preview.html` — Formal publication form and export actions.
+- `sections/export.html` — Lock audit switch and export format dashboard.
 - `sections/group-landing.html` — Group landing markup. The current partial loader does not request it.
 
 ### CSS source (`css/`)
@@ -892,7 +898,7 @@ The loader inserts these, in order, except `group-landing.html`.
 - `css/readiness-review.css` — Readiness landing.
 - `css/audit-issues.css` — Audit Issues.
 - `css/audit-review.css` — Reviewer Mode.
-- `css/publication-preview.css` — Publication preview.
+- `css/export.css` — Export page.
 
 ### Tutorials (`tutorials/`)
 
@@ -943,6 +949,7 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 - `.launch/migrations/20260915150000_add_canonical_review_object_metadata.sql` — Adds canonical object keys on review items.
 - `.launch/migrations/20260915170000_add_persistent_audit_review_discussions.sql` — Creates persistent review discussion tables.
 - `.launch/migrations/20260915190000_add_rescinded_approval_request_state.sql` — Records who rescinded an approval request.
+- `.launch/migrations/20261028120000_add_manual_audit_lock_publications.sql` — Adds `lock_source` to publications and lets Manual lock publications omit the source approval and approver.
 
 ### SQL (`sql/`)
 
@@ -999,6 +1006,9 @@ Statements for `src/audit-workflow-repository.js`.
 - `sql/audit-workflow-repository/create-inbox-item.sql` — Creates the inbox item.
 - `sql/audit-workflow-repository/create-publication.sql` — Creates the publication.
 - `sql/audit-workflow-repository/create-unlock-revision.sql` — Creates the unlock revision.
+- `sql/audit-workflow-repository/create-lock-revision.sql` — Creates the lock revision.
+- `sql/audit-workflow-repository/create-lock-publication.sql` — Creates a Manual lock publication.
+- `sql/audit-workflow-repository/set-audit-locked.sql` — Points the audit at the lock revision and publication and sets the published lock.
 - `sql/audit-workflow-repository/decide-approval-request.sql` — Records a decision on the approval request.
 - `sql/audit-workflow-repository/get-audit-publication.sql` — Reads the audit publication.
 - `sql/audit-workflow-repository/get-audit-workflow-summary.sql` — Reads the audit workflow summary.
@@ -1201,6 +1211,8 @@ These run against a deployed Preview URL, separate from `npm test`.
 - `tests/audit-assignments-sources.spec.js` — Assigns analysts and selects sources.
 - `tests/audit-creation-overview.spec.js` — Creates an audit and edits Audit Overview.
 - `tests/audit-exports.spec.js` — Export actions.
+- `test/export-page.test.js` — Export page markup, format registry, file names, save-before-export, locked exports, and clipboard copy.
+- `test/audit-lock-repository.test.js` — Lock and unlock transactions, including pending and approved audits.
 - `tests/audit-issues-readiness.spec.js` — Audit Issues and readiness.
 - `tests/audit-persistence-history.spec.js` — Save, reload, and history.
 - `tests/auth.setup.js` — Saves a StudioShare browser session for later Playwright projects.
@@ -1254,7 +1266,7 @@ The Phase 1 in-app validation MVP is a Preview-only, authenticated browser diagn
 
 The Read-Only Isolation suite supports Previous, Next, Go to step, Check, Pass, Fail, Blocked, and sanitized JSON export. Checks compare observational snapshots of `state.audit`, persistence/write state, revision identity, and the existing autosave record. The runner does not patch network APIs or invoke application mutation paths.
 
-Validation progress is stored in a separate IndexedDB database named `atlasAlignValidation`, keyed by authenticated user and suite. Effective profile identity is recorded per result, allowing progress to survive impersonation reloads without becoming part of the `atlasAlignAuditLogicBuilder` recovery database or PostgreSQL. Clear All Saved Data removes both browser databases.
+Validation progress is stored in a separate IndexedDB database named `atlasAlignValidation`, keyed by authenticated user and suite. Effective profile identity is recorded per result, allowing progress to survive impersonation reloads without becoming part of the `atlasAlignAuditLogicBuilder` recovery database or PostgreSQL.
 
 Ownership:
 

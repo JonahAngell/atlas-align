@@ -199,9 +199,9 @@ const AUDIT_FLOW_PAGES = [
   {
     page: "review",
     label: "Readiness & Review",
-    nextLabel: "Publication Preview",
+    nextLabel: "Export",
   },
-  { page: "save", label: "Publication Preview" },
+  { page: "export", label: "Export" },
 ];
 
 /**
@@ -1042,6 +1042,12 @@ function renderMyAudits() {
     button.hidden = !canCreateAudit;
     button.disabled = !canCreateAudit;
   });
+  const importLabel = $("importCurrentFileLabel");
+  if (importLabel) {
+    importLabel.hidden = !canCreateAudit;
+    const input = $("importCurrentFile");
+    if (input) input.disabled = !canCreateAudit;
+  }
 
   const activeAudits = state.databaseAudits || [],
     deletedAudits = state.deletedAudits || [],
@@ -1244,24 +1250,22 @@ function renderMyAudits() {
         publish.className = "audit-publish-menu";
         const summary = document.createElement("summary");
         summary.className = "btn secondary small";
-        summary.textContent = "Publish";
+        summary.textContent = "Export";
         const menu = document.createElement("div");
         menu.className = "audit-publish-menu-panel";
-        [
-          ["json", "Current Audit JSON"],
-          ["excel", "Excel Table View"],
-          ["qtest", "Qtest Excel Template"],
-          ["html", "Confluence HTML"],
-          ["clipboard", "Clipboard HTML"],
-        ].forEach(([format, label]) => {
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "btn ghost small";
-          button.dataset.publishAudit = audit.id;
-          button.dataset.publishFormat = format;
-          button.textContent = label;
-          menu.append(button);
-        });
+        (window.ATLASExportFormats?.visible?.() || []).forEach((format) =>
+          format.actions.forEach((action) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn ghost small";
+            button.dataset.publishAudit = audit.id;
+            button.dataset.publishFormat = format.id;
+            button.dataset.publishAction = action;
+            button.textContent =
+              action === "copy" ? `Copy ${format.label}` : format.label;
+            menu.append(button);
+          }),
+        );
         publish.append(summary, menu);
         publish.addEventListener("toggle", () => {
           if (!publish.open) {
@@ -1874,15 +1878,11 @@ document.addEventListener("click", async (event) => {
   event.preventDefault();
   try {
     await atlasLoadDatabaseAudit(publish.dataset.publishAudit);
-    const actions = {
-      json: () => exportCurrent(),
-      excel: () => exportAuditExcel(),
-      qtest: () => exportQtestExcel(),
-      html: () => exportAuditHtml(),
-      clipboard: () => copyAuditHtml(),
-    };
-    await actions[publish.dataset.publishFormat]?.();
+    await window.ATLASExportFormats?.run?.(
+      publish.dataset.publishFormat,
+      publish.dataset.publishAction || "download",
+    );
   } catch (error) {
-    status(`Publish failed: ${error.message}`, "bad");
+    status(`Export failed: ${error.message}`, "bad");
   }
 });

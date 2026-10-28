@@ -95,13 +95,13 @@
 │   ├── audit-overview.css
 │   ├── audit-review.css
 │   ├── display-fields.css
+│   ├── export.css
 │   ├── global.css
 │   ├── group-landing.css
 │   ├── inbox.css
 │   ├── logic-builder.css
 │   ├── manifest.json
 │   ├── my-audits.css
-│   ├── publication-preview.css
 │   ├── readiness-review.css
 │   ├── recently-deleted-publications.css
 │   ├── requirements-preview.css
@@ -162,7 +162,8 @@
 │   ├── 25-inbox.js
 │   ├── 26-recently-deleted-publications.js
 │   ├── 27-audit-review-mode.js
-│   └── 28-validation-runner.js
+│   ├── 28-validation-runner.js
+│   └── 29-export-dashboard.js
 ├── local-db
 │   ├── init-local-db.sh
 │   └── seed.sql
@@ -219,10 +220,10 @@
 │   ├── audit-issues.html
 │   ├── audit-overview.html
 │   ├── display-fields.html
+│   ├── export.html
 │   ├── inbox.html
 │   ├── logic-builder.html
 │   ├── my-audits.html
-│   ├── publication-preview.html
 │   ├── readiness-review.html
 │   ├── recently-deleted-publications.html
 │   ├── requirements-preview.html
@@ -544,8 +545,7 @@
 │   ├── tutorial-audit-library.js
 │   ├── tutorial-fields.js
 │   ├── tutorial-global.js
-│   ├── tutorial-logic-builder.js
-│   └── tutorial-save-export.js
+│   └── tutorial-logic-builder.js
 ├── validation
 │   └── validation-read-only-isolation.js
 ├── vendor

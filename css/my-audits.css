@@ -232,8 +232,26 @@
   margin-bottom: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u0419:END */
-/* ATLAS-SOURCE-UNIT:u0420:BEGIN */
+/* ATLAS-SOURCE-UNIT:u0419:END *//* ATLAS-SOURCE-UNIT:u1561:BEGIN */
+#page-my-audits .import-label[hidden] {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1561:END *//* ATLAS-SOURCE-UNIT:u1562:BEGIN */#page-my-audits .import-label input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  display: block;
+}
+
+/* ATLAS-SOURCE-UNIT:u1562:END *//* ATLAS-SOURCE-UNIT:u1563:BEGIN */#page-my-audits .import-label:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1563:END *//* ATLAS-SOURCE-UNIT:u0420:BEGIN */
 @media (max-width: 700px) {
   #page-my-audits .my-audits-toolbar-actions {
     margin-left: 0;

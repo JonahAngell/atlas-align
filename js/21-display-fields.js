@@ -725,7 +725,7 @@ function atlasAddDisplayField(sourceFile, fieldName, entry = null) {
   }
   atlasSaveDisplayField(staged.row, true);
   scheduleAutosave?.();
-  atlasInvalidatePages?.(["display-fields", "preview", "save"]);
+  atlasInvalidatePages?.(["display-fields", "preview", "export"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
   globalThis.ATLASAuditIssues?.render?.();
@@ -773,7 +773,7 @@ function atlasAddDisplayFields(entries) {
     return false;
   }
   scheduleAutosave?.();
-  atlasInvalidatePages?.(["display-fields", "preview", "save"]);
+  atlasInvalidatePages?.(["display-fields", "preview", "export"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
   globalThis.ATLASAuditIssues?.render?.();
@@ -795,7 +795,7 @@ function atlasPersistDisplayFieldOrder(rows) {
     atlasSaveDisplayField({ ...row, order }, row.displayed),
   );
   scheduleAutosave?.();
-  atlasInvalidatePages?.(["display-fields", "preview", "save"]);
+  atlasInvalidatePages?.(["display-fields", "preview", "export"]);
 }
 function atlasMoveDisplayField(sourceKey, targetKey) {
   if (atlasIsReviewerMode?.()) return;
@@ -967,7 +967,7 @@ function atlasRemoveDisplayField(row) {
   }
   const point = atlasCapturePageScroll();
   scheduleAutosave?.();
-  atlasInvalidatePages?.(["display-fields", "preview", "save"]);
+  atlasInvalidatePages?.(["display-fields", "preview", "export"]);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
   globalThis.ATLASAuditIssues?.render?.();
@@ -1010,7 +1010,7 @@ function atlasDisplayPreviewVisible() {
 function atlasCommitDisplayFieldChange({ rerender = false } = {}) {
   scheduleAutosave?.();
   atlasInvalidatePages?.(
-    rerender ? ["display-fields", "preview", "save"] : ["preview", "save"],
+    rerender ? ["display-fields", "preview", "export"] : ["preview", "export"],
   );
   if (rerender) renderDisplayFieldsPage();
   // The preview page re-renders on its next visit; only refresh it now when it

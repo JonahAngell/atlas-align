@@ -1,0 +1,36 @@
+INSERT INTO
+  atlas_audit_publications (
+    audit_id,
+    version_number,
+    version_title,
+    approved_revision_id,
+    source_approval_id,
+    source_working_revision_id,
+    snapshot,
+    snapshot_sha256,
+    assignment_snapshot,
+    approver_user_id,
+    approver_username,
+    publisher_user_id,
+    publisher_username,
+    lock_source
+  )
+VALUES
+  (
+    $1,
+    $2,
+    $3,
+    $4,
+    $5,
+    $4,
+    $6::jsonb,
+    $7,
+    $8::jsonb,
+    $9,
+    $10,
+    $11,
+    $12,
+    'Manual'
+  )
+RETURNING
+  *

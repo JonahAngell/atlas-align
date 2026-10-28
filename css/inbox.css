@@ -74,8 +74,8 @@
   width: min(760px, 100%);
   max-height: 90vh;
   overflow: auto;
-  background: var(--panel, #fff);
-  color: var(--text, #111);
+  background: var(--surface);
+  color: var(--text);
   border-radius: 14px;
   padding: 1.25rem;
 }
@@ -95,18 +95,7 @@
   border-radius: 10px;
   padding: 1rem;
 }
-/* ATLAS-SOURCE-UNIT:u0989:END */ /* ATLAS-SOURCE-UNIT:u0990:BEGIN */
-.publication-form {
-  display: grid;
-  gap: 0.75rem;
-}
-/* ATLAS-SOURCE-UNIT:u0990:END */ /* ATLAS-SOURCE-UNIT:u0991:BEGIN */
-.publication-separator {
-  margin-block: 2rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
-/* ATLAS-SOURCE-UNIT:u0991:END */ /* ATLAS-SOURCE-UNIT:u0992:BEGIN */
+/* ATLAS-SOURCE-UNIT:u0989:END */ /* ATLAS-SOURCE-UNIT:u0992:BEGIN */
 @media (max-width: 700px) {
   .inbox-item {
     grid-template-columns: 1fr;
@@ -212,4 +201,4 @@
     background: Highlight;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1043:END */
+/* ATLAS-SOURCE-UNIT:u1043:END */

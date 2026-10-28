@@ -116,6 +116,18 @@ const SQL = Object.freeze({
     "../sql/audit-workflow-repository/create-unlock-revision.sql",
     import.meta.url,
   ),
+  createLockRevision: loadSql(
+    "../sql/audit-workflow-repository/create-lock-revision.sql",
+    import.meta.url,
+  ),
+  createLockPublication: loadSql(
+    "../sql/audit-workflow-repository/create-lock-publication.sql",
+    import.meta.url,
+  ),
+  setAuditLocked: loadSql(
+    "../sql/audit-workflow-repository/set-audit-locked.sql",
+    import.meta.url,
+  ),
   setAuditDraftRevision: loadSql(
     "../sql/audit-workflow-repository/set-audit-draft-revision.sql",
     import.meta.url,
@@ -184,6 +196,9 @@ const actor = (user) => ({
   username: String(user?.username || "").trim(),
 });
 const clean = (v) => String(v || "").trim();
+const LOCKED_DOCUMENT_STATUS = "Complete";
+const UNLOCKED_DOCUMENT_STATUS = "Draft";
+const AUDIT_LOCK_REASON = "Audit locked";
 async function lockAudit(c, id) {
   const r = await c.query(SQL.lockAudit, [id]);
   if (!r.rowCount) throw fail(404, "Audit not found.");
@@ -661,6 +676,114 @@ export async function publishAuditRevision(
     return { publication: pub, workflowStatus: "Published" };
   });
 }
+/**
+ * Locks the current revision from any unlocked workflow state. The audit
+ * document status becomes Complete in a new revision, which is published as a
+ * numbered Manual snapshot and leaves the audit read-only until unlocked. A
+ * pending request is invalidated; an active approval is kept as the source.
+ */
+export async function lockAuditRevision(
+  pool,
+  { auditId, expectedRevisionId, user, verifyUser },
+) {
+  return withTransaction(pool, async (c) => {
+    const a = await lockAudit(c, auditId);
+    revision(a, expectedRevisionId);
+    if (a.workflow_status === "Published")
+      throw fail(409, "The audit is already locked.", {
+        currentPublicationId: a.current_publication_id,
+      });
+    const fresh = await verifyUser(user);
+    if (!auditAccessForUser(fresh, rowAudit(a)).canLock)
+      throw fail(403, "This user cannot lock the audit.");
+    let approval = null;
+    if (a.workflow_status === "Pending Approval") {
+      const sessionResult = await c.query(
+        SQL.lockDraftReviewSessionForRescind,
+        [auditId, a.current_approval_request_id],
+      );
+      await invalidateAuditRequest(c, {
+        audit: a,
+        user: fresh,
+        reason: AUDIT_LOCK_REASON,
+      });
+      if (sessionResult.rowCount)
+        await c.query(SQL.rescindReviewSession, [sessionResult.rows[0].id]);
+    } else if (a.workflow_status === "Approved" && a.current_approval_id) {
+      const ap = (
+        await c.query(SQL.lockApprovalForPublication, [
+          a.current_approval_id,
+          auditId,
+        ])
+      ).rows[0];
+      if (ap?.approval_status === "Active") approval = ap;
+    }
+    const who = actor(fresh);
+    const lockedDocument = structuredClone(a.document || {});
+    lockedDocument.status = LOCKED_DOCUMENT_STATUS;
+    const lockedHash = documentHash(lockedDocument);
+    const newRevision = (
+      await c.query(SQL.createLockRevision, [
+        auditId,
+        Number(a.current_revision_number) + 1,
+        a.current_revision_id,
+        JSON.stringify(lockedDocument),
+        lockedHash,
+        AUDIT_LOCK_REASON,
+        who.userId,
+        who.username,
+      ])
+    ).rows[0];
+    const versionNumber = (
+      await c.query(SQL.nextPublicationVersion, [auditId])
+    ).rows[0].next;
+    const publication = (
+      await c.query(SQL.createLockPublication, [
+        auditId,
+        versionNumber,
+        `Locked version ${versionNumber}`,
+        newRevision.id,
+        approval?.id || null,
+        JSON.stringify(lockedDocument),
+        lockedHash,
+        JSON.stringify(normalizeAssignments(a.document?.assignments)),
+        approval?.approving_user_id || null,
+        approval?.approving_username || null,
+        who.userId,
+        who.username,
+      ])
+    ).rows[0];
+    await c.query(SQL.setAuditLocked, [
+      auditId,
+      newRevision.id,
+      newRevision.revision_number,
+      publication.id,
+      approval ? a.current_approval_request_id : null,
+      approval?.id || null,
+    ]);
+    await recordAuditActivityWithClient(c, auditId, "audit.locked", fresh, {
+      approvalId: approval?.id || null,
+      publicationId: publication.id,
+      versionNumber,
+      sourceRevisionId: Number(a.current_revision_id),
+      resultingRevisionId: Number(newRevision.id),
+      metadata: {
+        previousWorkflowStatus: a.workflow_status,
+        previousDocumentStatus: a.document?.status || null,
+      },
+    });
+    return {
+      auditId,
+      workflowStatus: "Published",
+      currentRevisionId: Number(newRevision.id),
+      revisionNumber: Number(newRevision.revision_number),
+      publication: {
+        id: Number(publication.id),
+        versionNumber: Number(versionNumber),
+      },
+    };
+  });
+}
 export async function unlockPublishedAudit(
   pool,
   {
@@ -699,13 +822,16 @@ export async function unlockPublishedAudit(
       throw fail(409, "The current revision is unavailable.");
     const nextRevisionNumber = Number(a.current_revision_number) + 1;
     const who = actor(fresh);
+    // Unlocking returns the audit document to Draft for further editing.
+    const unlockedDocument = structuredClone(sourceRevision.document || {});
+    unlockedDocument.status = UNLOCKED_DOCUMENT_STATUS;
     const newRevision = (
       await c.query(SQL.createUnlockRevision, [
         auditId,
         nextRevisionNumber,
         a.current_revision_id,
-        JSON.stringify(sourceRevision.document),
-        sourceRevision.document_sha256,
+        JSON.stringify(unlockedDocument),
+        documentHash(unlockedDocument),
         clean(reason),
         who.userId,
         who.username,
@@ -726,6 +852,8 @@ export async function unlockPublishedAudit(
         versionNumber: (
           await c.query(SQL.getPublicationVersion, [expectedPublicationId])
         ).rows[0].version_number,
+        sourceRevisionId: Number(a.current_revision_id),
+        resultingRevisionId: Number(newRevision.id),
         reason: clean(reason) || null,
       },
     );

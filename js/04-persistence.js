@@ -1,7 +1,7 @@
 /**
  * 04-persistence.js
  *
- * IndexedDB persistence layer for saved audits, autosave, import/export bundles, and active audit switching support.
+ * IndexedDB crash-recovery autosave for the active audit.
  * Auto-generated documentation comments explain function purpose, expected inputs, and module sections without changing runtime behavior.
  */
 
@@ -17,7 +17,7 @@ let atlasAutosaveSavedRevision = 0;
 // IndexedDB helpers
 // -----------------------------------------------------------------------------
 /**
- * Opens the IndexedDB database used for saved flows.
+ * Opens the IndexedDB database used for the recovery draft.
  */
 function openDb() {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ function openDb() {
 }
 
 /**
- * Writes a saved flow or autosave record to IndexedDB.
+ * Writes the autosave record to IndexedDB.
  * @param {any} record - IndexedDB record to write.
  */
 async function dbPut(record) {
@@ -51,7 +51,7 @@ async function dbPut(record) {
 }
 
 /**
- * Reads a saved flow by id from IndexedDB.
+ * Reads a record by id from IndexedDB.
  * @param {any} id - Element id or record id to look up.
  */
 async function dbGet(id) {
@@ -69,7 +69,7 @@ async function dbGet(id) {
 }
 
 /**
- * Deletes a saved flow from IndexedDB.
+ * Deletes a record from IndexedDB.
  * @param {any} id - Element id or record id to look up.
  */
 async function dbDelete(id) {
@@ -85,10 +85,6 @@ async function dbDelete(id) {
     db.close();
   }
 }
-
-// -----------------------------------------------------------------------------
-// Saved audit operations
-// -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
 // Autosave
@@ -129,7 +125,6 @@ async function saveAutosave() {
   });
   atlasAutosaveSavedRevision = revision;
   atlasAutosaveDirty = atlasAutosaveRevision !== revision;
-  e.autosaveStatus.textContent = `Autosaved draft at ${new Date().toLocaleString()}.`;
 }
 
 /**
@@ -249,7 +244,10 @@ function atlasApplyRecoveryCandidate() {
   atlasRemoveRecoveryOffer();
   showSection("overview");
   renderAll?.();
-  e.autosaveStatus.textContent = `Recovered browser draft from ${new Date(record.updatedAt).toLocaleString()}.`;
+  status(
+    `Recovered browser draft from ${new Date(record.updatedAt).toLocaleString()}.`,
+    "ok",
+  );
   return true;
 }
 
@@ -260,145 +258,13 @@ async function clearAutosave() {
   await dbDelete(ATLAS_AUTOSAVE_ID);
   state.recoveryCandidate = null;
   atlasRemoveRecoveryOffer();
-  e.autosaveStatus.textContent = "Autosaved draft cleared.";
-}
-
-/**
- * Deletes the IndexedDB database used for saved audits and autosave records.
- */
-function deleteAtlasDatabase() {
-  return new Promise((resolve, reject) => {
-    if (!window.indexedDB) {
-      resolve();
-      return;
-    }
-    const request = indexedDB.deleteDatabase(ATLAS_DB_NAME);
-    request.onsuccess = () => resolve();
-    request.onerror = () =>
-      reject(
-        request.error ||
-          new Error("Could not delete the local audit database."),
-      );
-    request.onblocked = () =>
-      reject(
-        new Error(
-          "Close other ATLAS Align tabs and try clearing local data again.",
-        ),
-      );
-  });
-}
-
-/**
- * Removes browser storage used by this app. Repo JSON files are not changed.
- */
-function deleteAtlasValidationDatabase() {
-  return new Promise((resolve, reject) => {
-    if (!window.indexedDB) return resolve();
-    const request = indexedDB.deleteDatabase("atlasAlignValidation");
-    request.onsuccess = () => resolve();
-    request.onerror = () =>
-      reject(
-        request.error || new Error("Could not delete local validation data."),
-      );
-    request.onblocked = () =>
-      reject(
-        new Error(
-          "Close other ATLAS Align tabs and try clearing local data again.",
-        ),
-      );
-  });
-}
-
-function clearAtlasBrowserStorage() {
-  const appPrefixes = ["atlasAlign", "atlas-validation:"];
-  [localStorage, sessionStorage].forEach((store) => {
-    if (!store) return;
-    Object.keys(store).forEach((key) => {
-      if (appPrefixes.some((prefix) => key.startsWith(prefix)))
-        store.removeItem(key);
-    });
-  });
-}
-
-/**
- * Confirms and clears all locally saved app data, then reloads from a clean state.
- */
-async function resetLocalAppData() {
-  const warning = [
-    "Clear all saved ATLAS Align data from this browser?",
-    "",
-    "This will permanently delete locally saved audits, the autosaved draft, app preferences, and navigation state stored in this browser.",
-    "Repo/source JSON files and downloaded exports will not be changed.",
-    "",
-    "This action cannot be undone. Continue?",
-  ].join("\n");
-  if (!confirm(warning)) return;
-  state.autosavePaused = true;
-  clearTimeout(autosaveTimer);
-  await Promise.all([deleteAtlasDatabase(), deleteAtlasValidationDatabase()]);
-  clearAtlasBrowserStorage();
-  window.location.reload();
+  status("Recovery draft cleared.", "ok");
 }
 
 // PostgreSQL is the only durable audit store. IndexedDB remains crash recovery only.
-function atlasRenderSavedAuditList() {
-  const flowList = document.getElementById("flowAuditList");
-  const audits = state.databaseAudits || [];
-  if (!flowList) return;
-  const query = String(document.getElementById("flowAuditSearch")?.value || "")
-    .trim()
-    .toLowerCase();
-  const visible = audits.filter((audit) =>
-    `${audit.name || ""} ${audit.id || ""}`.toLowerCase().includes(query),
-  );
-  flowList.hidden = false;
-  flowList.innerHTML = visible.length
-    ? visible
-        .map(
-          (audit) =>
-            `<div class="atlas-saved-audit-row"><span>${esc(audit.name)} — revision ${esc(audit.currentRevisionNumber || 0)}</span><button type="button" class="btn secondary small" data-load-saved-audit="${esc(audit.id)}">Load</button></div>`,
-        )
-        .join("")
-    : '<p class="hint">No matching saved audits.</p>';
-}
 refreshSaved = async function refreshDatabaseAudits() {
   await atlasRefreshDatabaseAudits?.();
   state.savedFlows = [];
-  atlasRenderSavedAuditList();
-  if (e.saveStatus)
-    e.saveStatus.textContent = `${(state.databaseAudits || []).length} audit${(state.databaseAudits || []).length === 1 ? "" : "s"} in the shared database.`;
-};
-document.addEventListener("input", (event) => {
-  if (event.target?.id !== "flowAuditSearch") return;
-  atlasRenderSavedAuditList();
-});
-document.addEventListener("click", (event) => {
-  const load = event.target.closest?.("[data-load-saved-audit]");
-  if (!load) return;
-  event.preventDefault();
-  if (e.flowSelect) e.flowSelect.value = load.dataset.loadSavedAudit || "";
-  loadFlow?.()?.catch?.((err) => status?.(err.message, "bad"));
-});
-saveFlow = async function saveDatabaseAudit() {
-  return atlasSaveCurrentAudit?.();
-};
-saveCurrentAuditForSwitch = async function saveDatabaseAuditForSwitch() {
-  return atlasSaveCurrentAudit?.("Saved before switching audits");
-};
-loadFlow = async function loadDatabaseAuditFromSelect() {
-  const id = e.flowSelect?.value;
-  if (!id) return status("Select a database audit first.", "warn");
-  return atlasLoadDatabaseAudit(id);
-};
-deleteFlow = async function archiveDatabaseAudit() {
-  return atlasArchiveCurrentAudit?.();
-};
-exportAll = async function exportDatabaseAuditIndex() {
-  const payload = await atlasAuditApi("/api/audits");
-  downloadJson(`atlas_align_database_audit_index_${today()}.json`, payload);
-};
-importAll = async function importJsonAuditsToDatabase(file) {
-  return atlasImportAuditJsonFile(file);
 };
 const atlasLocalAutosaveBase = saveAutosave;
 saveAutosave = async function saveRecoveryDraftOnly() {

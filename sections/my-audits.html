@@ -82,18 +82,22 @@
         <button class="btn secondary" id="refreshLibraryBtn" type="button">
           Refresh
         </button>
+        <label
+          class="btn secondary import-label"
+          hidden
+          id="importCurrentFileLabel"
+        >
+          Import JSON
+          <input
+            accept=".json,application/json"
+            id="importCurrentFile"
+            type="file"
+          />
+        </label>
         <button class="btn primary" id="newAuditBtn" type="button">
           New Audit
         </button>
       </div>
-      <!-- <label class="btn secondary import-label">
-        Import JSON
-        <input
-          accept=".json,application/json"
-          id="importCurrentFile"
-          type="file"
-        />
-      </label> -->
     </div>
     <div
       aria-label="Audit results"

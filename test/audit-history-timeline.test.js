@@ -15,6 +15,7 @@ test("timeline maps established event types and retains unknown types", () => {
     "audit.restored",
     "step.restored",
     "audit.published",
+    "audit.locked",
     "audit.published_unlocked",
     "publication.sent_to_recently_deleted",
   ])
@@ -31,4 +32,9 @@ test("pagination preserves the activity cursor", () => {
   assert.match(s, /beforeId/);
   assert.match(s, /activityCursor/);
   assert.match(s, /activityComplete/);
+});
+
+test("activity reasons, such as an unlock reason, show on the timeline entry", () => {
+  assert.match(s, /history-entry-reason/);
+  assert.match(s, /Reason: \$\{esc\(x\.reason\)\}/);
 });

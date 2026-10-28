@@ -31,8 +31,6 @@ const tutorialAliases = {
   fields: "fields",
   steps: "logicBuilder",
   logicBuilder: "logicBuilder",
-  save: "saveExport",
-  saveExport: "saveExport",
 };
 
 const tutorials = Object.assign(
@@ -110,12 +108,10 @@ function sectionForTutorialSelector(selector = "", explicitPage = "") {
   if (selector.includes("review") || selector.includes("validationPanel"))
     return "review";
   if (
-    selector.includes("save") ||
     selector.includes("export") ||
-    selector.includes("download") ||
-    selector.includes("flowSelect")
+    selector.includes("download")
   )
-    return "save";
+    return "export";
   return "overview";
 }
 
@@ -127,7 +123,7 @@ function tutorialPageFor(section) {
   if (typeof pageForSection === "function") return pageForSection(section);
   if (section === "audit") return "overview";
   if (section === "logic") return "steps";
-  if (section === "publication") return "save";
+  if (section === "publication" || section === "save") return "export";
   if (section === "sources") return "fields";
   return section || "my-audits";
 }
