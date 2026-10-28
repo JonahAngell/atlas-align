@@ -1,6 +1,6 @@
 # ATLAS Align Audit Import: Instructions for Copilot
 
-> **For Microsoft Copilot (agent instructions).** Read this whole file before you respond. You will convert audit requirements documents (Word, Excel, PDF, or pasted text) into JSON files that ATLAS Align can import. Follow the workflow in Section 1 exactly. Sections 3 to 6 define the JSON format. Section 8 is a complete example to copy from.
+> **For Microsoft Copilot (agent instructions).** Read this whole file before you respond. You will convert audit requirements documents (Word, Excel, PDF, or pasted text) into JSON files that ATLAS Align can import. Follow the workflow in Section 1 exactly. Sections 3 to 6 define the JSON format. Section 4.4 explains how to tell the app which sources to create or map. Section 8 is a complete example to copy from.
 
 ---
 
@@ -17,6 +17,7 @@ Read the document the user provides. Find:
 - Every **field** the audit uses or displays, and which source each one comes from.
 - The **logic**: joins between sources, filters, IF/THEN rules, new columns, formatting, sorting, and duplicate removal, in the order they happen.
 - The **output**: which columns the final audit report shows and in what order.
+- For each source, whether it is **already in the ATLAS Source Library** (the document may give a library name or key such as `sap.hi0256`), or is **new** and will need a custom source.
 
 ### Phase 2: Ask clarifying questions
 
@@ -32,6 +33,9 @@ Before you build anything, list what is missing or ambiguous and ask the user. A
 | An ELSE outcome is implied but not stated | "What should happen to records that do not match this rule?" |
 | Values look like codes | "Are `2450, 3357, 3358` personnel area codes to match exactly?" |
 | The document has several audits | "I found 3 audits in this document. Should I import all 3 as one bundle?" |
+| You can't tell if a source is in the Source Library | "Is *Workday Workers* already in the ATLAS Source Library? If so, what is its library name or key? If not, I'll define it as a new custom source." |
+| A source's library field names differ from the document | "The document calls it `EMPNO`. What is the field called in the library source `sap.hi0256`?" |
+| A new custom source's field formats aren't stated | "For the new *Vendor Feed* source, are `Amount` values Currency and `Invoice_Date` values Date? Everything else will be Text." |
 
 Never invent field names, source names, or values. If the document doesn't say, ask. If the user says "use your best judgment", state the assumption you made in the preview.
 
@@ -73,6 +77,13 @@ After the user answers, show these three previews **before** writing JSON. Use M
    8. └─ ELSE: do not display record
 ```
 
+**Preview D: Source plan** (one row per source; see Section 4.4)
+
+| Source | In Source Library? | Import plan |
+| --- | --- | --- |
+| SAP HR Master | Yes, as `sap.hi0256` | Map `persno` → `PA0000-PERNR`, `status` → `PA0000-STAT2` |
+| Workday Workers | No | Create custom source *Workday Workers* (system: Workday) with 2 fields |
+
 Then ask: **"Does this match your requirements? Reply 'yes' to generate the JSON, or tell me what to change."** Repeat Phase 3 after every change until the user confirms.
 
 ### Phase 4: Generate the JSON
@@ -91,8 +102,9 @@ Tell the user these steps after you deliver JSON:
 
 1. Open ATLAS Align and go to **My Audits**.
 2. Click **Import JSON** and choose the `.json` file. The button only appears for users with audit-create permission (the `atlas-admin-team` role).
-3. A status message confirms the result, for example *"Imported 1 audit(s) into the database."* If some audits fail, the message says how many. The first imported audit opens on its Overview page.
-4. Review the audit in **Logic Builder** and **Requirements Preview**, then assign analysts on the Overview page.
+3. If any source isn't already in the Source Library under the same key, a **Review Import Sources** dialog opens. For each source, choose **Create custom source**, **Map to library source** (pick the library source, then check each field's match), or **Keep as written**. Your `customSources` and `sourceMappings` prefill these choices. Click **Import Audits** to create the custom sources and save the audits, or **Cancel Import** to save nothing.
+4. A status message confirms the result, for example *"Imported 1 audit(s) into the database."* If some audits fail, the message says how many. The first imported audit opens on its Overview page.
+5. Review the audit in **Logic Builder** and **Requirements Preview**, then assign analysts on the Overview page.
 
 Import behavior to explain when relevant:
 
@@ -104,6 +116,10 @@ Import behavior to explain when relevant:
 | The existing audit is published | That audit fails to import until someone unlocks it in the app. |
 | A bundle has one bad audit | The others still import; the bad one is listed as *failed* with its error. |
 | File size | Keep each file under 12 MB. |
+| A source is already in the library under the same key or alias | It is imported unchanged and not shown for review. |
+| A source matches a library source by name | The dialog suggests mapping it to that source. |
+| A custom source with the same name already exists | The dialog maps to the existing one instead of creating a duplicate. |
+| A field is left unmatched when mapping | The audit imports, and the field is reported as a critical audit issue. **Replace Source** on the Sources page finishes the mapping. |
 
 ---
 
@@ -129,6 +145,16 @@ A file can hold **one audit** or a **bundle** of several.
 ```
 
 A plain top-level array of audit objects also works.
+
+Either form can also carry `customSources` and `sourceMappings` arrays (Section 4.4). Put them at the top level of a bundle so one entry covers every audit that uses the source. A single-audit file can carry them on the audit object itself.
+
+```json
+{
+  "audits": [ { "...": "..." } ],
+  "customSources": [ { "...": "..." } ],
+  "sourceMappings": [ { "...": "..." } ]
+}
+```
 
 ---
 
@@ -189,6 +215,66 @@ Use this to set the output column order. Skip it if the document doesn't specify
 ```
 
 `order` here starts at `0`.
+
+### 4.4 Source Library hints: `customSources` and `sourceMappings`
+
+ATLAS Align keeps a shared **Source Library** of known sources and their fields. When the file names a source the library doesn't have, the import asks the user to create it as a custom source or map it onto a library source. These two optional arrays tell the app what to do, so the user only has to confirm.
+
+Write the audit itself (sources, fields, steps, conditions) with the **names from the requirements document**. The hints tell the app how to translate those names during import. Do not rename anything inside the audit to match the library.
+
+| Situation | Use |
+| --- | --- |
+| The source is already in the library, and the user gave you its library key or name | A `sourceMappings` entry |
+| The source is new | A `customSources` entry |
+| You don't know | Neither; ask the user (Phase 2). If still unknown, leave it out and the user decides in the dialog. |
+
+**`sourceMappings` entry**
+
+```json
+{
+  "source": "SAP HR Master",
+  "targetSource": "sap.hi0256",
+  "fields": { "persno": "PA0000-PERNR", "status": "PA0000-STAT2" }
+}
+```
+
+| Key | Required | Rules |
+| --- | --- | --- |
+| `source` | **Yes** | The source's `name` or `alias` exactly as written in the audit's `sources`. |
+| `targetSource` | **Yes** | The library source's key (such as `sap.hi0256`) or its exact library name. A key is safer, because two library sources can share a name. |
+| `fields` | No | Imported field name → library field name. List only names that differ or that you were told. The app auto-matches the rest by name, ignoring case, and also by display name. Fields it can't match are imported and reported as audit issues. |
+
+**`customSources` entry**
+
+```json
+{
+  "source": "Workday Workers",
+  "sourceName": "Workday Workers",
+  "sourceSystem": "Workday",
+  "fields": [
+    { "fieldName": "Employee_ID", "vanityLabel": "Workday Employee ID", "fieldFormat": "Text", "businessDescription": "Workday employee ID." },
+    { "fieldName": "Hire_Date", "vanityLabel": "Hire Date", "fieldFormat": "Date" }
+  ]
+}
+```
+
+| Key | Required | Rules |
+| --- | --- | --- |
+| `source` | **Yes** | The source's `name` or `alias` exactly as written in the audit's `sources`. |
+| `sourceName` | No | Name for the new library source. Defaults to the source's `name`. Up to 200 characters, starting with a letter or number, using only letters, numbers, spaces, and `. , & ' - _ ( ) : / +`. |
+| `sourceSystem` | No | The system it comes from, such as `Workday` or `SAP`. Up to 120 characters, same character rules. |
+| `fields` | Recommended | One entry per field. Fields the audit uses that you leave out are still added, with format `Text`. At most 200 fields. |
+| `fields[].fieldName` | **Yes** | Exactly as the audit's `fields[].rawFieldName`. Same character rules as `sourceName`; a name with other characters (such as `#` or `%`) can't be saved, so ask the user what the field is really called. |
+| `fields[].vanityLabel` | Recommended | Friendly display name. Any characters. Defaults to `fieldName`. |
+| `fields[].fieldFormat` | Recommended | One of `Text`, `Number`, `Decimal`, `Date`, `Date/Time`, `Boolean`, `Currency`. Defaults to `Text`. |
+| `fields[].businessDescription` | No | What the field means. Up to 2,000 characters. |
+
+**Rules**
+
+- One entry per source. A source can have a `sourceMappings` entry or a `customSources` entry, not both.
+- Don't add hints for `Calculated Field`. Columns the logic creates never go in the Source Library.
+- Custom sources are shared with everyone in ATLAS Align. Tell the user which ones the import will create.
+- If a source with the same name is already in the library, the app maps to it instead of creating a duplicate. Importing the same file twice is safe.
 
 ---
 
@@ -417,6 +503,9 @@ Check every item. Fix failures before you show the JSON.
 - [ ] Every `step_type` comes from Section 5.2, with the matching `type`.
 - [ ] Every source name used in a step or field matches a `sources[].name` exactly, including case and spaces.
 - [ ] Every source has a `reference_source` step before any step that uses it.
+- [ ] Every `customSources` and `sourceMappings` entry's `source` matches a `sources[].name` or `alias` exactly, and no source has both.
+- [ ] Every `customSources` field has a `fieldFormat` from Section 4.4, and every `fieldName` matches a `rawFieldName` in the audit.
+- [ ] Every `sourceMappings.targetSource` came from the user or the document. Never guess a library key.
 - [ ] Every `conditions_json` is a **string**, and that string parses to an array whose first condition has `connector: "IF"`.
 - [ ] Every operator comes from Section 6.3 and fits its `valueMode`.
 - [ ] Every `display_text` output column is created by an earlier `create_column` step.
@@ -430,8 +519,10 @@ Check every item. Fix failures before you show the JSON.
 **Requirement (as a user might paste it):**
 
 > *Rehire Status Compare.* Compare SAP HR Master (persno, status) to the Workday Workers report (Employee_ID, Worker_Status). Format persno to 8 digits. Ignore withdrawn SAP records. Join SAP to Workday on persno = Employee_ID, keeping all SAP records. If the SAP status doesn't match the Workday status, show "Status mismatch" in an Error Message column. Otherwise, don't show the record.
+>
+> *Source Library (from the user's answers in Phase 2):* SAP HR Master is in the library as `sap.hi0256`, where persno is `PA0000-PERNR` and status is `PA0000-STAT2`. Workday Workers is new; both of its fields are text.
 
-**Generated JSON (`rehire-status-compare.json`):**
+**Generated JSON (`rehire-status-compare.json`).** The audit keeps the document's names; the two arrays at the end tell the import how to connect them to the Source Library:
 
 ```json
 {
@@ -532,6 +623,24 @@ Check every item. Fix failures before you show the JSON.
       "notes": "", "conditions": [],
       "params": { "managed_else_branch": "Yes", "parent_if_step_id": "step_7", "then_action_type": "do_not_display" }
     }
+  ],
+  "sourceMappings": [
+    {
+      "source": "SAP HR Master",
+      "targetSource": "sap.hi0256",
+      "fields": { "persno": "PA0000-PERNR", "status": "PA0000-STAT2" }
+    }
+  ],
+  "customSources": [
+    {
+      "source": "Workday Workers",
+      "sourceName": "Workday Workers",
+      "sourceSystem": "Workday",
+      "fields": [
+        { "fieldName": "Employee_ID", "vanityLabel": "Workday Employee ID", "fieldFormat": "Text", "businessDescription": "Workday employee ID." },
+        { "fieldName": "Worker_Status", "vanityLabel": "Workday Status", "fieldFormat": "Text", "businessDescription": "Workday worker status." }
+      ]
+    }
   ]
 }
 ```
@@ -551,3 +660,5 @@ Check every item. Fix failures before you show the JSON.
 | Compare two fields | `valueMode: field`, fill the `compare*` keys |
 | Several values | `compareValue: "\"A\", \"B\""` |
 | Several audits in one file | `{ "audits": [ ... ] }` |
+| Source already in the Source Library | `sourceMappings` entry with `targetSource` and any renamed `fields` |
+| New source the library doesn't have | `customSources` entry with `sourceSystem` and typed `fields` |
