@@ -4332,7 +4332,11 @@
     elements.panel?.addEventListener("keydown", handlePanelKeydown);
     elements.refresh?.addEventListener("click", invalidate);
     elements.readinessRefresh?.addEventListener("click", invalidate);
-    document.addEventListener("input", invalidate);
+    document.addEventListener("input", (event) => {
+      // Manual Notes cannot create or clear an issue.
+      if (event.target?.matches?.("[data-step-notes-live]")) return;
+      invalidate();
+    });
     document.addEventListener("change", invalidate);
     document.addEventListener("click", (event) => {
       const fix = event.target.closest("[data-atlas-issue-fix]");
