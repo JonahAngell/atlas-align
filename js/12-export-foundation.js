@@ -9,14 +9,18 @@
 // -----------------------------------------------------------------------------
 // Shared export row helpers
 // -----------------------------------------------------------------------------
+// HTML indent for each nesting level of the Analyst Logic cell.
+const AUDIT_EXPORT_HTML_INDENT_PX = 24;
+
 /**
- * Builds export rows from preview rows.
+ * Builds export rows from preview rows. `level` is the step's nesting depth,
+ * shown as an indent on the Analyst Logic cell rather than as a column.
  */
 function auditExportRows() {
   const includeNotes = !!e.includeNotes?.checked;
   return previewRows().map((row) => ({
+    level: row.level || 0,
     Step: row.step,
-    Branch: row.branch,
     "Analyst Logic": row.analyst,
     "Developer Logic": row.developer,
     Notes: includeNotes ? row.notes : "",
@@ -82,12 +86,12 @@ async function buildAuditExcelWorkbook() {
   const logic = workbook.addWorksheet("Audit Logic");
   logic.columns = [
     { header: "Step", key: "Step", width: 18 },
-    { header: "Branch", key: "Branch", width: 14 },
     { header: "Analyst Logic", key: "Analyst Logic", width: 80 },
     { header: "Developer Logic", key: "Developer Logic", width: 40 },
     { header: "Notes", key: "Notes", width: 60 },
   ];
-  auditExportRows().forEach((row) => logic.addRow(row));
+  const logicRows = auditExportRows();
+  logicRows.forEach(({ level, ...row }) => logic.addRow(row));
   [fields, logic].forEach((sheet) => {
     const header = sheet.getRow(1);
     header.font = { bold: true, color: { argb: "FFFFFFFF" } };
@@ -101,6 +105,12 @@ async function buildAuditExcelWorkbook() {
     sheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) row.alignment = { vertical: "top", wrapText: true };
     });
+  });
+  const analystColumn = logic.getColumn("Analyst Logic").number;
+  logicRows.forEach(({ level }, index) => {
+    if (!level) return;
+    const cell = logic.getRow(index + 2).getCell(analystColumn);
+    cell.alignment = { ...cell.alignment, indent: level };
   });
   return workbook;
 }
@@ -128,10 +138,10 @@ function auditHtmlDocument() {
   const logicRows = auditExportRows()
     .map(
       (row) =>
-        `<tr><td>${auditHtmlCell(row.Step)}</td><td>${auditHtmlCell(row.Branch)}</td><td>${auditHtmlCell(row["Analyst Logic"])}</td><td>${auditHtmlCell(row["Developer Logic"])}</td><td>${auditHtmlCell(row.Notes)}</td></tr>`,
+        `<tr><td>${auditHtmlCell(row.Step)}</td><td${row.level ? ` style="padding-left:${8 + row.level * AUDIT_EXPORT_HTML_INDENT_PX}px"` : ""}>${auditHtmlCell(row["Analyst Logic"])}</td><td>${auditHtmlCell(row["Developer Logic"])}</td><td>${auditHtmlCell(row.Notes)}</td></tr>`,
     )
     .join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.audit.name)} Audit Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;color:#172b4d}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9e2ef;padding:8px;vertical-align:top;text-align:left}th{background:#0747a6;color:#fff}td{white-space:normal}</style></head><body><h1>${esc(state.audit.name)}</h1><p>${esc(state.audit.purpose || "")}</p><h2>Fields</h2><table><thead><tr><th aria-label="Row number"></th><th>Unique ID</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Display</th><th>Notes</th></tr></thead><tbody>${fieldRows}</tbody></table><h2>Audit Logic</h2><table><thead><tr><th>Step</th><th>Branch</th><th>Analyst Logic</th><th>Developer Logic</th><th>Notes</th></tr></thead><tbody>${logicRows}</tbody></table></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.audit.name)} Audit Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;color:#172b4d}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9e2ef;padding:8px;vertical-align:top;text-align:left}th{background:#0747a6;color:#fff}td{white-space:normal}</style></head><body><h1>${esc(state.audit.name)}</h1><p>${esc(state.audit.purpose || "")}</p><h2>Fields</h2><table><thead><tr><th aria-label="Row number"></th><th>Unique ID</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Display</th><th>Notes</th></tr></thead><tbody>${fieldRows}</tbody></table><h2>Audit Logic</h2><table><thead><tr><th>Step</th><th>Analyst Logic</th><th>Developer Logic</th><th>Notes</th></tr></thead><tbody>${logicRows}</tbody></table></body></html>`;
 }
 
 // -----------------------------------------------------------------------------
