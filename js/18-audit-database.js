@@ -501,8 +501,12 @@ async function atlasImportAuditDocuments(
   const flushed = await atlasSaveIfDirty("audit import");
   if (!flushed)
     throw new Error("Resolve the current audit save before importing.");
+  // Imported Reference steps become the generated ones, so the reference
+  // sync doesn't add a second copy beside each of them.
   const normalized = documents.map((document) =>
-    normalizeLoadedAudit(document, "database-import"),
+    atlasImportAdoptReferenceSteps(
+      normalizeLoadedAudit(document, "database-import"),
+    ),
   );
   const payload = await atlasAuditApi("/api/audits/import", {
     method: "POST",
