@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.2.0
+**Current Version:** v3.2.1
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
@@ -32,7 +32,7 @@ The reviewed implementation uses:
 
 ### Deployment and process model
 
-`server.js` is the application entry point. It reads the database URL from `STUDIOSHARE_DB_URL`. The production Docker image installs locked runtime dependencies, copies `server.js`, `src/`, `sql/`, root browser assets, `css/`, `sections/`, `js/`, `vendor/`, `tutorials/`, `validation/`, `catalogs/`, and `.launch/`, runs as UID 1000, exposes port 8080, and starts `node server.js`.
+`server.js` is the application entry point. It reads the database URL from `STUDIOSHARE_DB_URL`. The production Docker image installs locked runtime dependencies, copies `server.js`, `src/`, `sql/`, root browser assets, `css/`, `sections/`, `js/`, `vendor/`, `tutorials/`, `validation/`, `catalogs/`, `templates/`, and `.launch/`, runs as UID 1000, exposes port 8080, and starts `node server.js`.
 
 Local Docker Compose starts:
 
@@ -655,7 +655,7 @@ Workbook data first populates transient `workbookState`. Selecting an audit cons
 
 - Requirements Excel creates `Fields` from the canonical Requirements field inventory and `Audit Logic` from preview rows.
 - HTML creates one escaped Fields and Audit Logic document for download or clipboard.
-- qTest loads `templates/qtest-test-design-template.xlsx`, requires `Guide - Start Here` and `UAT - Disney3`, clears sample content, maps logic preview rows to UAT rows, and preserves template styles.
+- qTest loads `templates/qtest-test-design-template.xlsx` (served from `/templates`), requires `Guide - Start Here` and `UAT - Disney3`, and keeps only those sheets. The Guide sheet is exported unchanged. On the UAT sheet, the title names the audit, the sample scenarios, merges, dropdowns, and highlights are cleared, and one row is written per enabled logic step, including Reference and ELSE steps. Rows are grouped under the template's lettered sections (A-G) by step type and outcome and numbered sequentially across sections; the number is a qTest reference, not the ATLAS step number. Column B is the derived test type, D the analyst logic, F a generic five-step script naming the audit, G and H expected outcomes generated from the step, and O the step's manual notes (blank when none); C, E, and the tester/result columns stay blank. The Pass/Fail columns get Pass/Fail/Blocked/N/A dropdowns and the template's Pass/Fail highlights on scenario rows only.
 
 Display Fields order and canonical Fields composition remain owned by Requirements Preview and `js/21-display-fields.js`; exporters do not create a competing model. Excel outputs require ExcelJS. User-visible errors cover loader failure, workbook/template fetch failure, missing required qTest sheets, unrecognized workbook structure, and invalid logic parameters.
 
@@ -904,13 +904,14 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 - `tutorials/tutorial-logic-builder.js` — Logic Builder tutorial steps.
 - `tutorials/tutorial-save-export.js` — Save and export tutorial steps.
 
-### Catalogs and validation
+### Catalogs, templates, and validation
 
 - `catalogs/audit-issue-rules.json` — Declarative audit-issue rules evaluated by `js/22-audit-issue-engine.js`.
 - `catalogs/source-fields.json` — Source field catalog.
 - `catalogs/source-file-index.json` — Source file index.
 - `catalogs/source-table-aliases.json` — Source alias map.
 - `catalogs/vanity-labels.json` — Display labels for source fields.
+- `templates/qtest-test-design-template.xlsx` — qTest export template (Guide and UAT sheets); currently a filled Management Chain example whose UAT sample rows are replaced on export.
 - `validation/validation-read-only-isolation.js` — Declarative Read-Only Isolation suite served only when preview validation is enabled.
 
 ### Tools (`tools/`)
@@ -1173,6 +1174,7 @@ Statements for `src/user-impersonation.js`.
 - `test/pending-approval-rescind.test.js` — Rescinding a pending approval request.
 - `test/publication-deletion-ui.test.js` — Publication soft-delete controls.
 - `test/publication-ui.test.js` — Publication controls.
+- `test/qtest-export.test.js` — qTest workbook export: unchanged Guide sheet, audit title, lettered sections, column mapping, and result dropdowns.
 - `test/published-locking.test.js` — Published audits stay locked.
 - `test/recently-deleted-publications-ui.test.js` — Recently Deleted Publications UI.
 - `test/render-scheduling.test.js` — Targeted render scheduling.

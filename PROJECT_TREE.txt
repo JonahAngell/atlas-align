@@ -478,6 +478,7 @@
 │   ├── publication-deletion-ui.test.js
 │   ├── publication-ui.test.js
 │   ├── published-locking.test.js
+│   ├── qtest-export.test.js
 │   ├── recently-deleted-publications-ui.test.js
 │   ├── render-scheduling.test.js
 │   ├── schema.test.js
@@ -507,6 +508,8 @@
 │   │   ├── trace.zip
 │   │   └── video.webm
 │   └── .last-run.json
+├── templates
+│   └── qtest-test-design-template.xlsx
 ├── tests
 │   ├── fixtures
 │   │   ├── atlas.fixture.js
@@ -560,7 +563,6 @@
 ├── Dockerfile
 ├── FEATURE_REQUEST_TEMPLATE.md
 ├── index.html
-├── Management_Chain_ATLAS_Test_Design_Test.xlsx
 ├── package-lock.json
 ├── package.json
 ├── playwright.config.js

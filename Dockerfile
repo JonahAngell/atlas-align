@@ -36,6 +36,9 @@ COPY --chown=1000:1000 validation ./validation
 # Supporting source catalogs
 COPY --chown=1000:1000 catalogs ./catalogs
 
+# Export workbook templates
+COPY --chown=1000:1000 templates ./templates
+
 # Launch migrations and policy
 COPY --chown=1000:1000 .launch ./.launch
 

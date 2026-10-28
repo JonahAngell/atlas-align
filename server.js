@@ -242,6 +242,15 @@ app.use(
   }),
 );
 
+app.use(
+  "/templates",
+  express.static(path.join(__dirname, "templates"), {
+    index: false,
+    dotfiles: "deny",
+    fallthrough: false,
+  }),
+);
+
 // API traffic only: static assets above are neither rate limited nor body parsed.
 const rateLimits = apiRateLimits();
 app.use("/api", rateLimits.api, rateLimits.writes);

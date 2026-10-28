@@ -1,6 +1,6 @@
 {
   "name": "atlas-align",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "private": true,
   "description": "ATLAS Align audit logic builder: Express server, PostgreSQL storage, and browser application for StudioShare Launch",
   "type": "module",
