@@ -24,6 +24,7 @@ const ATLAS_EXPORT_PREVIEW_LINES = 400;
 const ATLAS_EXPORT_PREVIEW_ROWS = 12;
 const ATLAS_EXPORT_PREVIEW_COLUMNS = 8;
 const ATLAS_EXPORT_PREVIEW_CELL_CHARS = 160;
+const ATLAS_EXPORT_PREVIEW_INDENT_REM = 1.5;
 const ATLAS_EXPORT_FILE_NAME_MAX = 150;
 
 const atlasExportFormats = [];
@@ -462,10 +463,14 @@ function atlasRenderWorkbookPreview(body, note, result) {
       sheet.eachRow({ includeEmpty: false }, (row) => {
         if (rows.length >= ATLAS_EXPORT_PREVIEW_ROWS) return;
         const cells = [];
-        for (let column = 1; column <= columnCount; column += 1)
+        for (let column = 1; column <= columnCount; column += 1) {
+          const cell = row.getCell(column);
+          // Show Excel cell indents, such as nested Audit Logic steps.
+          const indent = Number(cell.alignment?.indent) || 0;
           cells.push(
-            `<td>${esc(atlasExportPreviewTruncate(row.getCell(column).text))}</td>`,
+            `<td${indent ? ` style="padding-left: calc(0.5rem + ${indent * ATLAS_EXPORT_PREVIEW_INDENT_REM}rem)"` : ""}>${esc(atlasExportPreviewTruncate(cell.text))}</td>`,
           );
+        }
         rows.push(`<tr>${cells.join("")}</tr>`);
       });
       return `<section class="export-preview-sheet"><h3>${esc(sheet.name)}</h3>${
