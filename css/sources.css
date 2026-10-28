@@ -2602,4 +2602,220 @@ body.dark #customSourceDialog .btn.secondary {
 body.dark #customSourceDialog .btn.secondary:hover:not(:disabled) {
   background: var(--border) !important;
 }
-/* ATLAS-SOURCE-UNIT:u1473:END */
+/* ATLAS-SOURCE-UNIT:u1473:END *//* ATLAS-SOURCE-UNIT:u1565:BEGIN */
+
+/* Audit JSON import: source review dialog (js/15k-audit-import-sources.js). */
+.import-source-review-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.48);
+}
+
+.import-source-review-modal {
+  width: min(960px, 96vw);
+  max-height: min(820px, 92vh);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1565:END *//* ATLAS-SOURCE-UNIT:u1566:BEGIN */.import-source-review-modal:focus {
+  outline: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1566:END *//* ATLAS-SOURCE-UNIT:u1567:BEGIN */.import-source-review-body {
+  display: grid;
+  gap: 0.85rem;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1567:END *//* ATLAS-SOURCE-UNIT:u1568:BEGIN */.import-source-summary {
+  margin: 0.35rem 0 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ATLAS-SOURCE-UNIT:u1568:END *//* ATLAS-SOURCE-UNIT:u1569:BEGIN */.import-source-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+/* ATLAS-SOURCE-UNIT:u1569:END *//* ATLAS-SOURCE-UNIT:u1570:BEGIN */.import-source-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1570:END *//* ATLAS-SOURCE-UNIT:u1571:BEGIN */.import-source-card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1571:END *//* ATLAS-SOURCE-UNIT:u1572:BEGIN */.import-source-card-header .hint {
+  margin: 0.2rem 0 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1572:END *//* ATLAS-SOURCE-UNIT:u1573:BEGIN */.import-source-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1573:END *//* ATLAS-SOURCE-UNIT:u1574:BEGIN */.import-source-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  min-height: 44px;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface2);
+  cursor: pointer;
+  transition: border-color 120ms ease-out, background-color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1574:END *//* ATLAS-SOURCE-UNIT:u1575:BEGIN */.import-source-action:hover {
+  border-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1575:END *//* ATLAS-SOURCE-UNIT:u1576:BEGIN */.import-source-action:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--accent2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1576:END *//* ATLAS-SOURCE-UNIT:u1577:BEGIN */.import-source-action:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1577:END *//* ATLAS-SOURCE-UNIT:u1578:BEGIN */.import-source-actions:disabled .import-source-action {
+  cursor: not-allowed;
+}
+
+/* ATLAS-SOURCE-UNIT:u1578:END *//* ATLAS-SOURCE-UNIT:u1579:BEGIN */.import-source-action input {
+  flex: none;
+  width: auto;
+  min-height: 0;
+  margin: 0.2rem 0 0;
+  accent-color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1579:END *//* ATLAS-SOURCE-UNIT:u1580:BEGIN */.import-source-action > span {
+  display: grid;
+  gap: 0.15rem;
+  text-align: left;
+}
+
+/* ATLAS-SOURCE-UNIT:u1580:END *//* ATLAS-SOURCE-UNIT:u1581:BEGIN */.import-source-action .hint {
+  font-size: 0.8rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1581:END *//* ATLAS-SOURCE-UNIT:u1582:BEGIN */.import-source-panel {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1582:END *//* ATLAS-SOURCE-UNIT:u1583:BEGIN */.import-source-inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.6rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1583:END *//* ATLAS-SOURCE-UNIT:u1584:BEGIN */.import-source-inputs label {
+  display: grid;
+  align-content: start;
+  gap: 0.3rem;
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1584:END *//* ATLAS-SOURCE-UNIT:u1585:BEGIN */.import-source-label {
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1585:END *//* ATLAS-SOURCE-UNIT:u1586:BEGIN */.import-source-table-wrap {
+  max-height: 300px;
+  overflow: auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1586:END *//* ATLAS-SOURCE-UNIT:u1587:BEGIN */.import-source-table input,
+.import-source-table select {
+  width: 100%;
+  min-height: 36px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1587:END *//* ATLAS-SOURCE-UNIT:u1588:BEGIN */.import-source-library-list summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ATLAS-SOURCE-UNIT:u1588:END *//* ATLAS-SOURCE-UNIT:u1589:BEGIN */.import-source-library-list ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1589:END *//* ATLAS-SOURCE-UNIT:u1590:BEGIN */.import-source-warning,
+.import-source-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  color: #8c5c0c;
+}
+
+/* ATLAS-SOURCE-UNIT:u1590:END *//* ATLAS-SOURCE-UNIT:u1591:BEGIN */.import-source-error {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1591:END *//* ATLAS-SOURCE-UNIT:u1592:BEGIN */.import-source-error[hidden] {
+  display: none;
+}
+
+body.dark .import-source-warning {
+  color: #fbbf24;
+}
+
+body.dark .import-source-error {
+  color: #f87171;
+}
+
+/* ATLAS-SOURCE-UNIT:u1592:END *//* ATLAS-SOURCE-UNIT:u1593:BEGIN */.import-source-warning .app-icon,
+.import-source-error .app-icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1593:END *//* ATLAS-SOURCE-UNIT:u1594:BEGIN */@media (max-width: 720px) {
+  .import-source-actions,
+  .import-source-inputs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .import-source-card-header {
+    flex-direction: column;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1594:END *//* ATLAS-SOURCE-UNIT:u1595:BEGIN */@media (prefers-reduced-motion: reduce) {
+  .import-source-action {
+    transition: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1595:END */

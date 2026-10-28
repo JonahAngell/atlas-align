@@ -217,6 +217,7 @@ Permanent deletion opens a transaction, locks the archived audit row, and first 
 - `js/11-repo-library.js`: normalization and active-audit switching foundations.
 - `js/15a-audit-library-ui.js`, `js/16-page-shell.js`, and `js/20-database-only-audits.js`: final list, selector, role, and database-only presentation behavior.
 - `js/18-audit-database.js`: API client, load application, write coordination, JSON imports, and archive lifecycle.
+- `js/15k-audit-import-sources.js`: JSON import source review. Creates custom sources, maps sources onto the Source Library, and applies `customSources` and `sourceMappings` hints before the import is saved.
 - `js/06-events-bootstrap.js`: top-level create, duplicate, filter, switch, and import event wiring.
 
 #### Backend, database, and SQL ownership
@@ -322,7 +323,7 @@ An error rolls back the transaction, including the live-table replacement. The S
 
 **Hierarchy and ordering.** `js/02-hierarchy.js` owns stable step parent/child relationships, branch types, grouped sibling ordering, numbering, indentation, parent eligibility, child creation, movement, and outdent behavior. The audit's complete `steps` collection remains authoritative. Manual movement is constrained to eligible siblings and order groups.
 
-**Rule categories and guided builders.** The active authoring implementation is layered through `js/14-catalog-driven-builder.js` and the later-loaded `15a` through `15g` scripts. Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the supported catalog-normalized legacy step forms. `catalogs/logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. The split `15a`-`15j` files are active.
+**Rule categories and guided builders.** The active authoring implementation is layered through `js/14-catalog-driven-builder.js` and the later-loaded `15a` through `15g` scripts. Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the supported catalog-normalized legacy step forms. `catalogs/logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. The split `15a`-`15k` files are active.
 
 **Conditions and branches.** Conditions support operator-specific value modes, multiple values, field-to-field comparison, and structured math on the comparison side. IF/THEN editing uses the final tabbed builder from `js/15g-visual-ui-events.js`. Linked inverse ELSE steps are synchronized from the source IF conditions unless the step explicitly opts out with `params.inverse_else === "Yes"`; legacy inverse steps are migrated through the same later layer.
 
@@ -643,7 +644,7 @@ Invalid, expired, feature-disabled, switched-profile, returned-to-profile, and f
 
 #### Imports
 
-JSON import is handled through the My Audits Import JSON button and `js/18-audit-database.js`; the button is shown only to users who can create audits, and the imported audit opens after import. One audit object or an array is normalized and submitted through the audit API. `src/audit-repository.js` validates and hashes each document. Equal canonical content returns `unchanged`; changed content uses the revision-aware save path with change type `import`. Import does not create a publication or bypass authorization, workflow locks, or conflict checks.
+JSON import is handled through the My Audits Import JSON button and `js/18-audit-database.js`; the button is shown only to users who can create audits, and the imported audit opens after import. One audit object or an array is normalized and submitted through the audit API. `src/audit-repository.js` validates and hashes each document. Equal canonical content returns `unchanged`; changed content uses the revision-aware save path with change type `import`. Import does not create a publication or bypass authorization, workflow locks, or conflict checks. Before anything is saved, `js/15k-audit-import-sources.js` checks every source the file names against the Source Library. A source already in the library by key is imported unchanged. Any other source opens the Review Import Sources dialog, where the importer creates it as a custom source, maps it onto a library source field by field, or keeps it as written. Optional `customSources` and `sourceMappings` arrays, at the file root or on an audit, prefill those choices and are removed before the audits are saved. Mapping reuses the Replace Source rewrite; unmatched fields are stored in `unmatchedSourceReplacements` and reported as audit issues. A library match wins over a `customSources` hint, so a repeated import reuses the custom source the first one created. Canceling the dialog saves no audits and no sources.
 
 `js/00-exceljs-loader.js` lazy-loads `vendor/exceljs.min.js` when an Excel feature is first requested, memoizes the promise, reports load failure, and permits retry after failure. `js/09-workbook-import.js` classifies `Vanity Labels`, `Source Table Aliases`, `_audit_logic_steps`, and audit sheets containing `Source File` and `Field Name`. Missing metadata sheets produce warnings; absence of an audit sheet produces a user-visible warning.
 
@@ -831,6 +832,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/10-field-picker.js` — Resolves source identity against the catalog, keeping key, file name, and alias separate.
 - `js/11-repo-library.js` — Loads repository catalog JSON and normalizes audits from those files.
 - `js/12-export-foundation.js` — Excel, HTML, and qTest file builders for the current audit.
+- `js/15k-audit-import-sources.js` — Reviews the sources an audit JSON import names: create a custom source, map onto a library source, or keep as written.
 - `js/29-export-dashboard.js` — Export format registry and the Export page dashboard.
 - `js/13-catalog-field-browser.js` — Searchable source and field browser.
 - `js/14-catalog-driven-builder.js` — Catalog-driven normalization and base rendering for each logic step type.
