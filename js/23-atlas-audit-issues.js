@@ -14,7 +14,7 @@
   let catalogError = null;
   let catalogPromise = null;
   let generation = 0;
-  let cache = { generation: -1, signature: "", result: null };
+  let cache = { generation: -1, key: null, context: null, result: null };
 
   const string = (value) => (value == null ? "" : String(value));
   const blank = (value) => !string(value).trim();
@@ -124,41 +124,76 @@
     );
   }
 
-  function buildContext(
-    auditInput = (
-      typeof hasSelectedAudit === "function"
-        ? hasSelectedAudit()
-        : Boolean(state?.auditSelected)
-    )
-      ? atlasDisplayDocument?.() || state.audit
-      : null,
-  ) {
-    const audit = object(auditInput);
+  function isLiveDocument(auditInput) {
+    return Boolean(
+      auditInput &&
+      auditInput ===
+        (global.atlasDisplayDocument?.() ||
+          (typeof state === "object" ? state?.audit : null)),
+    );
+  }
+
+  function displayedFieldCountFor(auditInput, displayFields) {
+    if (
+      isLiveDocument(auditInput) &&
+      typeof global.requirementsFieldRows === "function"
+    ) {
+      try {
+        return array(global.requirementsFieldRows({ includeNotes: false }))
+          .length;
+      } catch (error) {
+        console.warn(
+          "ATLAS Audit Issues: Display Field rows unavailable.",
+          error,
+        );
+      }
+    }
+    return displayFields.filter(
+      (field) => !field?.removed && field?.displayed !== false,
+    ).length;
+  }
+
+  function normalizedStep(step, index, stepsByParent) {
+    const params = object(step.params);
+    const conditions = conditionRows(step).map((condition, conditionIndex) => ({
+      ...object(condition),
+      __index: conditionIndex,
+    }));
+    return {
+      id: string(step.id).trim(),
+      index,
+      title: string(step.title).trim(),
+      type: string(step.step_type || step.type).trim(),
+      enabled: step.enabled !== false,
+      parentId: string(step.parentId).trim(),
+      branchType: string(step.branchType || "root").trim(),
+      source: string(step.source || params.source_file).trim(),
+      field: string(step.field || params.field_name).trim(),
+      action: string(step.action || params.then_action).trim(),
+      params: { ...params },
+      conditions,
+      hasMeaningfulAction: meaningfulAction(step),
+      descendantHasMeaningfulAction: descendantHasAction(step, stepsByParent),
+    };
+  }
+
+  function stepsByParentOf(steps) {
+    const stepsByParent = new Map();
+    steps.forEach((step) => {
+      const parent = string(step.parentId).trim();
+      if (!stepsByParent.has(parent)) stepsByParent.set(parent, []);
+      stepsByParent.get(parent).push(step);
+    });
+    return stepsByParent;
+  }
+
+  // Everything in the context except the steps and the Display Fields count.
+  // Source identities registered for join steps are part of it, so the join
+  // steps' sources are an input too.
+  function globalContextPart(audit, normalizedSteps) {
     const sources = array(audit.sources);
     const fields = array(audit.fields);
-    const steps = array(audit.steps);
     const displayFields = array(audit.displayFields);
-    const displayedFieldCount = (() => {
-      const liveDocument =
-        auditInput &&
-        auditInput ===
-          (global.atlasDisplayDocument?.() ||
-            (typeof state === "object" ? state?.audit : null));
-      if (liveDocument && typeof global.requirementsFieldRows === "function") {
-        try {
-          return array(global.requirementsFieldRows({ includeNotes: false }))
-            .length;
-        } catch (error) {
-          console.warn(
-            "ATLAS Audit Issues: Display Field rows unavailable.",
-            error,
-          );
-        }
-      }
-      return displayFields.filter(
-        (field) => !field?.removed && field?.displayed !== false,
-      ).length;
-    })();
     const catalogSources = array(global.repoLibraryState?.sourceFiles);
     const sourceIdentityMap = Object.create(null);
     const registerSourceIdentity = (value, canonical) => {
@@ -230,42 +265,6 @@
         knownFieldIds.add(`${canonical}::${fieldName}`);
     });
 
-    const stepsById = new Map();
-    const stepsByParent = new Map();
-    steps.forEach((step, index) => {
-      const id = string(step.id).trim();
-      if (id && !stepsById.has(id)) stepsById.set(id, step);
-      const parent = string(step.parentId).trim();
-      if (!stepsByParent.has(parent)) stepsByParent.set(parent, []);
-      stepsByParent.get(parent).push(step);
-    });
-
-    const normalizedSteps = steps.map((step, index) => {
-      const params = object(step.params);
-      const conditions = conditionRows(step).map(
-        (condition, conditionIndex) => ({
-          ...object(condition),
-          __index: conditionIndex,
-        }),
-      );
-      return {
-        id: string(step.id).trim(),
-        index,
-        title: string(step.title).trim(),
-        type: string(step.step_type || step.type).trim(),
-        enabled: step.enabled !== false,
-        parentId: string(step.parentId).trim(),
-        branchType: string(step.branchType || "root").trim(),
-        source: string(step.source || params.source_file).trim(),
-        field: string(step.field || params.field_name).trim(),
-        action: string(step.action || params.then_action).trim(),
-        params: { ...params },
-        conditions,
-        hasMeaningfulAction: meaningfulAction(step),
-        descendantHasMeaningfulAction: descendantHasAction(step, stepsByParent),
-      };
-    });
-
     const supportedRelationshipJoinTypes = new Set([
       "INNER JOIN",
       "LEFT JOIN",
@@ -298,27 +297,23 @@
       return [[left, right]];
     });
     return {
-      audit: {
-        name: string(audit.name),
-        purpose: string(audit.purpose || audit.description),
-        assignments: {
-          assigned: assignmentEntries(audit.assignments, "assigned"),
-          backup: assignmentEntries(audit.assignments, "backup"),
-          developer: assignmentEntries(audit.assignments, "developer"),
-        },
-        sources: sources.map((source) => ({
-          ...object(source),
-          identity: sourceIdentity(source),
-          canonicalIdentity: canonicalSource(source),
-        })),
-        fields: fields.map((field) => ({
-          ...object(field),
-          identity: fieldIdentity(field),
-        })),
-        steps: normalizedSteps,
-        displayFields: displayFields.map((field) => ({ ...object(field) })),
+      name: string(audit.name),
+      purpose: string(audit.purpose || audit.description),
+      assignments: {
+        assigned: assignmentEntries(audit.assignments, "assigned"),
+        backup: assignmentEntries(audit.assignments, "backup"),
+        developer: assignmentEntries(audit.assignments, "developer"),
       },
-      displayedFieldCount,
+      sources: sources.map((source) => ({
+        ...object(source),
+        identity: sourceIdentity(source),
+        canonicalIdentity: canonicalSource(source),
+      })),
+      fields: fields.map((field) => ({
+        ...object(field),
+        identity: fieldIdentity(field),
+      })),
+      displayFields: displayFields.map((field) => ({ ...object(field) })),
       knownSourceIds: [...knownSourceIds],
       knownFieldIds: [...knownFieldIds],
       selectedSourceIds: [...sourceIds],
@@ -334,6 +329,288 @@
         ),
       },
     };
+  }
+
+  function assembleContext(part, normalizedSteps, displayedFieldCount) {
+    return {
+      audit: {
+        name: part.name,
+        purpose: part.purpose,
+        assignments: part.assignments,
+        sources: part.sources,
+        fields: part.fields,
+        steps: normalizedSteps,
+        displayFields: part.displayFields,
+      },
+      displayedFieldCount,
+      knownSourceIds: part.knownSourceIds,
+      knownFieldIds: part.knownFieldIds,
+      selectedSourceIds: part.selectedSourceIds,
+      sourceIdentityMap: part.sourceIdentityMap,
+      joinRelationships: part.joinRelationships,
+      workbookWarnings: part.workbookWarnings,
+      unmatchedSourceReplacements: part.unmatchedSourceReplacements,
+    };
+  }
+
+  function buildContext(
+    auditInput = (
+      typeof hasSelectedAudit === "function"
+        ? hasSelectedAudit()
+        : Boolean(state?.auditSelected)
+    )
+      ? atlasDisplayDocument?.() || state.audit
+      : null,
+  ) {
+    const audit = object(auditInput);
+    const displayedFieldCount = displayedFieldCountFor(
+      auditInput,
+      array(audit.displayFields),
+    );
+    const steps = array(audit.steps);
+    const stepsByParent = stepsByParentOf(steps);
+    const normalizedSteps = steps.map((step, index) =>
+      normalizedStep(step, index, stepsByParent),
+    );
+    return assembleContext(
+      globalContextPart(audit, normalizedSteps),
+      normalizedSteps,
+      displayedFieldCount,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Incremental issue check
+  // ---------------------------------------------------------------------------
+  // A check runs only after a reported change: invalidate(), an autosave
+  // request, a Logic Builder render (which fills in step defaults), or a
+  // different document, rule catalog or source library. It then compares each
+  // step with its copy from the last check, rebuilds only the steps that
+  // changed, and reuses per-step rule results for the others.
+
+  // A plain object from any realm: its prototype is null or an
+  // Object.prototype, whose own prototype is null.
+  function isPlainData(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      return false;
+    const prototype = Object.getPrototypeOf(value);
+    return prototype === null || Object.getPrototypeOf(prototype) === null;
+  }
+
+  function copyData(value) {
+    if (Array.isArray(value)) return value.map(copyData);
+    if (!isPlainData(value)) return value;
+    const copy = {};
+    Object.keys(value).forEach((key) => {
+      copy[key] = copyData(value[key]);
+    });
+    return copy;
+  }
+
+  function sameData(left, right) {
+    if (Object.is(left, right)) return true;
+    if (Array.isArray(left)) {
+      if (!Array.isArray(right) || left.length !== right.length) return false;
+      return left.every((item, index) => sameData(item, right[index]));
+    }
+    if (!isPlainData(left) || !isPlainData(right)) return false;
+    const keys = Object.keys(left);
+    if (keys.length !== Object.keys(right).length) return false;
+    return keys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(right, key) &&
+        sameData(left[key], right[key]),
+    );
+  }
+
+  // Deep freezes data built for one check. Already frozen parts were frozen
+  // the same way, so they are not walked again.
+  function freezeData(value) {
+    if (!value || typeof value !== "object" || Object.isFrozen(value))
+      return value;
+    Object.values(value).forEach(freezeData);
+    return Object.freeze(value);
+  }
+
+  function sameList(left, right) {
+    return (
+      Array.isArray(left) &&
+      left.length === right.length &&
+      left.every((value, index) => Object.is(value, right[index]))
+    );
+  }
+
+  // Everything the Display Fields count reads from one step: whether it is
+  // in the enabled tree, its field references and the columns it outputs, and
+  // for created columns and reference sources, where they attach.
+  function stepCountKey(step) {
+    const params = object(step.params);
+    const attaches =
+      step.autoGeneratedReference ||
+      ["create_column", "reference_source"].includes(
+        string(step.step_type || step.type).trim(),
+      );
+    return JSON.stringify([
+      step.enabled !== false,
+      string(step.parentId),
+      string(step.step_type || step.type),
+      Boolean(step.autoGeneratedReference),
+      string(step.source),
+      params.output_column,
+      params.destination_column,
+      params.then_output_column,
+      params.then_target_column,
+      params.then_action_type,
+      params.created_field,
+      params.column_name,
+      attaches ? params : null,
+      typeof global.atlasLogicFieldReferences === "function"
+        ? global.atlasLogicFieldReferences([step])
+        : [],
+    ]);
+  }
+
+  // The values globalContextPart reads, as a flat list compared in place.
+  function globalPartInputs(audit, normalizedSteps) {
+    // The raw value for identity: array() makes a new empty array each call.
+    const libraryValue = global.repoLibraryState?.sourceFiles;
+    const library = array(libraryValue);
+    const inputs = [
+      libraryValue,
+      library.length,
+      ...library.flatMap((source) => [
+        source,
+        source?.sourceKey,
+        source?.catalogKey,
+        source?.sourceReferenceId,
+        source?.id,
+        source?.alias,
+        source?.sourceFile,
+        source?.file,
+        source?.name,
+        source?.fields,
+        array(source?.fields).length,
+        ...array(source?.fields).flatMap((field) => [
+          field,
+          field?.rawFieldName,
+          field?.fieldName,
+          field?.name,
+          field?.label,
+        ]),
+      ]),
+    ];
+    const joins = normalizedSteps
+      .filter((step) => step.type === "join")
+      .map((step) => [
+        step.enabled,
+        step.params.join_type,
+        step.params.left_source,
+        step.params.right_source,
+        step.params.left_field,
+        step.params.right_field,
+      ]);
+    return {
+      library: inputs,
+      audit: copyData({
+        name: audit.name,
+        purpose: audit.purpose,
+        description: audit.description,
+        assignments: audit.assignments,
+        sources: audit.sources,
+        fields: audit.fields,
+        displayFields: audit.displayFields,
+        unmatchedSourceReplacements: audit.unmatchedSourceReplacements,
+        workbookWarnings: global.workbookState?.warnings,
+        joins,
+      }),
+    };
+  }
+
+  const incremental = {
+    steps: new WeakMap(),
+    stepList: null,
+    part: null,
+    partInputs: null,
+    count: 0,
+    live: false,
+    context: null,
+  };
+
+  function incrementalContext(auditInput) {
+    const audit = object(auditInput);
+    const live = isLiveDocument(auditInput);
+    const steps = array(audit.steps);
+    // The Display Fields count tidies the step hierarchy as a side effect;
+    // keep that when the count is reused.
+    if (
+      live &&
+      typeof global.requirementsFieldRows === "function" &&
+      typeof global.normalizeHierarchyFields === "function" &&
+      typeof state === "object" &&
+      steps === state?.audit?.steps
+    )
+      global.normalizeHierarchyFields(steps);
+    const stepsByParent = stepsByParentOf(steps);
+    let countAffected =
+      !incremental.stepList || steps.length !== incremental.stepList.length;
+    const normalizedSteps = steps.map((step, index) => {
+      const descendant = descendantHasAction(step, stepsByParent);
+      const entry = incremental.steps.get(step);
+      if (
+        entry &&
+        entry.index === index &&
+        entry.descendant === descendant &&
+        sameData(entry.snapshot, step)
+      )
+        return entry.normalized;
+      const countKey = stepCountKey(step);
+      if (!entry || entry.countKey !== countKey) countAffected = true;
+      const normalized = freezeData(
+        copyData(normalizedStep(step, index, stepsByParent)),
+      );
+      incremental.steps.set(step, {
+        snapshot: copyData(step),
+        index,
+        descendant,
+        normalized,
+        countKey,
+      });
+      return normalized;
+    });
+    const inputs = globalPartInputs(audit, normalizedSteps);
+    const partChanged =
+      !incremental.part ||
+      !sameList(incremental.partInputs.library, inputs.library) ||
+      !sameData(incremental.partInputs.audit, inputs.audit);
+    if (partChanged) {
+      incremental.part = freezeData(
+        copyData(globalContextPart(audit, normalizedSteps)),
+      );
+      incremental.partInputs = inputs;
+    }
+    const count =
+      partChanged || countAffected || live !== incremental.live
+        ? displayedFieldCountFor(auditInput, array(audit.displayFields))
+        : incremental.count;
+    if (
+      incremental.context &&
+      !partChanged &&
+      count === incremental.count &&
+      live === incremental.live &&
+      sameList(incremental.stepList, normalizedSteps)
+    )
+      return incremental.context;
+    incremental.stepList = normalizedSteps;
+    incremental.count = count;
+    incremental.live = live;
+    const context = assembleContext(
+      incremental.part,
+      Object.freeze(normalizedSteps),
+      count,
+    );
+    Object.freeze(context.audit);
+    incremental.context = Object.freeze(context);
+    return incremental.context;
   }
 
   function issue(instanceId, target = {}, values = {}) {
@@ -3447,18 +3724,27 @@
         counts: Object.freeze({ ok: 1, warning: 0, critical: 0, total: 0 }),
         issues: Object.freeze([]),
       });
-    const signature = auditInputSignature();
-    if (cache.result && cache.signature === signature) return cache.result;
-    const context = buildContext();
+    const key = checkInputsKey();
+    if (cache.result && sameList(cache.key, key)) return cache.result;
+    const context = incrementalContext(
+      global.atlasDisplayDocument?.() || state.audit,
+    );
+    if (cache.result && cache.context === context) {
+      cache.key = key;
+      return cache.result;
+    }
     const engine = global.AuditIssueEngine.create({
-      evaluators,
+      evaluators: incrementalEvaluators,
       jumpActions,
       fixActions,
     });
     cache = {
       generation,
-      signature,
-      result: presentIssues(engine.evaluate(context, catalog.rules)),
+      key,
+      context,
+      result: presentIssues(
+        engine.evaluate(context, catalog.rules, { frozenContext: true }),
+      ),
     };
     return cache.result;
   }
@@ -3496,31 +3782,92 @@
     });
   }
 
-  function auditInputSignature() {
-    const active =
-      typeof hasSelectedAudit === "function"
-        ? hasSelectedAudit()
-        : Boolean(state?.auditSelected);
-    if (!active) return "inactive";
-    const renderDocument = atlasDisplayDocument?.() || state.audit;
-    const renderIdentity = `${string(renderDocument?.id)}:${string(window.ATLASAuditReview?.context?.()?.submittedRevisionId)}`;
-    return JSON.stringify({
-      renderIdentity,
-      catalogError: catalogError ? string(catalogError.message) : "",
-      catalogReady: Boolean(catalog),
-      audit: renderDocument,
-      sources: array(global.repoLibraryState?.sourceFiles).map((source) => [
-        string(
-          source.sourceKey || source.sourceFile || source.alias || source.name,
-        ),
-        array(source.fields).map((field) =>
-          string(
-            field.rawFieldName || field.fieldName || field.name || field.label,
-          ),
-        ),
-      ]),
-    });
+  // Changes when a check could have a different result. `generation` counts
+  // reported changes; the rest catch a different document, catalog or library.
+  function checkInputsKey() {
+    const document = global.atlasDisplayDocument?.() || state.audit;
+    const library = global.repoLibraryState?.sourceFiles;
+    const warnings = global.workbookState?.warnings;
+    return [
+      generation,
+      document,
+      document?.steps,
+      string(global.ATLASAuditReview?.context?.()?.submittedRevisionId),
+      catalog,
+      catalogError ? string(catalogError.message) : "",
+      typeof atlasSourceDerivedVersion !== "undefined"
+        ? atlasSourceDerivedVersion
+        : 0,
+      library,
+      array(library).length,
+      warnings,
+      array(warnings).length,
+    ];
   }
+
+  // Rules whose issues for a step depend only on that step and on the shared
+  // source identities and joins, so an unchanged step keeps its results.
+  const PER_STEP_EVALUATORS = [
+    "conditionIntegrity",
+    "missingAction",
+    "joinIntegrity",
+    "stringTransformIntegrity",
+    "invalidFieldRelationship",
+    "selfFieldComparison",
+  ];
+
+  function evaluatorItems(value) {
+    if (value == null || value === false) return [];
+    if (value === true) return [{}];
+    return Array.isArray(value) ? value : [value];
+  }
+
+  const incrementalEvaluators = { ...evaluators };
+  PER_STEP_EVALUATORS.forEach((name) => {
+    const evaluateAll = evaluators[name];
+    const results = new WeakMap();
+    incrementalEvaluators[name] = function evaluatePerStep(
+      context,
+      config,
+      rule,
+    ) {
+      const items = [];
+      context.audit.steps.forEach((step) => {
+        const entry = results.get(step);
+        if (
+          entry &&
+          entry.catalog === catalog &&
+          entry.ruleId === rule.id &&
+          entry.identities === context.sourceIdentityMap &&
+          entry.selected === context.selectedSourceIds &&
+          entry.joins === context.joinRelationships
+        ) {
+          items.push(...entry.items);
+          return;
+        }
+        const stepContext = Object.freeze({
+          ...context,
+          audit: Object.freeze({
+            ...context.audit,
+            steps: Object.freeze([step]),
+          }),
+        });
+        const stepItems = freezeData(
+          evaluatorItems(evaluateAll(stepContext, config, rule)),
+        );
+        results.set(step, {
+          catalog,
+          ruleId: rule.id,
+          identities: context.sourceIdentityMap,
+          selected: context.selectedSourceIds,
+          joins: context.joinRelationships,
+          items: stepItems,
+        });
+        items.push(...stepItems);
+      });
+      return items;
+    };
+  });
 
   function invalidate() {
     generation += 1;
@@ -4446,7 +4793,7 @@
           )
           .join("; ") || "All categories clear.";
     renderIssueList(elements.readinessList, result, readinessFilters, false);
-    // Reuse this render's result: current() serializes the whole audit to check its cache.
+    // Reuse this render's result rather than checking the cache again.
     syncIssueIndicators(result);
   }
 
@@ -4630,8 +4977,22 @@
         ? syncIssueIndicators(lastRenderedIssues)
         : clearIssueIndicators(),
     syncIndicatorsWithin: syncIssueIndicatorsWithin,
+    // Records a change to the audit that needs no immediate issue render.
+    noteChange: () => {
+      generation += 1;
+    },
   });
   global.atlasMarkLogicIssuesDirty = invalidate;
+  // Every saved edit is a change the issue check must see.
+  if (typeof global.scheduleAutosave === "function") {
+    const scheduleAutosaveBase = global.scheduleAutosave;
+    global.scheduleAutosave = function scheduleAutosaveNotingIssueChange(
+      ...args
+    ) {
+      generation += 1;
+      return scheduleAutosaveBase.apply(this, args);
+    };
+  }
   global.atlasLogicIssues = () => current().issues;
   scheduleIssueRender();
 })(window);

@@ -2784,6 +2784,8 @@ function atlasPrepareLogicStepsForRender() {
       changed ? atlasInverseSyncKey(step, steps, linkedIds) : key,
     );
   });
+  // Filling in defaults changes steps without an edit to report.
+  window.ATLASAuditIssues?.noteChange?.();
 }
 
 function atlasRenderVirtualLogicRules(options = {}) {

@@ -2135,8 +2135,9 @@ test("issue lists are built only while visible and reused while unchanged", asyn
   context.ATLASAuditIssues.render();
   assert.equal(cards()[0], first[0], "an unchanged result keeps its cards");
 
+  // The app reports audit changes (invalidate or an autosave request).
   audit.steps.push(brokenConditionStep("step_hidden_panel_2"));
-  context.ATLASAuditIssues.render();
+  context.ATLASAuditIssues.invalidate();
   assert.ok(cards().length > first.length, "a changed result is re-rendered");
 });
 
@@ -2612,4 +2613,126 @@ test("custom source fields are valid references", async () => {
     issuesFor(context, "sort-step", "audit.sources.reference-integrity").length,
     0,
   );
+});
+
+test("incremental issue checks match a fresh check after every edit", async () => {
+  const conditionStep = (id, extra = {}) => ({
+    id,
+    enabled: true,
+    parentId: null,
+    branchType: "root",
+    step_type: "if_then",
+    params: {
+      then_action_type: "do_not_display",
+      conditions_json: JSON.stringify([
+        {
+          id: `${id}-c`,
+          sourceFile: "Source One",
+          fieldName: "Status",
+          operator: "is equal to",
+          valueMode: "values",
+          compareValue: "Inactive",
+        },
+      ]),
+    },
+    ...extra,
+  });
+  const audit = completeAudit();
+  audit.sources.push({ sourceKey: "source.two", sourceFile: "Source Two" });
+  audit.steps = [
+    conditionStep("a"),
+    conditionStep("b"),
+    {
+      id: "join",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "join",
+      params: {
+        join_type: "INNER JOIN",
+        left_source: "Source One",
+        right_source: "Source Two",
+        left_field: "Status",
+        right_field: "",
+      },
+    },
+    {
+      id: "calc",
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      step_type: "create_column",
+      params: { column_name: "Flag", value_mode: "Static value" },
+    },
+    conditionStep("c", { parentId: "a", branchType: "then" }),
+  ];
+  const context = await runtime(audit);
+  const keys = (result) =>
+    Array.from(result.issues, (entry) => `${entry.stableKey}|${entry.summary}`);
+  const check = async (label) => {
+    context.ATLASAuditIssues.invalidate();
+    const fresh = await runtime(structuredClone(audit));
+    assert.deepEqual(
+      keys(context.ATLASAuditIssues.current()),
+      keys(fresh.ATLASAuditIssues.current()),
+      label,
+    );
+  };
+  const conditions = (step) => JSON.parse(step.params.conditions_json);
+  const setConditions = (step, list) => {
+    step.params.conditions_json = JSON.stringify(list);
+  };
+
+  await check("initial");
+  const b = audit.steps[1];
+  setConditions(
+    b,
+    conditions(b).map((item) => ({ ...item, operator: "", fieldName: "" })),
+  );
+  await check("one step's condition broken");
+  setConditions(b, [{ ...conditions(b)[0], operator: "is equal to" }]);
+  await check("the same step partly repaired");
+  audit.steps[2].params.right_field = "Status";
+  await check("join completed");
+  audit.steps[3].params.column_name = "Status";
+  await check("created column renamed onto a catalog field");
+  audit.steps.splice(1, 0, conditionStep("new"));
+  await check("step inserted");
+  audit.steps.splice(0, 1);
+  await check("step removed");
+  audit.steps.find((step) => step.id === "c").parentId = "missing";
+  await check("parent removed from under a step");
+  audit.steps.push(
+    conditionStep("self", {
+      params: {
+        then_action_type: "do_not_display",
+        conditions_json: JSON.stringify([
+          {
+            id: "self-c",
+            sourceFile: "Source One",
+            fieldName: "Status",
+            operator: "is equal to",
+            valueMode: "field",
+            compareSourceFile: "S1",
+            compareFieldName: "Status",
+          },
+        ]),
+      },
+    }),
+  );
+  await check("condition compares a field through an unknown alias");
+  const selfBefore = keys(context.ATLASAuditIssues.current());
+  audit.sources[0].alias = "S1";
+  await check("the alias now names the same source");
+  assert.notDeepEqual(
+    keys(context.ATLASAuditIssues.current()),
+    selfBefore,
+    "the alias changes the result",
+  );
+  audit.sources.splice(1, 1);
+  await check("source deselected");
+  audit.name = "";
+  await check("audit name cleared");
+  audit.steps.reverse();
+  await check("steps reordered");
 });

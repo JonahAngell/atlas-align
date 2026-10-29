@@ -271,7 +271,12 @@
       return validateRules(ruleDefinitions, registries);
     }
 
-    function evaluate(context, ruleDefinitions) {
+    /**
+     * `options.frozenContext`: the caller passes a context it has already deep
+     * frozen and does not share with live state, so it is used as is instead
+     * of being copied and frozen again.
+     */
+    function evaluate(context, ruleDefinitions, options = {}) {
       const validation = validate(ruleDefinitions);
       if (!validation.valid) {
         const error = new TypeError(
@@ -280,7 +285,10 @@
         error.validationErrors = [...validation.errors];
         throw error;
       }
-      const safeContext = deepFreeze(clone(context));
+      const safeContext =
+        options && options.frozenContext === true
+          ? context
+          : deepFreeze(clone(context));
       const collected = [];
       validation.rules
         .filter((rule) => rule.enabled)
