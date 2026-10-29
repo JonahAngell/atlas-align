@@ -2140,6 +2140,46 @@ test("issue lists are built only while visible and reused while unchanged", asyn
   assert.ok(cards().length > first.length, "a changed result is re-rendered");
 });
 
+test("DOM-change indicator sync paints from the last issue render", async () => {
+  const audit = completeAudit();
+  audit.steps = [brokenConditionStep("step_dom_sync")];
+  const context = await runtime(audit);
+  const card = indicatorElement("div", {
+    className: "logic-rule-card step-card",
+    dataset: { id: "step_dom_sync" },
+  });
+  const body = indicatorElement("body");
+  body.children.push(card);
+  card.parentElement = body;
+  const root = indicatorElement("div", { id: "atlas-audit-issues-root" });
+  root.isConnected = true;
+  const page = indicatorElement("section", { className: "page active" });
+  page.dataset.page = "steps";
+  context.document = {
+    body,
+    documentElement: indicatorElement("html"),
+    createElement: (tag) => indicatorElement(tag),
+    getElementById: (id) => (id === "atlas-audit-issues-root" ? root : null),
+    querySelector: (selector) => (selector === ".page.active" ? page : null),
+    querySelectorAll: (selector) => body.querySelectorAll(selector),
+    addEventListener() {},
+  };
+  context.requestAnimationFrame = (callback) => {
+    callback(0);
+    return 0;
+  };
+  const marker = () =>
+    card.children.find((child) => child.dataset?.atlasIssueIndicator);
+
+  context.ATLASAuditIssues.syncIndicatorsAfterDomChange();
+  assert.equal(marker(), undefined, "nothing is painted before a render");
+
+  context.ATLASAuditIssues.render();
+  card.children.splice(0);
+  context.ATLASAuditIssues.syncIndicatorsAfterDomChange();
+  assert.ok(marker(), "a re-rendered card gets its marker back");
+});
+
 function brokenConditionStep(id, parentId = null) {
   return {
     id,

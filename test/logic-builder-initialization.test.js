@@ -273,7 +273,7 @@ test("Reviewer Mode native renderers read the detached display document", () => 
   );
   assert.match(
     virtualLogic,
-    /function atlasRenderVirtualLogicRules\(options = \{\}\)[\s\S]*?if \(audit === state\.audit\)/,
+    /function atlasRenderVirtualLogicRules\(options = \{\}\)[\s\S]*?if \(audit === state\.audit(?: && [^)]*)?\)/,
   );
   assert.match(
     shell,

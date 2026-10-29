@@ -72,3 +72,27 @@ test("live editor typing batches preview and debounces audit issues", () => {
   );
   assert.match(contentOnly, /atlasRequestRender\?\.\(\{ validation: true \}\)/);
 });
+
+test("precomputed inverse links build the same sync key as a per-step scan", () => {
+  const visual = fs.readFileSync(
+    new URL("../js/15g-visual-ui-events.js", import.meta.url),
+    "utf8",
+  );
+  const inverse = {};
+  vm.runInNewContext(
+    `${functionSource(visual, "atlasInverseLinkedIds")}; ${functionSource(visual, "atlasInverseSyncKey")}; this.linked = atlasInverseLinkedIds; this.key = atlasInverseSyncKey;`,
+    inverse,
+  );
+  const steps = [
+    { id: "a", step_type: "if_then", params: { x: 1 } },
+    { id: "b", params: { inverse_of_step_id: "a" }, inverseOfStepId: "a" },
+    { id: "c", params: {}, inverseOfStepId: "a" },
+    { id: "d", step_type: "if_then", params: {} },
+    { id: "e", params: { inverse_of_step_id: "d" }, inverseOfStepId: "a" },
+  ];
+  const linked = inverse.linked(steps);
+  steps.forEach((step) =>
+    assert.equal(inverse.key(step, steps, linked), inverse.key(step, steps)),
+  );
+  assert.match(inverse.key(steps[0], steps, linked), /^b\nc\ne\n/);
+});
