@@ -4261,6 +4261,47 @@
     });
   }
 
+  /**
+   * Paints markers onto step surfaces inside newly added nodes, from the last
+   * issue render. Used when the only DOM changes are cards entering the rules
+   * list: nodes that stayed keep their markers and nothing else moved.
+   */
+  function syncIssueIndicatorsWithin(nodes) {
+    if (!lastRenderedIssues) return;
+    const byStepId = new Map();
+    array(lastRenderedIssues.issues)
+      .filter(isOpenIssue)
+      .forEach((entry) => {
+        const stepId = indicatorStepId(entry);
+        if (!stepId) return;
+        const list = byStepId.get(stepId) || [];
+        list.push(entry);
+        byStepId.set(stepId, list);
+      });
+    if (!byStepId.size) return;
+    const byHost = new Map();
+    array(nodes).forEach((root) => {
+      if (!root?.querySelectorAll) return;
+      const surfaces = [...root.querySelectorAll(STEP_SURFACE_QUERY)];
+      if (root.matches?.(STEP_SURFACE_QUERY)) surfaces.unshift(root);
+      surfaces.forEach((node) => {
+        if (node.hidden || node.type === "hidden") return;
+        stepSurfaceIds(node).forEach((id) => {
+          if (!byStepId.has(id)) return;
+          const host = indicatorHost(node);
+          if (!host) return;
+          const list = byHost.get(host) || [];
+          list.push(...byStepId.get(id));
+          byHost.set(host, list);
+        });
+      });
+    });
+    byHost.forEach((issues, host) => {
+      const tone = indicatorTone(issues);
+      if (tone) paintIssueIndicator(host, tone);
+    });
+  }
+
   function renderIssueSurfaces() {
     // Steps do not change while issue surfaces render, so every card can share
     // one numbering instead of re-checking the cache per card.
@@ -4542,6 +4583,7 @@
       lastRenderedIssues
         ? syncIssueIndicators(lastRenderedIssues)
         : clearIssueIndicators(),
+    syncIndicatorsWithin: syncIssueIndicatorsWithin,
   });
   global.atlasMarkLogicIssuesDirty = invalidate;
   global.atlasLogicIssues = () => current().issues;
@@ -4562,14 +4604,31 @@ if (typeof document !== "undefined") {
       return;
     document.body.dataset.atlasIssueIndicatorObserver = "true";
     let frame = 0;
-    const observer = new MutationObserver(() => {
+    // Scrolling the rules list swaps cards on every frame. When that is the
+    // only change, only the cards that came into view need markers.
+    let fullSync = false;
+    const added = [];
+    const observer = new MutationObserver((records) => {
+      const list = document.getElementById("stepsList");
+      records.forEach((record) => {
+        if (!list || !list.contains(record.target)) fullSync = true;
+        else
+          record.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) added.push(node);
+          });
+      });
       if (frame) return;
       const schedule =
         window.requestAnimationFrame ||
         ((callback) => window.setTimeout(callback, 16));
       frame = schedule(() => {
         frame = 0;
-        window.ATLASAuditIssues?.syncIndicatorsAfterDomChange?.();
+        const nodes = added.splice(0).filter((node) => node.isConnected);
+        if (fullSync) {
+          fullSync = false;
+          window.ATLASAuditIssues?.syncIndicatorsAfterDomChange?.();
+        } else if (nodes.length)
+          window.ATLASAuditIssues?.syncIndicatorsWithin?.(nodes);
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });

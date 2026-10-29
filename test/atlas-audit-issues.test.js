@@ -2226,6 +2226,53 @@ test("issue renders wait until change requests pause and run once", async () => 
   assert.equal(renders, 1);
 });
 
+test("scoped indicator sync paints only the nodes it is given", async () => {
+  const audit = completeAudit();
+  audit.steps = [
+    brokenConditionStep("step_in_view"),
+    brokenConditionStep("step_elsewhere"),
+  ];
+  const context = await runtime(audit);
+  const body = indicatorElement("body");
+  const card = (id) => {
+    const node = indicatorElement("div", {
+      className: "logic-rule-card step-card",
+      dataset: { id },
+    });
+    body.children.push(node);
+    node.parentElement = body;
+    return node;
+  };
+  const added = card("step_in_view");
+  const untouched = card("step_elsewhere");
+  const root = indicatorElement("div", { id: "atlas-audit-issues-root" });
+  root.isConnected = true;
+  const page = indicatorElement("section", { className: "page active" });
+  page.dataset.page = "steps";
+  context.document = {
+    body,
+    documentElement: indicatorElement("html"),
+    createElement: (tag) => indicatorElement(tag),
+    getElementById: (id) => (id === "atlas-audit-issues-root" ? root : null),
+    querySelector: (selector) => (selector === ".page.active" ? page : null),
+    querySelectorAll: (selector) => body.querySelectorAll(selector),
+    addEventListener() {},
+  };
+  context.requestAnimationFrame = (callback) => {
+    callback(0);
+    return 0;
+  };
+  const marker = (node) =>
+    node.children.find((child) => child.dataset?.atlasIssueIndicator);
+
+  context.ATLASAuditIssues.render();
+  added.children.splice(0);
+  untouched.children.splice(0);
+  context.ATLASAuditIssues.syncIndicatorsWithin([added]);
+  assert.ok(marker(added), "the added card gets its marker");
+  assert.equal(marker(untouched), undefined, "other nodes are left alone");
+});
+
 function brokenConditionStep(id, parentId = null) {
   return {
     id,

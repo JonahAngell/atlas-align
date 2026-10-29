@@ -2626,9 +2626,20 @@ function atlasLogicVirtualSpacer(position, height) {
   return `<div class="logic-virtual-spacer logic-virtual-spacer-${position}" data-logic-virtual-spacer="${position}" aria-hidden="true" style="height:${Math.max(0, Math.round(height))}px;min-height:${Math.max(0, Math.round(height))}px;flex:0 0 auto;pointer-events:none"></div>`;
 }
 
-function atlasMeasureLogicVirtualCards(list, anchorId, anchorOffset) {
+/**
+ * Records the rendered height of mounted cards. `onlyCards` limits the reads to
+ * those cards; reading a card's size forces layout, so a scroll that added no
+ * cards reads none.
+ */
+function atlasMeasureLogicVirtualCards(
+  list,
+  anchorId,
+  anchorOffset,
+  onlyCards = null,
+) {
   let changedAboveAnchor = 0;
-  const cards = list.querySelectorAll(".logic-rule-card[data-id]");
+  const cards = onlyCards || list.querySelectorAll(".logic-rule-card[data-id]");
+  if (!cards.length) return;
   const sample = cards[0];
   let margin = 0;
   if (sample) {
@@ -2730,7 +2741,10 @@ function atlasRenderVirtualLogicRules(options = {}) {
   const anchorOffset = offsets[range.start] || 0;
   const visible = entries.slice(range.start, range.end);
   list.style.gap = "0";
-  if (!options.scrollOnly || !atlasReconcileVirtualLogicCards(list, visible)) {
+  const created = options.scrollOnly
+    ? atlasReconcileVirtualLogicCards(list, visible)
+    : null;
+  if (!created) {
     const cards = visible.map((entry) => renderLogicRuleCard(entry)).join("");
     list.innerHTML = entries.length
       ? `${atlasLogicVirtualSpacer("before", offsets[range.start])}${cards}${atlasLogicVirtualSpacer("after", offsets[offsets.length - 1] - offsets[range.end])}`
@@ -2738,7 +2752,19 @@ function atlasRenderVirtualLogicRules(options = {}) {
     atlasStampVirtualLogicCards(list, visible);
   }
 
-  atlasMeasureLogicVirtualCards(list, anchor, anchorOffset);
+  // A reused card keeps its content and width, so its recorded height holds.
+  atlasMeasureLogicVirtualCards(
+    list,
+    anchor,
+    anchorOffset,
+    created
+      ? Array.from(list.querySelectorAll(".logic-rule-card[data-id]")).filter(
+          (card) =>
+            created.includes(card) ||
+            !atlasLogicVirtualHeights.has(card.dataset.id),
+        )
+      : null,
+  );
   offsets = atlasLogicVirtualOffsets(entries);
   const before = list.querySelector('[data-logic-virtual-spacer="before"]');
   const after = list.querySelector('[data-logic-virtual-spacer="after"]');
@@ -2798,8 +2824,9 @@ function atlasStampVirtualLogicCards(list, visible) {
 
 /**
  * Scroll-only update: keeps mounted cards that are still in range and still
- * current, and creates only the cards that scrolled into view. Returns false
- * when the list is not in its virtual layout, so the caller rebuilds it.
+ * current, and creates only the cards that scrolled into view. Returns the
+ * created cards, or false when the list is not in its virtual layout, so the
+ * caller rebuilds it.
  */
 function atlasReconcileVirtualLogicCards(list, visible) {
   const before = list.querySelector(
@@ -2826,6 +2853,7 @@ function atlasReconcileVirtualLogicCards(list, visible) {
     else node.remove();
   });
   const template = document.createElement("template");
+  const created = [];
   let ref = before.nextSibling;
   visible.forEach((entry) => {
     let card = reusable.get(entry.step.id);
@@ -2833,12 +2861,13 @@ function atlasReconcileVirtualLogicCards(list, visible) {
       template.innerHTML = renderLogicRuleCard(entry).trim();
       card = template.content.firstElementChild;
       card.dataset.virtualKey = keys.get(entry.step.id);
+      created.push(card);
     }
     if (card === ref) ref = ref.nextSibling;
     else list.insertBefore(card, ref);
   });
   if (list.lastChild !== after) list.append(after);
-  return true;
+  return created;
 }
 
 let atlasLogicVirtualPendingFull = false;
