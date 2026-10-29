@@ -120,17 +120,27 @@ function requirementsFieldRows(options = {}) {
       )
       .map(requirementsFieldIdentityPart)
       .filter(Boolean);
+  // The same fields and catalog sources are compared against every reference,
+  // so each record's identity is resolved once per call. Nothing changes the
+  // audit or catalog while the rows are built.
+  const recordCandidates = new Map();
   const sameSource = (record, identity) => {
     if (identity?.ambiguous) return false;
-    const other = requirementsSourceIdentity({
-      sourceKey: record?.sourceKey,
-      sourceFile: record?.sourceFile,
-      sourceAlias: record?.sourceAlias,
-      alias: record?.alias,
-      name: record?.name,
-    });
-    if (other?.ambiguous) return false;
-    const values = new Set(candidates(other));
+    if (!recordCandidates.has(record)) {
+      const other = requirementsSourceIdentity({
+        sourceKey: record?.sourceKey,
+        sourceFile: record?.sourceFile,
+        sourceAlias: record?.sourceAlias,
+        alias: record?.alias,
+        name: record?.name,
+      });
+      recordCandidates.set(
+        record,
+        other?.ambiguous ? null : new Set(candidates(other)),
+      );
+    }
+    const values = recordCandidates.get(record);
+    if (!values) return false;
     return candidates(identity).some((value) => values.has(value));
   };
   const sameField = (field, name) => {
@@ -197,9 +207,15 @@ function requirementsFieldRows(options = {}) {
     }
     return parts.join("\n");
   };
+  const referenceIdentities = new Map();
   requirementsLogicFieldReferences().forEach((reference) => {
     if (!reference.fieldName) return;
-    const identity = requirementsSourceIdentity(reference.sourceFile);
+    if (!referenceIdentities.has(reference.sourceFile))
+      referenceIdentities.set(
+        reference.sourceFile,
+        requirementsSourceIdentity(reference.sourceFile),
+      );
+    const identity = referenceIdentities.get(reference.sourceFile);
     const sourceId =
       identity.sourceKey ||
       identity.alias ||
@@ -207,6 +223,8 @@ function requirementsFieldRows(options = {}) {
       reference.sourceFile ||
       "";
     const key = `source:${requirementsFieldIdentityPart(sourceId)}:${requirementsFieldIdentityPart(reference.fieldName)}`;
+    // Later references to a field already listed add nothing.
+    if (records.has(key)) return;
     const auditField =
       auditFields.find(
         (field) =>
@@ -220,51 +238,51 @@ function requirementsFieldRows(options = {}) {
       (catalogSource?.fields || []).find((field) =>
         sameField(field, reference.fieldName),
       ) || null;
-    if (!records.has(key)) {
-      const fieldTitle =
+    const fieldTitle =
+      valueFrom(
+        [auditField, catalogField],
+        ["rawFieldName", "fieldName", "name", "label"],
+      ) || reference.fieldName;
+    records.set(key, {
+      key,
+      custom: false,
+      sourceOrder: Math.min(
+        ...candidates(identity).map(
+          (value) => sourceOrder.get(value) ?? Number.MAX_SAFE_INTEGER,
+        ),
+      ),
+      firstOrder: reference.order,
+      uniqueId: sourceId,
+      fieldTitle,
+      vanityLabel:
         valueFrom(
           [auditField, catalogField],
-          ["rawFieldName", "fieldName", "name", "label"],
-        ) || reference.fieldName;
-      records.set(key, {
-        key,
-        custom: false,
-        sourceOrder: Math.min(
-          ...candidates(identity).map(
-            (value) => sourceOrder.get(value) ?? Number.MAX_SAFE_INTEGER,
-          ),
-        ),
-        firstOrder: reference.order,
-        uniqueId: sourceId,
-        fieldTitle,
-        vanityLabel:
-          valueFrom(
+          [
+            "auditSpecificVanityLabel",
+            "vanityLabel",
+            "globalVanityLabel",
+            "label",
+            "name",
+          ],
+        ) || fieldTitle,
+      displayFormat: valueFrom(
+        [auditField, catalogField],
+        ["displayFormat", "formatting", "format", "fieldFormat"],
+      ),
+      dataCategory: valueFrom(
+        [auditField, catalogField],
+        ["dataCategory", "category"],
+      ),
+      display: displayFor(auditField),
+      notes: includeNotes
+        ? definitionFor(
             [auditField, catalogField],
-            [
-              "auditSpecificVanityLabel",
-              "vanityLabel",
-              "globalVanityLabel",
-              "label",
-              "name",
-            ],
-          ) || fieldTitle,
-        displayFormat: valueFrom(
-          [auditField, catalogField],
-          ["displayFormat", "formatting", "format", "fieldFormat"],
-        ),
-        dataCategory: valueFrom(
-          [auditField, catalogField],
-          ["dataCategory", "category"],
-        ),
-        display: displayFor(auditField),
-        notes: definitionFor(
-          [auditField, catalogField],
-          fieldTitle,
-          !catalogHasField(identity, fieldTitle) &&
-            Boolean(createdColumnStep(fieldTitle)),
-        ),
-      });
-    }
+            fieldTitle,
+            !catalogHasField(identity, fieldTitle) &&
+              Boolean(createdColumnStep(fieldTitle)),
+          )
+        : "",
+    });
   });
   const outputColumns = new Map();
   hierarchicalStepEntries({ includeDisabled: false }).forEach(

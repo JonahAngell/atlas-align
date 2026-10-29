@@ -464,6 +464,19 @@
         sourceIndex: index,
       });
       const issues = [];
+      // Shared by every reference below. Scanning all steps per reference made
+      // this rule grow with references × steps.
+      const stepsById = new Map();
+      const createdColumnsByName = new Map();
+      context.audit.steps.forEach((item) => {
+        if (!stepsById.has(item.id)) stepsById.set(item.id, item);
+        if (item.type !== "create_column") return;
+        const name = string(item.params?.column_name || item.field || "")
+          .trim()
+          .toLocaleLowerCase();
+        if (!createdColumnsByName.has(name)) createdColumnsByName.set(name, []);
+        createdColumnsByName.get(name).push(item);
+      });
       context.audit.sources.forEach((source, index) => {
         if (!source.identity)
           issues.push(
@@ -650,24 +663,16 @@
           const createdFieldName = string(reference.field)
             .trim()
             .toLocaleLowerCase();
-          const matchingCreatedColumns = context.audit.steps.filter((item) => {
-            if (item.type !== "create_column" || item.index >= step.index)
-              return false;
-            return (
-              string(item.params?.column_name || item.field || "")
-                .trim()
-                .toLocaleLowerCase() === createdFieldName
-            );
-          });
+          const matchingCreatedColumns = (
+            createdColumnsByName.get(createdFieldName) || []
+          ).filter((item) => item.index < step.index);
           const attachedSourceTokens = (column) => {
             const tokens = new Set();
             let current = column;
             const seen = new Set();
             while (current?.parentId && !seen.has(current.id)) {
               seen.add(current.id);
-              const parent = context.audit.steps.find(
-                (item) => item.id === current.parentId,
-              );
+              const parent = stepsById.get(current.parentId);
               if (!parent) break;
               if (parent.type === "reference_source") {
                 [parent.params?.source_file, parent.source]
@@ -3565,19 +3570,47 @@
   const filters = { severity: "all" };
   const readinessFilters = { severity: "all" };
 
+  // An edit is usually followed by a frame or two of further audit changes
+  // (generated reference steps, sort orders, canonical source names), and each
+  // change would otherwise run its own full issue check. Waiting until requests
+  // pause also lets the edit paint before the check runs. Requests keep pushing
+  // the check back, but never past the maximum wait.
+  const ISSUE_RENDER_SETTLE_MS = 150;
+  const ISSUE_RENDER_MAX_WAIT_MS = 1000;
+  let issueRenderTimer = null;
+  let issueRenderFirstRequestAt = 0;
+
   function scheduleIssueRender() {
     if (typeof document === "undefined") return;
-    if (renderQueued) return;
-    renderQueued = true;
-    const enqueue =
+    const enqueueFrame =
       global.requestAnimationFrame ||
       (global.setTimeout
         ? (callback) => global.setTimeout(callback, 0)
         : (callback) => callback());
-    enqueue(() => {
-      renderQueued = false;
-      renderIssueSurfaces();
-    });
+    const runInFrame = () => {
+      if (renderQueued) return;
+      renderQueued = true;
+      enqueueFrame(() => {
+        renderQueued = false;
+        renderIssueSurfaces();
+      });
+    };
+    if (
+      typeof global.setTimeout !== "function" ||
+      typeof global.clearTimeout !== "function"
+    ) {
+      runInFrame();
+      return;
+    }
+    const now = Date.now();
+    if (issueRenderTimer === null) issueRenderFirstRequestAt = now;
+    else if (now - issueRenderFirstRequestAt >= ISSUE_RENDER_MAX_WAIT_MS)
+      return;
+    else global.clearTimeout(issueRenderTimer);
+    issueRenderTimer = global.setTimeout(() => {
+      issueRenderTimer = null;
+      runInFrame();
+    }, ISSUE_RENDER_SETTLE_MS);
   }
 
   let cachedUiElements = null;

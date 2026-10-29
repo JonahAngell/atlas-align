@@ -88,13 +88,19 @@ function atlasDisplayResolvedSourceColor(identity = {}) {
 function atlasDisplaySameToken(left, right) {
   return Boolean(left) && atlasDisplayPart(left) === atlasDisplayPart(right);
 }
+// Created-field entries for the atlasDisplayRows pass in progress; every row
+// checks the same list, and building it walks every step.
+let atlasDisplayCreatedEntriesForPass = null;
 function atlasDisplayCreatedMatch(row) {
   if (typeof atlasCreatedFieldEntries !== "function") return null;
   const title = atlasDisplayPart(
     row?.fieldTitle || row?.fieldName || row?.name,
   );
   if (!title) return null;
-  const matches = atlasCreatedFieldEntries({ includeUnavailable: true }).filter(
+  const entries =
+    atlasDisplayCreatedEntriesForPass ||
+    atlasCreatedFieldEntries({ includeUnavailable: true });
+  const matches = entries.filter(
     (item) => atlasDisplayPart(item.fieldName || item.rawFieldName) === title,
   );
   if (!matches.length) return null;
@@ -222,6 +228,17 @@ function atlasDisplayCatalogRow(preference) {
   };
 }
 function atlasDisplayRows(options = {}) {
+  atlasDisplayCreatedEntriesForPass =
+    typeof atlasCreatedFieldEntries === "function"
+      ? atlasCreatedFieldEntries({ includeUnavailable: true })
+      : null;
+  try {
+    return atlasDisplayRowsWithCreatedEntries(options);
+  } finally {
+    atlasDisplayCreatedEntriesForPass = null;
+  }
+}
+function atlasDisplayRowsWithCreatedEntries(options = {}) {
   const base = atlasOriginalRequirementsFieldRows(options),
     prefs = atlasDisplayPreferences(),
     logic = atlasDisplayLogicKeys(),

@@ -2180,6 +2180,52 @@ test("DOM-change indicator sync paints from the last issue render", async () => 
   assert.ok(marker(), "a re-rendered card gets its marker back");
 });
 
+test("issue renders wait until change requests pause and run once", async () => {
+  const audit = completeAudit();
+  const context = await runtime(audit);
+  const root = indicatorElement("div", { id: "atlas-audit-issues-root" });
+  root.isConnected = true;
+  const page = indicatorElement("section", { className: "page active" });
+  page.dataset.page = "steps";
+  let renders = 0;
+  context.document = {
+    body: indicatorElement("body"),
+    documentElement: indicatorElement("html"),
+    createElement: (tag) => indicatorElement(tag),
+    getElementById: (id) => (id === "atlas-audit-issues-root" ? root : null),
+    querySelector(selector) {
+      if (selector === ".page.active") renders += 1;
+      return selector === ".page.active" ? page : null;
+    },
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  context.requestAnimationFrame = (callback) => {
+    callback(0);
+    return 0;
+  };
+  const timers = new Map();
+  let nextTimer = 1;
+  context.setTimeout = (callback) => {
+    timers.set(nextTimer, callback);
+    return nextTimer++;
+  };
+  context.clearTimeout = (id) => timers.delete(id);
+  const flush = () => {
+    const pending = [...timers.values()];
+    timers.clear();
+    pending.forEach((callback) => callback());
+  };
+
+  context.ATLASAuditIssues.render();
+  context.ATLASAuditIssues.render();
+  context.ATLASAuditIssues.invalidate();
+  assert.equal(renders, 0, "nothing renders while changes are arriving");
+  assert.equal(timers.size, 1, "requests share one pending render");
+  flush();
+  assert.equal(renders, 1);
+});
+
 function brokenConditionStep(id, parentId = null) {
   return {
     id,

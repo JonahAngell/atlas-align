@@ -1,19 +1,74 @@
+// Source identity results per catalog array. Every field reference on every
+// issue check resolves its source, and each resolution scans the catalog, so
+// results are reused while the catalog's sources keep their identity values.
+const ATLAS_SOURCE_IDENTITY_PROPS = [
+  "sourceKey",
+  "catalogKey",
+  "sourceReferenceId",
+  "id",
+  "alias",
+  "sourceFile",
+  "file",
+  "name",
+];
+const atlasSourceIdentityMemo = new WeakMap();
+
+function atlasSourceIdentityCatalogSnapshot(catalogSources) {
+  const snapshot = [catalogSources.length];
+  catalogSources.forEach((source) => {
+    snapshot.push(source);
+    ATLAS_SOURCE_IDENTITY_PROPS.forEach((prop) =>
+      snapshot.push(source?.[prop]),
+    );
+  });
+  return snapshot;
+}
+
+function atlasSourceIdentityResults(catalogSources) {
+  const snapshot = atlasSourceIdentityCatalogSnapshot(catalogSources);
+  const memo = atlasSourceIdentityMemo.get(catalogSources);
+  if (
+    memo &&
+    memo.snapshot.length === snapshot.length &&
+    memo.snapshot.every((value, index) => Object.is(value, snapshot[index]))
+  )
+    return memo.results;
+  const results = new Map();
+  atlasSourceIdentityMemo.set(catalogSources, { snapshot, results });
+  return results;
+}
+
 /**
  * Canonical source identity resolver.
  * Resolves legacy names and aliases against the catalog while preserving the
  * stable key, physical file name, and display alias as separate values.
  */
 function atlasResolveSourceIdentity(sourceLike = {}, catalog = null) {
-  const input =
-    typeof sourceLike === "string" ? { name: sourceLike } : sourceLike || {};
-  const clean = (value) => String(value || "").trim();
-  const normalize = (value) => clean(value).toLowerCase();
   const catalogSources = Array.isArray(catalog)
     ? catalog
     : typeof repoLibraryState !== "undefined" &&
         Array.isArray(repoLibraryState?.sourceFiles)
       ? repoLibraryState.sourceFiles
       : [];
+  const input =
+    typeof sourceLike === "string" ? { name: sourceLike } : sourceLike || {};
+  const key = JSON.stringify(
+    ATLAS_SOURCE_IDENTITY_PROPS.map((prop) =>
+      input[prop] === undefined || input[prop] === null
+        ? null
+        : String(input[prop]),
+    ),
+  );
+  const results = atlasSourceIdentityResults(catalogSources);
+  if (!results.has(key))
+    results.set(key, atlasResolveSourceIdentityIn(input, catalogSources));
+  // A copy, so callers cannot change the remembered result.
+  return { ...results.get(key) };
+}
+
+function atlasResolveSourceIdentityIn(input, catalogSources) {
+  const clean = (value) => String(value || "").trim();
+  const normalize = (value) => clean(value).toLowerCase();
   const uniqueMatches = (inputValues, sourceValues) => {
     const wanted = new Set(inputValues.map(normalize).filter(Boolean));
     if (!wanted.size) return [];
