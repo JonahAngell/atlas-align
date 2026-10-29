@@ -271,9 +271,14 @@ test("Reviewer Mode native renderers read the detached display document", () => 
     selectedSources,
     /function atlasSelectedAuditSources\(\)[\s\S]*?const audit = atlasDisplayDocument\?\.\(\) \|\| state\.audit/,
   );
+  // Only the editable audit is normalized and synced before a render.
   assert.match(
     virtualLogic,
-    /function atlasRenderVirtualLogicRules\(options = \{\}\)[\s\S]*?if \(audit === state\.audit(?: && [^)]*)?\)/,
+    /function atlasPrepareLogicStepsForRender\(\) \{\s*const audit = atlasDisplayDocument\?\.\(\) \|\| state\.audit;\s*if \(audit !== state\.audit\) return;/,
+  );
+  assert.match(
+    virtualLogic,
+    /function atlasRenderVirtualLogicRules\(options = \{\}\)[\s\S]*?atlasPrepareLogicStepsForRender\(\)/,
   );
   assert.match(
     shell,
