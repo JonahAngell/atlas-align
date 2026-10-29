@@ -3875,9 +3875,86 @@
     });
   }
 
+  function issueCardElement(entry) {
+    const card = document.createElement("article");
+    card.className = `atlas-audit-issue-card atlas-audit-issue-card--${entry.severity}`;
+    card.dataset.issueId = string(entry.id || entry.ruleId);
+    card.dataset.reviewIssueKey = string(
+      entry.stableKey || entry.key || entry.id || entry.ruleId,
+    );
+    const heading = appendText(
+      card,
+      "h4",
+      string(entry.title || entry.summary || "Audit issue"),
+      "atlas-audit-issue-card__title",
+    );
+    const severity = appendText(
+      heading,
+      "span",
+      string(entry.severity || "warning"),
+      "atlas-audit-issue-card__severity",
+    );
+    severity.setAttribute(
+      "aria-label",
+      `Severity ${string(entry.severity || "warning")}`,
+    );
+    appendText(
+      card,
+      "p",
+      string(entry.summary || entry.detail || "Review this audit issue."),
+      "atlas-audit-issue-card__summary",
+    );
+    if (entry.detail && entry.detail !== entry.summary)
+      appendText(
+        card,
+        "p",
+        string(entry.detail),
+        "atlas-audit-issue-card__detail",
+      );
+    const context = [
+      entry.page || entry.owningPage,
+      entry.target?.stepId && issueStepContextLabel(entry.target.stepId),
+      entry.target?.conditionId && `Condition ${entry.target.conditionId}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    if (context)
+      appendText(card, "p", context, "atlas-audit-issue-card__context");
+    const actions = document.createElement("div");
+    actions.className = "atlas-audit-issue-card__actions";
+    if (entry.canFix && typeof fixActions[entry.fixAction] === "function") {
+      const fix = appendText(actions, "button", "Fix", "btn primary small");
+      fix.type = "button";
+      fix.dataset.atlasIssueFix = entry.stableKey;
+    }
+    if (entry.canJump && typeof jumpActions[entry.jumpAction] === "function") {
+      const jump = appendText(
+        actions,
+        "button",
+        "Jump to Issue",
+        "btn secondary small",
+      );
+      jump.type = "button";
+      jump.dataset.atlasIssueJump = entry.stableKey;
+    }
+    if (actions.childElementCount) card.appendChild(actions);
+    return card;
+  }
+
+  // Cards past the first screenful are added over later frames, a few
+  // milliseconds of work at a time, so a list with thousands of issues shows
+  // without building every card first and stays responsive while it fills.
+  // A new render of the same list cancels the batches still pending.
+  const ISSUE_CARDS_FIRST_BATCH = 100;
+  const ISSUE_CARDS_LATER_BATCH = 200;
+  const ISSUE_CARDS_FRAME_BUDGET_MS = 8;
+  const issueCardRenders = new WeakMap();
+
   function renderIssueCards(container, result, filterState, includeGroups) {
     if (!container) return;
     container.replaceChildren();
+    const token = {};
+    issueCardRenders.set(container, token);
     if (result.error) {
       const message = appendText(
         container,
@@ -3905,7 +3982,15 @@
       return;
     }
     const groups = includeGroups ? issueCategories(issues) : [""];
-    groups.forEach((category) => {
+    const queue = [];
+    groups.forEach((category) =>
+      issues
+        .filter((entry) => !category || entry.category === category)
+        .forEach((entry) => queue.push([category, entry])),
+    );
+    const groupElements = new Map();
+    const groupFor = (category) => {
+      if (groupElements.has(category)) return groupElements.get(category);
       const group = document.createElement("section");
       group.className = "atlas-audit-issues__group";
       if (includeGroups)
@@ -3915,87 +4000,45 @@
           categoryLabel(category),
           "atlas-audit-issues__group-title",
         );
-      issues
-        .filter((entry) => !category || entry.category === category)
-        .forEach((entry) => {
-          const card = document.createElement("article");
-          card.className = `atlas-audit-issue-card atlas-audit-issue-card--${entry.severity}`;
-          card.dataset.issueId = string(entry.id || entry.ruleId);
-          card.dataset.reviewIssueKey = string(
-            entry.stableKey || entry.key || entry.id || entry.ruleId,
-          );
-          const heading = appendText(
-            card,
-            "h4",
-            string(entry.title || entry.summary || "Audit issue"),
-            "atlas-audit-issue-card__title",
-          );
-          const severity = appendText(
-            heading,
-            "span",
-            string(entry.severity || "warning"),
-            "atlas-audit-issue-card__severity",
-          );
-          severity.setAttribute(
-            "aria-label",
-            `Severity ${string(entry.severity || "warning")}`,
-          );
-          appendText(
-            card,
-            "p",
-            string(entry.summary || entry.detail || "Review this audit issue."),
-            "atlas-audit-issue-card__summary",
-          );
-          if (entry.detail && entry.detail !== entry.summary)
-            appendText(
-              card,
-              "p",
-              string(entry.detail),
-              "atlas-audit-issue-card__detail",
-            );
-          const context = [
-            entry.page || entry.owningPage,
-            entry.target?.stepId && issueStepContextLabel(entry.target.stepId),
-            entry.target?.conditionId &&
-              `Condition ${entry.target.conditionId}`,
-          ]
-            .filter(Boolean)
-            .join(" · ");
-          if (context)
-            appendText(card, "p", context, "atlas-audit-issue-card__context");
-          const actions = document.createElement("div");
-          actions.className = "atlas-audit-issue-card__actions";
-          if (
-            entry.canFix &&
-            typeof fixActions[entry.fixAction] === "function"
-          ) {
-            const fix = appendText(
-              actions,
-              "button",
-              "Fix",
-              "btn primary small",
-            );
-            fix.type = "button";
-            fix.dataset.atlasIssueFix = entry.stableKey;
-          }
-          if (
-            entry.canJump &&
-            typeof jumpActions[entry.jumpAction] === "function"
-          ) {
-            const jump = appendText(
-              actions,
-              "button",
-              "Jump to Issue",
-              "btn secondary small",
-            );
-            jump.type = "button";
-            jump.dataset.atlasIssueJump = entry.stableKey;
-          }
-          if (actions.childElementCount) card.appendChild(actions);
-          group.appendChild(card);
-        });
-      container.appendChild(group);
-    });
+      // Review feedback, when shown, stays after every group.
+      const feedback = container.querySelector?.(
+        ":scope > [data-review-feedback-projection]",
+      );
+      if (feedback) container.insertBefore(group, feedback);
+      else container.appendChild(group);
+      groupElements.set(category, group);
+      return group;
+    };
+    let next = 0;
+    const renderNext = () => {
+      const [category, entry] = queue[next];
+      groupFor(category).appendChild(issueCardElement(entry));
+      next += 1;
+    };
+    const renderBatch = (size) => {
+      const end = Math.min(queue.length, next + size);
+      while (next < end) renderNext();
+    };
+    const clock = global.performance;
+    const canDefer = typeof global.requestAnimationFrame === "function";
+    renderBatch(canDefer ? ISSUE_CARDS_FIRST_BATCH : queue.length);
+    const continueRender = () => {
+      if (
+        issueCardRenders.get(container) !== token ||
+        container.isConnected === false
+      )
+        return;
+      if (typeof clock?.now === "function") {
+        const start = clock.now();
+        do renderNext();
+        while (
+          next < queue.length &&
+          clock.now() - start < ISSUE_CARDS_FRAME_BUDGET_MS
+        );
+      } else renderBatch(ISSUE_CARDS_LATER_BATCH);
+      if (next < queue.length) global.requestAnimationFrame(continueRender);
+    };
+    if (next < queue.length) global.requestAnimationFrame(continueRender);
   }
 
   function updateSeverityButtons(container, filterState, result) {
@@ -4614,6 +4657,13 @@ if (typeof document !== "undefined") {
     const observer = new MutationObserver((records) => {
       const list = document.getElementById("stepsList");
       records.forEach((record) => {
+        // Issue cards never carry markers, and the lists fill in over frames.
+        if (
+          record.target.closest?.(
+            "#atlas-audit-issues-panel, #validationPanel, .atlas-audit-issue-card",
+          )
+        )
+          return;
         if (!list || !list.contains(record.target)) fullSync = true;
         else
           record.addedNodes.forEach((node) => {

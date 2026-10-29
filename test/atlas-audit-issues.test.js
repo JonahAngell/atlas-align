@@ -2273,6 +2273,85 @@ test("scoped indicator sync paints only the nodes it is given", async () => {
   assert.equal(marker(untouched), undefined, "other nodes are left alone");
 });
 
+function issueListHarness(context, created = { articles: 0 }) {
+  const list = indicatorElement("div", { id: "atlas-audit-issues-list" });
+  const root = indicatorElement("div", { id: "atlas-audit-issues-root" });
+  root.isConnected = true;
+  const page = indicatorElement("section", { className: "page active" });
+  page.dataset.page = "steps";
+  context.document = {
+    body: indicatorElement("body"),
+    documentElement: indicatorElement("html"),
+    createElement(tag) {
+      if (tag === "article") created.articles += 1;
+      return indicatorElement(tag);
+    },
+    getElementById(id) {
+      if (id === "atlas-audit-issues-root") return root;
+      if (id === "atlas-audit-issues-list") return list;
+      return null;
+    },
+    querySelector: (selector) => (selector === ".page.active" ? page : null),
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  return () =>
+    Array.from(
+      list.querySelectorAll(".atlas-audit-issue-card"),
+      (card) => card.dataset.reviewIssueKey,
+    );
+}
+
+const manyBrokenSteps = (count) =>
+  Array.from({ length: count }, (_, index) =>
+    brokenConditionStep(`step_many_${index}`),
+  );
+
+test("long issue lists fill in over frames, as a one-pass build would", async () => {
+  const audit = completeAudit();
+  audit.steps = manyBrokenSteps(130);
+  const context = await runtime(audit);
+  const cards = issueListHarness(context);
+  const frames = [];
+  context.requestAnimationFrame = (callback) => frames.push(callback);
+  context.ATLASAuditIssues.render();
+  frames.shift()(0); // the issue render itself
+  assert.equal(cards().length, 100, "the first frame shows the first batch");
+  while (frames.length) frames.shift()(0);
+  assert.ok(cards().length > 100, "later frames add the rest");
+
+  const oneFrame = await runtime(structuredClone(audit));
+  const oneFrameCards = issueListHarness(oneFrame);
+  oneFrame.ATLASAuditIssues.render();
+  assert.deepEqual(cards(), oneFrameCards(), "same cards in the same order");
+});
+
+test("a new issue render stops the batches of the previous one", async () => {
+  const audit = completeAudit();
+  audit.steps = manyBrokenSteps(500);
+  const context = await runtime(audit);
+  const created = { articles: 0 };
+  const cards = issueListHarness(context, created);
+  const frames = [];
+  context.requestAnimationFrame = (callback) => frames.push(callback);
+  context.ATLASAuditIssues.render();
+  frames.shift()(0);
+  assert.equal(cards().length, 100);
+
+  audit.steps.splice(2);
+  context.ATLASAuditIssues.invalidate();
+  created.articles = 0;
+  while (frames.length) frames.shift()(0);
+  const fewer = cards();
+  assert.ok(fewer.length > 0 && fewer.length < 100, "only the new result");
+  assert.ok(fewer.every((key) => /step_many_[01]-/.test(key)));
+  // A batch already queued before the new render may still run; none after.
+  assert.ok(
+    created.articles <= 200 + fewer.length,
+    "the old render stops after the new one",
+  );
+});
+
 function brokenConditionStep(id, parentId = null) {
   return {
     id,
