@@ -2750,10 +2750,17 @@ function atlasRenderVirtualLogicRules(options = {}) {
       linkedIds = linkedIds || atlasInverseLinkedIds(steps);
       const key = atlasInverseSyncKey(step, steps, linkedIds);
       if (atlasInverseSyncSignatures.get(step) === key) return;
-      syncInverseElseStepsForSource?.(step.id);
-      // The sync may add or relink inverse steps, so rebuild the links next time.
-      linkedIds = null;
-      atlasInverseSyncSignatures.set(step, atlasInverseSyncKey(step, steps));
+      // The links hold every step the sync could update, so a step with none
+      // needs no sync. A sync that changed something may have relinked steps,
+      // so the links and the key are rebuilt after it.
+      const changed =
+        (linkedIds.get(step.id) || []).length > 0 &&
+        syncInverseElseStepsForSource?.(step.id);
+      if (changed) linkedIds = atlasInverseLinkedIds(steps);
+      atlasInverseSyncSignatures.set(
+        step,
+        changed ? atlasInverseSyncKey(step, steps, linkedIds) : key,
+      );
     });
   }
 
