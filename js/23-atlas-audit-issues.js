@@ -812,6 +812,11 @@
       const ids = new Set(
         context.audit.steps.map((step) => step.id).filter(Boolean),
       );
+      // First step per id, as find() returned, for the ancestor walk below.
+      const stepsById = new Map();
+      context.audit.steps.forEach((step) => {
+        if (!stepsById.has(step.id)) stepsById.set(step.id, step);
+      });
       const issues = [];
       context.audit.steps.forEach((step) => {
         if (!step.id)
@@ -891,9 +896,7 @@
             break;
           }
           seen.add(parentId);
-          parentId =
-            context.audit.steps.find((candidate) => candidate.id === parentId)
-              ?.parentId || "";
+          parentId = stepsById.get(parentId)?.parentId || "";
         }
       });
       return issues;
