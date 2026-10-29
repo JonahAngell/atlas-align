@@ -3798,6 +3798,45 @@
     );
   }
 
+  // A list inside a hidden panel or an inactive page is not rebuilt. Rebuilding
+  // every card on each check was the main cost on large audits; the list is
+  // rendered again when the panel opens or showSection activates its page.
+  function issueSurfaceVisible(container) {
+    for (let node = container; node; node = node.parentElement) {
+      if (node.hidden) return false;
+      const classes = String(node.className || "").split(/\s+/);
+      if (classes.includes("page") && !classes.includes("active")) return false;
+    }
+    return true;
+  }
+
+  const renderedIssueLists = new WeakMap();
+
+  // Renders cards and review feedback into one issue list when it is visible
+  // and its result, filter, or feedback changed since the last render.
+  function renderIssueList(container, result, filterState, withFeedback) {
+    if (!container || !issueSurfaceVisible(container)) return;
+    const feedback = withFeedback ? window.ATLASReviewFeedback : null;
+    const previous = renderedIssueLists.get(container);
+    if (
+      previous &&
+      previous.result === result &&
+      previous.severity === filterState.severity &&
+      previous.feedback === feedback &&
+      previous.firstChild === container.firstChild
+    )
+      return;
+    renderIssueCards(container, result, filterState, true);
+    if (withFeedback) renderReviewFeedback(container);
+    renderedIssueLists.set(container, {
+      result,
+      severity: filterState.severity,
+      feedback,
+      // Detects the list being cleared or replaced outside this function.
+      firstChild: container.firstChild,
+    });
+  }
+
   function renderIssueCards(container, result, filterState, includeGroups) {
     if (!container) return;
     container.replaceChildren();
@@ -4270,8 +4309,7 @@
       "aria-label",
       totalCount > 0 ? `Issues, ${totalCount}` : "Issues",
     );
-    renderIssueCards(elements.list, result, filters, true);
-    renderReviewFeedback(elements.list);
+    renderIssueList(elements.list, result, filters, true);
     if (elements.readinessSummary)
       elements.readinessSummary.textContent = summaryText(result);
     updateSeverityButtons(elements.readinessFilters, readinessFilters, result);
@@ -4283,7 +4321,7 @@
               `${categoryLabel(category)}: ${array(result.issues).filter((entry) => entry.category === category).length}`,
           )
           .join("; ") || "All categories clear.";
-    renderIssueCards(elements.readinessList, result, readinessFilters, true);
+    renderIssueList(elements.readinessList, result, readinessFilters, false);
     // Reuse this render's result: current() serializes the whole audit to check its cache.
     syncIssueIndicators(result);
   }
@@ -4302,6 +4340,8 @@
     lastFocusedElement = document.activeElement;
     elements.panel.hidden = false;
     if (elements.backdrop) elements.backdrop.hidden = false;
+    // The list is not kept current while the panel is closed.
+    renderIssueSurfaces();
     elements.trigger.setAttribute("aria-expanded", "true");
     document.body.classList.add("atlas-audit-issues-open");
     elements.close?.focus();
@@ -4416,10 +4456,13 @@
     elements.panel?.addEventListener("keydown", handlePanelKeydown);
     elements.refresh?.addEventListener("click", invalidate);
     elements.readinessRefresh?.addEventListener("click", invalidate);
+    let inputInvalidateTimer = null;
     document.addEventListener("input", (event) => {
       // Manual Notes cannot create or clear an issue.
       if (event.target?.matches?.("[data-step-notes-live]")) return;
-      invalidate();
+      // Re-check once typing pauses instead of on every keystroke.
+      clearTimeout(inputInvalidateTimer);
+      inputInvalidateTimer = setTimeout(invalidate, 250);
     });
     document.addEventListener("change", invalidate);
     document.addEventListener("click", (event) => {
