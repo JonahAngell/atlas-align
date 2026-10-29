@@ -2023,13 +2023,14 @@ function atlasUnifiedFieldEntries({ sourceFile = "", targetStepId = "" } = {}) {
     (atlasDisplayDocument?.() || state.audit)?.sources || [],
     sourceFile,
   );
-  const base = sources.flatMap((source) =>
-    (source.fields || []).map((field) => {
+  const base = sources.flatMap((source) => {
+    // The same for every field of the source.
+    const sourceKey = atlasStableSourceKey(source) || source.sourceKey;
+    const picked = (state.audit.sources || []).find((item) =>
+      atlasSourceMatchesLookup(item, sourceKey),
+    );
+    return (source.fields || []).map((field) => {
       const parts = fieldDisplayParts(field, source.sourceFile);
-      const sourceKey = atlasStableSourceKey(source) || source.sourceKey;
-      const picked = (state.audit.sources || []).find((item) =>
-        atlasSourceMatchesLookup(item, sourceKey),
-      );
       return {
         ...field,
         sourceKey,
@@ -2044,8 +2045,8 @@ function atlasUnifiedFieldEntries({ sourceFile = "", targetStepId = "" } = {}) {
         origin: "source",
         isCreatedField: false,
       };
-    }),
-  );
+    });
+  });
   const seen = new Set();
   return [
     ...base,
@@ -2311,24 +2312,46 @@ renderMiniPicker = function renderMiniPickerSharedAdapter() {
     pickerKind === "source"
       ? pickerSourceOptions()
       : pickerFieldOptions(referenceSource || visualPickerState.sourceFile);
+  // Key, label and colour depend only on the item's source, which most items
+  // share, so each source's values are worked out once.
+  const sourceValues = new Map();
   const entries = values.map((item) => {
     const sourceFile = item.sourceFile || "";
     const sourceAlias = item.sourceAlias || sourceFile || "Other";
     const fieldName = item.fieldName || "";
-    const sourceKey =
-      item.sourceKey ||
-      atlasStableSourceKey({
-        sourceKey: item.sourceKey,
-        alias: item.sourceAlias,
-        sourceFile,
-      }) ||
-      sourceFile;
-    const sourceLabelText = atlasSourceDisambiguatedLabel({
+    const sourceId = JSON.stringify([
+      item.sourceKey || "",
+      item.sourceAlias || "",
       sourceFile,
-      alias: sourceAlias,
-      sourceKey,
-      sourceMetadata: { sourceTitle: sourceFile },
-    });
+    ]);
+    if (!sourceValues.has(sourceId)) {
+      const key =
+        item.sourceKey ||
+        atlasStableSourceKey({
+          sourceKey: item.sourceKey,
+          alias: item.sourceAlias,
+          sourceFile,
+        }) ||
+        sourceFile;
+      sourceValues.set(sourceId, {
+        key,
+        label: atlasSourceDisambiguatedLabel({
+          sourceFile,
+          alias: sourceAlias,
+          sourceKey: key,
+          sourceMetadata: { sourceTitle: sourceFile },
+        }),
+      });
+    }
+    const perSource = sourceValues.get(sourceId);
+    const { key: sourceKey, label: sourceLabelText } = perSource;
+    // Looked up only for items without their own colour, as before: the lookup
+    // assigns colours to audit sources that have none.
+    const sourceColorFor = () => {
+      if (!("color" in perSource))
+        perSource.color = atlasSelectedSourceColor(sourceKey);
+      return perSource.color;
+    };
     return {
       key: pickerKind === "source" ? sourceKey : `${sourceKey}::${fieldName}`,
       label:
@@ -2347,8 +2370,7 @@ renderMiniPicker = function renderMiniPickerSharedAdapter() {
           : sourceFile === ATLAS_CREATED_SOURCE
             ? ATLAS_CREATED_LABEL
             : sourceLabelText,
-      sourceColor:
-        item.sourceColor || atlasSelectedSourceColor(sourceKey) || "#7da2d8",
+      sourceColor: item.sourceColor || sourceColorFor() || "#7da2d8",
       custom: Boolean(item.isCreatedField),
       badge: item.isCreatedField ? "Custom" : "",
       pickerValue: pickerKind === "source" ? sourceKey : fieldName,
