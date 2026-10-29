@@ -89,6 +89,7 @@ function atlasRefreshLogicRuleCard(step) {
   card.classList.toggle("selected", state.selectedStepId === step.id);
 }
 
+let atlasLiveEditorValidationTimer = null;
 function atlasCommitLiveEditor({ rerender = false } = {}) {
   const root = document.querySelector("[data-live-editor-step-id]");
   if (!root) return;
@@ -166,9 +167,14 @@ function atlasCommitLiveEditor({ rerender = false } = {}) {
     }
 
     atlasRefreshLogicRuleCard(step);
-    renderPreview?.();
-    renderLogicTablePreviewRows?.();
-    renderValidationPanel?.();
+    // Preview and audit issues cover the whole audit. Batch the preview into the
+    // next frame (skipped while hidden) and re-check issues once typing pauses.
+    atlasRequestRender?.({ preview: true, logicTable: true });
+    clearTimeout(atlasLiveEditorValidationTimer);
+    atlasLiveEditorValidationTimer = setTimeout(
+      () => atlasRequestRender?.({ validation: true }),
+      250,
+    );
   }
   scheduleAutosave();
 }
