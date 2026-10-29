@@ -3721,11 +3721,16 @@
     return numbers;
   }
 
+  // Set for the length of one renderIssueSurfaces pass.
+  let renderStepNumbers = null;
+
   // Read-only copy of the Logic Builder rules-list number (1, 1.1, 2, …).
   function rulesListStepNumber(stepId) {
     const id = string(stepId).trim();
     if (!id) return "";
-    const number = rulesListStepNumbers(stepsForIssueLabels()).get(id) || "";
+    const numbers =
+      renderStepNumbers || rulesListStepNumbers(stepsForIssueLabels());
+    const number = numbers.get(id) || "";
     return number && number !== id ? number : "";
   }
 
@@ -4183,6 +4188,17 @@
   }
 
   function renderIssueSurfaces() {
+    // Steps do not change while issue surfaces render, so every card can share
+    // one numbering instead of re-checking the cache per card.
+    renderStepNumbers = rulesListStepNumbers(stepsForIssueLabels());
+    try {
+      renderIssueSurfacesWithStepNumbers();
+    } finally {
+      renderStepNumbers = null;
+    }
+  }
+
+  function renderIssueSurfacesWithStepNumbers() {
     const elements = uiElements();
     if (!elements.root && !elements.readinessList) return;
     if (elements.root) bindIssueUI(elements);
