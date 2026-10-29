@@ -6,6 +6,13 @@
  */
 /* Compact Rules + selected-source editor/picker refinement */
 let atlasFieldPickerSortMode = "source";
+// Resolved selected sources, reused while their inputs are unchanged. See
+// atlasSelectedSourceLookup near the calculated-field source wrapper.
+const atlasSelectedSourceLookupState = {
+  uncached: null,
+  snapshot: null,
+  lookup: null,
+};
 
 function atlasSelectedAuditSources() {
   const audit = atlasDisplayDocument?.() || state.audit;
@@ -59,8 +66,48 @@ function atlasSourceIdentityCandidates(source) {
     .filter((value, index, values) => values.indexOf(value) === index);
 }
 
+/**
+ * Memo key for a source reference: every input property that source
+ * resolution and stable keys read.
+ */
+function atlasSourceLookupKey(sourceLike) {
+  if (typeof sourceLike === "string") return `s:${sourceLike}`;
+  const input = sourceLike && typeof sourceLike === "object" ? sourceLike : {};
+  return JSON.stringify(
+    [
+      input.sourceReferenceId,
+      input.sourceKey,
+      input.baseSourceKey,
+      input.id,
+      input.name,
+      input.sourceFile,
+      input.alias,
+    ].map((value) =>
+      value === undefined || value === null ? null : String(value),
+    ),
+  );
+}
+
+/** Returns the lookup's own source object for a reference; never hand it out. */
+function atlasLookupResolvedSource(lookup, sourceLike) {
+  const key = atlasSourceLookupKey(sourceLike);
+  if (!lookup.resolved.has(key))
+    lookup.resolved.set(
+      key,
+      atlasResolveSelectedSourceIn(lookup.sources, sourceLike),
+    );
+  return lookup.resolved.get(key);
+}
+
 function atlasResolveSelectedSource(sourceLike) {
-  const selectedSources = atlasSelectedAuditSources();
+  const source = atlasLookupResolvedSource(
+    atlasSelectedSourceLookup(),
+    sourceLike,
+  );
+  return source ? { ...source } : null;
+}
+
+function atlasResolveSelectedSourceIn(selectedSources, sourceLike) {
   const input =
     typeof sourceLike === "string" ? { name: sourceLike } : sourceLike || {};
   const stableKeys = [
@@ -96,8 +143,20 @@ function atlasResolveSelectedSource(sourceLike) {
   return fallbackMatches.length === 1 ? fallbackMatches[0] : null;
 }
 
+function atlasLookupStableKey(lookup, sourceLike) {
+  const key = atlasSourceLookupKey(sourceLike);
+  if (!lookup.stableKeys.has(key))
+    lookup.stableKeys.set(key, atlasSourceStableKeyIn(lookup, sourceLike));
+  return lookup.stableKeys.get(key);
+}
+
 function atlasSourceStableKey(sourceLike) {
-  const source = atlasResolveSelectedSource(sourceLike) || sourceLike || {};
+  return atlasLookupStableKey(atlasSelectedSourceLookup(), sourceLike);
+}
+
+function atlasSourceStableKeyIn(lookup, sourceLike) {
+  const source =
+    atlasLookupResolvedSource(lookup, sourceLike) || sourceLike || {};
   if (typeof source === "string") return atlasNormalizedSourceIdentity(source);
   return String(
     source.sourceReferenceId ||
@@ -312,9 +371,11 @@ function atlasSortedPickerItems(items) {
 
 function atlasFieldMatchForSource(value, sourceLike) {
   const normalized = String(value || "").trim();
-  const source = atlasSelectedAuditSources().find(
-    (candidate) =>
-      atlasSourceStableKey(candidate) === atlasSourceStableKey(sourceLike),
+  // One lookup for the whole search; each source's key is memoized in it.
+  const lookup = atlasSelectedSourceLookup();
+  const wanted = atlasLookupStableKey(lookup, sourceLike);
+  const source = lookup.sources.find(
+    (candidate) => atlasLookupStableKey(lookup, candidate) === wanted,
   );
   if (!source) return null;
   const field = (source.fields || []).find((item) => {
@@ -330,7 +391,7 @@ function atlasFieldMatchForSource(value, sourceLike) {
   return field
     ? {
         sourceFile: source.sourceFile,
-        sourceKey: atlasSourceStableKey(source),
+        sourceKey: atlasLookupStableKey(lookup, source),
         color: atlasSelectedSourceColor(source),
         kind: atlasIsCustomField(field) ? "custom" : "field",
         field,
@@ -542,7 +603,6 @@ function renderLogicRuleCard(entry) {
     ${atlasRenderHiddenPreserveFields(step)}
   </div>`;
 }
-
 
 const atlasPreviousRenderGuidedBuilder = renderGuidedBuilder;
 renderGuidedBuilder = function renderGuidedBuilderSelectedSourcesOnly(step) {
@@ -1089,6 +1149,83 @@ atlasSelectedAuditSources =
     }
     return sources;
   };
+
+// ATLAS-SELECTED-SOURCE-LOOKUP:BEGIN
+/**
+ * Everything the selected-source list is built from: the display document, its
+ * sources (each source's own properties and field count), the source catalog,
+ * and the audit's calculated fields. Field objects are shared, not copied, so
+ * edits inside a field are seen without a rebuild.
+ */
+function atlasSelectedSourceSnapshot() {
+  const audit = atlasDisplayDocument?.() || state.audit;
+  const sources = audit.sources || [];
+  const auditFields = state.audit.fields || [];
+  const snapshot = [
+    audit,
+    audit.sources,
+    sources.length,
+    atlasSourceDerivedVersion,
+    sourceCatalogEntries(),
+    auditFields,
+    auditFields.length,
+  ];
+  sources.forEach((source) => {
+    snapshot.push(source);
+    if (!source || typeof source !== "object") return;
+    const keys = Object.keys(source);
+    snapshot.push(keys.length);
+    keys.forEach((key) => snapshot.push(key, source[key]));
+    snapshot.push(source.fields?.length);
+  });
+  auditFields.forEach((field) => {
+    if (field?.calculated || field?.created || field?.custom)
+      snapshot.push(field);
+  });
+  return snapshot;
+}
+
+function atlasSelectedSourceSnapshotMatches(previous, next) {
+  if (!previous || previous.length !== next.length) return false;
+  for (let index = 0; index < next.length; index += 1)
+    if (!Object.is(previous[index], next[index])) return false;
+  return true;
+}
+
+/**
+ * Returns the resolved selected sources with per-lookup memos for source
+ * resolution and stable keys. Pill rendering resolves sources many times per
+ * quoted token; resolving each against the catalog every time made large audits
+ * slow. Callers must not modify lookup.sources; public helpers return copies.
+ */
+function atlasSelectedSourceLookup() {
+  const cache = atlasSelectedSourceLookupState;
+  if (!cache.uncached)
+    return {
+      sources: atlasSelectedAuditSources(),
+      resolved: new Map(),
+      stableKeys: new Map(),
+    };
+  const snapshot = atlasSelectedSourceSnapshot();
+  if (
+    cache.lookup &&
+    atlasSelectedSourceSnapshotMatches(cache.snapshot, snapshot)
+  )
+    return cache.lookup;
+  cache.snapshot = snapshot;
+  cache.lookup = {
+    sources: cache.uncached(),
+    resolved: new Map(),
+    stableKeys: new Map(),
+  };
+  return cache.lookup;
+}
+
+atlasSelectedSourceLookupState.uncached = atlasSelectedAuditSources;
+atlasSelectedAuditSources = function atlasSelectedAuditSourcesCached() {
+  return atlasSelectedSourceLookup().sources.map((source) => ({ ...source }));
+};
+// ATLAS-SELECTED-SOURCE-LOOKUP:END
 
 // Phase 2: string field/source behavior is handled by explicit commit adapters in 15g.
 // ATLAS-STRING-TRANSFORM-UPDATE:END

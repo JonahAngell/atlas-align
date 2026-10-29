@@ -3723,6 +3723,8 @@
 
   // Set for the length of one renderIssueSurfaces pass.
   let renderStepNumbers = null;
+  // Result of the last issue render; null while no audit is active.
+  let lastRenderedIssues = null;
 
   // Read-only copy of the Logic Builder rules-list number (1, 1.1, 2, …).
   function rulesListStepNumber(stepId) {
@@ -4270,10 +4272,12 @@
           "No active audit. Select an audit to review readiness.";
       if (elements.readinessList) elements.readinessList.replaceChildren();
       clearIssueIndicators();
+      lastRenderedIssues = null;
       return;
     }
     renderedAuditKey = currentAuditKey();
     const result = current();
+    lastRenderedIssues = result;
     const status = stateLabel(result);
     if (elements.root) elements.root.dataset.status = status;
     const criticalCount = Number(result.counts?.critical || 0);
@@ -4499,6 +4503,12 @@
     fixIssue: executeFix,
     indicatorTone,
     syncIndicators: () => syncIssueIndicators(),
+    // Repaints markers onto re-rendered DOM from the last issue render. Audit
+    // changes invalidate and re-render, so this skips re-serializing the audit.
+    syncIndicatorsAfterDomChange: () =>
+      lastRenderedIssues
+        ? syncIssueIndicators(lastRenderedIssues)
+        : clearIssueIndicators(),
   });
   global.atlasMarkLogicIssuesDirty = invalidate;
   global.atlasLogicIssues = () => current().issues;
@@ -4526,7 +4536,7 @@ if (typeof document !== "undefined") {
         ((callback) => window.setTimeout(callback, 16));
       frame = schedule(() => {
         frame = 0;
-        window.ATLASAuditIssues?.syncIndicators?.();
+        window.ATLASAuditIssues?.syncIndicatorsAfterDomChange?.();
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });
