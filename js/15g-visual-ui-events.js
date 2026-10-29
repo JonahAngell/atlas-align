@@ -2756,35 +2756,42 @@ function atlasInverseSyncKey(step, steps, linkedIds = null) {
   ])}`;
 }
 
+/**
+ * The data work a full rules-list render does first: fill in step defaults and
+ * keep linked inverse steps in step with their source steps.
+ */
+function atlasPrepareLogicStepsForRender() {
+  const audit = atlasDisplayDocument?.() || state.audit;
+  if (audit !== state.audit) return;
+  const steps = audit.steps || [];
+  steps.forEach((step, index) => normalizeCatalogStep?.(step, index));
+  let linkedIds = null;
+  steps.forEach((step) => {
+    if (step.step_type !== "if_then" || step.params?.inverse_else === "Yes")
+      return;
+    linkedIds = linkedIds || atlasInverseLinkedIds(steps);
+    const key = atlasInverseSyncKey(step, steps, linkedIds);
+    if (atlasInverseSyncSignatures.get(step) === key) return;
+    // The links hold every step the sync could update, so a step with none
+    // needs no sync. A sync that changed something may have relinked steps,
+    // so the links and the key are rebuilt after it.
+    const changed =
+      (linkedIds.get(step.id) || []).length > 0 &&
+      syncInverseElseStepsForSource?.(step.id);
+    if (changed) linkedIds = atlasInverseLinkedIds(steps);
+    atlasInverseSyncSignatures.set(
+      step,
+      changed ? atlasInverseSyncKey(step, steps, linkedIds) : key,
+    );
+  });
+}
+
 function atlasRenderVirtualLogicRules(options = {}) {
   const list = e.stepsList || $("stepsList");
   if (!list) return;
-  const audit = atlasDisplayDocument?.() || state.audit;
-  const steps = audit.steps || [];
   // A scroll or resize changes only which cards are mounted, so the audit-wide
-  // normalization and inverse sync below run only for real renders.
-  if (audit === state.audit && !options.scrollOnly) {
-    steps.forEach((step, index) => normalizeCatalogStep?.(step, index));
-    let linkedIds = null;
-    steps.forEach((step) => {
-      if (step.step_type !== "if_then" || step.params?.inverse_else === "Yes")
-        return;
-      linkedIds = linkedIds || atlasInverseLinkedIds(steps);
-      const key = atlasInverseSyncKey(step, steps, linkedIds);
-      if (atlasInverseSyncSignatures.get(step) === key) return;
-      // The links hold every step the sync could update, so a step with none
-      // needs no sync. A sync that changed something may have relinked steps,
-      // so the links and the key are rebuilt after it.
-      const changed =
-        (linkedIds.get(step.id) || []).length > 0 &&
-        syncInverseElseStepsForSource?.(step.id);
-      if (changed) linkedIds = atlasInverseLinkedIds(steps);
-      atlasInverseSyncSignatures.set(
-        step,
-        changed ? atlasInverseSyncKey(step, steps, linkedIds) : key,
-      );
-    });
-  }
+  // normalization and inverse sync run only for real renders.
+  if (!options.scrollOnly) atlasPrepareLogicStepsForRender();
 
   const entries = atlasLogicVirtualEntries();
   const width = Math.round(list.getBoundingClientRect().width);
@@ -2925,6 +2932,49 @@ function atlasReconcileVirtualLogicCards(list, visible) {
   });
   if (list.lastChild !== after) list.append(after);
   return created;
+}
+
+/**
+ * Moves the selection without re-rendering the rules list. Selection only sets
+ * a card's "selected" class, so the old and new cards change in place and the
+ * editor is redrawn. Returns false when the new card is not mounted in the
+ * virtual layout, so the caller renders the list instead.
+ */
+function atlasSelectLogicStepInPlace(stepId) {
+  const list = e.stepsList || $("stepsList");
+  if (!list || !stepId || atlasLogicVirtualDragMode) return false;
+  const cards = Array.from(list.querySelectorAll(".logic-rule-card[data-id]"));
+  const next = cards.find((card) => card.dataset.id === stepId);
+  if (!next?.dataset.virtualKey) return false;
+  const previousId = state.selectedStepId;
+  const previous =
+    previousId && previousId !== stepId
+      ? cards.find((card) => card.dataset.id === previousId)
+      : null;
+  // Same data work as a full render. If it changed what any mounted card
+  // shows, render the list instead.
+  atlasPrepareLogicStepsForRender();
+  const entries = new Map(
+    atlasLogicVirtualEntries().map((entry) => [entry.step.id, entry]),
+  );
+  const stale = cards.some((card) => {
+    const entry = entries.get(card.dataset.id);
+    return (
+      !entry || card.dataset.virtualKey !== atlasVirtualLogicCardKey(entry)
+    );
+  });
+  if (stale) return false;
+  state.selectedStepId = stepId;
+  [previous, next].forEach((card) => {
+    if (!card) return;
+    card.classList.toggle("selected", card.dataset.id === stepId);
+    const entry = entries.get(card.dataset.id);
+    if (entry) card.dataset.virtualKey = atlasVirtualLogicCardKey(entry);
+  });
+  renderSelectedStep?.();
+  renderLogicTablePreviewRows?.();
+  requestAnimationFrame(atlasSyncRulesHeightToEditor);
+  return true;
 }
 
 let atlasLogicVirtualPendingFull = false;
