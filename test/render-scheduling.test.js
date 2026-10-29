@@ -54,3 +54,21 @@ test("immediate requests remain sticky within a batch", () => {
   assert.equal(merged.immediate, true);
   assert.equal(merged.preview, true);
 });
+
+test("live editor typing batches preview and debounces audit issues", () => {
+  const rulesList = fs.readFileSync(
+    new URL("../js/15d-logic-rules-list.js", import.meta.url),
+    "utf8",
+  );
+  const commit = functionSource(rulesList, "atlasCommitLiveEditor");
+  const contentOnly = commit.slice(
+    commit.indexOf("atlasRefreshLogicRuleCard(step);"),
+  );
+  assert.doesNotMatch(contentOnly, /renderPreview\?\.\(\)/);
+  assert.doesNotMatch(contentOnly, /renderValidationPanel\?\.\(\)/);
+  assert.match(
+    contentOnly,
+    /atlasRequestRender\?\.\(\{ preview: true, logicTable: true \}\)/,
+  );
+  assert.match(contentOnly, /atlasRequestRender\?\.\(\{ validation: true \}\)/);
+});

@@ -2089,6 +2089,57 @@ function issueContextLines(context) {
     .map((node) => node.textContent);
 }
 
+test("issue lists are built only while visible and reused while unchanged", async () => {
+  const audit = completeAudit();
+  audit.steps = [brokenConditionStep("step_hidden_panel")];
+  const context = await runtime(audit);
+  const panel = indicatorElement("div", { id: "atlas-audit-issues-panel" });
+  panel.hidden = true;
+  panel.addEventListener = () => {};
+  const list = indicatorElement("div", { id: "atlas-audit-issues-list" });
+  list.parentElement = panel;
+  const root = indicatorElement("div", { id: "atlas-audit-issues-root" });
+  root.isConnected = true;
+  const page = indicatorElement("section", { className: "page active" });
+  page.dataset.page = "steps";
+  context.document = {
+    body: indicatorElement("body"),
+    documentElement: indicatorElement("html"),
+    createElement: (tag) => indicatorElement(tag),
+    getElementById(id) {
+      if (id === "atlas-audit-issues-root") return root;
+      if (id === "atlas-audit-issues-list") return list;
+      if (id === "atlas-audit-issues-panel") return panel;
+      return null;
+    },
+    querySelector(selector) {
+      return selector === ".page.active" ? page : null;
+    },
+    querySelectorAll: () => [],
+    addEventListener() {},
+  };
+  context.requestAnimationFrame = (callback) => {
+    callback(0);
+    return 0;
+  };
+  const cards = () => list.querySelectorAll(".atlas-audit-issue-card");
+
+  context.ATLASAuditIssues.render();
+  assert.equal(cards().length, 0, "a closed panel is not rendered");
+
+  panel.hidden = false;
+  context.ATLASAuditIssues.render();
+  const first = cards();
+  assert.ok(first.length > 0, "an open panel lists its issues");
+
+  context.ATLASAuditIssues.render();
+  assert.equal(cards()[0], first[0], "an unchanged result keeps its cards");
+
+  audit.steps.push(brokenConditionStep("step_hidden_panel_2"));
+  context.ATLASAuditIssues.render();
+  assert.ok(cards().length > first.length, "a changed result is re-rendered");
+});
+
 function brokenConditionStep(id, parentId = null) {
   return {
     id,
