@@ -13,6 +13,19 @@ const ATLAS_SOURCE_IDENTITY_PROPS = [
 ];
 const atlasSourceIdentityMemo = new WeakMap();
 
+function atlasSourceIdentityCatalogMatches(snapshot, catalogSources) {
+  const width = ATLAS_SOURCE_IDENTITY_PROPS.length + 1;
+  if (snapshot[0] !== catalogSources.length) return false;
+  for (let index = 0; index < catalogSources.length; index += 1) {
+    const source = catalogSources[index];
+    let offset = 1 + index * width;
+    if (snapshot[offset] !== source) return false;
+    for (const prop of ATLAS_SOURCE_IDENTITY_PROPS)
+      if (!Object.is(snapshot[(offset += 1)], source?.[prop])) return false;
+  }
+  return true;
+}
+
 function atlasSourceIdentityCatalogSnapshot(catalogSources) {
   const snapshot = [catalogSources.length];
   catalogSources.forEach((source) => {
@@ -25,14 +38,11 @@ function atlasSourceIdentityCatalogSnapshot(catalogSources) {
 }
 
 function atlasSourceIdentityResults(catalogSources) {
-  const snapshot = atlasSourceIdentityCatalogSnapshot(catalogSources);
   const memo = atlasSourceIdentityMemo.get(catalogSources);
-  if (
-    memo &&
-    memo.snapshot.length === snapshot.length &&
-    memo.snapshot.every((value, index) => Object.is(value, snapshot[index]))
-  )
+  // Checked in place: this runs for every resolution, so it builds nothing.
+  if (memo && atlasSourceIdentityCatalogMatches(memo.snapshot, catalogSources))
     return memo.results;
+  const snapshot = atlasSourceIdentityCatalogSnapshot(catalogSources);
   const results = new Map();
   atlasSourceIdentityMemo.set(catalogSources, { snapshot, results });
   return results;

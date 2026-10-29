@@ -91,6 +91,16 @@ function atlasDisplaySameToken(left, right) {
 // Created-field entries for the atlasDisplayRows pass in progress; every row
 // checks the same list, and building it walks every step.
 let atlasDisplayCreatedEntriesForPass = null;
+// Source identities for the same pass: every row and logic reference resolves
+// one of the same few source names.
+let atlasDisplayIdentitiesForPass = null;
+function atlasDisplayIdentity(value) {
+  if (!atlasDisplayIdentitiesForPass || typeof value !== "string")
+    return requirementsSourceIdentity(value);
+  if (!atlasDisplayIdentitiesForPass.has(value))
+    atlasDisplayIdentitiesForPass.set(value, requirementsSourceIdentity(value));
+  return atlasDisplayIdentitiesForPass.get(value);
+}
 function atlasDisplayCreatedMatch(row) {
   if (typeof atlasCreatedFieldEntries !== "function") return null;
   const title = atlasDisplayPart(
@@ -111,7 +121,7 @@ function atlasDisplayCreatedMatch(row) {
     atlasDisplayPart(row.sourceKey) === "calculated-field" ||
     atlasDisplayPart(row.canonicalKey).startsWith("calculated:");
   if (markedCalculated) return matches.length === 1 ? matches[0] : null;
-  const identity = requirementsSourceIdentity(row.uniqueId || row.sourceFile);
+  const identity = atlasDisplayIdentity(row.uniqueId || row.sourceFile);
   const catalogFields = (sourceCatalogEntries?.() || [])
     .filter((source) =>
       [source.sourceKey, source.sourceFile, source.alias, source.name].some(
@@ -185,7 +195,7 @@ function atlasDisplayLogicKeys() {
     requirementsLogicFieldReferences().map((item) =>
       atlasDisplayKey({
         sourceFile:
-          requirementsSourceIdentity(item.sourceFile).sourceKey ||
+          atlasDisplayIdentity(item.sourceFile).sourceKey ||
           item.sourceFile,
         fieldName: item.fieldName,
       }),
@@ -193,7 +203,7 @@ function atlasDisplayLogicKeys() {
   );
 }
 function atlasDisplayCatalogRow(preference) {
-  const identity = requirementsSourceIdentity(
+  const identity = atlasDisplayIdentity(
     preference.sourceFile || preference.sourceKey,
   );
   const field = (
@@ -232,10 +242,12 @@ function atlasDisplayRows(options = {}) {
     typeof atlasCreatedFieldEntries === "function"
       ? atlasCreatedFieldEntries({ includeUnavailable: true })
       : null;
+  atlasDisplayIdentitiesForPass = new Map();
   try {
     return atlasDisplayRowsWithCreatedEntries(options);
   } finally {
     atlasDisplayCreatedEntriesForPass = null;
+    atlasDisplayIdentitiesForPass = null;
   }
 }
 function atlasDisplayRowsWithCreatedEntries(options = {}) {
@@ -263,7 +275,7 @@ function atlasDisplayRowsWithCreatedEntries(options = {}) {
             sourceFile: "Calculated Field",
             alias: "Calculated Field",
           }
-        : requirementsSourceIdentity(row.uniqueId || row.sourceFile),
+        : atlasDisplayIdentity(row.uniqueId || row.sourceFile),
       sourceColor = calculated
         ? context?.sourceColor || "#7da2d8"
         : atlasDisplayResolvedSourceColor({
@@ -314,7 +326,7 @@ function atlasDisplayRowsWithCreatedEntries(options = {}) {
             sourceFile: "Calculated Field",
             alias: "Calculated Field",
           }
-        : requirementsSourceIdentity(pref.sourceKey || pref.sourceFile),
+        : atlasDisplayIdentity(pref.sourceKey || pref.sourceFile),
       sourceColor = calculated
         ? context?.sourceColor || "#7da2d8"
         : atlasDisplayResolvedSourceColor({
