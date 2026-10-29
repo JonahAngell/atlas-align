@@ -58,6 +58,9 @@
     message: "",
     restoreFocus: null,
   };
+  // The same comparison localeCompare(b, undefined, { sensitivity: "base" })
+  // makes, without building a collator for every comparison of a long list.
+  const labelCollator = new Intl.Collator(undefined, { sensitivity: "base" });
   /** True when the entry is the active single selection or a checked multi selection. */
   function isEntrySelected(entry) {
     return state.multiple
@@ -136,10 +139,9 @@
           value.toLocaleLowerCase().includes(query),
         ),
     );
+    const labels = new Map(matches.map((entry) => [entry, labelFor(entry)]));
     return matches.sort((a, b) =>
-      labelFor(a).localeCompare(labelFor(b), undefined, {
-        sensitivity: "base",
-      }),
+      labelCollator.compare(labels.get(a), labels.get(b)),
     );
   }
   /**
@@ -208,11 +210,10 @@
   }
   /** Keep catalog fields ahead of calculated fields inside one source group. */
   function calculatedFieldsLast(entries) {
+    const labels = new Map(entries.map((entry) => [entry, labelFor(entry)]));
     return [...entries].sort((a, b) => {
       if (Boolean(a.custom) !== Boolean(b.custom)) return a.custom ? 1 : -1;
-      return labelFor(a).localeCompare(labelFor(b), undefined, {
-        sensitivity: "base",
-      });
+      return labelCollator.compare(labels.get(a), labels.get(b));
     });
   }
   /** True when this open asked for bulk select controls in multi-select mode. */
@@ -291,7 +292,7 @@
         .sort(([a], [b]) => {
           if (a === "#") return -1;
           if (b === "#") return 1;
-          return a.localeCompare(b, undefined, { sensitivity: "base" });
+          return labelCollator.compare(a, b);
         })
         .forEach(([letter, groupEntries]) =>
           renderGroup(container, letter, "#667085", groupEntries),
@@ -312,7 +313,7 @@
       });
       [...groups.values()]
         .sort((a, b) =>
-          a.label.localeCompare(b.label, undefined, { sensitivity: "base" }),
+          labelCollator.compare(a.label, b.label),
         )
         .forEach((group) =>
           renderGroup(
