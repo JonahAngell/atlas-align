@@ -506,7 +506,8 @@
     const entry = state.entries.find((candidate) => candidate.key === key);
     if (!entry || entry.disabled) return;
     state.selectedKey = entry.key;
-    refresh();
+    // Re-render the selection only when the picker stays open.
+    if (state.config?.closeOnSelect === false) refresh();
     if (typeof state.config?.onSelect === "function")
       state.config.onSelect(entry.original, entry.key);
     if (state.config?.closeOnSelect !== false) close("select");

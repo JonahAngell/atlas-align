@@ -2261,9 +2261,37 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
     .querySelector(".visual-picker-modal-backdrop.dynamic-mini-picker")
     ?.remove();
   atlasMarkLogicIssuesDirty?.();
-  renderAll?.();
+  atlasRenderAfterPickerCommit();
   scheduleAutosave?.();
 };
+
+/**
+ * A field or source choice changes one step and may regenerate the reference
+ * steps. On Logic Builder that needs the rules list and the editor, not
+ * renderAll's full page and page-shell rebuild; other pages are marked stale
+ * and render when visited, as renderAll left them.
+ */
+function atlasRenderAfterPickerCommit() {
+  if (
+    atlasActivePage?.() !== "steps" ||
+    typeof atlasRequestRender !== "function"
+  ) {
+    renderAll?.();
+    return;
+  }
+  syncAutoReferenceSteps?.();
+  atlasMarkAllPagesDirty?.();
+  atlasRequestRender({
+    steps: true,
+    logicTable: true,
+    preview: true,
+    validation: true,
+    immediate: true,
+  });
+  applyFieldPickerAttributes?.();
+  updateNavigationLockState?.();
+  renderFlowNavControls?.();
+}
 renderMiniPicker = function renderMiniPickerSharedAdapter() {
   document
     .querySelector(".visual-picker-modal-backdrop.dynamic-mini-picker")
