@@ -1,29 +1,54 @@
-FEATURE_REQUEST_TEMPLATE.md
-index.html
-catalogs/logic_phrase_catalog.json
-css/manifest.json
-css/logic-builder.css
-build-css.mjs
-sections/logic-builder.html
-js/01-state-dom.js
-js/02-logic-rendering.js
-js/03-capture-actions.js
-js/07-phrase-catalog.js
-js/08-step-templates-validation.js
-js/10-field-picker.js
-js/14-catalog-driven-builder.js
-js/15c-source-field-picker.js
-js/15d-logic-rules-list.js
-js/15e-logic-step-editor.js
-js/15g-visual-ui-events.js
-js/23-atlas-audit-issues.js
-catalogs/audit-issue-rules.json
-test/logic-builder-initialization.test.js
-test/render-scheduling.test.js
-test/atlas-audit-issues.test.js
-tests/fixtures/atlas.fixture.js
-tests/helpers/ui.js
-tests/logic-builder-inventory.spec.js
-tests/logic-builder-runtime-options.spec.js
+# Core SharePoint integration
+src/sharepoint-client.js
+src/field-library-source.js
+src/field-library-workbook.js
+src/field-library.js
+src/00-global-variables.js
+src/load-env.js
+src/source-library.js
+src/routes/source-library-routes.js
+src/routes/field-library-routes.js
+server.js
+
+# Configuration and runtime
+.gitignore
+.dockerignore
+docker-compose.yml
+Dockerfile
 package.json
-playwright.config.js
+package-lock.json
+.nvmrc
+
+# Database backup and import flow
+.launch/migrations/20260820112100_create_atlas_field_library.sql
+sql/field-library/complete-import-record.sql
+sql/field-library/copy-stage-to-field-library.sql
+sql/field-library/count-staged-rows.sql
+sql/field-library/create-import-record.sql
+sql/field-library/create-stage-table.sql
+sql/field-library/insert-stage-batch.sql
+sql/field-library/truncate-field-library.sql
+
+# Browser/UI data-feed consumers
+sections/sources.html
+js/11-repo-library.js
+js/17-source-database.js
+css/sources.css
+
+# Tests
+test/sharepoint-field-library.test.js
+test/source-library-authorization.test.js
+test/source-library-identity.test.js
+test/vendor-exceljs.test.js
+
+# Documentation and troubleshooting
+docs/SOURCE_LIBRARY_LIVE_DEBUG.md
+SHAREPOINT_ENV_GUIDE_NO_BINDING.md
+PROJECT_CONTEXT.md
+PROJECT_TREE.txt
+README-local.md
+
+# Reference data and diagnostics
+docs/ATLAS Field Library.csv
+evidence/me-response-sanitized.txt
+evidence/source-library-access-response.txt

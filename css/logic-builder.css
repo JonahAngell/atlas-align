@@ -4676,4 +4676,86 @@ body.dark .created-column-token {
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1498:END */
+/* ATLAS-SOURCE-UNIT:u1498:END */ /* ATLAS-SOURCE-UNIT:u1596:BEGIN */
+
+.join-keys-editor .title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1596:END */ /* ATLAS-SOURCE-UNIT:u1597:BEGIN */
+.join-keys-heading {
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1597:END */ /* ATLAS-SOURCE-UNIT:u1598:BEGIN */
+.join-keys-editor .hint {
+  margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1598:END */ /* ATLAS-SOURCE-UNIT:u1599:BEGIN */
+.join-keys-editor .join-key-row {
+  align-items: end;
+  animation: atlas-sort-row-enter 160ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1599:END */ /* ATLAS-SOURCE-UNIT:u1600:BEGIN */
+.join-key-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: end;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1600:END */ /* ATLAS-SOURCE-UNIT:u1601:BEGIN */
+.join-key-field {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1601:END */ /* ATLAS-SOURCE-UNIT:u1602:BEGIN */
+.join-key-side-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1602:END */ /* ATLAS-SOURCE-UNIT:u1603:BEGIN */
+.join-key-equals {
+  align-self: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+/* ATLAS-SOURCE-UNIT:u1603:END */ /* ATLAS-SOURCE-UNIT:u1606:BEGIN */
+
+.join-key-row:first-child .join-key-equals {
+  padding-top: 1.1rem;
+}
+/* ATLAS-SOURCE-UNIT:u1606:END */ /* ATLAS-SOURCE-UNIT:u1604:BEGIN */
+@media (max-width: 560px) {
+  .join-keys-editor .join-key-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .join-key-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .join-key-equals {
+    display: none;
+  }
+  .join-keys-editor [data-remove-join-key] {
+    justify-self: end;
+  }
+}
+
+/* ATLAS-SOURCE-UNIT:u1604:END */ /* ATLAS-SOURCE-UNIT:u1605:BEGIN */
+@media (prefers-reduced-motion: reduce) {
+  .join-keys-editor .join-key-row {
+    animation: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1605:END */

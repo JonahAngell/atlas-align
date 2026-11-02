@@ -433,19 +433,30 @@ function qtestExpectedOutcomes(step, action, { auditName, ifNumber }) {
     case "join": {
       if (phraseIsUnionJoinType(params.join_type))
         return qtestUnionOutcomes(params, step);
-      const left = tableColumnPlain(
-        params.left_source,
-        params.left_alias,
-        params.left_field,
-      );
-      const right = tableColumnPlain(
-        params.right_source,
-        params.right_alias,
-        params.right_field,
-      );
+      const keyPairs = atlasJoinKeyPairsForText(params);
+      const pairs = (
+        keyPairs.length ? keyPairs : [{ left_field: "", right_field: "" }]
+      ).map((pair) => ({
+        left: tableColumnPlain(
+          params.left_source,
+          params.left_alias,
+          pair.left_field,
+        ),
+        right: tableColumnPlain(
+          params.right_source,
+          params.right_alias,
+          pair.right_field,
+        ),
+      }));
+      const matched = pairs
+        .map(({ left, right }) => `${left} equals ${right}`)
+        .join(" and ");
+      const agreed = pairs
+        .map(({ left, right }) => `${left} and ${right}`)
+        .join(", ");
       return [
-        `Records are matched where ${left} equals ${right}; joined values display on the ${record}.`,
-        `Source values for ${left} and ${right} agree for each joined record.`,
+        `Records are matched where ${matched}; joined values display on the ${record}.`,
+        `Source values for ${agreed} agree for each joined record.`,
       ];
     }
     case "create_column": {

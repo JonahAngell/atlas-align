@@ -63,6 +63,32 @@
 │   └── project-id
 ├── .vscode
 │   └── tasks.json
+├── ATLAS-Agent-Package
+│   ├── Knowledge
+│   │   ├── ATLAS_Audit_Import_Schema.txt
+│   │   ├── ATLAS_Complete_Examples.txt
+│   │   ├── ATLAS_Conditions_Reference.txt
+│   │   ├── ATLAS_Field_Library_Guide.txt
+│   │   ├── ATLAS_Import_and_Troubleshooting.txt
+│   │   ├── ATLAS_Terminology_and_Decisions.txt
+│   │   └── ATLAS_Validation_Checklist.txt
+│   ├── Skills
+│   │   ├── Analyze_Audit_Requirements.md
+│   │   ├── atlas-analyze-audit-requirements.zip
+│   │   ├── atlas-generate-audit-clarifications.zip
+│   │   ├── atlas-generate-import-json.zip
+│   │   ├── atlas-package-audit-import.zip
+│   │   ├── atlas-render-audit-preview.zip
+│   │   ├── atlas-resolve-field-library.zip
+│   │   ├── atlas-validate-import-json.zip
+│   │   ├── Generate_ATLAS_Import_JSON.md
+│   │   ├── Generate_Audit_Clarifications.md
+│   │   ├── Package_ATLAS_Audit_Import.md
+│   │   ├── README.md
+│   │   ├── Render_ATLAS_Audit_Preview.md
+│   │   ├── Resolve_ATLAS_Field_Library.md
+│   │   └── Validate_ATLAS_Import_JSON.md
+│   └── README.md
 ├── audits
 │   ├── active-employees-in-sap-not-wd.json
 │   ├── core-connector-worker-idoc.json
@@ -483,6 +509,7 @@
 │   ├── logic-builder-initialization.test.js
 │   ├── logic-builder-presentation-fixes.test.js
 │   ├── logic-connector-split.test.js
+│   ├── logic-hierarchy-cache.test.js
 │   ├── logic-step-editor-join.test.js
 │   ├── logic-step-indent.test.js
 │   ├── logic-text-import.test.js
@@ -495,8 +522,10 @@
 │   ├── recently-deleted-publications-ui.test.js
 │   ├── render-scheduling.test.js
 │   ├── schema.test.js
+│   ├── selected-source-lookup.test.js
 │   ├── server-robustness.test.js
 │   ├── sharepoint-field-library.test.js
+│   ├── source-identity-memo.test.js
 │   ├── source-library-authorization.test.js
 │   ├── source-library-identity.test.js
 │   ├── source-replace.test.js
@@ -580,6 +609,7 @@
 ├── README-AUTHORIZATION-ROLE-MATRIX-TEST.md
 ├── README-local.md
 ├── README.md
+├── REVIEW_BUNDLE.txt
 ├── review-bundle-files.txt
 ├── server.js
 ├── SHAREPOINT_ENV_GUIDE_NO_BINDING.md
