@@ -651,9 +651,12 @@ function atlasRenderPage(page, options = {}) {
       renderFieldPickerPanel?.();
     } else if (target === "steps") {
       normalizeHierarchyFields?.();
-      renderSteps?.();
+      // renderSelectedStep below draws the editor; renderSteps would draw it too.
+      renderSteps?.({ includeSelectedStep: false });
       renderSelectedStep?.();
-      atlasEnsureFieldPickerOptions?.();
+      // The field suggestion lists are built when a field input is first
+      // focused (10-field-picker.js); building them here rebuilt them from
+      // the whole library on every visit.
       applyFieldPickerAttributes?.();
     } else if (target === "preview") {
       atlasPreviewDirty = false;

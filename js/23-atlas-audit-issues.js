@@ -812,6 +812,11 @@
       const ids = new Set(
         context.audit.steps.map((step) => step.id).filter(Boolean),
       );
+      // First step per id, as find() returned, for the ancestor walk below.
+      const stepsById = new Map();
+      context.audit.steps.forEach((step) => {
+        if (!stepsById.has(step.id)) stepsById.set(step.id, step);
+      });
       const issues = [];
       context.audit.steps.forEach((step) => {
         if (!step.id)
@@ -891,9 +896,7 @@
             break;
           }
           seen.add(parentId);
-          parentId =
-            context.audit.steps.find((candidate) => candidate.id === parentId)
-              ?.parentId || "";
+          parentId = stepsById.get(parentId)?.parentId || "";
         }
       });
       return issues;
@@ -3872,9 +3875,86 @@
     });
   }
 
+  function issueCardElement(entry) {
+    const card = document.createElement("article");
+    card.className = `atlas-audit-issue-card atlas-audit-issue-card--${entry.severity}`;
+    card.dataset.issueId = string(entry.id || entry.ruleId);
+    card.dataset.reviewIssueKey = string(
+      entry.stableKey || entry.key || entry.id || entry.ruleId,
+    );
+    const heading = appendText(
+      card,
+      "h4",
+      string(entry.title || entry.summary || "Audit issue"),
+      "atlas-audit-issue-card__title",
+    );
+    const severity = appendText(
+      heading,
+      "span",
+      string(entry.severity || "warning"),
+      "atlas-audit-issue-card__severity",
+    );
+    severity.setAttribute(
+      "aria-label",
+      `Severity ${string(entry.severity || "warning")}`,
+    );
+    appendText(
+      card,
+      "p",
+      string(entry.summary || entry.detail || "Review this audit issue."),
+      "atlas-audit-issue-card__summary",
+    );
+    if (entry.detail && entry.detail !== entry.summary)
+      appendText(
+        card,
+        "p",
+        string(entry.detail),
+        "atlas-audit-issue-card__detail",
+      );
+    const context = [
+      entry.page || entry.owningPage,
+      entry.target?.stepId && issueStepContextLabel(entry.target.stepId),
+      entry.target?.conditionId && `Condition ${entry.target.conditionId}`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    if (context)
+      appendText(card, "p", context, "atlas-audit-issue-card__context");
+    const actions = document.createElement("div");
+    actions.className = "atlas-audit-issue-card__actions";
+    if (entry.canFix && typeof fixActions[entry.fixAction] === "function") {
+      const fix = appendText(actions, "button", "Fix", "btn primary small");
+      fix.type = "button";
+      fix.dataset.atlasIssueFix = entry.stableKey;
+    }
+    if (entry.canJump && typeof jumpActions[entry.jumpAction] === "function") {
+      const jump = appendText(
+        actions,
+        "button",
+        "Jump to Issue",
+        "btn secondary small",
+      );
+      jump.type = "button";
+      jump.dataset.atlasIssueJump = entry.stableKey;
+    }
+    if (actions.childElementCount) card.appendChild(actions);
+    return card;
+  }
+
+  // Cards past the first screenful are added over later frames, a few
+  // milliseconds of work at a time, so a list with thousands of issues shows
+  // without building every card first and stays responsive while it fills.
+  // A new render of the same list cancels the batches still pending.
+  const ISSUE_CARDS_FIRST_BATCH = 100;
+  const ISSUE_CARDS_LATER_BATCH = 200;
+  const ISSUE_CARDS_FRAME_BUDGET_MS = 8;
+  const issueCardRenders = new WeakMap();
+
   function renderIssueCards(container, result, filterState, includeGroups) {
     if (!container) return;
     container.replaceChildren();
+    const token = {};
+    issueCardRenders.set(container, token);
     if (result.error) {
       const message = appendText(
         container,
@@ -3902,7 +3982,15 @@
       return;
     }
     const groups = includeGroups ? issueCategories(issues) : [""];
-    groups.forEach((category) => {
+    const queue = [];
+    groups.forEach((category) =>
+      issues
+        .filter((entry) => !category || entry.category === category)
+        .forEach((entry) => queue.push([category, entry])),
+    );
+    const groupElements = new Map();
+    const groupFor = (category) => {
+      if (groupElements.has(category)) return groupElements.get(category);
       const group = document.createElement("section");
       group.className = "atlas-audit-issues__group";
       if (includeGroups)
@@ -3912,87 +4000,45 @@
           categoryLabel(category),
           "atlas-audit-issues__group-title",
         );
-      issues
-        .filter((entry) => !category || entry.category === category)
-        .forEach((entry) => {
-          const card = document.createElement("article");
-          card.className = `atlas-audit-issue-card atlas-audit-issue-card--${entry.severity}`;
-          card.dataset.issueId = string(entry.id || entry.ruleId);
-          card.dataset.reviewIssueKey = string(
-            entry.stableKey || entry.key || entry.id || entry.ruleId,
-          );
-          const heading = appendText(
-            card,
-            "h4",
-            string(entry.title || entry.summary || "Audit issue"),
-            "atlas-audit-issue-card__title",
-          );
-          const severity = appendText(
-            heading,
-            "span",
-            string(entry.severity || "warning"),
-            "atlas-audit-issue-card__severity",
-          );
-          severity.setAttribute(
-            "aria-label",
-            `Severity ${string(entry.severity || "warning")}`,
-          );
-          appendText(
-            card,
-            "p",
-            string(entry.summary || entry.detail || "Review this audit issue."),
-            "atlas-audit-issue-card__summary",
-          );
-          if (entry.detail && entry.detail !== entry.summary)
-            appendText(
-              card,
-              "p",
-              string(entry.detail),
-              "atlas-audit-issue-card__detail",
-            );
-          const context = [
-            entry.page || entry.owningPage,
-            entry.target?.stepId && issueStepContextLabel(entry.target.stepId),
-            entry.target?.conditionId &&
-              `Condition ${entry.target.conditionId}`,
-          ]
-            .filter(Boolean)
-            .join(" · ");
-          if (context)
-            appendText(card, "p", context, "atlas-audit-issue-card__context");
-          const actions = document.createElement("div");
-          actions.className = "atlas-audit-issue-card__actions";
-          if (
-            entry.canFix &&
-            typeof fixActions[entry.fixAction] === "function"
-          ) {
-            const fix = appendText(
-              actions,
-              "button",
-              "Fix",
-              "btn primary small",
-            );
-            fix.type = "button";
-            fix.dataset.atlasIssueFix = entry.stableKey;
-          }
-          if (
-            entry.canJump &&
-            typeof jumpActions[entry.jumpAction] === "function"
-          ) {
-            const jump = appendText(
-              actions,
-              "button",
-              "Jump to Issue",
-              "btn secondary small",
-            );
-            jump.type = "button";
-            jump.dataset.atlasIssueJump = entry.stableKey;
-          }
-          if (actions.childElementCount) card.appendChild(actions);
-          group.appendChild(card);
-        });
-      container.appendChild(group);
-    });
+      // Review feedback, when shown, stays after every group.
+      const feedback = container.querySelector?.(
+        ":scope > [data-review-feedback-projection]",
+      );
+      if (feedback) container.insertBefore(group, feedback);
+      else container.appendChild(group);
+      groupElements.set(category, group);
+      return group;
+    };
+    let next = 0;
+    const renderNext = () => {
+      const [category, entry] = queue[next];
+      groupFor(category).appendChild(issueCardElement(entry));
+      next += 1;
+    };
+    const renderBatch = (size) => {
+      const end = Math.min(queue.length, next + size);
+      while (next < end) renderNext();
+    };
+    const clock = global.performance;
+    const canDefer = typeof global.requestAnimationFrame === "function";
+    renderBatch(canDefer ? ISSUE_CARDS_FIRST_BATCH : queue.length);
+    const continueRender = () => {
+      if (
+        issueCardRenders.get(container) !== token ||
+        container.isConnected === false
+      )
+        return;
+      if (typeof clock?.now === "function") {
+        const start = clock.now();
+        do renderNext();
+        while (
+          next < queue.length &&
+          clock.now() - start < ISSUE_CARDS_FRAME_BUDGET_MS
+        );
+      } else renderBatch(ISSUE_CARDS_LATER_BATCH);
+      if (next < queue.length) global.requestAnimationFrame(continueRender);
+    };
+    if (next < queue.length) global.requestAnimationFrame(continueRender);
   }
 
   function updateSeverityButtons(container, filterState, result) {
@@ -4255,6 +4301,47 @@
             host.classList?.remove("atlas-issue-indicator-host");
         }
       });
+    byHost.forEach((issues, host) => {
+      const tone = indicatorTone(issues);
+      if (tone) paintIssueIndicator(host, tone);
+    });
+  }
+
+  /**
+   * Paints markers onto step surfaces inside newly added nodes, from the last
+   * issue render. Used when the only DOM changes are cards entering the rules
+   * list: nodes that stayed keep their markers and nothing else moved.
+   */
+  function syncIssueIndicatorsWithin(nodes) {
+    if (!lastRenderedIssues) return;
+    const byStepId = new Map();
+    array(lastRenderedIssues.issues)
+      .filter(isOpenIssue)
+      .forEach((entry) => {
+        const stepId = indicatorStepId(entry);
+        if (!stepId) return;
+        const list = byStepId.get(stepId) || [];
+        list.push(entry);
+        byStepId.set(stepId, list);
+      });
+    if (!byStepId.size) return;
+    const byHost = new Map();
+    array(nodes).forEach((root) => {
+      if (!root?.querySelectorAll) return;
+      const surfaces = [...root.querySelectorAll(STEP_SURFACE_QUERY)];
+      if (root.matches?.(STEP_SURFACE_QUERY)) surfaces.unshift(root);
+      surfaces.forEach((node) => {
+        if (node.hidden || node.type === "hidden") return;
+        stepSurfaceIds(node).forEach((id) => {
+          if (!byStepId.has(id)) return;
+          const host = indicatorHost(node);
+          if (!host) return;
+          const list = byHost.get(host) || [];
+          list.push(...byStepId.get(id));
+          byHost.set(host, list);
+        });
+      });
+    });
     byHost.forEach((issues, host) => {
       const tone = indicatorTone(issues);
       if (tone) paintIssueIndicator(host, tone);
@@ -4542,6 +4629,7 @@
       lastRenderedIssues
         ? syncIssueIndicators(lastRenderedIssues)
         : clearIssueIndicators(),
+    syncIndicatorsWithin: syncIssueIndicatorsWithin,
   });
   global.atlasMarkLogicIssuesDirty = invalidate;
   global.atlasLogicIssues = () => current().issues;
@@ -4562,14 +4650,38 @@ if (typeof document !== "undefined") {
       return;
     document.body.dataset.atlasIssueIndicatorObserver = "true";
     let frame = 0;
-    const observer = new MutationObserver(() => {
+    // Scrolling the rules list swaps cards on every frame. When that is the
+    // only change, only the cards that came into view need markers.
+    let fullSync = false;
+    const added = [];
+    const observer = new MutationObserver((records) => {
+      const list = document.getElementById("stepsList");
+      records.forEach((record) => {
+        // Issue cards never carry markers, and the lists fill in over frames.
+        if (
+          record.target.closest?.(
+            "#atlas-audit-issues-panel, #validationPanel, .atlas-audit-issue-card",
+          )
+        )
+          return;
+        if (!list || !list.contains(record.target)) fullSync = true;
+        else
+          record.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) added.push(node);
+          });
+      });
       if (frame) return;
       const schedule =
         window.requestAnimationFrame ||
         ((callback) => window.setTimeout(callback, 16));
       frame = schedule(() => {
         frame = 0;
-        window.ATLASAuditIssues?.syncIndicatorsAfterDomChange?.();
+        const nodes = added.splice(0).filter((node) => node.isConnected);
+        if (fullSync) {
+          fullSync = false;
+          window.ATLASAuditIssues?.syncIndicatorsAfterDomChange?.();
+        } else if (nodes.length)
+          window.ATLASAuditIssues?.syncIndicatorsWithin?.(nodes);
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });

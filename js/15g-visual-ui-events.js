@@ -2023,13 +2023,14 @@ function atlasUnifiedFieldEntries({ sourceFile = "", targetStepId = "" } = {}) {
     (atlasDisplayDocument?.() || state.audit)?.sources || [],
     sourceFile,
   );
-  const base = sources.flatMap((source) =>
-    (source.fields || []).map((field) => {
+  const base = sources.flatMap((source) => {
+    // The same for every field of the source.
+    const sourceKey = atlasStableSourceKey(source) || source.sourceKey;
+    const picked = (state.audit.sources || []).find((item) =>
+      atlasSourceMatchesLookup(item, sourceKey),
+    );
+    return (source.fields || []).map((field) => {
       const parts = fieldDisplayParts(field, source.sourceFile);
-      const sourceKey = atlasStableSourceKey(source) || source.sourceKey;
-      const picked = (state.audit.sources || []).find((item) =>
-        atlasSourceMatchesLookup(item, sourceKey),
-      );
       return {
         ...field,
         sourceKey,
@@ -2044,8 +2045,8 @@ function atlasUnifiedFieldEntries({ sourceFile = "", targetStepId = "" } = {}) {
         origin: "source",
         isCreatedField: false,
       };
-    }),
-  );
+    });
+  });
   const seen = new Set();
   return [
     ...base,
@@ -2261,9 +2262,37 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
     .querySelector(".visual-picker-modal-backdrop.dynamic-mini-picker")
     ?.remove();
   atlasMarkLogicIssuesDirty?.();
-  renderAll?.();
+  atlasRenderAfterPickerCommit();
   scheduleAutosave?.();
 };
+
+/**
+ * A field or source choice changes one step and may regenerate the reference
+ * steps. On Logic Builder that needs the rules list and the editor, not
+ * renderAll's full page and page-shell rebuild; other pages are marked stale
+ * and render when visited, as renderAll left them.
+ */
+function atlasRenderAfterPickerCommit() {
+  if (
+    atlasActivePage?.() !== "steps" ||
+    typeof atlasRequestRender !== "function"
+  ) {
+    renderAll?.();
+    return;
+  }
+  syncAutoReferenceSteps?.();
+  atlasMarkAllPagesDirty?.();
+  atlasRequestRender({
+    steps: true,
+    logicTable: true,
+    preview: true,
+    validation: true,
+    immediate: true,
+  });
+  applyFieldPickerAttributes?.();
+  updateNavigationLockState?.();
+  renderFlowNavControls?.();
+}
 renderMiniPicker = function renderMiniPickerSharedAdapter() {
   document
     .querySelector(".visual-picker-modal-backdrop.dynamic-mini-picker")
@@ -2283,24 +2312,46 @@ renderMiniPicker = function renderMiniPickerSharedAdapter() {
     pickerKind === "source"
       ? pickerSourceOptions()
       : pickerFieldOptions(referenceSource || visualPickerState.sourceFile);
+  // Key, label and colour depend only on the item's source, which most items
+  // share, so each source's values are worked out once.
+  const sourceValues = new Map();
   const entries = values.map((item) => {
     const sourceFile = item.sourceFile || "";
     const sourceAlias = item.sourceAlias || sourceFile || "Other";
     const fieldName = item.fieldName || "";
-    const sourceKey =
-      item.sourceKey ||
-      atlasStableSourceKey({
-        sourceKey: item.sourceKey,
-        alias: item.sourceAlias,
-        sourceFile,
-      }) ||
-      sourceFile;
-    const sourceLabelText = atlasSourceDisambiguatedLabel({
+    const sourceId = JSON.stringify([
+      item.sourceKey || "",
+      item.sourceAlias || "",
       sourceFile,
-      alias: sourceAlias,
-      sourceKey,
-      sourceMetadata: { sourceTitle: sourceFile },
-    });
+    ]);
+    if (!sourceValues.has(sourceId)) {
+      const key =
+        item.sourceKey ||
+        atlasStableSourceKey({
+          sourceKey: item.sourceKey,
+          alias: item.sourceAlias,
+          sourceFile,
+        }) ||
+        sourceFile;
+      sourceValues.set(sourceId, {
+        key,
+        label: atlasSourceDisambiguatedLabel({
+          sourceFile,
+          alias: sourceAlias,
+          sourceKey: key,
+          sourceMetadata: { sourceTitle: sourceFile },
+        }),
+      });
+    }
+    const perSource = sourceValues.get(sourceId);
+    const { key: sourceKey, label: sourceLabelText } = perSource;
+    // Looked up only for items without their own colour, as before: the lookup
+    // assigns colours to audit sources that have none.
+    const sourceColorFor = () => {
+      if (!("color" in perSource))
+        perSource.color = atlasSelectedSourceColor(sourceKey);
+      return perSource.color;
+    };
     return {
       key: pickerKind === "source" ? sourceKey : `${sourceKey}::${fieldName}`,
       label:
@@ -2319,8 +2370,7 @@ renderMiniPicker = function renderMiniPickerSharedAdapter() {
           : sourceFile === ATLAS_CREATED_SOURCE
             ? ATLAS_CREATED_LABEL
             : sourceLabelText,
-      sourceColor:
-        item.sourceColor || atlasSelectedSourceColor(sourceKey) || "#7da2d8",
+      sourceColor: item.sourceColor || sourceColorFor() || "#7da2d8",
       custom: Boolean(item.isCreatedField),
       badge: item.isCreatedField ? "Custom" : "",
       pickerValue: pickerKind === "source" ? sourceKey : fieldName,
@@ -2626,9 +2676,20 @@ function atlasLogicVirtualSpacer(position, height) {
   return `<div class="logic-virtual-spacer logic-virtual-spacer-${position}" data-logic-virtual-spacer="${position}" aria-hidden="true" style="height:${Math.max(0, Math.round(height))}px;min-height:${Math.max(0, Math.round(height))}px;flex:0 0 auto;pointer-events:none"></div>`;
 }
 
-function atlasMeasureLogicVirtualCards(list, anchorId, anchorOffset) {
+/**
+ * Records the rendered height of mounted cards. `onlyCards` limits the reads to
+ * those cards; reading a card's size forces layout, so a scroll that added no
+ * cards reads none.
+ */
+function atlasMeasureLogicVirtualCards(
+  list,
+  anchorId,
+  anchorOffset,
+  onlyCards = null,
+) {
   let changedAboveAnchor = 0;
-  const cards = list.querySelectorAll(".logic-rule-card[data-id]");
+  const cards = onlyCards || list.querySelectorAll(".logic-rule-card[data-id]");
+  if (!cards.length) return;
   const sample = cards[0];
   let margin = 0;
   if (sample) {
@@ -2695,28 +2756,42 @@ function atlasInverseSyncKey(step, steps, linkedIds = null) {
   ])}`;
 }
 
+/**
+ * The data work a full rules-list render does first: fill in step defaults and
+ * keep linked inverse steps in step with their source steps.
+ */
+function atlasPrepareLogicStepsForRender() {
+  const audit = atlasDisplayDocument?.() || state.audit;
+  if (audit !== state.audit) return;
+  const steps = audit.steps || [];
+  steps.forEach((step, index) => normalizeCatalogStep?.(step, index));
+  let linkedIds = null;
+  steps.forEach((step) => {
+    if (step.step_type !== "if_then" || step.params?.inverse_else === "Yes")
+      return;
+    linkedIds = linkedIds || atlasInverseLinkedIds(steps);
+    const key = atlasInverseSyncKey(step, steps, linkedIds);
+    if (atlasInverseSyncSignatures.get(step) === key) return;
+    // The links hold every step the sync could update, so a step with none
+    // needs no sync. A sync that changed something may have relinked steps,
+    // so the links and the key are rebuilt after it.
+    const changed =
+      (linkedIds.get(step.id) || []).length > 0 &&
+      syncInverseElseStepsForSource?.(step.id);
+    if (changed) linkedIds = atlasInverseLinkedIds(steps);
+    atlasInverseSyncSignatures.set(
+      step,
+      changed ? atlasInverseSyncKey(step, steps, linkedIds) : key,
+    );
+  });
+}
+
 function atlasRenderVirtualLogicRules(options = {}) {
   const list = e.stepsList || $("stepsList");
   if (!list) return;
-  const audit = atlasDisplayDocument?.() || state.audit;
-  const steps = audit.steps || [];
   // A scroll or resize changes only which cards are mounted, so the audit-wide
-  // normalization and inverse sync below run only for real renders.
-  if (audit === state.audit && !options.scrollOnly) {
-    steps.forEach((step, index) => normalizeCatalogStep?.(step, index));
-    let linkedIds = null;
-    steps.forEach((step) => {
-      if (step.step_type !== "if_then" || step.params?.inverse_else === "Yes")
-        return;
-      linkedIds = linkedIds || atlasInverseLinkedIds(steps);
-      const key = atlasInverseSyncKey(step, steps, linkedIds);
-      if (atlasInverseSyncSignatures.get(step) === key) return;
-      syncInverseElseStepsForSource?.(step.id);
-      // The sync may add or relink inverse steps, so rebuild the links next time.
-      linkedIds = null;
-      atlasInverseSyncSignatures.set(step, atlasInverseSyncKey(step, steps));
-    });
-  }
+  // normalization and inverse sync run only for real renders.
+  if (!options.scrollOnly) atlasPrepareLogicStepsForRender();
 
   const entries = atlasLogicVirtualEntries();
   const width = Math.round(list.getBoundingClientRect().width);
@@ -2730,7 +2805,10 @@ function atlasRenderVirtualLogicRules(options = {}) {
   const anchorOffset = offsets[range.start] || 0;
   const visible = entries.slice(range.start, range.end);
   list.style.gap = "0";
-  if (!options.scrollOnly || !atlasReconcileVirtualLogicCards(list, visible)) {
+  const created = options.scrollOnly
+    ? atlasReconcileVirtualLogicCards(list, visible)
+    : null;
+  if (!created) {
     const cards = visible.map((entry) => renderLogicRuleCard(entry)).join("");
     list.innerHTML = entries.length
       ? `${atlasLogicVirtualSpacer("before", offsets[range.start])}${cards}${atlasLogicVirtualSpacer("after", offsets[offsets.length - 1] - offsets[range.end])}`
@@ -2738,7 +2816,19 @@ function atlasRenderVirtualLogicRules(options = {}) {
     atlasStampVirtualLogicCards(list, visible);
   }
 
-  atlasMeasureLogicVirtualCards(list, anchor, anchorOffset);
+  // A reused card keeps its content and width, so its recorded height holds.
+  atlasMeasureLogicVirtualCards(
+    list,
+    anchor,
+    anchorOffset,
+    created
+      ? Array.from(list.querySelectorAll(".logic-rule-card[data-id]")).filter(
+          (card) =>
+            created.includes(card) ||
+            !atlasLogicVirtualHeights.has(card.dataset.id),
+        )
+      : null,
+  );
   offsets = atlasLogicVirtualOffsets(entries);
   const before = list.querySelector('[data-logic-virtual-spacer="before"]');
   const after = list.querySelector('[data-logic-virtual-spacer="after"]');
@@ -2798,8 +2888,9 @@ function atlasStampVirtualLogicCards(list, visible) {
 
 /**
  * Scroll-only update: keeps mounted cards that are still in range and still
- * current, and creates only the cards that scrolled into view. Returns false
- * when the list is not in its virtual layout, so the caller rebuilds it.
+ * current, and creates only the cards that scrolled into view. Returns the
+ * created cards, or false when the list is not in its virtual layout, so the
+ * caller rebuilds it.
  */
 function atlasReconcileVirtualLogicCards(list, visible) {
   const before = list.querySelector(
@@ -2826,6 +2917,7 @@ function atlasReconcileVirtualLogicCards(list, visible) {
     else node.remove();
   });
   const template = document.createElement("template");
+  const created = [];
   let ref = before.nextSibling;
   visible.forEach((entry) => {
     let card = reusable.get(entry.step.id);
@@ -2833,11 +2925,55 @@ function atlasReconcileVirtualLogicCards(list, visible) {
       template.innerHTML = renderLogicRuleCard(entry).trim();
       card = template.content.firstElementChild;
       card.dataset.virtualKey = keys.get(entry.step.id);
+      created.push(card);
     }
     if (card === ref) ref = ref.nextSibling;
     else list.insertBefore(card, ref);
   });
   if (list.lastChild !== after) list.append(after);
+  return created;
+}
+
+/**
+ * Moves the selection without re-rendering the rules list. Selection only sets
+ * a card's "selected" class, so the old and new cards change in place and the
+ * editor is redrawn. Returns false when the new card is not mounted in the
+ * virtual layout, so the caller renders the list instead.
+ */
+function atlasSelectLogicStepInPlace(stepId) {
+  const list = e.stepsList || $("stepsList");
+  if (!list || !stepId || atlasLogicVirtualDragMode) return false;
+  const cards = Array.from(list.querySelectorAll(".logic-rule-card[data-id]"));
+  const next = cards.find((card) => card.dataset.id === stepId);
+  if (!next?.dataset.virtualKey) return false;
+  const previousId = state.selectedStepId;
+  const previous =
+    previousId && previousId !== stepId
+      ? cards.find((card) => card.dataset.id === previousId)
+      : null;
+  // Same data work as a full render. If it changed what any mounted card
+  // shows, render the list instead.
+  atlasPrepareLogicStepsForRender();
+  const entries = new Map(
+    atlasLogicVirtualEntries().map((entry) => [entry.step.id, entry]),
+  );
+  const stale = cards.some((card) => {
+    const entry = entries.get(card.dataset.id);
+    return (
+      !entry || card.dataset.virtualKey !== atlasVirtualLogicCardKey(entry)
+    );
+  });
+  if (stale) return false;
+  state.selectedStepId = stepId;
+  [previous, next].forEach((card) => {
+    if (!card) return;
+    card.classList.toggle("selected", card.dataset.id === stepId);
+    const entry = entries.get(card.dataset.id);
+    if (entry) card.dataset.virtualKey = atlasVirtualLogicCardKey(entry);
+  });
+  renderSelectedStep?.();
+  renderLogicTablePreviewRows?.();
+  requestAnimationFrame(atlasSyncRulesHeightToEditor);
   return true;
 }
 

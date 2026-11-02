@@ -18,6 +18,21 @@ function setText(id, value) {
   if (el) el.textContent = value;
 }
 
+/** Shows the archive button only when the saved audit may be archived. */
+function atlasSyncArchiveButton() {
+  const deleteAuditButton = $("deleteAuditBtn");
+  if (!deleteAuditButton) return;
+  const canArchive = Boolean(
+    hasSelectedAudit?.() &&
+    state.auditPersistence?.auditId === state.audit?.id &&
+    state.auditPersistence?.revisionId &&
+    state.auditPersistence?.access?.canArchive,
+  );
+  deleteAuditButton.hidden = !canArchive;
+  if (!deleteAuditButton.matches('[aria-busy="true"]'))
+    deleteAuditButton.disabled = !canArchive;
+}
+
 /**
  * Updates overview and source metrics.
  */
@@ -27,6 +42,23 @@ function updateDashboardMetrics() {
   const savedAudits = state.savedFlows?.length || 0;
   const selectedSources = audit.sources?.length || 0;
   const logicSteps = audit.steps?.length || 0;
+  // Without an audit field list, counting builds every field of every source.
+  // Only the Overview field count and ready badge use it, and showSection calls
+  // this again after Overview becomes the active page.
+  const overviewVisible = Boolean(
+    document.querySelector('.page.active[data-page="overview"]'),
+  );
+  if (!overviewVisible && !(audit.fields || []).length) {
+    setText("metricRepoAudits", repoAudits.toLocaleString());
+    setText("metricSavedAudits", savedAudits.toLocaleString());
+    setText("metricSelectedSources", selectedSources.toLocaleString());
+    setText("metricLogicSteps", logicSteps.toLocaleString());
+    setText("overviewSourceCount", selectedSources.toLocaleString());
+    setText("overviewStepCount", logicSteps.toLocaleString());
+    setText("selectedSourceBadge", selectedSources.toLocaleString());
+    atlasSyncArchiveButton();
+    return;
+  }
   const fieldCount =
     (audit.fields || []).length ||
     (audit.sources || []).reduce(
@@ -46,18 +78,7 @@ function updateDashboardMetrics() {
   setText("overviewFieldCount", fieldCount.toLocaleString());
   setText("overviewStepCount", logicSteps.toLocaleString());
   setText("selectedSourceBadge", selectedSources.toLocaleString());
-  const deleteAuditButton = $("deleteAuditBtn");
-  if (deleteAuditButton) {
-    const canArchive = Boolean(
-      hasSelectedAudit?.() &&
-      state.auditPersistence?.auditId === state.audit?.id &&
-      state.auditPersistence?.revisionId &&
-      state.auditPersistence?.access?.canArchive,
-    );
-    deleteAuditButton.hidden = !canArchive;
-    if (!deleteAuditButton.matches('[aria-busy="true"]'))
-      deleteAuditButton.disabled = !canArchive;
-  }
+  atlasSyncArchiveButton();
 
   const progress = Math.min(
     100,

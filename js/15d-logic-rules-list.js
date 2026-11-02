@@ -248,16 +248,24 @@ document.addEventListener(
     const interactiveControl = event.target.closest(
       "button, input, select, textarea, a, summary, [data-rule-menu-toggle], [data-rule-menu-panel]",
     );
-    if (card && !interactiveControl) {
-      state.selectedStepId = card.dataset.id;
+    // Selecting moves the highlight in place when the card is on screen.
+    const select = (stepId) => {
+      if (
+        typeof atlasSelectLogicStepInPlace === "function" &&
+        atlasSelectLogicStepInPlace(stepId)
+      )
+        return;
+      state.selectedStepId = stepId;
       renderSteps();
+    };
+    if (card && !interactiveControl) {
+      select(card.dataset.id);
       atlasRevealLogicStepPane?.();
       return;
     }
     const tableRow = event.target.closest("[data-table-step-id]");
     if (tableRow) {
-      state.selectedStepId = tableRow.dataset.tableStepId;
-      renderSteps();
+      select(tableRow.dataset.tableStepId);
       atlasRevealLogicStepPane?.();
     }
   },
