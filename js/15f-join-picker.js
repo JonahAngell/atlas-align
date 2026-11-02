@@ -57,12 +57,197 @@ function atlasJoinDeveloperLogic(step) {
     const outputSource = p.output_source || step.source || "[combined output]";
     return `UNION: append rows from ${leftAlias} and ${rightAlias} into ${outputSource}. Matching keys are not required.`;
   }
-  const leftField =
-    p.left_field || atlasPhrasePlaceholder("left_key", "[left key]");
-  const rightField =
-    p.right_field || atlasPhrasePlaceholder("right_key", "[right key]");
-  return `${joinType}: ${atlasJoinKeptRowsDescription(joinType)} Join ${leftAlias}.${leftField} to ${rightAlias}.${rightField}.`;
+  const pairs = atlasJoinKeyPairsInUse(p);
+  const keys = (pairs.length ? pairs : [{ left_field: "", right_field: "" }])
+    .map(
+      (pair) =>
+        `${leftAlias}.${pair.left_field || atlasPhrasePlaceholder("left_key", "[left key]")} ${pairs.length > 1 ? "=" : "to"} ${rightAlias}.${pair.right_field || atlasPhrasePlaceholder("right_key", "[right key]")}`,
+    )
+    .join(" AND ");
+  return `${joinType}: ${atlasJoinKeptRowsDescription(joinType)} Join ${pairs.length > 1 ? "where " : ""}${keys}.`;
 }
+
+/** Join key list shown in the Join Type picker summary table. */
+function atlasJoinKeySummary(params, side) {
+  const fields = atlasJoinKeyPairsInUse(params).map(
+    (pair) => pair[`${side}_field`] || `[${side} key not selected]`,
+  );
+  return fields.length ? fields.join(", ") : `[${side} key not selected]`;
+}
+
+function atlasJoinKeyRowHtml(pair, index, params = {}) {
+  const entry = atlasNormalizeJoinKeyPair(pair);
+  const position = index + 1;
+  return `<div class="condition-value-row join-key-row" data-join-key-row data-join-key-id="${esc(entry.id)}"><input type="hidden" data-join-key-left value="${esc(entry.left_field)}"><input type="hidden" data-join-key-right value="${esc(entry.right_field)}"><div class="join-key-fields"><div class="join-key-field" data-join-key-side="left"><span class="join-key-side-label${index ? " sr-only" : ""}">Left Field</span>${fieldInputFromOptions({ name: "join_left_field", value: entry.left_field, placeholder: "Select left field", sourceFile: params.left_source })}</div><span class="join-key-equals" aria-hidden="true">=</span><div class="join-key-field" data-join-key-side="right"><span class="join-key-side-label${index ? " sr-only" : ""}">Right Field</span>${fieldInputFromOptions({ name: "join_right_field", value: entry.right_field, placeholder: "Select right field", sourceFile: params.right_source })}</div></div><button type="button" class="secondary small" data-remove-join-key aria-label="Remove key pair ${position}">Remove</button></div>`;
+}
+
+/**
+ * Renders the join key pair editor. Uses the same add/remove row list as the
+ * IF/THEN Comparison Values editor; every pair must match for rows to join.
+ */
+function atlasJoinKeysEditorHtml(step) {
+  const p = step.params || {};
+  const pairs = atlasJoinKeyPairsFromParams(p);
+  const rows = pairs.length ? pairs : [atlasNormalizeJoinKeyPair({})];
+  const headingId = `join-keys-heading-${esc(step.id || "step")}`;
+  return `<div class="condition-values-editor join-keys-editor full" data-join-keys-editor role="group" aria-labelledby="${headingId}"><input type="hidden" data-param="left_source" value="${esc(p.left_source || "")}"><input type="hidden" data-param="right_source" value="${esc(p.right_source || "")}"><input type="hidden" data-param="left_field" value="${esc(rows[0].left_field)}"><input type="hidden" data-param="right_field" value="${esc(rows[0].right_field)}"><input type="hidden" data-param="join_keys_json" data-join-keys-json value="${esc(atlasSerializeJoinKeyPairs(rows))}"><div class="title-row compact-row"><span class="join-keys-heading" id="${headingId}">Join Keys</span><button type="button" class="secondary small" data-add-join-key>Add Key Pair</button></div><p class="hint">Rows match only when every key pair matches.</p><div class="condition-values-list join-keys-list">${rows.map((pair, index) => atlasJoinKeyRowHtml(pair, index, p)).join("")}</div></div>`;
+}
+
+function atlasJoinKeyPairsFromEditor(editor) {
+  if (!editor) return [];
+  return [...editor.querySelectorAll("[data-join-key-row]")].map((row) =>
+    atlasNormalizeJoinKeyPair({
+      id: row.dataset.joinKeyId,
+      left_field: row.querySelector("[data-join-key-left]")?.value || "",
+      right_field: row.querySelector("[data-join-key-right]")?.value || "",
+    }),
+  );
+}
+
+/** Writes the editor rows into its JSON and first-pair mirror inputs. */
+function atlasSyncJoinKeysEditor(editor, { commit = true } = {}) {
+  if (!editor) return;
+  const params = atlasApplyJoinKeyPairs(
+    {},
+    atlasJoinKeyPairsFromEditor(editor),
+  );
+  const set = (selector, value) => {
+    const input = editor.querySelector(selector);
+    if (input) input.value = value;
+  };
+  set("[data-join-keys-json]", params.join_keys_json);
+  set('[data-param="left_field"]', params.left_field);
+  set('[data-param="right_field"]', params.right_field);
+  editor.querySelectorAll("[data-join-key-row]").forEach((row, index) => {
+    row
+      .querySelector("[data-remove-join-key]")
+      ?.setAttribute("aria-label", `Remove key pair ${index + 1}`);
+    // Only the first row shows the side labels; later rows keep them for screen readers.
+    row
+      .querySelectorAll(".join-key-side-label")
+      .forEach((label) => label.classList.toggle("sr-only", index > 0));
+  });
+  if (!commit) return;
+  atlasCommitLiveEditor?.({ rerender: false });
+  const stepId = editor.closest("[data-live-editor-step-id]")?.dataset
+    .liveEditorStepId;
+  const step = stepId ? stepById?.(stepId) : null;
+  if (step) {
+    step.params = step.params || {};
+    atlasApplyJoinKeyPairs(step.params, atlasJoinKeyPairsFromEditor(editor));
+  }
+  atlasRequestRender?.({ preview: true, logicTable: true, validation: true });
+  scheduleAutosave?.();
+}
+
+/** The left/right sources a join key editor is scoped to. */
+function atlasJoinEditorSources(editor) {
+  return {
+    left_source:
+      editor?.querySelector('[data-param="left_source"]')?.value || "",
+    right_source:
+      editor?.querySelector('[data-param="right_source"]')?.value || "",
+  };
+}
+
+/** Re-renders the key rows, e.g. after a pick changes a side's source. */
+function atlasRefreshJoinKeyRows(editor) {
+  const list = editor?.querySelector(".join-keys-list");
+  if (!list) return;
+  const params = atlasJoinEditorSources(editor);
+  list.innerHTML = atlasJoinKeyPairsFromEditor(editor)
+    .map((pair, index) => atlasJoinKeyRowHtml(pair, index, params))
+    .join("");
+}
+
+/**
+ * Commits a field picked from a join key row. Returns false when the picker
+ * target is not a join key row so the standard commit path runs instead.
+ */
+function atlasCommitJoinKeyPick(target, value, sourceFile = "", ref = null) {
+  const row = target?.closest?.("[data-join-key-row]");
+  const editor = row?.closest("[data-join-keys-editor]");
+  if (!row || !editor) return false;
+  const side =
+    target.closest("[data-join-key-side]")?.dataset.joinKeySide === "right"
+      ? "right"
+      : "left";
+  const rowId = row.dataset.joinKeyId;
+  const index = [...editor.querySelectorAll("[data-join-key-row]")].indexOf(
+    row,
+  );
+  const fieldControl = row.querySelector(`[data-join-key-${side}]`);
+  if (fieldControl) fieldControl.value = value;
+  const sourceControl = editor.querySelector(`[data-param="${side}_source"]`);
+  if (sourceControl && sourceFile) sourceControl.value = sourceFile;
+  atlasSyncJoinKeysEditor(editor);
+  const stepId = editor.closest("[data-live-editor-step-id]")?.dataset
+    .liveEditorStepId;
+  const step = stepId ? stepById?.(stepId) : null;
+  if (step) {
+    if (sourceFile) step.params[`${side}_source`] = sourceFile;
+    // Created-field metadata is tracked for the first pair's mirror param.
+    if (index === 0) {
+      const key = `${side}_field_field_ref`;
+      if (ref) step.params[key] = ref;
+      else delete step.params[key];
+    }
+  }
+  atlasRefreshJoinKeyRows(editor);
+  editor
+    .querySelector(
+      `[data-join-key-id="${CSS.escape(rowId)}"] [data-join-key-side="${side}"] [data-open-mini-picker]`,
+    )
+    ?.focus();
+  return true;
+}
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const add = event.target.closest?.("[data-add-join-key]");
+    if (add) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const editor = add.closest("[data-join-keys-editor]");
+      const list = editor?.querySelector(".join-keys-list");
+      if (!list) return;
+      const params = atlasJoinEditorSources(editor);
+      list.insertAdjacentHTML(
+        "beforeend",
+        atlasJoinKeyRowHtml(
+          {},
+          list.querySelectorAll("[data-join-key-row]").length,
+          params,
+        ),
+      );
+      atlasSyncJoinKeysEditor(editor, { commit: false });
+      list.lastElementChild?.querySelector("[data-open-mini-picker]")?.focus();
+      return;
+    }
+    const remove = event.target.closest?.("[data-remove-join-key]");
+    if (remove) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const editor = remove.closest("[data-join-keys-editor]");
+      const row = remove.closest("[data-join-key-row]");
+      const list = editor?.querySelector(".join-keys-list");
+      const focusTarget =
+        row?.nextElementSibling?.querySelector("[data-remove-join-key]") ||
+        row?.previousElementSibling?.querySelector("[data-remove-join-key]") ||
+        editor?.querySelector("[data-add-join-key]");
+      row?.remove();
+      if (list && !list.querySelector("[data-join-key-row]"))
+        list.insertAdjacentHTML(
+          "beforeend",
+          atlasJoinKeyRowHtml({}, 0, atlasJoinEditorSources(editor)),
+        );
+      atlasSyncJoinKeysEditor(editor);
+      focusTarget?.focus();
+    }
+  },
+  true,
+);
 
 function atlasRenderJoinTypePickerButton(step) {
   const joinType = atlasJoinTypeDisplayName(step.params?.join_type);
@@ -78,7 +263,7 @@ renderGuidedBuilder = function renderGuidedBuilderWithJoinVenn(step) {
   const union = atlasJoinTypeDisplayName(p.join_type) === "UNION";
   const inputPair = union
     ? `<div class="logic-picker-pair join-union-input-pair"><label>Left Source${sourceInputFromOptions({ name: "left_source", value: p.left_source, placeholder: "Select source file" })}</label><label>Right Source${sourceInputFromOptions({ name: "right_source", value: p.right_source, placeholder: "Select source file" })}</label></div>`
-    : `<div class="logic-picker-pair join-union-input-pair"><input type="hidden" data-param="left_source" value="${esc(p.left_source || "")}"><label>Left Field${fieldInputFromOptions({ name: "left_field", value: p.left_field, placeholder: "Select left field", sourceFile: p.left_source })}</label><input type="hidden" data-param="right_source" value="${esc(p.right_source || "")}"><label>Right Field${fieldInputFromOptions({ name: "right_field", value: p.right_field, placeholder: "Select right field", sourceFile: p.right_source })}</label></div>`;
+    : atlasJoinKeysEditorHtml(step);
   return `<div class="guided-builder join-guided-builder"><h4>${union ? "Union Sources" : "Join"}</h4>${atlasRenderJoinTypePickerButton(step)}${inputPair}${union ? `<label>Output Source${sourceInputFromOptions({ name: "output_source", value: p.output_source, placeholder: "Select source file" })}</label><p class="hint join-builder-union-hint">Union appends rows from both files into one combined output. No matching key is needed.</p>` : ""}</div>`;
 };
 
@@ -301,7 +486,7 @@ atlasRenderJoinPickerModal =
       .join("");
     const root = document.createElement("div");
     root.className = "join-picker-backdrop";
-    root.innerHTML = `<div class="join-picker-modal join-picker-modal-refined" role="dialog" aria-modal="true" aria-labelledby="join-picker-title" aria-describedby="join-picker-description"><div class="join-picker-header"><div><h2 class="join-picker-title" id="join-picker-title">Choose Join Type</h2><p class="hint" id="join-picker-description">Choose how the two sources are combined. Preview changes are temporary until Confirm is selected.</p></div><button type="button" class="btn ghost small" data-close-join-picker aria-label="Close Join Type picker">Cancel</button></div><div class="join-picker-refined-body"><section class="join-picker-type-list" role="group" aria-label="Join types">${optionButtons}</section><section class="join-picker-visual-column"><div class="join-picker-visual-card" data-join-type="${esc(joinType)}" style="--join-left-color:${esc(leftColor)};--join-right-color:${esc(rightColor)}">${visual}</div></section><section class="join-picker-details-card" aria-live="polite"><div class="join-picker-summary-card"><strong>${esc(union ? "UNION / APPEND ROWS" : joinType)}</strong><p>${esc(description)}</p></div><div class="join-picker-table-wrap"><table><thead><tr><th>Input</th><th>Source</th><th>Join Key</th></tr></thead><tbody><tr><td>Left Source</td><td>${esc(leftLabel)}</td><td>${esc(union ? "Not applicable" : p.left_field || "[left key not selected]")}</td></tr><tr><td>Right Source</td><td>${esc(rightLabel)}</td><td>${esc(union ? "Not applicable" : p.right_field || "[right key not selected]")}</td></tr>${union ? `<tr><td>Output Source</td><td colspan="2">${esc(outputLabel)}</td></tr>` : ""}<tr><td>Developer Logic</td><td colspan="2">${esc(atlasJoinDeveloperLogic({ ...step, params: { ...p, join_type: joinType } }))}</td></tr></tbody></table></div></section></div><div class="join-picker-footer"><p class="hint">Confirm is required to preserve the selected relationship type.</p><div class="toolbar compact-toolbar"><button type="button" class="btn ghost" data-close-join-picker>Cancel</button><button type="button" class="btn primary" data-confirm-join-picker>Confirm</button></div></div></div>`;
+    root.innerHTML = `<div class="join-picker-modal join-picker-modal-refined" role="dialog" aria-modal="true" aria-labelledby="join-picker-title" aria-describedby="join-picker-description"><div class="join-picker-header"><div><h2 class="join-picker-title" id="join-picker-title">Choose Join Type</h2><p class="hint" id="join-picker-description">Choose how the two sources are combined. Preview changes are temporary until Confirm is selected.</p></div><button type="button" class="btn ghost small" data-close-join-picker aria-label="Close Join Type picker">Cancel</button></div><div class="join-picker-refined-body"><section class="join-picker-type-list" role="group" aria-label="Join types">${optionButtons}</section><section class="join-picker-visual-column"><div class="join-picker-visual-card" data-join-type="${esc(joinType)}" style="--join-left-color:${esc(leftColor)};--join-right-color:${esc(rightColor)}">${visual}</div></section><section class="join-picker-details-card" aria-live="polite"><div class="join-picker-summary-card"><strong>${esc(union ? "UNION / APPEND ROWS" : joinType)}</strong><p>${esc(description)}</p></div><div class="join-picker-table-wrap"><table><thead><tr><th>Input</th><th>Source</th><th>Join Keys</th></tr></thead><tbody><tr><td>Left Source</td><td>${esc(leftLabel)}</td><td>${esc(union ? "Not applicable" : atlasJoinKeySummary(p, "left"))}</td></tr><tr><td>Right Source</td><td>${esc(rightLabel)}</td><td>${esc(union ? "Not applicable" : atlasJoinKeySummary(p, "right"))}</td></tr>${union ? `<tr><td>Output Source</td><td colspan="2">${esc(outputLabel)}</td></tr>` : ""}<tr><td>Developer Logic</td><td colspan="2">${esc(atlasJoinDeveloperLogic({ ...step, params: { ...p, join_type: joinType } }))}</td></tr></tbody></table></div></section></div><div class="join-picker-footer"><p class="hint">Confirm is required to preserve the selected relationship type.</p><div class="toolbar compact-toolbar"><button type="button" class="btn ghost" data-close-join-picker>Cancel</button><button type="button" class="btn primary" data-confirm-join-picker>Confirm</button></div></div></div>`;
     document.body.append(root);
     root.querySelector(`[data-join-type-option][aria-pressed="true"]`)?.focus();
   };

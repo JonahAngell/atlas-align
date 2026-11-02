@@ -2080,6 +2080,19 @@ function atlasFieldPickerEligibilityPolicy(picker, step) {
     picker?.dataset?.paramName || picker?.dataset?.conditionName || "";
   if (picker?.closest?.("[data-math-row], [data-sort-row]"))
     return { mode: "all-selected", sourceFile: "" };
+  const joinKeySide = picker?.closest?.("[data-join-key-side]")?.dataset
+    ?.joinKeySide;
+  if (joinKeySide) {
+    // Every key pair on one side reads from that side's single join source.
+    const sideSource =
+      picker
+        .closest("[data-join-keys-editor]")
+        ?.querySelector(`[data-param="${joinKeySide}_source"]`)?.value || "";
+    return {
+      mode: "single-source",
+      sourceFile: sideSource || atlasPickerReferenceSource(step) || "",
+    };
+  }
   const multiSourceNames = new Set([
     "fieldName",
     "compareFieldName",
@@ -2161,6 +2174,16 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
   const ref = option?.isCreatedField
     ? { kind: "created", creatorStepId: option.creatorStepId, sourceFile }
     : null;
+
+  if (
+    context.kind === "field" &&
+    typeof atlasCommitJoinKeyPick === "function" &&
+    atlasCommitJoinKeyPick(target, value, sourceFile, ref)
+  ) {
+    visualPickerState = null;
+    window.ATLASVisualPicker?.close?.("select");
+    return;
+  }
 
   const parameterSourcePairs = {
     field_name: "source_file",

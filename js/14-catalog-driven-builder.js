@@ -85,6 +85,7 @@ function normalizeCatalogStep(step, index = 0) {
       step.params.right_alias || sourceAliasFor(step.params.right_source);
     step.params.left_field = "";
     step.params.right_field = "";
+    delete step.params.join_keys_json;
   }
   if (step.source && !step.params.source_file)
     step.params.source_file = step.source;
@@ -1644,8 +1645,18 @@ function atlasLogicFieldReferences(steps = state.audit.steps || []) {
     const p = step.params || {};
     add(p.source_file || step.source, p.field_name || step.field);
     add(p.source_file || step.source, p.expression_source_field);
-    add(p.left_source, p.left_field);
-    add(p.right_source, p.right_field);
+    if (
+      typeof atlasJoinKeyPairsInUse === "function" &&
+      step.step_type === "join"
+    )
+      atlasJoinKeyPairsInUse(p).forEach((pair) => {
+        add(p.left_source, pair.left_field);
+        add(p.right_source, pair.right_field);
+      });
+    else {
+      add(p.left_source, p.left_field);
+      add(p.right_source, p.right_field);
+    }
     add(p.concat_source_1 || p.source_file, p.concat_field_1);
     add(p.concat_source_2 || p.source_file, p.concat_field_2);
     add(p.then_value_source_file || p.source_file, p.then_value_field);

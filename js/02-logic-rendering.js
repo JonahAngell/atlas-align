@@ -1437,6 +1437,20 @@ function developerLogic(step) {
     params.left_field || missingValueText("left_key", "[left key]");
   const rightField =
     params.right_field || missingValueText("right_key", "[right key]");
+  const keyPairs = atlasJoinKeyPairsInUse(params);
+  if (keyPairs.length > 1)
+    return developerPhrase("developer_logic.join_multi", {
+      join_type: joinType,
+      kept_rows: joinKeptRowsDescription(joinType),
+      left_alias: leftAlias,
+      right_alias: rightAlias,
+      key_pairs: keyPairs
+        .map(
+          (pair) =>
+            `"${leftAlias}"."${pair.left_field || missingValueText("left_key", "[left key]")}" = "${rightAlias}"."${pair.right_field || missingValueText("right_key", "[right key]")}"`,
+        )
+        .join(" AND "),
+    });
   return developerPhrase("developer_logic.join", {
     join_type: joinType,
     kept_rows: joinKeptRowsDescription(joinType),
@@ -1638,6 +1652,86 @@ function atlasSerializeDuplicateFields(fields = []) {
       .filter(Boolean),
   );
 }
+
+// ATLAS-JOIN-KEYS:BEGIN
+/**
+ * Normalizes one join key pair. Pairs with no fields are kept so a freshly
+ * added row survives until the analyst picks its fields.
+ * @param {any} item - Raw pair with id, left_field, and right_field.
+ */
+function atlasNormalizeJoinKeyPair(item = {}) {
+  return {
+    id:
+      String(item?.id || "").trim() ||
+      (typeof uid === "function"
+        ? uid("joinkey")
+        : `joinkey-${Math.random().toString(36).slice(2, 10)}`),
+    left_field: String(item?.left_field || "").trim(),
+    right_field: String(item?.right_field || "").trim(),
+  };
+}
+
+/**
+ * Reads every join key pair from step params. The first pair always comes
+ * from the left_field/right_field mirror params so repairs and source
+ * replacement that rewrite those params stay authoritative. Audits saved
+ * before multi-key joins have no join_keys_json and fall back to the mirror.
+ * @param {any} params - Join step params.
+ */
+function atlasJoinKeyPairsFromParams(params = {}) {
+  let raw = params?.join_keys_json;
+  if (typeof raw === "string") {
+    try {
+      raw = raw.trim() ? JSON.parse(raw) : null;
+    } catch (_error) {
+      raw = null;
+    }
+  }
+  const pairs = Array.isArray(raw)
+    ? raw
+        .filter((item) => item && typeof item === "object")
+        .map((item) => atlasNormalizeJoinKeyPair(item))
+    : [];
+  const first = {
+    left_field: String(params?.left_field || "").trim(),
+    right_field: String(params?.right_field || "").trim(),
+  };
+  if (!pairs.length)
+    return first.left_field || first.right_field
+      ? [atlasNormalizeJoinKeyPair({ id: "joinkey-1", ...first })]
+      : [];
+  pairs[0] = { ...pairs[0], ...first };
+  return pairs;
+}
+
+/**
+ * Join key pairs with at least one field chosen, for logic text and checks.
+ * @param {any} params - Join step params.
+ */
+function atlasJoinKeyPairsInUse(params = {}) {
+  return atlasJoinKeyPairsFromParams(params).filter(
+    (pair, index) => index === 0 || pair.left_field || pair.right_field,
+  );
+}
+
+function atlasSerializeJoinKeyPairs(pairs = []) {
+  return JSON.stringify(
+    (pairs || []).map((pair) => atlasNormalizeJoinKeyPair(pair)),
+  );
+}
+
+/** Stores a join key pair list and mirrors its first pair to left_field/right_field. */
+function atlasApplyJoinKeyPairs(params = {}, pairs = []) {
+  const normalized = (pairs || []).map((pair) =>
+    atlasNormalizeJoinKeyPair(pair),
+  );
+  params.join_keys_json = atlasSerializeJoinKeyPairs(normalized);
+  params.left_field = normalized[0]?.left_field || "";
+  params.right_field = normalized[0]?.right_field || "";
+  return params;
+}
+
+// ATLAS-JOIN-KEYS:END
 
 /**
  * Normalizes one Sort Records field entry. Rows without a field are kept so a
