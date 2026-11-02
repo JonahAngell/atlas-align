@@ -125,6 +125,24 @@ function renderPhraseFromTemplate(template, values = {}) {
 }
 
 /**
+ * Join key pairs for logic text. Falls back to the single left/right key
+ * when the shared join key helpers are not loaded.
+ * @param {any} params - Join step params.
+ */
+function atlasJoinKeyPairsForText(params = {}) {
+  if (typeof atlasJoinKeyPairsInUse === "function")
+    return atlasJoinKeyPairsInUse(params);
+  return params.left_field || params.right_field
+    ? [
+        {
+          left_field: String(params.left_field || ""),
+          right_field: String(params.right_field || ""),
+        },
+      ]
+    : [];
+}
+
+/**
  * Renders a phrase template by catalog path.
  * @param {any} path - Catalog path or file path.
  * @param {any} values - Input used by renderCatalogPhrase.
@@ -776,7 +794,7 @@ function analystLogic(step) {
           params.output_source || step.source || "",
         ),
       });
-    return renderCatalogPhrase("analyst_logic.join.default", {
+    const joinColumns = {
       left_column: tableColumnPlain(
         params.left_source,
         params.left_alias,
@@ -787,7 +805,19 @@ function analystLogic(step) {
         params.right_alias,
         params.right_field,
       ),
-    });
+    };
+    const extraKeyPairs = atlasJoinKeyPairsForText(params).slice(1);
+    if (extraKeyPairs.length)
+      return renderCatalogPhrase("analyst_logic.join.multi", {
+        ...joinColumns,
+        additional_keys: extraKeyPairs
+          .map(
+            (pair) =>
+              `${tableColumnPlain(params.left_source, params.left_alias, pair.left_field) || phrasePlaceholder("left_key", "[left key]")} with ${tableColumnPlain(params.right_source, params.right_alias, pair.right_field) || phrasePlaceholder("right_key", "[right key]")}`,
+          )
+          .join(", and "),
+      });
+    return renderCatalogPhrase("analyst_logic.join.default", joinColumns);
   }
   if (stepType === "union_sources")
     return renderCatalogPhrase("analyst_logic.union_sources.default", {
@@ -911,7 +941,15 @@ function noteText(step, index) {
         params.right_alias ||
         params.right_source ||
         phrasePlaceholder("file_2", "[file 2]"),
-      keys: `${quotePhraseValue(params.left_field || phrasePlaceholder("file_1_key", "[file 1 key]"))} / ${quotePhraseValue(params.right_field || phrasePlaceholder("file_2_key", "[file 2 key]"))}`,
+      keys: (atlasJoinKeyPairsForText(params).length
+        ? atlasJoinKeyPairsForText(params)
+        : [{ left_field: "", right_field: "" }]
+      )
+        .map(
+          (pair) =>
+            `${quotePhraseValue(pair.left_field || phrasePlaceholder("file_1_key", "[file 1 key]"))} / ${quotePhraseValue(pair.right_field || phrasePlaceholder("file_2_key", "[file 2 key]"))}`,
+        )
+        .join(", "),
     });
   }
   if (step.step_type === "union_sources")

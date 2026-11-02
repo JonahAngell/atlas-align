@@ -184,6 +184,22 @@ function atlasStepReplacementPairs(step) {
     target.right_alias = dest.alias;
     target.right_field = dest.field;
   });
+  // Additional join key pairs share the join's left/right sources.
+  if (typeof atlasJoinKeyPairsFromParams === "function")
+    atlasJoinKeyPairsFromParams(params).forEach((pair, index) => {
+      if (index === 0) return;
+      ["left", "right"].forEach((side) => {
+        add(params[`${side}_source`], pair[`${side}_field`], (dest) => {
+          const target = step.params;
+          const pairs = atlasJoinKeyPairsFromParams(target);
+          if (!pairs[index]) return;
+          pairs[index][`${side}_field`] = dest.field;
+          target[`${side}_source`] = dest.sourceKey;
+          target[`${side}_alias`] = dest.alias;
+          atlasApplyJoinKeyPairs(target, pairs);
+        });
+      });
+    });
   add(params.concat_source_1 || source, params.concat_field_1, (dest) => {
     const target =
       step.params && typeof step.params === "object"

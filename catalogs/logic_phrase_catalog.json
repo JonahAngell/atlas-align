@@ -73,6 +73,7 @@
     },
     "else_step": "ELSE (Step {step_number})",
     "join": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" on \"{left_field}\" to \"{right_alias}\" on \"{right_field}\".",
+    "join_multi": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" to \"{right_alias}\" where {key_pairs}.",
     "kept_rows": {
       "left": "all rows from the left source and matching rows from the right source",
       "right": "all rows from the right source and matching rows from the left source",
@@ -157,7 +158,8 @@
     "join": {
       "header": "Join {left_column} and {right_column}.",
       "condition": "",
-      "default": "Join {left_column} and {right_column}."
+      "default": "Join {left_column} and {right_column}.",
+      "multi": "Join {left_column} and {right_column}, and also match {additional_keys}."
     },
     "filter_rows": {
       "default": "IF {table_column} {operator}{compare_value}, THEN {filter_action}."

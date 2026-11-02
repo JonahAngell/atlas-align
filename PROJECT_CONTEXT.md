@@ -327,7 +327,7 @@ An error rolls back the transaction, including the live-table replacement. The S
 
 **Conditions and branches.** Conditions support operator-specific value modes, multiple values, field-to-field comparison, and structured math on the comparison side. IF/THEN editing uses the final tabbed builder from `js/15g-visual-ui-events.js`. Linked inverse ELSE steps are synchronized from the source IF conditions unless the step explicitly opts out with `params.inverse_else === "Yes"`; legacy inverse steps are migrated through the same later layer.
 
-**JOIN and UNION.** `js/15f-join-picker.js` owns the active JOIN picker, supported join presentation, Venn/union visualization, and JOIN developer-logic rendering. JOIN field/source choices remain tied to selected audit sources and resolved source identity. UNION handling remains distinct from JOIN relationship behavior.
+**JOIN and UNION.** `js/15f-join-picker.js` owns the active JOIN picker, supported join presentation, Venn/union visualization, and JOIN developer-logic rendering. JOIN field/source choices remain tied to selected audit sources and resolved source identity. A JOIN can match on several key pairs (`a.b = c.d AND a.g = c.h`): the Join Keys editor uses the same add/remove row list as IF/THEN Comparison Values, pairs are stored in `params.join_keys_json`, and the first pair is mirrored to `left_field`/`right_field` so single-key readers, repairs, and older audits keep working. The shared helpers (`atlasJoinKeyPairsFromParams()`, `atlasJoinKeyPairsInUse()`, `atlasApplyJoinKeyPairs()`) live in `js/02-logic-rendering.js`. UNION handling remains distinct from JOIN relationship behavior.
 
 **Calculations, rounding, and string transformation.** Structured math supports ordered operations with field or static operands. Calculation actions identify a target column and numeric source field and support rounding modes `none`, `nearest`, `up`, and `down` with configured decimal places. String-transform actions support `first_characters`, `last_characters`, and `character_count`; source field, target column, and positive character-count requirements are validated by the authoring and issue layers.
 
@@ -841,7 +841,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/15c-source-field-picker.js` — Logic Builder live editor and table-preview foundation.
 - `js/15d-logic-rules-list.js` — Selected-step editor and editor-aware picker commit.
 - `js/15e-logic-step-editor.js` — Compact rule cards, hierarchy actions, and rule menus.
-- `js/15f-join-picker.js` — JOIN type picker, developer logic, and Venn diagram.
+- `js/15f-join-picker.js` — JOIN type picker, multi-key Join Keys editor, developer logic, and Venn diagram.
 - `js/15g-visual-ui-events.js` — IF/THEN condition and action editing, picker search, and ELSE handling.
 - `js/15h-visual-picker.js` — Shared visual picker. Callers supply entries and handle the result.
 - `js/16-page-shell.js` — Top bar, navigation lock, assignment editor, and signed-in profile.

@@ -22,6 +22,33 @@
   const object = (value) =>
     value && typeof value === "object" && !Array.isArray(value) ? value : {};
 
+  /**
+   * Join key pairs saved on a join step. The first pair mirrors
+   * left_field/right_field; older audits only have the mirror.
+   */
+  function joinKeyPairs(params) {
+    let raw = object(params).join_keys_json;
+    if (typeof raw === "string") {
+      try {
+        raw = raw.trim() ? JSON.parse(raw) : null;
+      } catch (_error) {
+        raw = null;
+      }
+    }
+    const pairs = array(raw).map((pair) => ({
+      ...object(pair),
+      left_field: string(object(pair).left_field).trim(),
+      right_field: string(object(pair).right_field).trim(),
+    }));
+    const first = {
+      left_field: string(object(params).left_field).trim(),
+      right_field: string(object(params).right_field).trim(),
+    };
+    if (!pairs.length) return [first];
+    pairs[0] = { ...pairs[0], ...first };
+    return pairs;
+  }
+
   function assignmentEntries(assignments, role) {
     return array(object(assignments)[role]);
   }
@@ -1124,6 +1151,31 @@
               summary: "A join has no right key.",
             }),
           );
+        if (string(p.join_type).trim().toUpperCase() !== "UNION")
+          joinKeyPairs(p).forEach((pair, keyIndex) => {
+            // The first pair is the mirrored left_field/right_field checked above.
+            if (
+              keyIndex === 0 ||
+              (blank(pair.left_field) && blank(pair.right_field))
+            )
+              return;
+            ["left", "right"].forEach((side) => {
+              if (!blank(pair[`${side}_field`])) return;
+              const param = `${side}_field`;
+              issues.push(
+                joinIssue(`${side}-field-${keyIndex + 1}`, param, "picker", {
+                  severity: "critical",
+                  summary: `Join key pair ${keyIndex + 1} has no ${side} key.`,
+                  actionData: {
+                    repair: "join-param",
+                    param,
+                    stepId: step.id,
+                    keyIndex,
+                  },
+                }),
+              );
+            });
+          });
         return issues;
       });
     },
@@ -3256,7 +3308,21 @@
         showFixError(fix, "Choose a replacement before saving.");
         return false;
       }
-      if (repair === "join-param" && data.param) {
+      if (
+        repair === "join-param" &&
+        Number(data.keyIndex) > 0 &&
+        string(data.param).endsWith("_field")
+      ) {
+        const params = ensureParams(step);
+        const pairs = joinKeyPairs(params);
+        const pair = pairs[Number(data.keyIndex)];
+        if (!pair) {
+          showFixError(fix, "That join key pair is no longer on the step.");
+          return false;
+        }
+        pair[data.param] = fieldValue;
+        params.join_keys_json = JSON.stringify(pairs);
+      } else if (repair === "join-param" && data.param) {
         ensureParams(step)[data.param] = string(data.param).endsWith("_field")
           ? fieldValue
           : sourceValue;

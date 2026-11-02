@@ -2613,3 +2613,35 @@ test("custom source fields are valid references", async () => {
     0,
   );
 });
+
+test("join integrity flags an incomplete additional key pair and ignores blank rows", async () => {
+  const audit = completeAudit();
+  audit.steps.push({
+    id: "join-multi",
+    enabled: true,
+    step_type: "join",
+    params: {
+      join_type: "INNER JOIN",
+      left_source: "source.one",
+      right_source: "source.one",
+      left_field: "Status",
+      right_field: "Status",
+      join_keys_json: JSON.stringify([
+        { id: "k1", left_field: "Status", right_field: "Status" },
+        { id: "k2", left_field: "Status", right_field: "" },
+        { id: "k3", left_field: "", right_field: "" },
+      ]),
+    },
+  });
+  const issues = (
+    await runtime(audit)
+  ).ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.ruleId === "audit.logic.join-integrity",
+  );
+  assert.deepEqual(
+    [...issues.map((entry) => entry.summary)],
+    ["Join key pair 2 has no right key."],
+  );
+  assert.equal(issues[0].actionData.keyIndex, 1);
+  assert.equal(issues[0].actionData.param, "right_field");
+});
