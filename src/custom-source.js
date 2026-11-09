@@ -126,6 +126,27 @@ export function customSourceCreator(user) {
   return { id, username, fullName };
 }
 
+const CUSTOM_SOURCE_KEY_PATTERN = /^custom\.[a-z0-9-]{1,80}$/;
+
+/** Returns the trimmed key when it is a well-formed custom.* key, else "". */
+export function customSourceKeyParam(value) {
+  const key = String(value || "").trim();
+  return CUSTOM_SOURCE_KEY_PATTERN.test(key) ? key : "";
+}
+
+/**
+ * The creator and Source Library administrators may edit or delete a custom
+ * source. Everyone else can only read it.
+ * @param {{ id?: string }} user Signed-in user.
+ * @param {{ created_by_user_id?: string }} row Stored source row.
+ * @param {boolean} isAdmin Whether the user holds the Source Library admin role.
+ */
+export function canManageCustomSource(user, row, isAdmin) {
+  if (isAdmin) return true;
+  const userId = String(user?.id || "").trim();
+  return Boolean(userId) && userId === String(row?.created_by_user_id || "");
+}
+
 export function validateCustomSourceInput(body) {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     throw new CustomSourceValidationError(

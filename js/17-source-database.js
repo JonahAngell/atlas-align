@@ -198,7 +198,13 @@ const CUSTOM_FIELD_FORMAT_DETAILS = {
 // Mirrors MAX_FIELDS in src/custom-source.js.
 const CUSTOM_SOURCE_MAX_FIELDS = 200;
 const CUSTOM_SOURCE_IMPORT_MAX_BYTES = 10 * 1024 * 1024;
-const customSourceState = { undo: null, sheets: [], rowSequence: 0 };
+const customSourceState = {
+  undo: null,
+  sheets: [],
+  rowSequence: 0,
+  editing: null,
+  deleting: null,
+};
 
 function atlasCustomSourceFormatOptions() {
   return CUSTOM_FIELD_FORMATS.map((format) => ({
@@ -244,7 +250,12 @@ function atlasUniqueCustomFieldNames(values) {
   return { names, empty, duplicate };
 }
 
-function atlasCustomSourceFieldRow({ display = "" } = {}) {
+function atlasCustomSourceFieldRow({
+  display = "",
+  fieldName = "",
+  format = "Text",
+  description = "",
+} = {}) {
   const row = document.createElement("fieldset");
   const descriptionId = `customSourceDescription${++customSourceState.rowSequence}`;
   row.className = "custom-source-field";
@@ -259,7 +270,7 @@ function atlasCustomSourceFieldRow({ display = "" } = {}) {
     </label>
     <div class="custom-source-cell custom-source-format">${atlasChoiceControl({
       options: atlasCustomSourceFormatOptions(),
-      selected: "Text",
+      selected: CUSTOM_FIELD_FORMATS.includes(format) ? format : "Text",
       label: "Field format",
       heading: "Format",
       popover: "grid",
@@ -273,6 +284,15 @@ function atlasCustomSourceFieldRow({ display = "" } = {}) {
       <textarea class="input full-input" data-field-description id="${descriptionId}Input" maxlength="2000" rows="2"></textarea>
     </label>`;
   row.querySelector("[data-field-display]").value = display;
+  row.querySelector("[data-field-name]").value = fieldName;
+  if (description) {
+    const panel = row.querySelector(".custom-source-description");
+    panel.hidden = false;
+    panel.querySelector("[data-field-description]").value = description;
+    row
+      .querySelector("[data-toggle-custom-description]")
+      ?.setAttribute("aria-expanded", "true");
+  }
   return row;
 }
 
@@ -785,37 +805,43 @@ async function atlasSaveCustomSource(event) {
   if (saveButton) saveButton.disabled = true;
   $("customSourceForm")?.setAttribute("aria-busy", "true");
   atlasShowCustomSourceError("");
+  const editing = customSourceState.editing;
   try {
-    await atlasApiJson("/api/source-library/custom", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        sourceName,
-        sourceSystem,
-        fields: rows.map(
-          ({ vanityLabel, fieldName, fieldFormat, businessDescription }) => ({
-            vanityLabel,
-            fieldName,
-            fieldFormat,
-            businessDescription,
-          }),
-        ),
-      }),
-    });
+    await atlasApiJson(
+      editing
+        ? `/api/source-library/custom/${encodeURIComponent(editing.sourceKey)}`
+        : "/api/source-library/custom",
+      {
+        method: editing ? "PUT" : "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          sourceName,
+          sourceSystem,
+          fields: rows.map(
+            ({ vanityLabel, fieldName, fieldFormat, businessDescription }) => ({
+              vanityLabel,
+              fieldName,
+              fieldFormat,
+              businessDescription,
+            }),
+          ),
+        }),
+      },
+    );
     $("customSourceDialog")?.close();
-    await loadSourceFileLibrary?.({});
-    repoLibraryState.sourceFileCache?.clear();
-    atlasInvalidateSourceDerivedState?.();
-    refreshFieldPickerOptions?.();
-    renderSourceFieldBrowser?.();
-    renderFieldPickerPanel?.();
-    renderValidationPanel?.();
-    updateDashboardMetrics?.();
-    status(`Added custom source ${sourceName}.`, "ok");
+    await atlasRefreshSourceLibraryAfterCustomChange();
+    status(
+      editing
+        ? `Saved changes to custom source ${sourceName}.`
+        : `Added custom source ${sourceName}.`,
+      "ok",
+    );
   } catch (error) {
     atlasShowCustomSourceError(
       error?.message ||
-        "The custom source could not be saved. Check the source name and fields, then try again.",
+        (editing
+          ? "Your changes could not be saved. Check the source name and fields, then try again."
+          : "The custom source could not be saved. Check the source name and fields, then try again."),
     );
   } finally {
     if (saveButton) saveButton.disabled = false;
@@ -823,14 +849,212 @@ async function atlasSaveCustomSource(event) {
   }
 }
 
-function atlasOpenCustomSourceDialog() {
+async function atlasRefreshSourceLibraryAfterCustomChange() {
+  await loadSourceFileLibrary?.({});
+  repoLibraryState.sourceFileCache?.clear();
+  atlasInvalidateSourceDerivedState?.();
+  refreshFieldPickerOptions?.();
+  renderSourceFieldBrowser?.();
+  renderSources?.();
+  renderFieldPickerPanel?.();
+  renderValidationPanel?.();
+  updateDashboardMetrics?.();
+  globalThis.ATLASAuditIssues?.render?.();
+}
+
+function atlasSetCustomSourceDialogMode(source = null) {
+  customSourceState.editing = source
+    ? {
+        sourceKey: String(source.sourceKey || ""),
+        sourceName: String(source.sourceFile || source.sourceKey || ""),
+      }
+    : null;
+  const title = $("customSourceDialogTitle");
+  const description = $("customSourceDialogDescription");
+  const save = $("customSourceSaveBtn");
+  if (title)
+    title.textContent = source ? "Edit Custom Source" : "Add Custom Source";
+  if (description)
+    description.textContent = source
+      ? "Changes apply for everyone. Audits that use this source keep their link to it."
+      : "Saved for everyone, with your name on the source.";
+  if (save) save.textContent = source ? "Save Changes" : "Save Custom Source";
+}
+
+function atlasOpenCustomSourceDialog(source = null) {
   const dialog = $("customSourceDialog");
   if (!dialog) return;
   if (dialog.parentElement !== document.body) document.body.append(dialog);
   atlasResetCustomSourceForm();
+  atlasSetCustomSourceDialogMode(source);
+  if (source) {
+    const name = $("customSourceName");
+    const system = $("customSourceSystem");
+    if (name) name.value = String(source.sourceFile || "");
+    if (system)
+      system.value = String(source.sourceMetadata?.sourceSystem || "");
+    const host = $("customSourceFields");
+    const fields = (source.fields || []).slice(0, CUSTOM_SOURCE_MAX_FIELDS);
+    if (host && fields.length) {
+      host.replaceChildren(
+        ...fields.map((field) =>
+          atlasCustomSourceFieldRow({
+            display: String(
+              field.vanityLabel || field.label || field.fieldName || "",
+            ),
+            fieldName: String(field.rawFieldName || field.fieldName || ""),
+            format: String(field.fieldFormat || "Text"),
+            description: String(field.businessDescription || ""),
+          }),
+        ),
+      );
+      atlasRenumberCustomSourceFields(host);
+    }
+  }
   window.atlasMountIcons?.(dialog);
   if (!dialog.open) dialog.showModal();
   $("customSourceName")?.focus();
+}
+
+/** Mirrors the server rule: the creator or a Source Library administrator. */
+function atlasCanManageCustomSource(source) {
+  if (source?.origin !== "custom") return false;
+  if (atlasSourceDatabaseState.canReplace) return true;
+  const userId = String(atlasSourceDatabaseState.currentUser?.id || "");
+  return Boolean(userId) && userId === String(source.createdBy?.id || "");
+}
+
+function atlasCustomSourceByKey(sourceKey) {
+  const key = String(sourceKey || "");
+  return (repoLibraryState.sourceFiles || []).find(
+    (source) => source.origin === "custom" && source.sourceKey === key,
+  );
+}
+
+function atlasCustomSourceManageButtons(source) {
+  if (!atlasCanManageCustomSource(source)) return "";
+  const key = esc(source.sourceKey || "");
+  const name = esc(source.sourceFile || source.sourceKey || "custom source");
+  return `<button type="button" class="btn secondary small" data-custom-source-edit="${key}" aria-label="Edit ${name}">Edit</button><button type="button" class="btn secondary small source-library-delete-button" data-custom-source-delete="${key}" aria-label="Delete ${name}">Delete</button>`;
+}
+
+function atlasCurrentAuditUsesSource(source) {
+  const ids = new Set(
+    [source?.sourceKey, source?.sourceFile, source?.alias]
+      .map((value) =>
+        String(value || "")
+          .trim()
+          .toLowerCase(),
+      )
+      .filter(Boolean),
+  );
+  return (state.audit?.sources || []).some((item) =>
+    [item?.sourceKey, item?.sourceFile, item?.alias, item?.name].some((value) =>
+      ids.has(
+        String(value || "")
+          .trim()
+          .toLowerCase(),
+      ),
+    ),
+  );
+}
+
+function atlasOpenCustomSourceDeleteDialog(source, trigger) {
+  const dialog = $("customSourceDeleteDialog");
+  if (!dialog || !source) return;
+  if (dialog.parentElement !== document.body) document.body.append(dialog);
+  customSourceState.deleting = {
+    sourceKey: String(source.sourceKey || ""),
+    sourceName: String(source.sourceFile || source.sourceKey || ""),
+    trigger,
+  };
+  const fieldCount = source.fields?.length || 0;
+  const inThisAudit = atlasCurrentAuditUsesSource(source);
+  const body = $("customSourceDeleteBody");
+  if (body) {
+    body.textContent = `${customSourceState.deleting.sourceName} and its ${atlasPluralFields(fieldCount)} will be removed from the Source Library for everyone. This cannot be undone.${
+      inThisAudit
+        ? " This audit uses it, so its logic and fields will show a missing source issue until you replace or remove it."
+        : " Audits that use it will show a missing source issue until the source is replaced or removed."
+    }`;
+  }
+  const error = $("customSourceDeleteError");
+  if (error) error.textContent = "";
+  const confirm = $("customSourceDeleteConfirmBtn");
+  if (confirm) confirm.disabled = false;
+  if (!dialog.open) dialog.showModal();
+  $("customSourceDeleteCancelBtn")?.focus();
+}
+
+async function atlasConfirmCustomSourceDelete() {
+  const pending = customSourceState.deleting;
+  const dialog = $("customSourceDeleteDialog");
+  const confirm = $("customSourceDeleteConfirmBtn");
+  const error = $("customSourceDeleteError");
+  if (!pending) return;
+  if (confirm) confirm.disabled = true;
+  dialog?.setAttribute("aria-busy", "true");
+  if (error) error.textContent = "";
+  try {
+    await atlasApiJson(
+      `/api/source-library/custom/${encodeURIComponent(pending.sourceKey)}`,
+      { method: "DELETE" },
+    );
+    customSourceState.deleting = null;
+    dialog?.close();
+    await atlasRefreshSourceLibraryAfterCustomChange();
+    status(`Deleted custom source ${pending.sourceName}.`, "ok");
+    $("addCustomSourceBtn")?.focus();
+  } catch (problem) {
+    if (error)
+      error.textContent =
+        problem?.message ||
+        "The custom source could not be deleted. Try again.";
+    if (confirm) confirm.disabled = false;
+  } finally {
+    dialog?.removeAttribute("aria-busy");
+  }
+}
+
+function atlasBindCustomSourceManagement() {
+  const dialog = $("customSourceDeleteDialog");
+  if (dialog && !dialog.dataset.atlasBound) {
+    dialog.dataset.atlasBound = "true";
+    $("customSourceDeleteCancelBtn")?.addEventListener("click", () =>
+      dialog.close(),
+    );
+    $("customSourceDeleteConfirmBtn")?.addEventListener(
+      "click",
+      atlasConfirmCustomSourceDelete,
+    );
+    dialog.addEventListener("close", () => {
+      const trigger = customSourceState.deleting?.trigger;
+      customSourceState.deleting = null;
+      if (trigger?.isConnected) trigger.focus();
+    });
+  }
+  if (document.documentElement.dataset.atlasCustomSourceManageBound) return;
+  document.documentElement.dataset.atlasCustomSourceManageBound = "true";
+  document.addEventListener("click", (event) => {
+    const edit = event.target.closest?.("[data-custom-source-edit]");
+    const remove = event.target.closest?.("[data-custom-source-delete]");
+    if (!edit && !remove) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const key = (edit || remove).dataset[
+      edit ? "customSourceEdit" : "customSourceDelete"
+    ];
+    const source = atlasCustomSourceByKey(key);
+    if (!source) {
+      status(
+        "That custom source is no longer in the Source Library. Refresh and try again.",
+        "warn",
+      );
+      return;
+    }
+    if (edit) atlasOpenCustomSourceDialog(source);
+    else atlasOpenCustomSourceDeleteDialog(source, remove);
+  });
 }
 
 function atlasBindCustomSourceDialog() {
@@ -841,7 +1065,7 @@ function atlasBindCustomSourceDialog() {
   if (!openButton || !dialog || !form || !fields || dialog.dataset.atlasBound)
     return;
   dialog.dataset.atlasBound = "true";
-  openButton.addEventListener("click", atlasOpenCustomSourceDialog);
+  openButton.addEventListener("click", () => atlasOpenCustomSourceDialog());
   $("customSourceCancelBtn")?.addEventListener("click", () => dialog.close());
   $("addCustomSourceFieldBtn")?.addEventListener("click", () => {
     if (atlasCustomSourceRows(fields).length >= CUSTOM_SOURCE_MAX_FIELDS)
@@ -930,6 +1154,7 @@ function atlasBindCustomSourceDialog() {
 
 async function atlasInitSourceDatabase() {
   atlasBindCustomSourceDialog();
+  atlasBindCustomSourceManagement();
   await atlasLoadSourceLibraryAccess();
   const button = $("replaceSourceLibraryBtn");
   const fileInput = $("replaceSourceLibraryFile");

@@ -283,15 +283,26 @@ function atlasThenActionTypeChoices() {
       "Display Text Response in Column",
       "Show a text response in a column.",
     ],
-    ["do_not_display", "Do Not Display", "Hide the matching record."],
+    [
+      "display",
+      "Display / Do Not Display",
+      "Keep or remove the records that match.",
+    ],
   ];
+}
+
+const ATLAS_DISPLAY_ACTION_TYPES = ["display", "do_not_display"];
+function atlasIsDisplayActionType(actionType) {
+  return ATLAS_DISPLAY_ACTION_TYPES.includes(actionType);
 }
 
 function atlasThenActionTypeControl(prefix, actionType) {
   return `<div class="full action-type-row atlas-choice-field">${atlasChoiceControl(
     {
       options: atlasThenActionTypeChoices(),
-      selected: actionType || "freeform",
+      selected: atlasIsDisplayActionType(actionType)
+        ? "display"
+        : actionType || "freeform",
       variant: "cards",
       label: `${prefix} action type`,
       heading: `${prefix} Action Type`,
@@ -463,8 +474,33 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
       },
     )}<span class="hint">The column where the message appears. Defaults to Error Message.</span></label><div class="logic-editor-callout full display-text-preview" aria-live="polite"><strong>Preview:</strong> ${esc(previewText)}</div><label class="full">Notes (optional)<textarea data-param="then_action" placeholder="Internal notes about this action">${esc(p.then_action || "")}</textarea></label></div>`;
   }
-  if (actionType === "do_not_display") {
-    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<div class="logic-editor-callout full">Matching records will not be displayed in the audit output for this branch.</div><input type="hidden" data-param="then_action" value="${esc(p.then_action || "Do not display matching records")}"></div>`;
+  if (atlasIsDisplayActionType(actionType)) {
+    const hide = actionType === "do_not_display";
+    const toggle = atlasChoiceControl({
+      options: [
+        ["display", "Display", "Keep only rows that match this condition."],
+        [
+          "do_not_display",
+          "Do Not Display",
+          "Keep only rows that do not match this condition.",
+        ],
+      ],
+      selected: actionType,
+      variant: "segment",
+      label: "Matching records",
+      heading: "Matching records",
+      popover: "list",
+      attributes: 'data-param="then_display_mode"',
+    });
+    const note = renderCatalogPhrase(
+      `developer_logic.display_notes.${actionType}`,
+      {},
+    );
+    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<div class="full atlas-choice-field display-action-toggle">${toggle}</div><div class="logic-editor-callout full display-action-note" aria-live="polite">${esc(
+      hide
+        ? "Matching records will not be displayed in the audit output for this branch."
+        : "Only matching records will be displayed in the audit output for this branch.",
+    )}<br><span class="hint">Added to Developer Logic: ${esc(note)}</span></div><input type="hidden" data-param="then_action" value="${esc(hide ? "Do not display matching records" : "Display matching records")}"></div>`;
   }
   return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label></div>`;
 };
@@ -655,7 +691,11 @@ document.addEventListener(
           );
       }
     }
-    if (event.target.closest('[data-param="then_action_type"]'))
+    if (
+      event.target.closest(
+        '[data-param="then_action_type"], [data-param="then_display_mode"]',
+      )
+    )
       atlasCommitLiveEditor?.({ rerender: true });
   },
   true,
@@ -761,7 +801,7 @@ function atlasCreateRuleOfType(stepType, { afterStepId = "" } = {}) {
   if (type === "if_then") {
     delete step.params.then_action_type;
     atlasInitializeNewIfThenAction(step);
-    step.params.then_action_type = step.params.then_action_type || "freeform";
+    step.params.then_action_type = step.params.then_action_type || "display";
   }
   if (type === "if_then" && !step.params.conditions_json) {
     step.params.conditions_json = JSON.stringify([
@@ -3237,3 +3277,23 @@ function atlasBindLogicPaneSwitch() {
 }
 
 atlasBindLogicPaneSwitch();
+
+// Display and Do Not Display share one action card. The card stores "display";
+// the Matching records toggle decides which of the two the step keeps.
+const atlasCaptureGuidedFieldsBeforeDisplayToggle = atlasCaptureGuidedFields;
+atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithDisplayToggle(
+  root,
+  step,
+) {
+  atlasCaptureGuidedFieldsBeforeDisplayToggle(root, step);
+  const params = step?.params;
+  if (!params) return;
+  const mode = params.then_display_mode;
+  delete params.then_display_mode;
+  if (params.then_action_type !== "display") return;
+  if (mode === "do_not_display") params.then_action_type = "do_not_display";
+  params.then_action =
+    params.then_action_type === "do_not_display"
+      ? "Do not display matching records"
+      : "Display matching records";
+};

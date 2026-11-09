@@ -2850,4 +2850,15 @@ body.dark .import-source-error {
     transition: none;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1595:END */
+/* ATLAS-SOURCE-UNIT:u1595:END *//* ATLAS-SOURCE-UNIT:u1614:BEGIN */
+
+
+.custom-source-delete-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+}
+
+/* ATLAS-SOURCE-UNIT:u1614:END *//* ATLAS-SOURCE-UNIT:u1615:BEGIN */.custom-source-delete-dialog .custom-source-actions {
+  justify-content: flex-end;
+}
+
+/* ATLAS-SOURCE-UNIT:u1615:END */
