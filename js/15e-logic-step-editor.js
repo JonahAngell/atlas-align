@@ -517,7 +517,7 @@ function atlasAddStepAfter(stepId) {
     delete nextStep.params.then_action_type;
     atlasInitializeNewIfThenAction(nextStep);
     nextStep.params.then_action_type =
-      nextStep.params.then_action_type || "freeform";
+      nextStep.params.then_action_type || "display";
   }
   if (index >= 0) state.audit.steps.splice(index + 1, 0, nextStep);
   else state.audit.steps.push(nextStep);
@@ -1003,7 +1003,7 @@ function atlasAddReferenceChildStep(referenceStep, requestedType = "if_then") {
       delete child.params.then_action_type;
       atlasInitializeNewIfThenAction(child);
     }
-    child.params.then_action_type = child.params.then_action_type || "freeform";
+    child.params.then_action_type = child.params.then_action_type || "display";
   }
   state.audit.steps.push(child);
   atlasNormalizeStepOrderGroups?.();

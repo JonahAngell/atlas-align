@@ -5,15 +5,21 @@ import vm from "node:vm";
 import express from "express";
 import {
   allocateCustomSourceKey,
+  canManageCustomSource,
   CUSTOM_FIELD_FORMATS,
   customSourceCreator,
   customSourceFromRecord,
+  customSourceKeyParam,
   CustomSourceValidationError,
   fieldNameFromDisplayName,
   mergeCustomSources,
   validateCustomSourceInput,
 } from "../src/custom-source.js";
-import { insertCustomSource } from "../src/custom-source-repository.js";
+import {
+  deleteCustomSource,
+  insertCustomSource,
+  updateCustomSource,
+} from "../src/custom-source-repository.js";
 import { createSourceLibraryRouter } from "../src/routes/source-library-routes.js";
 import { sourceLibraryFromRows } from "../src/source-library.js";
 
@@ -432,4 +438,221 @@ test("a blank source field name is derived safely from the display name", () => 
   });
   assert.equal(input.fields[1].fieldName, "field_2");
   assert.equal(input.fields[1].vanityLabel, "$$$");
+});
+
+const storedRows = {
+  "custom.bonus-file": {
+    id: "source-1",
+    source_key: "custom.bonus-file",
+    source_name: "Bonus File",
+    source_system: "",
+    created_by_user_id: "user-1",
+    created_by_username: "ada",
+    created_by_full_name: "Ada Lovelace",
+  },
+  "custom.other-file": {
+    id: "source-2",
+    source_key: "custom.other-file",
+    source_name: "Other File",
+    source_system: "",
+    created_by_user_id: "user-2",
+    created_by_username: "grace",
+    created_by_full_name: "Grace Hopper",
+  },
+};
+
+function fakeManageRepository() {
+  const calls = [];
+  const outcome = (sourceKey, canManage) => {
+    const row = storedRows[sourceKey];
+    if (!row) return { status: "not_found" };
+    return canManage(row) ? { status: "ok", row } : { status: "forbidden" };
+  };
+  return {
+    calls,
+    updateCustomSource: async (_pool, { sourceKey, input, canManage }) => {
+      const result = outcome(sourceKey, canManage);
+      calls.push({ kind: "update", sourceKey, status: result.status, input });
+      return result.status === "ok"
+        ? { status: "ok", source: { sourceKey, sourceFile: input.sourceName } }
+        : result;
+    },
+    deleteCustomSource: async (_pool, { sourceKey, canManage }) => {
+      const result = outcome(sourceKey, canManage);
+      calls.push({ kind: "delete", sourceKey, status: result.status });
+      return result;
+    },
+  };
+}
+
+const editBody = JSON.stringify({
+  sourceName: "Bonus File v2",
+  fields: [{ displayName: "Amount", fieldFormat: "Currency" }],
+});
+
+async function manage(port, method, key, body) {
+  return fetch(
+    `http://127.0.0.1:${port}/api/source-library/custom/${encodeURIComponent(key)}`,
+    {
+      method,
+      headers: { "content-type": "application/json" },
+      ...(body ? { body } : {}),
+    },
+  );
+}
+
+test("custom source keys in routes must look like custom keys", () => {
+  assert.equal(customSourceKeyParam("custom.bonus-file"), "custom.bonus-file");
+  assert.equal(customSourceKeyParam("wd.sample"), "");
+  assert.equal(customSourceKeyParam("custom.../etc"), "");
+  assert.equal(customSourceKeyParam(""), "");
+});
+
+test("only the creator or an administrator can manage a custom source", () => {
+  const row = storedRows["custom.bonus-file"];
+  assert.equal(canManageCustomSource({ id: "user-1" }, row, false), true);
+  assert.equal(canManageCustomSource({ id: "user-2" }, row, false), false);
+  assert.equal(canManageCustomSource({ id: "user-2" }, row, true), true);
+  assert.equal(
+    canManageCustomSource({}, { created_by_user_id: "" }, false),
+    false,
+  );
+});
+
+test("the creator can edit and delete their custom source", async () => {
+  const repo = fakeManageRepository();
+  await withSourceLibraryApp(repo, async ({ port }) => {
+    const edited = await manage(port, "PUT", "custom.bonus-file", editBody);
+    assert.equal(edited.status, 200);
+    assert.equal((await edited.json()).sourceFile, "Bonus File v2");
+    assert.equal(repo.calls[0].input.fields[0].fieldName, "Amount");
+
+    const removed = await manage(port, "DELETE", "custom.bonus-file");
+    assert.equal(removed.status, 204);
+  });
+});
+
+test("someone else cannot edit or delete a custom source", async () => {
+  const repo = fakeManageRepository();
+  await withSourceLibraryApp(repo, async ({ port }) => {
+    const edited = await manage(port, "PUT", "custom.other-file", editBody);
+    assert.equal(edited.status, 403);
+    const removed = await manage(port, "DELETE", "custom.other-file");
+    assert.equal(removed.status, 403);
+    assert.deepEqual(
+      repo.calls.map((call) => call.status),
+      ["forbidden", "forbidden"],
+    );
+  });
+});
+
+test("a Source Library administrator can manage any custom source", async () => {
+  const repo = fakeManageRepository();
+  await withSourceLibraryApp(
+    {
+      ...repo,
+      sourceLibraryAccessDecision: () => ({ allowed: true, reason: "ok" }),
+    },
+    async ({ port }) => {
+      const edited = await manage(port, "PUT", "custom.other-file", editBody);
+      assert.equal(edited.status, 200);
+      const removed = await manage(port, "DELETE", "custom.other-file");
+      assert.equal(removed.status, 204);
+    },
+  );
+});
+
+test("missing, malformed, and invalid edits are rejected", async () => {
+  const repo = fakeManageRepository();
+  await withSourceLibraryApp(repo, async ({ port }) => {
+    assert.equal(
+      (await manage(port, "PUT", "custom.gone", editBody)).status,
+      404,
+    );
+    assert.equal((await manage(port, "DELETE", "custom.gone")).status, 404);
+    assert.equal((await manage(port, "DELETE", "wd.sample")).status, 404);
+    const invalid = await manage(
+      port,
+      "PUT",
+      "custom.bonus-file",
+      JSON.stringify({ sourceName: "", fields: [] }),
+    );
+    assert.equal(invalid.status, 400);
+    assert.equal(
+      repo.calls.filter(
+        (call) => call.kind === "update" && call.status === "ok",
+      ).length,
+      0,
+    );
+  });
+});
+
+function fakeTransactionalPool(lockedRow) {
+  const queries = [];
+  const client = {
+    async query(text, params) {
+      queries.push({ text: String(text), params });
+      if (/FOR UPDATE/i.test(text))
+        return { rows: lockedRow ? [lockedRow] : [] };
+      if (/INSERT INTO/i.test(text))
+        return {
+          rows: [
+            {
+              id: `field-${queries.length}`,
+              field_order: params?.[1],
+              field_name: params?.[2],
+              vanity_label: params?.[3],
+            },
+          ],
+        };
+      return { rows: [] };
+    },
+    release() {},
+  };
+  return { queries, pool: { connect: async () => client } };
+}
+
+test("update keeps the source key and replaces every field", async () => {
+  const { queries, pool } = fakeTransactionalPool(
+    storedRows["custom.bonus-file"],
+  );
+  const result = await updateCustomSource(pool, {
+    sourceKey: "custom.bonus-file",
+    input: validateCustomSourceInput({
+      sourceName: "Bonus File v2",
+      fields: [{ displayName: "Amount", fieldFormat: "Currency" }],
+    }),
+    canManage: () => true,
+  });
+  assert.equal(result.status, "ok");
+  assert.equal(result.source.sourceKey, "custom.bonus-file");
+  assert.equal(result.source.sourceFile, "Bonus File v2");
+  const statements = queries.map((query) => query.text);
+  assert.ok(statements.some((text) => /^\s*UPDATE/im.test(text)));
+  assert.ok(statements.some((text) => /DELETE FROM/i.test(text)));
+  assert.ok(statements.some((text) => /COMMIT/i.test(text)));
+});
+
+test("update and delete stop before writing when the user cannot manage", async () => {
+  const { queries, pool } = fakeTransactionalPool(
+    storedRows["custom.other-file"],
+  );
+  const deleted = await deleteCustomSource(pool, {
+    sourceKey: "custom.other-file",
+    canManage: () => false,
+  });
+  assert.equal(deleted.status, "forbidden");
+  assert.ok(!queries.some((query) => /DELETE FROM/i.test(query.text)));
+
+  const missing = fakeTransactionalPool(null);
+  const updated = await updateCustomSource(missing.pool, {
+    sourceKey: "custom.gone",
+    input: validateCustomSourceInput({
+      sourceName: "Gone",
+      fields: [{ displayName: "Amount", fieldFormat: "Currency" }],
+    }),
+    canManage: () => true,
+  });
+  assert.equal(updated.status, "not_found");
+  assert.ok(!missing.queries.some((query) => /^\s*UPDATE/im.test(query.text)));
 });

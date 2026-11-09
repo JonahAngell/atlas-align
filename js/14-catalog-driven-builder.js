@@ -141,7 +141,8 @@ function normalizeCatalogStep(step, index = 0) {
         step,
         conditions.length ? conditions : [defaultGuidedCondition(step)],
       );
-    step.params.then_action_type = step.params.then_action_type || "freeform";
+    step.params.then_action_type =
+      step.params.then_action_type || atlasDefaultIfThenActionType(step);
   }
   if (step.step_type === "join")
     step.params.join_type = step.params.join_type || "INNER JOIN";
@@ -255,6 +256,18 @@ function atlasChoiceOptionButton(item, selected) {
  * "grid" lays options out as tiles; an option `icon` names an atlasIcon.
  */
 let atlasChoicePopoverSequence = 0;
+
+/**
+ * IF steps display matching records by default. Older steps that already carry
+ * written action text keep the Freeform action so their wording is not lost.
+ * @param {any} step - IF step that has no action type yet.
+ */
+function atlasDefaultIfThenActionType(step) {
+  const params = step?.params || {};
+  return String(params.then_action || step?.action || "").trim()
+    ? "freeform"
+    : "display";
+}
 
 function atlasChoiceControl({
   options = [],

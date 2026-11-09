@@ -27,15 +27,31 @@ function auditExportRows() {
   }));
 }
 
+/**
+ * Lists every Display Field for exports, including fields switched off on the
+ * Display Fields page, so reviewers can see what the audit leaves out.
+ */
+function requirementsFieldExportSourceRows() {
+  return requirementsFieldRows({ includeHidden: true }).map((row, index) => ({
+    ...row,
+    rowNumber: index + 1,
+    displayed: row.displayed !== false && row.display !== "No",
+  }));
+}
+
+function requirementsFieldExportDisplayLabel(row) {
+  return row.displayed ? "Yes" : "No (not displayed)";
+}
+
 function requirementsFieldExportRows() {
-  return requirementsFieldRows().map((row) => ({
+  return requirementsFieldExportSourceRows().map((row) => ({
     Number: row.rowNumber,
     "Unique ID": row.uniqueId,
     "Field Title": row.fieldTitle,
     "Vanity Label": row.vanityLabel,
     "Display Format": row.displayFormat,
     "Data Category": row.dataCategory,
-    Display: row.display,
+    Display: requirementsFieldExportDisplayLabel(row),
     Notes: row.notes,
   }));
 }
@@ -129,10 +145,10 @@ function auditHtmlCell(value) {
  * Builds Confluence-friendly HTML for the current audit.
  */
 function auditHtmlDocument() {
-  const fieldRows = requirementsFieldRows()
+  const fieldRows = requirementsFieldExportSourceRows()
     .map(
       (row) =>
-        `<tr><td>${row.rowNumber}</td><td>${auditHtmlCell(row.uniqueId)}</td><td>${auditHtmlCell(row.fieldTitle)}</td><td>${auditHtmlCell(row.vanityLabel)}</td><td>${auditHtmlCell(row.displayFormat)}</td><td>${auditHtmlCell(row.dataCategory)}</td><td>${auditHtmlCell(row.display)}</td><td>${auditHtmlCell(row.notes)}</td></tr>`,
+        `<tr${row.displayed ? "" : ' class="not-displayed"'}><td>${row.rowNumber}</td><td>${auditHtmlCell(row.uniqueId)}</td><td>${auditHtmlCell(row.fieldTitle)}</td><td>${auditHtmlCell(row.vanityLabel)}</td><td>${auditHtmlCell(row.displayFormat)}</td><td>${auditHtmlCell(row.dataCategory)}</td><td>${auditHtmlCell(requirementsFieldExportDisplayLabel(row))}</td><td>${auditHtmlCell(row.notes)}</td></tr>`,
     )
     .join("");
   const logicRows = auditExportRows()
@@ -141,7 +157,7 @@ function auditHtmlDocument() {
         `<tr><td>${auditHtmlCell(row.Step)}</td><td${row.level ? ` style="padding-left:${8 + row.level * AUDIT_EXPORT_HTML_INDENT_PX}px"` : ""}>${auditHtmlCell(row["Analyst Logic"])}</td><td>${auditHtmlCell(row["Developer Logic"])}</td><td>${auditHtmlCell(row.Notes)}</td></tr>`,
     )
     .join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.audit.name)} Audit Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;color:#172b4d}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9e2ef;padding:8px;vertical-align:top;text-align:left}th{background:#0747a6;color:#fff}td{white-space:normal}</style></head><body><h1>${esc(state.audit.name)}</h1><p>${esc(state.audit.purpose || "")}</p><h2>Fields</h2><table><thead><tr><th aria-label="Row number"></th><th>Unique ID</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Display</th><th>Notes</th></tr></thead><tbody>${fieldRows}</tbody></table><h2>Audit Logic</h2><table><thead><tr><th>Step</th><th>Analyst Logic</th><th>Developer Logic</th><th>Notes</th></tr></thead><tbody>${logicRows}</tbody></table></body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.audit.name)} Audit Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;color:#172b4d}h2{margin-top:32px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #d9e2ef;padding:8px;vertical-align:top;text-align:left}th{background:#0747a6;color:#fff}td{white-space:normal}tr.not-displayed td{background:#f4f5f7;color:#42526e}</style></head><body><h1>${esc(state.audit.name)}</h1><p>${esc(state.audit.purpose || "")}</p><h2>Fields</h2><table><thead><tr><th aria-label="Row number"></th><th>Unique ID</th><th>Field Title</th><th>Vanity Label</th><th>Display Format</th><th>Data Category</th><th>Display</th><th>Notes</th></tr></thead><tbody>${fieldRows}</tbody></table><h2>Audit Logic</h2><table><thead><tr><th>Step</th><th>Analyst Logic</th><th>Developer Logic</th><th>Notes</th></tr></thead><tbody>${logicRows}</tbody></table></body></html>`;
 }
 
 // -----------------------------------------------------------------------------

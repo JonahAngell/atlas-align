@@ -72,6 +72,10 @@
       "sql_server": "SQL Server:"
     },
     "else_step": "ELSE (Step {step_number})",
+    "display_notes": {
+      "display": "Note: Display - Keep only rows that match this condition.",
+      "do_not_display": "Note: Do Not Display - Keep only rows that do not match this condition."
+    },
     "join": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" on \"{left_field}\" to \"{right_alias}\" on \"{right_field}\".",
     "join_multi": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" to \"{right_alias}\" where {key_pairs}.",
     "kept_rows": {
@@ -175,10 +179,12 @@
       "condition_group_without_action": "{condition_group}:",
       "then_display_text": "display text response {message} in new column {output_column}",
       "then_set_column_value": "set {target_column} value to {value_column} value",
+      "then_display": "display record",
       "then_do_not_display": "do not display record",
       "then_freeform": "{action}",
       "then_display_text_line": "THEN display text response {message} in new column {output_column}.",
       "then_set_column_value_line": "THEN set {target_column} value to {value_column} value.",
+      "then_display_line": "THEN display record.",
       "then_do_not_display_line": "THEN do not display record.",
       "then_freeform_line": "THEN {action}.",
       "then_set_column_calculation": "set {target_column} value to {calculation}",
@@ -189,6 +195,7 @@
       "default": "ELSE:",
       "display_text": "ELSE display text response {message} in new column {output_column}.",
       "set_column_value": "ELSE set {target_column} value to {value_column} value.",
+      "display": "ELSE display record.",
       "do_not_display": "ELSE do not display record.",
       "freeform": "ELSE {action}.",
       "string_transform": "ELSE {phrase}."

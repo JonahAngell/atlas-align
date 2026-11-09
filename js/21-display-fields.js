@@ -26,7 +26,9 @@ function atlasDisplaySourceByKey(identity = {}, sources = []) {
       .map(atlasDisplayNormalize)
       .filter(Boolean);
   if (wantedKey) {
-    const byKey = sources.filter((source) => keysOf(source).includes(wantedKey));
+    const byKey = sources.filter((source) =>
+      keysOf(source).includes(wantedKey),
+    );
     if (byKey.length === 1) return byKey[0];
     const byAliasKey = sources.filter((source) =>
       aliasesOf(source).includes(wantedKey),
@@ -380,10 +382,8 @@ function atlasSaveDisplayField(row, displayed) {
     ),
     value = {
       canonicalKey: row.canonicalKey || existing?.canonicalKey || "",
-      sourceKey:
-        existing?.sourceKey || row.uniqueId || row.sourceFile || "",
-      sourceFile:
-        existing?.sourceFile || row.sourceFile || row.uniqueId || "",
+      sourceKey: existing?.sourceKey || row.uniqueId || row.sourceFile || "",
+      sourceFile: existing?.sourceFile || row.sourceFile || row.uniqueId || "",
       fieldName: existing?.fieldName || row.fieldTitle,
       displayed: !!displayed,
       removed: false,
@@ -435,9 +435,86 @@ function atlasSyncDisplayFieldsToolbar(rows) {
     button.title = rows.length < 2 ? "Add at least two fields to sort." : "";
   });
 }
+// Remembers where the Display Fields table was scrolled so re-renders (toggles,
+// adds, deletes, sorts, undo, revisiting the page) never jump back to the top.
+const atlasDisplayFieldsScrollState = { auditId: "", top: 0, left: 0 };
+function atlasDisplayFieldsAuditId() {
+  return String(state?.audit?.id || state?.audit?.auditId || "");
+}
+function atlasRememberDisplayFieldsScroll(wrap) {
+  if (!wrap?.isConnected || !wrap.getClientRects().length) return;
+  atlasDisplayFieldsScrollState.auditId = atlasDisplayFieldsAuditId();
+  atlasDisplayFieldsScrollState.top = wrap.scrollTop;
+  atlasDisplayFieldsScrollState.left = wrap.scrollLeft;
+}
+function atlasSavedDisplayFieldsScroll() {
+  return atlasDisplayFieldsScrollState.auditId === atlasDisplayFieldsAuditId()
+    ? {
+        top: atlasDisplayFieldsScrollState.top,
+        left: atlasDisplayFieldsScrollState.left,
+      }
+    : { top: 0, left: 0 };
+}
+function atlasRestoreDisplayFieldsScroll(point) {
+  if (!point || (!point.top && !point.left)) return;
+  const apply = () => {
+    const wrap = document.querySelector(
+      "#displayFieldsTable .display-fields-table-wrap",
+    );
+    if (!wrap || !wrap.getClientRects().length) return false;
+    wrap.scrollTop = point.top;
+    wrap.scrollLeft = point.left;
+    atlasRememberDisplayFieldsScroll(wrap);
+    return true;
+  };
+  if (apply()) return;
+  // The page may still be hidden while it renders; retry once it is laid out.
+  requestAnimationFrame(() => {
+    if (!apply()) requestAnimationFrame(apply);
+  });
+}
+document.addEventListener(
+  "scroll",
+  (event) => {
+    if (
+      event.target?.matches?.("#displayFieldsTable .display-fields-table-wrap")
+    )
+      atlasRememberDisplayFieldsScroll(event.target);
+  },
+  true,
+);
+function atlasScrollDisplayFieldRowIntoView(key) {
+  const row = [
+    ...document.querySelectorAll(
+      "#displayFieldsTable [data-display-field-row]",
+    ),
+  ].find((item) => item.dataset.displayFieldRow === key);
+  const wrap = row?.closest(".display-fields-table-wrap");
+  if (!row || !wrap) return null;
+  const head = wrap.querySelector("thead")?.getBoundingClientRect().height || 0;
+  const rowRect = row.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  const reduceMotion = window.matchMedia?.(
+    "(prefers-reduced-motion: reduce)",
+  )?.matches;
+  let delta = 0;
+  if (rowRect.top < wrapRect.top + head)
+    delta = rowRect.top - wrapRect.top - head;
+  else if (rowRect.bottom > wrapRect.bottom)
+    delta = rowRect.bottom - wrapRect.bottom;
+  if (delta)
+    wrap.scrollBy({ top: delta, behavior: reduceMotion ? "auto" : "smooth" });
+  row.classList.remove("display-field-moved");
+  void row.offsetWidth;
+  row.classList.add("display-field-moved");
+  return row;
+}
 function renderDisplayFieldsPage() {
   const host = $("displayFieldsTable");
   if (!host) return;
+  const previousWrap = host.querySelector(".display-fields-table-wrap");
+  if (previousWrap) atlasRememberDisplayFieldsScroll(previousWrap);
+  const scrollPoint = atlasSavedDisplayFieldsScroll();
   const rows = requirementsFieldRows({
     includeHidden: true,
     includeNotes: false,
@@ -472,13 +549,14 @@ function renderDisplayFieldsPage() {
     return `<span class="${classes}"${reason}${style}>${dot}${esc(value)}${badge}</span>`;
   };
   host.innerHTML = rows.length
-    ? `<div class="display-fields-table-wrap"><table class="display-fields-table"><thead><tr><th scope="col" aria-label="Reorder"></th><th>Source</th><th>Field Title</th><th class="display-field-col-detail">Vanity Label</th><th class="display-field-col-detail">Display Format</th><th class="display-field-col-detail">Data Category</th><th class="display-field-col-detail">Used in Logic</th><th>Displayed</th></tr></thead><tbody>${rows
+    ? `<div class="display-fields-table-wrap"><table class="display-fields-table"><thead><tr><th scope="col">Order</th><th>Source</th><th>Field Title</th><th class="display-field-col-detail">Vanity Label</th><th class="display-field-col-detail">Display Format</th><th class="display-field-col-detail">Data Category</th><th class="display-field-col-detail">Used in Logic</th><th>Displayed</th></tr></thead><tbody>${rows
         .map(
           (row) =>
-            `<tr class="${row.usedInLogic ? "display-field-logic-locked" : ""}" draggable="true" data-display-field-row="${esc(row.key)}"><td><span class="display-field-drag-handle" draggable="true" tabindex="0" role="button" aria-label="Reorder ${esc(row.vanityLabel || row.fieldTitle)}" title="Drag to reorder or use Alt+Up and Alt+Down">⋮⋮</span></td><td>${pill(row.sourceAlias || row.uniqueId || "Calculated Field", row, "source")}</td><td class="display-field-identity">${pill(row.fieldTitle, row, "field")}<div class="display-field-meta">${atlasDisplayFieldMeta(row)}</div></td><td class="display-field-col-detail">${esc(row.vanityLabel)}</td><td class="display-field-col-detail">${esc(row.displayFormat)}</td><td class="display-field-col-detail">${esc(row.dataCategory)}</td><td class="display-field-col-detail">${row.usedInLogic ? "Yes" : "No"}</td><td><div class="display-fields-actions"><label class="display-fields-switch"><input type="checkbox" role="switch" data-display-field-toggle="${esc(row.key)}" aria-label="Include ${esc(row.vanityLabel || row.fieldTitle)} in preview and export" ${row.displayed ? "checked" : ""}><span class="display-fields-switch-track" aria-hidden="true"></span><span data-display-field-switch-label>${row.displayed ? "Displayed" : "Hidden"}</span></label>${atlasDisplayFieldDeleteControl(row)}</div></td></tr>`,
+            `<tr class="${row.usedInLogic ? "display-field-logic-locked" : ""}" draggable="true" data-display-field-row="${esc(row.key)}"><td><div class="display-field-order"><span class="display-field-drag-handle" draggable="true" tabindex="0" role="button" aria-label="Reorder ${esc(row.vanityLabel || row.fieldTitle)}" title="Drag to reorder or use Alt+Up and Alt+Down">⋮⋮</span><input type="number" class="input display-field-position" inputmode="numeric" min="1" max="${rows.length}" step="1" value="${row.rowNumber}" data-display-field-position="${esc(row.key)}" aria-label="Position of ${esc(row.vanityLabel || row.fieldTitle)}, 1 to ${rows.length}" title="Type a position and press Enter to move this field"></div></td><td>${pill(row.sourceAlias || row.uniqueId || "Calculated Field", row, "source")}</td><td class="display-field-identity">${pill(row.fieldTitle, row, "field")}<div class="display-field-meta">${atlasDisplayFieldMeta(row)}</div></td><td class="display-field-col-detail">${esc(row.vanityLabel)}</td><td class="display-field-col-detail">${esc(row.displayFormat)}</td><td class="display-field-col-detail">${esc(row.dataCategory)}</td><td class="display-field-col-detail">${row.usedInLogic ? "Yes" : "No"}</td><td><div class="display-fields-actions"><label class="display-fields-switch"><input type="checkbox" role="switch" data-display-field-toggle="${esc(row.key)}" aria-label="Include ${esc(row.vanityLabel || row.fieldTitle)} in preview and export" ${row.displayed ? "checked" : ""}><span class="display-fields-switch-track" aria-hidden="true"></span><span data-display-field-switch-label>${row.displayed ? "Displayed" : "Hidden"}</span></label>${atlasDisplayFieldDeleteControl(row)}</div></td></tr>`,
         )
         .join("")}</tbody></table></div>`
     : `<div class="empty-state"><strong>No fields are available.</strong><p>Add logic fields or select a display-only field from an included source.</p></div>`;
+  atlasRestoreDisplayFieldsScroll(scrollPoint);
   const audit = atlasDisplayDocument?.() || state.audit,
     enabled = (audit.sources || []).length > 0,
     button = $("addDisplayFieldBtn");
@@ -538,17 +616,15 @@ function atlasDisplayPickerEntries() {
             : identity.sourceKey || sourceFile,
           sourceLabel:
             identity.alias || sourceFile || identity.sourceKey || "Other",
-          sourceColor: created
-            ? field.sourceColor || sourceColor
-            : sourceColor,
+          sourceColor: created ? field.sourceColor || sourceColor : sourceColor,
           custom: created,
           badge: created ? "Custom" : "",
           creatorStepId: field.creatorStepId || "",
           disabled: selectedKeys.has(key),
-        pickerSource: sourceFile,
-        pickerField: fieldName,
-      };
-    });
+          pickerSource: sourceFile,
+          pickerField: fieldName,
+        };
+      });
   });
   const createdFields =
     typeof atlasCreatedFieldEntries === "function"
@@ -630,8 +706,7 @@ function atlasOpenDisplayPicker() {
   return window.ATLASVisualPicker.open({
     mode: "field",
     title: "Visual Field Picker",
-    guidance:
-      "Select one or more fields from sources included in this audit.",
+    guidance: "Select one or more fields from sources included in this audit.",
     searchPlaceholder: "Search selected sources and fields...",
     entries: atlasDisplayPickerEntries(),
     sort: "source",
@@ -826,22 +901,157 @@ function atlasPersistDisplayFieldOrder(rows) {
   scheduleAutosave?.();
   atlasInvalidatePages?.(["display-fields", "preview", "export"]);
 }
-function atlasMoveDisplayField(sourceKey, targetKey) {
-  if (atlasIsReviewerMode?.()) return;
+function atlasMoveDisplayFieldToIndex(
+  sourceKey,
+  index,
+  { reveal = true } = {},
+) {
+  if (atlasIsReviewerMode?.()) return false;
   const rows = requirementsFieldRows({
       includeHidden: true,
       includeNotes: false,
     }),
     from = rows.findIndex((row) => row.key === sourceKey),
-    to = rows.findIndex((row) => row.key === targetKey);
-  if (from < 0 || to < 0 || from === to) return false;
+    to = Math.min(Math.max(0, Math.trunc(Number(index) || 0)), rows.length - 1);
+  if (from < 0 || from === to) return false;
   const [moved] = rows.splice(from, 1);
   rows.splice(to, 0, moved);
   atlasPersistDisplayFieldOrder(rows);
   renderDisplayFieldsPage();
   renderRequirementsFieldsPreview?.();
   globalThis.ATLASAuditIssues?.render?.();
+  if (reveal) atlasScrollDisplayFieldRowIntoView(sourceKey);
   return true;
+}
+function atlasMoveDisplayField(sourceKey, targetKey, options = {}) {
+  if (atlasIsReviewerMode?.()) return;
+  const rows = requirementsFieldRows({
+    includeHidden: true,
+    includeNotes: false,
+  });
+  const to = rows.findIndex((row) => row.key === targetKey);
+  if (to < 0) return false;
+  return atlasMoveDisplayFieldToIndex(sourceKey, to, options);
+}
+function atlasCommitDisplayFieldPosition(input) {
+  const key = input.dataset.displayFieldPosition || "";
+  const rows = [
+    ...document.querySelectorAll(
+      "#displayFieldsTable [data-display-field-row]",
+    ),
+  ];
+  const current = rows.findIndex((row) => row.dataset.displayFieldRow === key);
+  const wanted = Math.trunc(Number(input.value));
+  if (current < 0) return;
+  if (!Number.isFinite(wanted) || wanted < 1 || wanted > rows.length) {
+    input.value = String(current + 1);
+    atlasSetDisplayFieldsStatus(
+      `Enter a position from 1 to ${rows.length}.`,
+      "warn",
+    );
+    return;
+  }
+  if (wanted - 1 === current) return;
+  const row = atlasDisplayRowCache.get(key);
+  if (!atlasMoveDisplayFieldToIndex(key, wanted - 1)) return;
+  atlasSetDisplayFieldsStatus(
+    `Moved ${row?.vanityLabel || row?.fieldTitle || "field"} to position ${wanted}.`,
+    "ok",
+    () => {
+      atlasMoveDisplayFieldToIndex(key, current, { reveal: false });
+      return "Move undone.";
+    },
+  );
+  [
+    ...document.querySelectorAll(
+      "#displayFieldsTable [data-display-field-position]",
+    ),
+  ]
+    .find((item) => item.dataset.displayFieldPosition === key)
+    ?.focus({ preventScroll: true });
+}
+document.addEventListener("keydown", (event) => {
+  const input = event.target.closest?.("[data-display-field-position]");
+  if (!input) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    atlasCommitDisplayFieldPosition(input);
+  } else if (event.key === "Escape") {
+    const rows = [
+      ...document.querySelectorAll(
+        "#displayFieldsTable [data-display-field-row]",
+      ),
+    ];
+    input.value = String(
+      rows.findIndex(
+        (row) =>
+          row.dataset.displayFieldRow === input.dataset.displayFieldPosition,
+      ) + 1,
+    );
+  }
+});
+document.addEventListener("change", (event) => {
+  if (event.target.matches?.("[data-display-field-position]"))
+    atlasCommitDisplayFieldPosition(event.target);
+});
+
+// Auto-scroll the table while dragging near its top or bottom edge so a field
+// can be dropped on a row that is currently out of view.
+const ATLAS_DISPLAY_DRAG_EDGE = 64;
+// Speed is in pixels per second so the scroll feels the same on any refresh rate.
+const ATLAS_DISPLAY_DRAG_MAX_SPEED = 1100;
+let atlasDisplayDragPointerY = null;
+let atlasDisplayDragFrame = 0;
+let atlasDisplayDragLastTime = 0;
+function atlasDisplayDragAutoScroll(now = performance.now()) {
+  atlasDisplayDragFrame = 0;
+  const elapsed = atlasDisplayDragLastTime
+    ? Math.min(100, Math.max(0, now - atlasDisplayDragLastTime))
+    : 16;
+  atlasDisplayDragLastTime = now;
+  if (!atlasDraggedDisplayFieldKey || atlasDisplayDragPointerY == null) {
+    atlasDisplayDragLastTime = 0;
+    return;
+  }
+  const wrap = document.querySelector(
+    "#displayFieldsTable .display-fields-table-wrap",
+  );
+  if (!wrap) return;
+  const rect = wrap.getBoundingClientRect();
+  const head = wrap.querySelector("thead")?.getBoundingClientRect().height || 0;
+  const top = rect.top + head;
+  const y = atlasDisplayDragPointerY;
+  // 0 outside the edge band, rising to 1 at (or past) the table edge.
+  let pressure = 0;
+  if (y < top + ATLAS_DISPLAY_DRAG_EDGE)
+    pressure = -Math.min(
+      1,
+      (top + ATLAS_DISPLAY_DRAG_EDGE - y) / ATLAS_DISPLAY_DRAG_EDGE,
+    );
+  else if (y > rect.bottom - ATLAS_DISPLAY_DRAG_EDGE)
+    pressure = Math.min(
+      1,
+      (y - (rect.bottom - ATLAS_DISPLAY_DRAG_EDGE)) / ATLAS_DISPLAY_DRAG_EDGE,
+    );
+  if (!pressure) {
+    atlasDisplayDragLastTime = 0;
+    return;
+  }
+  const step = (pressure * ATLAS_DISPLAY_DRAG_MAX_SPEED * elapsed) / 1000;
+  wrap.scrollTop += pressure > 0 ? Math.max(1, step) : Math.min(-1, step);
+  atlasDisplayDragFrame = requestAnimationFrame(atlasDisplayDragAutoScroll);
+}
+document.addEventListener("dragover", (event) => {
+  if (!atlasDraggedDisplayFieldKey) return;
+  atlasDisplayDragPointerY = event.clientY;
+  if (!atlasDisplayDragFrame)
+    atlasDisplayDragFrame = requestAnimationFrame(atlasDisplayDragAutoScroll);
+});
+function atlasStopDisplayDragAutoScroll() {
+  atlasDisplayDragPointerY = null;
+  atlasDisplayDragLastTime = 0;
+  if (atlasDisplayDragFrame) cancelAnimationFrame(atlasDisplayDragFrame);
+  atlasDisplayDragFrame = 0;
 }
 let atlasDraggedDisplayFieldKey = "";
 document.addEventListener("dragstart", (event) => {
@@ -866,6 +1076,7 @@ document.addEventListener("drop", (event) => {
   const row = event.target.closest?.("[data-display-field-row]");
   if (!row || !atlasDraggedDisplayFieldKey) return;
   event.preventDefault();
+  atlasStopDisplayDragAutoScroll();
   atlasMoveDisplayField(
     atlasDraggedDisplayFieldKey,
     row.dataset.displayFieldRow,
@@ -873,6 +1084,7 @@ document.addEventListener("drop", (event) => {
   atlasDraggedDisplayFieldKey = "";
 });
 document.addEventListener("dragend", () => {
+  atlasStopDisplayDragAutoScroll();
   atlasDraggedDisplayFieldKey = "";
   document
     .querySelectorAll(".display-field-dragging, .display-field-drop-target")
@@ -955,7 +1167,9 @@ function atlasRemoveDisplayField(row) {
   const prefs = atlasDisplayPreferences();
   const matches = atlasDisplayPreferenceIndexes(row);
   const rows = [
-    ...document.querySelectorAll("#displayFieldsTable [data-display-field-row]"),
+    ...document.querySelectorAll(
+      "#displayFieldsTable [data-display-field-row]",
+    ),
   ];
   const index = rows.findIndex(
     (item) => item.dataset.displayFieldRow === row.key,
@@ -1002,10 +1216,10 @@ function atlasRemoveDisplayField(row) {
   globalThis.ATLASAuditIssues?.render?.();
   atlasRestorePageScroll(point);
   const next = [
-    ...document.querySelectorAll("#displayFieldsTable [data-display-field-row]"),
-  ].find(
-    (item) => item.dataset.displayFieldRow === focusKey,
-  );
+    ...document.querySelectorAll(
+      "#displayFieldsTable [data-display-field-row]",
+    ),
+  ].find((item) => item.dataset.displayFieldRow === focusKey);
   (
     next?.querySelector("[data-display-field-delete]") ||
     $("addDisplayFieldBtn")

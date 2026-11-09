@@ -335,4 +335,39 @@
       </div>
     </form>
   </dialog>
+  <dialog
+    aria-describedby="customSourceDeleteBody"
+    aria-labelledby="customSourceDeleteTitle"
+    class="custom-source-dialog custom-source-delete-dialog"
+    id="customSourceDeleteDialog"
+  >
+    <div class="custom-source-form">
+      <div class="custom-source-header">
+        <h2 id="customSourceDeleteTitle">Delete Custom Source</h2>
+        <p class="hint" id="customSourceDeleteBody"></p>
+      </div>
+      <p
+        aria-live="assertive"
+        class="custom-source-error"
+        id="customSourceDeleteError"
+        role="alert"
+      ></p>
+      <div class="custom-source-actions">
+        <button
+          class="btn secondary"
+          id="customSourceDeleteCancelBtn"
+          type="button"
+        >
+          Cancel
+        </button>
+        <button
+          class="btn danger"
+          id="customSourceDeleteConfirmBtn"
+          type="button"
+        >
+          Delete Source
+        </button>
+      </div>
+    </div>
+  </dialog>
 </section>

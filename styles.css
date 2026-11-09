@@ -8421,12 +8421,12 @@ body.atlas-audit-issues-open {
 }
 
 
-
 .display-fields-table th:first-child,
 .display-fields-table td:first-child {
   width: 2.75rem;
   padding-right: 0.25rem;
 }
+
 .display-field-drag-handle {
   display: inline-flex;
   align-items: center;
@@ -8438,19 +8438,24 @@ body.atlas-audit-issues-open {
   cursor: grab;
   user-select: none;
 }
+
 .display-field-drag-handle:active {
   cursor: grabbing;
 }
+
 .display-field-drag-handle:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
+
 .display-field-dragging {
   opacity: 0.55;
 }
+
 .display-field-drop-target {
   box-shadow: inset 0 3px 0 var(--primary);
 }
+
 @media (prefers-reduced-motion: reduce) {
   .display-field-dragging {
     opacity: 0.75;
@@ -8463,19 +8468,22 @@ body.atlas-audit-issues-open {
   gap: 0.75rem;
   flex-wrap: nowrap;
 }
+
 .display-field-delete {
   flex: 0 0 auto;
-}
+} 
 .display-field-pill.is-logic-locked {
   color: var(--muted);
   background: var(--surface);
   border-color: var(--border);
   border-left-color: var(--muted);
 }
+
 .display-field-delete-lock {
   display: inline-flex;
   cursor: not-allowed;
 }
+
 .display-field-delete:disabled,
 .display-field-delete:disabled:hover {
   color: var(--muted) !important;
@@ -8483,7 +8491,7 @@ body.atlas-audit-issues-open {
   border-color: var(--border) !important;
   cursor: not-allowed;
   pointer-events: none;
-}
+} 
 
 .display-field-pill.source-pill {
   color: var(--text);
@@ -8494,6 +8502,7 @@ body.atlas-audit-issues-open {
   );
   border-left-color: var(--source-pill-color, var(--display-field-color));
 }
+
 .display-field-pill.source-pill .source-color-dot {
   background: var(--source-pill-color, var(--source-color));
   border-color: color-mix(
@@ -8501,11 +8510,12 @@ body.atlas-audit-issues-open {
     var(--source-pill-color, var(--source-color)) 70%,
     #000
   );
-}
+} 
 
 body:has(#page-display-fields.active) {
   overflow: hidden;
 }
+
 
 body:has(#page-display-fields.active) .main {
   display: flex;
@@ -8516,9 +8526,11 @@ body:has(#page-display-fields.active) .main {
   overflow: hidden;
 }
 
+
 body:has(#page-display-fields.active) .topbar {
   flex: 0 0 auto;
 }
+
 
 body:has(#page-display-fields.active) .content {
   display: flex;
@@ -8528,9 +8540,13 @@ body:has(#page-display-fields.active) .content {
   overflow: hidden;
 }
 
-body:has(#page-display-fields.active) .content > .page:not(#page-display-fields) {
+
+body:has(#page-display-fields.active)
+  .content
+  > .page:not(#page-display-fields) {
   display: none !important;
 }
+
 
 #page-display-fields.page.active {
   display: flex;
@@ -8541,6 +8557,7 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   overflow: hidden;
 }
 
+
 #page-display-fields .display-fields-pagehead {
   display: flex;
   flex: 0 0 auto;
@@ -8549,23 +8566,28 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   gap: 0.75rem 1rem;
 }
 
+
 #page-display-fields .display-fields-heading {
   min-width: 0;
 }
+
 
 #page-display-fields .display-fields-pagehead h1,
 #page-display-fields .display-fields-pagehead .subtitle {
   margin-bottom: 0;
 }
 
+
 #page-display-fields .display-fields-pagehead .subtitle {
   margin-top: 0.15rem;
 }
+
 
 #page-display-fields #addDisplayFieldBtn {
   flex: 0 0 auto;
   min-height: 44px;
 }
+
 
 #page-display-fields .display-fields-card {
   display: flex;
@@ -8576,10 +8598,12 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   overflow: hidden;
 }
 
+
 #page-display-fields #displayFieldsStatus {
   flex: 0 0 auto;
   margin: 0;
 }
+
 
 #page-display-fields #displayFieldsTable {
   display: flex;
@@ -8588,28 +8612,34 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   min-height: 0;
 }
 
+
 #page-display-fields .display-fields-table-wrap {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
+
 #page-display-fields .display-fields-table {
   min-width: 0;
 }
+
 
 .display-field-drag-handle {
   min-width: 44px;
   min-height: 44px;
 }
 
+
 .display-fields-switch {
   min-height: 44px;
 }
 
+
 .display-field-identity {
   min-width: 0;
 }
+
 
 .display-field-meta {
   display: none;
@@ -8619,6 +8649,7 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   line-height: 1.35;
   overflow-wrap: break-word;
 }
+
 
 @container display-fields (max-width: 960px) {
   .display-field-col-detail {
@@ -8724,11 +8755,12 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   }
 }
 
+
 @media (forced-colors: active) {
   .display-field-meta {
     color: CanvasText;
   }
-}
+} 
 #page-display-fields .display-fields-toolbar {
   display: flex;
   flex: 0 0 auto;
@@ -8738,15 +8770,18 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   gap: 0.5rem;
 }
 
+
 #page-display-fields .display-fields-sort {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
+
 #page-display-fields .display-fields-toolbar .btn {
   min-height: 44px;
 }
+
 
 #page-display-fields #displayFieldsStatus {
   display: flex;
@@ -8755,9 +8790,62 @@ body:has(#page-display-fields.active) .content > .page:not(#page-display-fields)
   gap: 0.5rem;
 }
 
+
 #page-display-fields #displayFieldsStatus [data-display-fields-undo] {
   min-height: 32px;
 }
+ 
+.display-fields-table th:first-child,
+.display-fields-table td:first-child {
+  width: 6.5rem;
+}
+
+
+.display-field-order {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+
+.display-field-position {
+  width: 3.5rem;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.display-field-position:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+@keyframes display-field-moved-flash {
+  from {
+    background: var(--surface2);
+    box-shadow: inset 3px 0 0 var(--primary);
+  }
+  to {
+    background: transparent;
+    box-shadow: inset 3px 0 0 transparent;
+  }
+}
+
+
+.display-fields-table tr.display-field-moved > td {
+  animation: display-field-moved-flash 1.2s ease-out;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .display-fields-table tr.display-field-moved > td {
+    animation-duration: 0.01ms;
+  }
+}
+
 
 .requirements-field-pill {
   display: inline-flex;
@@ -10676,6 +10764,17 @@ body.dark .import-source-error {
     transition: none;
   }
 }
+
+
+
+.custom-source-delete-dialog {
+  width: min(32rem, calc(100vw - 2rem));
+}
+
+.custom-source-delete-dialog .custom-source-actions {
+  justify-content: flex-end;
+}
+
 
 .history-heading-row {
   display: flex;

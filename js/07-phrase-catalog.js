@@ -530,6 +530,8 @@ function thenActionPlain(step) {
         params.then_value_field || "",
       ),
     });
+  if (actionType === "display")
+    return renderCatalogPhrase("analyst_logic.if_then.then_display", {});
   if (actionType === "do_not_display")
     return renderCatalogPhrase("analyst_logic.if_then.then_do_not_display", {});
   return renderCatalogPhrase("analyst_logic.if_then.then_freeform", {
@@ -561,6 +563,8 @@ function elseActionPlain(step) {
         params.then_value_field || "",
       ),
     });
+  if (actionType === "display")
+    return renderCatalogPhrase("analyst_logic.else.display", {});
   if (actionType === "do_not_display")
     return renderCatalogPhrase("analyst_logic.else.do_not_display", {});
   if (params.then_action)

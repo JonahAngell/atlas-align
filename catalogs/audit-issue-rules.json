@@ -109,6 +109,22 @@
       "documentation": "ATLAS Phase 2 canonical rule."
     },
     {
+      "id": "audit.sources.custom-source",
+      "enabled": true,
+      "severity": "warning",
+      "category": "sources",
+      "priority": 20,
+      "title": "Custom source in use",
+      "summary": "This audit uses a custom source instead of a production source.",
+      "detail": "Once the production source is available, choose Fix to replace the custom source with it.",
+      "evaluator": "customSourceInUse",
+      "jumpAction": "openSources",
+      "fixAction": "replaceCustomSource",
+      "targetType": "source",
+      "config": {},
+      "documentation": "Reminds analysts that custom sources need an automation request."
+    },
+    {
       "id": "audit.logic.steps-none",
       "enabled": true,
       "severity": "warning",

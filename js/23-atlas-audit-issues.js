@@ -114,7 +114,7 @@
     const params = object(item.params);
     const type = string(params.then_action_type || params.action_type).trim();
     if (string(item.action).trim()) return true;
-    if (type === "do_not_display") return true;
+    if (type === "do_not_display" || type === "display") return true;
     if (type === "display_text")
       return !blank(params.then_text) && !blank(params.then_output_column);
     if (type === "set_column_value")
@@ -149,6 +149,17 @@
         (meaningfulAction(child) ||
           descendantHasAction(child, stepsByParent, visited)),
     );
+  }
+
+  /**
+   * repoLibraryState is a top-level const in a classic script, so it is a
+   * global lexical binding rather than a window property.
+   */
+  function librarySources() {
+    const libraryState =
+      global.repoLibraryState ||
+      (typeof repoLibraryState !== "undefined" ? repoLibraryState : null);
+    return array(libraryState?.sourceFiles);
   }
 
   function buildContext(
@@ -186,7 +197,7 @@
         (field) => !field?.removed && field?.displayed !== false,
       ).length;
     })();
-    const catalogSources = array(global.repoLibraryState?.sourceFiles);
+    const catalogSources = librarySources();
     const sourceIdentityMap = Object.create(null);
     const registerSourceIdentity = (value, canonical) => {
       const key = string(value).trim().toLocaleLowerCase();
@@ -233,6 +244,15 @@
     );
     const knownSourceIds = new Set(
       catalogSources.map((source) => canonicalSource(source)).filter(Boolean),
+    );
+    const isCustomSource = (source) =>
+      string(source?.origin).trim() === "custom" ||
+      string(source?.sourceKey).trim().startsWith("custom.");
+    const customSourceIds = new Set(
+      [...catalogSources, ...sources]
+        .filter(isCustomSource)
+        .map((source) => canonicalSource(source))
+        .filter(Boolean),
     );
     const knownFieldIds = new Set();
     catalogSources.forEach((source) => {
@@ -347,6 +367,7 @@
       },
       displayedFieldCount,
       knownSourceIds: [...knownSourceIds],
+      customSourceIds: [...customSourceIds],
       knownFieldIds: [...knownFieldIds],
       selectedSourceIds: [...sourceIds],
       sourceIdentityMap: { ...sourceIdentityMap },
@@ -430,6 +451,38 @@
               { control: "source-search", fixKind: "add-source" },
             ),
           ];
+    },
+    customSourceInUse(context) {
+      const custom = new Set(context.customSourceIds);
+      const known = new Set(context.knownSourceIds);
+      const seen = new Set();
+      return context.audit.sources.flatMap((source, index) => {
+        const id = source.canonicalIdentity || source.identity;
+        if (!id || !custom.has(id) || seen.has(id)) return [];
+        // A deleted source already raises the critical missing-source issue.
+        if (known.size && !known.has(id)) return [];
+        seen.add(id);
+        const name =
+          string(source.sourceFile || source.name || source.sourceKey).trim() ||
+          "This source";
+        return [
+          issue(
+            `custom-source:${id}`,
+            {
+              page: "fields",
+              sourceId: string(source.id).trim(),
+              sourceName: name,
+              sourceKey: string(source.sourceKey || id).trim(),
+              sourceIndex: index,
+            },
+            {
+              control: "source-card",
+              fixKind: "replace-source",
+              summary: `"${name}" is a custom source, not a production source. Submit a request to add it to the production Source Library before this audit can be automated.`,
+            },
+          ),
+        ];
+      });
     },
     missingSteps(context) {
       if (!context.audit.sources.length) return [];
@@ -2072,10 +2125,7 @@
 
   function sourceChoices() {
     const seen = new Set();
-    return [
-      ...array(global.repoLibraryState?.sourceFiles),
-      ...array(state?.audit?.sources),
-    ]
+    return [...librarySources(), ...array(state?.audit?.sources)]
       .map((source) => ({
         value: string(
           source.sourceKey || source.sourceFile || source.name || source.alias,
@@ -2091,13 +2141,11 @@
 
   function fieldChoices(sourceKey) {
     const wanted = string(sourceKey).trim();
-    const match = [
-      ...array(global.repoLibraryState?.sourceFiles),
-      ...array(state?.audit?.sources),
-    ].find((source) =>
-      [source.sourceKey, source.sourceFile, source.name, source.alias]
-        .map((value) => string(value).trim())
-        .includes(wanted),
+    const match = [...librarySources(), ...array(state?.audit?.sources)].find(
+      (source) =>
+        [source.sourceKey, source.sourceFile, source.name, source.alias]
+          .map((value) => string(value).trim())
+          .includes(wanted),
     );
     const seen = new Set();
     return array(match?.fields)
@@ -2148,9 +2196,15 @@
           ? items.map(([value, text]) => [
               value,
               text,
-              value === "do_not_display"
-                ? "Hide the matching record."
-                : "Show a text response for the matching record.",
+              value === "display"
+                ? "Keep only rows that match this condition."
+                : value === "do_not_display"
+                  ? "Keep only rows that do not match this condition."
+                  : value === "freeform"
+                    ? "Describe the action in your own words."
+                    : value === "set_column_value"
+                      ? "Copy a field into the target column."
+                      : "Show a text response for the matching record.",
             ])
           : items;
     return `<div class="atlas-choice-field"><span class="atlas-choice-heading">${safeText(label)}</span>${
@@ -2502,7 +2556,7 @@
               ? { join_type: "INNER JOIN" }
               : type === "create_column"
                 ? { column_name: "", value_mode: "Static value" }
-                : { then_action_type: "freeform" },
+                : { then_action_type: "display" },
         };
         liveSteps().push(step);
         if (state) state.selectedStepId = id;
@@ -2551,6 +2605,19 @@
           userMessage:
             "The source mapping tool is unavailable. Open Sources to finish the replacement.",
         });
+      return true;
+    },
+    replaceCustomSource(entry) {
+      const sourceKey = string(entry.target?.sourceKey);
+      const unavailable = () =>
+        Object.assign(new Error("Replacement tool unavailable."), {
+          userMessage:
+            "The source replacement tool is unavailable. Open Sources and choose Replace on the custom source.",
+        });
+      if (typeof global.atlasOpenSourceReplacement !== "function" || !sourceKey)
+        throw unavailable();
+      if (global.atlasOpenSourceReplacement({ sourceKey }) === false)
+        throw unavailable();
       return true;
     },
     retryIssueCheck(entry, trigger) {
@@ -2940,16 +3007,17 @@
     }
     if (repair === "missing-action") {
       const options = [
+        { value: "display", label: "Display" },
+        { value: "do_not_display", label: "Do not display" },
         { value: "freeform", label: "Freeform text" },
         { value: "display_text", label: "Display text" },
-        { value: "do_not_display", label: "Do not display" },
         { value: "set_column_value", label: "Set column value" },
       ];
       const fix = openFixShell(
         entry,
         trigger,
         "Add action",
-        `${selectMarkup("actionType", "Action type", options, "do_not_display")}<label>Action text<textarea data-fix-text></textarea></label>${actionRow("Save action")}`,
+        `${selectMarkup("actionType", "Action type", options, "display")}<label>Action text<textarea data-fix-text></textarea></label>${actionRow("Save action")}`,
       );
       bindFixSave(fix, () => {
         if (!step) {
@@ -2964,15 +3032,19 @@
           showFixError(fix, "Choose an action type.");
           return false;
         }
-        if (type !== "do_not_display" && !text) {
+        const displayType = type === "display" || type === "do_not_display";
+        if (!displayType && !text) {
           showFixError(fix, "Enter the action text.");
           return false;
         }
         const params = ensureParams(step);
         params.then_action_type = type;
         params.then_action =
-          text ||
-          (type === "do_not_display" ? "Do not display matching records" : "");
+          type === "display"
+            ? "Display matching records"
+            : type === "do_not_display"
+              ? "Do not display matching records"
+              : text;
         if (type === "display_text") params.then_text = text;
         step.action = params.then_action;
         commitAudit("Action updated.");
@@ -3575,7 +3647,7 @@
       catalogError: catalogError ? string(catalogError.message) : "",
       catalogReady: Boolean(catalog),
       audit: renderDocument,
-      sources: array(global.repoLibraryState?.sourceFiles).map((source) => [
+      sources: librarySources().map((source) => [
         string(
           source.sourceKey || source.sourceFile || source.alias || source.name,
         ),
