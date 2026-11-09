@@ -103,11 +103,11 @@
       "then_clause": ", then by {table_column} in {sort_direction} order"
     },
     "remove_duplicates": {
-      "default": "Remove duplicate records with matching values in {column_list}, {keep_clause}.",
+      "default": "Identify rows where all values match across these columns: {column_list}, remove duplicates and {keep_clause}.",
       "keep_clauses": {
-        "Keep first record": "keeping the first record",
-        "Keep last record": "keeping the last record",
-        "Drop all duplicated records": "keeping none of the duplicated records"
+        "Keep first record": "keep the first record",
+        "Keep last record": "keep the last record",
+        "Drop all duplicated records": "keep none of the duplicated records"
       }
     },
     "create_column": {
