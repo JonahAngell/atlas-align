@@ -18,6 +18,7 @@ export function createAuditRouter(ctx) {
     requireCurrentUser,
     restoreArchivedAudit,
     restoreAuditRevision,
+    renameAudit,
     restoreStepRevision,
     saveAudit,
   } = ctx;
@@ -61,6 +62,7 @@ export function createAuditRouter(ctx) {
     } catch (error) {
       res.status(error.status || 500).json({
         error: error.message,
+        code: error.code,
         currentRevisionId: error.currentRevisionId,
       });
     }
@@ -193,6 +195,32 @@ export function createAuditRouter(ctx) {
     } catch (error) {
       res.status(error.status || 500).json({
         error: error.message,
+        code: error.code,
+        currentRevisionId: error.currentRevisionId,
+      });
+    }
+  },
+);
+  router.post(
+  "/api/audits/:auditId/rename",
+  requireCurrentUser,
+  requireAuditCapability("canEdit"),
+  async (req, res) => {
+    try {
+      const result = await renameAudit(pool, {
+        auditId: req.params.auditId,
+        newId: req.body.newId,
+        expectedRevisionId: req.body.expectedRevisionId,
+        user: req.studioshareUser,
+      });
+      res.json({
+        ...result,
+        access: auditAccessForUser(req.studioshareUser, result.audit),
+      });
+    } catch (error) {
+      res.status(error.status || 500).json({
+        error: error.status ? error.message : "Could not rename the audit.",
+        code: error.code,
         currentRevisionId: error.currentRevisionId,
       });
     }

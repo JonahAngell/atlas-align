@@ -920,6 +920,7 @@ function renderAll() {
  */
 function renderHeader() {
   const audit = atlasDisplayDocument?.() || state.audit;
+  atlasRenderAuditIdentity?.(audit);
   e.auditName.value = audit.name || "";
   e.auditPurpose.value = audit.purpose || "";
   if (e.auditStatus) {

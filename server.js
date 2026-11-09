@@ -35,6 +35,7 @@ import {
   listArchivedAudits,
   getAudit,
   saveAudit,
+  renameAudit,
   listAuditRevisions,
   getAuditRevision,
   restoreAuditRevision,
@@ -184,6 +185,36 @@ app.use(securityHeaders({ local: isLocalAppEnv() }));
 app.use(compression());
 
 app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// Deep links: serve the app shell for shareable page and audit paths; the client
+// router (js/30-deep-links.js) opens the named page. Keep in sync with that file.
+const ATLAS_SPA_WORKSPACE_PATHS = [
+  "/my-audits",
+  "/inbox",
+  "/recently-deleted-publications",
+];
+const ATLAS_SPA_AUDIT_PAGES = new Set([
+  "overview",
+  "fields",
+  "steps",
+  "display-fields",
+  "preview",
+  "review",
+  "export",
+  "history",
+]);
+const ATLAS_SPA_AUDIT_ID = /^[A-Za-z0-9._~-]{1,128}$/;
+
+app.get(ATLAS_SPA_WORKSPACE_PATHS, (_req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.get("/audits/:auditId/:page?", (req, res, next) => {
+  const { auditId, page } = req.params;
+  if (!ATLAS_SPA_AUDIT_ID.test(auditId)) return next();
+  if (page && !ATLAS_SPA_AUDIT_PAGES.has(page)) return next();
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
@@ -692,6 +723,7 @@ const routeContext = {
   listArchivedAudits,
   getAudit,
   saveAudit,
+  renameAudit,
   listAuditRevisions,
   getAuditRevision,
   restoreAuditRevision,

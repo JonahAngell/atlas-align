@@ -165,6 +165,14 @@ const SQL = Object.freeze({
     "../sql/audit-repository/delete-audit.sql",
     import.meta.url,
   ),
+  checkAuditIdExists: loadSql(
+    "../sql/audit-repository/check-audit-id-exists.sql",
+    import.meta.url,
+  ),
+  renameAudit: loadSql(
+    "../sql/audit-repository/rename-audit.sql",
+    import.meta.url,
+  ),
 });
 
 function cleanText(value) {
@@ -231,6 +239,9 @@ export const AUDIT_STATUSES = Object.freeze([
   "Ready for Review",
   "Complete",
 ]);
+// New audits take a user-chosen ID of letters and numbers; "_" keeps the
+// auto-generated audit_xxxxxxxx IDs valid.
+export const AUDIT_CREATE_ID = /^[A-Za-z0-9_]{1,64}$/;
 
 export function validateAudit(document) {
   if (!document || typeof document !== "object" || Array.isArray(document))
@@ -364,12 +375,27 @@ export async function saveAudit(
   },
 ) {
   document = validateAudit(structuredClone(document));
+  if (changeType === "create" && !AUDIT_CREATE_ID.test(document.id))
+    throw Object.assign(
+      new Error(
+        "Audit ID can only contain letters and numbers (up to 64 characters). Change the audit ID and save again.",
+      ),
+      { status: 400, code: "AUDIT_ID_INVALID" },
+    );
   const client = await pool.connect();
   let unchanged = false;
   let saved;
   try {
     await client.query("BEGIN");
     const existing = await client.query(SQL.lockAuditForSave, [document.id]);
+    // A create must never overwrite an existing audit, including an archived one.
+    if (changeType === "create" && existing.rowCount)
+      throw Object.assign(
+        new Error(
+          `An audit with ID ${document.id} already exists. Choose a different audit ID and save again.`,
+        ),
+        { status: 409, code: "AUDIT_ID_TAKEN" },
+      );
     const isCreate = !existing.rowCount;
     if (!isCreate) assertAuditDocumentMutationAllowed(existing.rows[0]);
     if (
@@ -399,107 +425,253 @@ export async function saveAudit(
       }
     }
     if (!unchanged) {
-    const revisionNumber = isCreate
-      ? 1
-      : Number(existing.rows[0].current_revision_number) + 1;
-    const [uid, username, fullName, email] = userFields(user);
-    if (isCreate) {
-      await client.query(SQL.insertAudit, [
+      const revisionNumber = isCreate
+        ? 1
+        : Number(existing.rows[0].current_revision_number) + 1;
+      const [uid, username, fullName, email] = userFields(user);
+      if (isCreate) {
+        await client.query(SQL.insertAudit, [
+          document.id,
+          document.name,
+          document.purpose || "",
+          document.description || "",
+          Number(document.schemaVersion || 1),
+          document.sourceKind || "database",
+          uid,
+          username,
+        ]);
+      }
+      const revision = await client.query(SQL.insertAuditRevision, [
+        document.id,
+        revisionNumber,
+        isCreate ? null : existing.rows[0].current_revision_id,
+        JSON.stringify(document),
+        hash,
+        isCreate ? "create" : changeType,
+        changeSummary,
+        uid,
+        username,
+        fullName,
+        email,
+        restoredFromRevisionId,
+      ]);
+      const auditRevisionId = Number(revision.rows[0].id);
+      if (
+        !isCreate &&
+        existing.rows[0].workflow_status === "Published" &&
+        existing.rows[0].published_locked
+      ) {
+        throw Object.assign(
+          new Error("Published audits must be unlocked before editing."),
+          {
+            status: 409,
+            currentRevisionId: Number(existing.rows[0].current_revision_id),
+          },
+        );
+      }
+      let previousSteps = new Map();
+      if (!isCreate) {
+        const previous = await client.query(SQL.getPreviousAuditDocument, [
+          existing.rows[0].current_revision_id,
+        ]);
+        previousSteps = new Map(
+          (previous.rows[0]?.document?.steps || []).map((step) => [
+            step.id,
+            step,
+          ]),
+        );
+      }
+      const submitted = new Map(document.steps.map((step) => [step.id, step]));
+      for (const step of document.steps) {
+        const before = previousSteps.get(step.id);
+        let operation = before ? "update" : "create";
+        if (before && documentHash(before) === documentHash(step)) continue;
+        if (
+          before &&
+          (before.parentId !== step.parentId ||
+            Number(before.sortOrder || 0) !== Number(step.sortOrder || 0))
+        )
+          operation = "move";
+        if (restoredStep?.stepId === step.id) operation = "restore";
+        await insertStepRevision(client, {
+          auditId: document.id,
+          auditRevisionId,
+          step,
+          operation,
+          user,
+          changeSummary,
+          restoredFromStepRevisionId:
+            restoredStep?.stepId === step.id
+              ? restoredStep.stepRevisionId
+              : null,
+        });
+      }
+      for (const [stepId, step] of previousSteps)
+        if (!submitted.has(stepId)) {
+          const current = await client.query(
+            SQL.nextDeletedStepRevisionNumber,
+            [document.id, stepId],
+          );
+          await client.query(SQL.insertDeletedStepRevision, [
+            document.id,
+            stepId,
+            auditRevisionId,
+            current.rows[0].next,
+            JSON.stringify(step),
+            documentHash(step),
+            changeSummary,
+            uid,
+            username,
+            fullName,
+          ]);
+          await client.query(SQL.markStepDeleted, [document.id, stepId]);
+        }
+      await client.query(SQL.updateAuditCurrentRevision, [
         document.id,
         document.name,
         document.purpose || "",
         document.description || "",
         Number(document.schemaVersion || 1),
         document.sourceKind || "database",
+        auditRevisionId,
+        revisionNumber,
         uid,
         username,
       ]);
+      await upsertUserProfilesWithClient(
+        client,
+        assignmentProfiles(document.assignments),
+      );
+      if (
+        !isCreate &&
+        ["Pending Approval", "Approved"].includes(
+          existing.rows[0].workflow_status,
+        )
+      ) {
+        await invalidateWorkflowAuthorityWithClient(client, {
+          auditRow: existing.rows[0],
+          user,
+          reason:
+            changeType === "restore"
+              ? "Audit restoration changed the current revision"
+              : "Audit content changed",
+          restoration: changeType === "restore",
+          resultingRevisionId: auditRevisionId,
+        });
+      } else if (!isCreate && changeType === "restore") {
+        await invalidateWorkflowAuthorityWithClient(client, {
+          auditRow: existing.rows[0],
+          user,
+          reason: "Audit restoration changed the current revision",
+          restoration: true,
+          resultingRevisionId: auditRevisionId,
+        });
+      }
+      await client.query("COMMIT");
+      saved = {
+        audit: document,
+        revision: {
+          id: auditRevisionId,
+          number: revisionNumber,
+          createdAt: revision.rows[0].created_at,
+          createdByUsername: username,
+        },
+      };
     }
+  } catch (error) {
+    if (!unchanged) await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+  if (unchanged) return getAudit(pool, document.id);
+  return saved;
+}
+// Saved audits are renamed in place; ON UPDATE CASCADE foreign keys carry the new id to every
+// child row. The rename is recorded as its own revision so history shows when the id changed.
+export async function renameAudit(
+  pool,
+  { auditId, newId, expectedRevisionId, user },
+) {
+  newId = String(newId ?? "").trim();
+  if (!/^[A-Za-z0-9]{1,64}$/.test(newId))
+    throw Object.assign(
+      new Error(
+        "Audit ID can only contain letters and numbers (up to 64 characters). Change the audit ID and try again.",
+      ),
+      { status: 400, code: "AUDIT_ID_INVALID" },
+    );
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const existing = await client.query(SQL.lockAuditForSave, [auditId]);
+    const auditRow = existing.rows[0];
+    if (!auditRow || auditRow.archived_at)
+      throw Object.assign(
+        new Error(
+          `Audit ${auditId} was not found. It may have been deleted, archived or renamed. Reload the audit list and try again.`,
+        ),
+        { status: 404 },
+      );
+    assertAuditDocumentMutationAllowed(auditRow);
+    const currentRevisionId = Number(auditRow.current_revision_id);
+    if (
+      expectedRevisionId != null &&
+      currentRevisionId !== Number(expectedRevisionId)
+    )
+      throw Object.assign(
+        new Error(
+          "This audit has a newer database revision. Load the latest revision before renaming it.",
+        ),
+        { status: 409, currentRevisionId },
+      );
+    if (auditRow.workflow_status === "Published" && auditRow.published_locked)
+      throw Object.assign(
+        new Error(
+          "Published audits can't be renamed while locked. Unlock the published audit, then change its ID.",
+        ),
+        { status: 409, currentRevisionId },
+      );
+    if (newId === auditId) {
+      await client.query("ROLLBACK");
+      return getAudit(pool, auditId);
+    }
+    const taken = await client.query(SQL.checkAuditIdExists, [newId]);
+    if (taken.rowCount)
+      throw Object.assign(
+        new Error(
+          `An audit with ID ${newId} already exists. Choose a different audit ID and try again.`,
+        ),
+        { status: 409, code: "AUDIT_ID_TAKEN", currentRevisionId },
+      );
+    const previous = await client.query(SQL.getPreviousAuditDocument, [
+      auditRow.current_revision_id,
+    ]);
+    const document = validateAudit({
+      ...structuredClone(previous.rows[0]?.document || {}),
+      id: newId,
+    });
+    await client.query(SQL.renameAudit, [auditId, newId]);
+    const revisionNumber = Number(auditRow.current_revision_number) + 1;
+    const [uid, username, fullName, email] = userFields(user);
+    const changeSummary = `Renamed audit ID from ${auditId} to ${newId}`;
     const revision = await client.query(SQL.insertAuditRevision, [
-      document.id,
+      newId,
       revisionNumber,
-      isCreate ? null : existing.rows[0].current_revision_id,
+      auditRow.current_revision_id,
       JSON.stringify(document),
-      hash,
-      isCreate ? "create" : changeType,
+      documentHash(document),
+      "rename",
       changeSummary,
       uid,
       username,
       fullName,
       email,
-      restoredFromRevisionId,
+      null,
     ]);
     const auditRevisionId = Number(revision.rows[0].id);
-    if (
-      !isCreate &&
-      existing.rows[0].workflow_status === "Published" &&
-      existing.rows[0].published_locked
-    ) {
-      throw Object.assign(
-        new Error("Published audits must be unlocked before editing."),
-        {
-          status: 409,
-          currentRevisionId: Number(existing.rows[0].current_revision_id),
-        },
-      );
-    }
-    let previousSteps = new Map();
-    if (!isCreate) {
-      const previous = await client.query(SQL.getPreviousAuditDocument, [
-        existing.rows[0].current_revision_id,
-      ]);
-      previousSteps = new Map(
-        (previous.rows[0]?.document?.steps || []).map((step) => [
-          step.id,
-          step,
-        ]),
-      );
-    }
-    const submitted = new Map(document.steps.map((step) => [step.id, step]));
-    for (const step of document.steps) {
-      const before = previousSteps.get(step.id);
-      let operation = before ? "update" : "create";
-      if (before && documentHash(before) === documentHash(step)) continue;
-      if (
-        before &&
-        (before.parentId !== step.parentId ||
-          Number(before.sortOrder || 0) !== Number(step.sortOrder || 0))
-      )
-        operation = "move";
-      if (restoredStep?.stepId === step.id) operation = "restore";
-      await insertStepRevision(client, {
-        auditId: document.id,
-        auditRevisionId,
-        step,
-        operation,
-        user,
-        changeSummary,
-        restoredFromStepRevisionId:
-          restoredStep?.stepId === step.id ? restoredStep.stepRevisionId : null,
-      });
-    }
-    for (const [stepId, step] of previousSteps)
-      if (!submitted.has(stepId)) {
-        const current = await client.query(SQL.nextDeletedStepRevisionNumber, [
-          document.id,
-          stepId,
-        ]);
-        await client.query(SQL.insertDeletedStepRevision, [
-          document.id,
-          stepId,
-          auditRevisionId,
-          current.rows[0].next,
-          JSON.stringify(step),
-          documentHash(step),
-          changeSummary,
-          uid,
-          username,
-          fullName,
-        ]);
-        await client.query(SQL.markStepDeleted, [document.id, stepId]);
-      }
     await client.query(SQL.updateAuditCurrentRevision, [
-      document.id,
+      newId,
       document.name,
       document.purpose || "",
       document.description || "",
@@ -510,37 +682,22 @@ export async function saveAudit(
       uid,
       username,
     ]);
-    await upsertUserProfilesWithClient(
-      client,
-      assignmentProfiles(document.assignments),
-    );
-    if (
-      !isCreate &&
-      ["Pending Approval", "Approved"].includes(
-        existing.rows[0].workflow_status,
-      )
-    ) {
+    if (auditRow.workflow_status === "Approved")
       await invalidateWorkflowAuthorityWithClient(client, {
-        auditRow: existing.rows[0],
+        auditRow: { ...auditRow, id: newId },
         user,
-        reason:
-          changeType === "restore"
-            ? "Audit restoration changed the current revision"
-            : "Audit content changed",
-        restoration: changeType === "restore",
+        reason: "Audit ID changed",
+        restoration: false,
         resultingRevisionId: auditRevisionId,
       });
-    } else if (!isCreate && changeType === "restore") {
-      await invalidateWorkflowAuthorityWithClient(client, {
-        auditRow: existing.rows[0],
-        user,
-        reason: "Audit restoration changed the current revision",
-        restoration: true,
-        resultingRevisionId: auditRevisionId,
-      });
-    }
+    await recordAuditActivityWithClient(client, newId, "audit.renamed", user, {
+      sourceRevisionId: currentRevisionId,
+      resultingRevisionId: auditRevisionId,
+      summary: changeSummary,
+      metadata: { previousId: auditId, newId },
+    });
     await client.query("COMMIT");
-    saved = {
+    return {
       audit: document,
       revision: {
         id: auditRevisionId,
@@ -549,15 +706,12 @@ export async function saveAudit(
         createdByUsername: username,
       },
     };
-    }
   } catch (error) {
-    if (!unchanged) await client.query("ROLLBACK");
+    await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
   }
-  if (unchanged) return getAudit(pool, document.id);
-  return saved;
 }
 export async function listAuditRevisions(pool, auditId) {
   const result = await pool.query(SQL.listAuditRevisions, [auditId]);
@@ -594,7 +748,8 @@ async function persistRestorationWithClient(
   },
 ) {
   assertAuditDocumentMutationAllowed(auditRow);
-  document = validateAudit(structuredClone(document));
+  // Revisions saved before a rename still carry the old id; a restore keeps the current one.
+  document = validateAudit({ ...structuredClone(document), id: auditRow.id });
   const hash = documentHash(document);
   if (hash === auditRow.document_sha256)
     return {

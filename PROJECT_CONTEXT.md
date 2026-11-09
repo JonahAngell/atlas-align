@@ -12,6 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
+
 **Current Version:** v3.2.3
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
@@ -55,6 +56,10 @@ In local mode, `GET /api/users`, workflow approver search, `resolveWorkflowUser`
 
 `server.js` configures Express, PostgreSQL access, authentication-aware API routes, repository integrations, and browser asset delivery. The root page is served from `index.html`. Root CSS and catalog assets have explicit routes, and the server exposes static browser directories before the application fallback behavior. Missing asset requests must not be treated as valid application HTML.
 
+Shareable deep-link paths also serve `index.html`: `/my-audits`, `/inbox`, `/recently-deleted-publications`, and `/audits/{auditId}[/{page}]`, where `{page}` is one of `overview`, `fields`, `steps`, `display-fields`, `preview`, `review`, `export`, or `history`, and `{auditId}` matches `^[A-Za-z0-9._~-]{1,128}$`. Paths with an invalid ID or page fall through to the normal 404 handling. Because the shell can load from nested paths, `index.html` declares `<base href="/">` and must keep resolving assets from the root. `js/30-deep-links.js` owns the browser side. It opens the linked audit and page after `init()` and keeps the address bar in sync through `showSection`. Only saved database audits get `/audits/...` paths; workbook and unsaved audits map to `/`. The page and ID lists in `server.js` (`ATLAS_SPA_*`) and `js/30-deep-links.js` (`ATLAS_ROUTE_*`) must stay in sync.
+
+The Overview page has a **Copy Link** button that copies the absolute `/audits/{auditId}/{page}` URL for the current audit and page. It is disabled until the audit is saved to the database. The Overview **Audit ID** field lets the user set a custom ID while the audit is an unsaved draft. New, created, and duplicated audits also prompt for an ID, with the generated `uid("audit")` value suggested. Client input must match `^[A-Za-z0-9]{1,64}$`; the suggested generated ID is accepted unchanged. On the server, `saveAudit` enforces `^[A-Za-z0-9_]{1,64}$` on create. It returns 400 `AUDIT_ID_INVALID` for a malformed ID and 409 `AUDIT_ID_TAKEN` when the ID already exists. Both POST and PUT responses include `code`. Saved audits are renamed with `POST /api/audits/{auditId}/rename` (`{newId, expectedRevisionId}`, `canEdit` required). `renameAudit` locks the row, rejects pending-approval and locked published audits, checks the revision, returns 409 `AUDIT_ID_TAKEN` for an existing ID, then updates `atlas_audits.id` in place. Migration `20261026120000_cascade_audit_id_updates` makes every immediate foreign key that carries the audit ID `ON UPDATE CASCADE`, so revisions, steps, approvals, and activity follow the new ID. This is a deliberate exception to the `ON UPDATE NO ACTION` default in the PostgreSQL rules. The rename is stored as a `rename` revision and an `audit.renamed` activity, and invalidates an Approved audit's approval. Older revisions keep the old ID in their documents, so restoring one keeps the audit's current ID. The browser asks for confirmation because links that use the old ID stop working, then updates the URL and audit list.
+
 ### Browser startup and partial loading
 
 `index.html` provides the shell and a temporary `#page-sections-root`. `js/00-html-partials-loader.js` runs before all application modules and synchronously loads the ordered page partial list from `sections/`.
@@ -75,7 +80,8 @@ Browser modules are ordinary scripts, not ES modules. Their order in `index.html
 2. Base hierarchy, rendering, capture, persistence, tutorials, catalogs, imports, pickers, repositories, and export helpers follow.
 3. The ordered `15a` through `15h` UI layers specialize or replace earlier global functions.
 4. Page shell, identity, database, history, workflow, review, Inbox, Display Fields, and Audit Issues modules load later.
-5. `js/06-events-bootstrap.js` loads last and starts the application.
+5. `js/30-deep-links.js` loads just before bootstrap so `showSection` and `init()` can call into it.
+6. `js/06-events-bootstrap.js` loads last and starts the application.
 
 Later scripts may wrap or replace globals defined earlier. Maintenance must verify the final loaded implementation before changing a duplicated function name.
 

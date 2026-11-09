@@ -111,6 +111,11 @@ const state = {
 
 const e = {
   // Audit metadata inputs.
+  auditIdInput: $("auditIdInput"),
+  auditIdHint: $("auditIdHint"),
+  auditIdError: $("auditIdError"),
+  copyAuditLinkBtn: $("copyAuditLinkBtn"),
+  copyAuditLinkHint: $("copyAuditLinkHint"),
   auditName: $("auditName"),
   auditPurpose: $("auditPurpose"),
   auditStatus: $("auditStatus"),
@@ -428,6 +433,9 @@ function showSection(section) {
 
   // Persist the active section so the app can restore the user's last location later.
   localStorage.setItem("atlasAlignActiveSection", page);
+
+  // Keep the address bar on a shareable path for this page (js/30-deep-links.js).
+  if (typeof atlasSyncRouteForPage === "function") atlasSyncRouteForPage(page);
 
   // Refresh page-dependent UI elements after navigation changes.
   // Function checks keep this safe when optional modules are not loaded.

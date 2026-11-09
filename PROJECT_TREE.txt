@@ -54,6 +54,7 @@
 │   │   ├── 20260915170000_add_persistent_audit_review_discussions.sql
 │   │   ├── 20260915190000_add_rescinded_approval_request_state.sql
 │   │   ├── 20261013120000_create_atlas_custom_sources.sql
+│   │   ├── 20261026120000_cascade_audit_id_updates.sql
 │   │   └── 20261028120000_add_manual_audit_lock_publications.sql
 │   ├── opa
 │   │   └── authz.rego
@@ -193,7 +194,8 @@
 │   ├── 26-recently-deleted-publications.js
 │   ├── 27-audit-review-mode.js
 │   ├── 28-validation-runner.js
-│   └── 29-export-dashboard.js
+│   ├── 29-export-dashboard.js
+│   └── 30-deep-links.js
 ├── local-db
 │   ├── init-local-db.sh
 │   └── seed.sql
@@ -285,6 +287,7 @@
 │   │   └── verify-step-restoration-source.sql
 │   ├── audit-repository
 │   │   ├── archive-audit.sql
+│   │   ├── check-audit-id-exists.sql
 │   │   ├── clear-audit-current-revision.sql
 │   │   ├── clear-step-current-revisions.sql
 │   │   ├── delete-audit-revisions.sql
@@ -314,6 +317,7 @@
 │   │   ├── lock-restoration-audit.sql
 │   │   ├── mark-step-deleted.sql
 │   │   ├── next-step-revision-number.sql
+│   │   ├── rename-audit.sql
 │   │   ├── restore-archived-audit.sql
 │   │   ├── set-current-step-revision.sql
 │   │   ├── update-audit-current-revision.sql
@@ -494,6 +498,7 @@
 │   ├── authorization-role-matrix.test.js
 │   ├── boot-loader.test.js
 │   ├── custom-source.test.js
+│   ├── deep-links.test.js
 │   ├── display-fields-bulk.test.js
 │   ├── export-logic-indent.test.js
 │   ├── export-page.test.js
