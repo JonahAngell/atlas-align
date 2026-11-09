@@ -659,6 +659,15 @@ function atlasImportParseThenAction(action) {
       references: [],
       controls: [],
     };
+  if (/^display(?: matching)? records?$/i.test(text))
+    return {
+      params: {
+        then_action_type: "display",
+        then_action: "Display matching records",
+      },
+      references: [],
+      controls: [],
+    };
   if (/^do not display\b/i.test(text))
     return {
       params: {

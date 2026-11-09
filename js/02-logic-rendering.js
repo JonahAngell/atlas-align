@@ -289,9 +289,11 @@ function requirementsFieldRows(options = {}) {
     (entry, order) => {
       const step = entry.step;
       const params = step.params || {};
-      const usesTargetColumn = !["display_text", "do_not_display"].includes(
-        params.then_action_type,
-      );
+      const usesTargetColumn = ![
+        "display_text",
+        "display",
+        "do_not_display",
+      ].includes(params.then_action_type);
       [
         params.output_column,
         params.destination_column,
@@ -442,6 +444,9 @@ function completeStatementHasIndependentAction(step) {
       params.then_action
     );
   if (actionType === "do_not_display") return true;
+  // Display is the default "keep matching rows" action, so a parent IF that
+  // only displays still acts as a gate for its children.
+  if (actionType === "display") return false;
   return !!(params.then_action || step?.action);
 }
 
@@ -1373,7 +1378,19 @@ function ifThenDeveloperLogic(step) {
   const sqlLogic = conditions
     .map((condition, index) => conditionJoin(condition, index, { sql: true }))
     .join(" ");
-  return developerFormulaBlock(excelLogic, sqlLogic);
+  const displayNote = ifThenDisplayDeveloperNote(step);
+  const block = developerFormulaBlock(excelLogic, sqlLogic);
+  return displayNote ? `${block}\n\n${displayNote}` : block;
+}
+
+/**
+ * Automatic developer note that states what Display / Do Not Display keeps.
+ * @param {any} step - IF step being described.
+ */
+function ifThenDisplayDeveloperNote(step) {
+  const actionType = step?.params?.then_action_type;
+  if (actionType !== "display" && actionType !== "do_not_display") return "";
+  return developerPhrase(`developer_logic.display_notes.${actionType}`);
 }
 
 function sourceFieldRoundingMode(params = {}) {

@@ -121,7 +121,7 @@ test("Display text action drops the unused Reference Field and previews the rule
   assert.notEqual(start, -1, "display_text branch should exist");
   const branch = visualSource.slice(
     start,
-    visualSource.indexOf('if (actionType === "do_not_display")', start),
+    visualSource.indexOf("if (atlasIsDisplayActionType(actionType))", start),
   );
   assert.doesNotMatch(branch, /Reference Field/);
   assert.doesNotMatch(branch, /then_target_column/);
@@ -139,6 +139,6 @@ test("Requirements output columns ignore stale reference fields on display actio
   );
   assert.match(
     renderingSource,
-    /\[\s*"display_text",\s*"do_not_display",?\s*\]\.includes\(\s*params\.then_action_type,?\s*\)/,
+    /\[\s*"display_text",\s*"display",\s*"do_not_display",?\s*\]\.includes\(\s*params\.then_action_type,?\s*\)/,
   );
 });

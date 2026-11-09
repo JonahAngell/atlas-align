@@ -372,7 +372,10 @@ function atlasCustomSourceBadge(source) {
 }
 function atlasSourceLibraryContext(source) {
   const title = String(
-    source.sourceMetadata?.sourceTitle || source.sourceFile || source.name || "",
+    source.sourceMetadata?.sourceTitle ||
+      source.sourceFile ||
+      source.name ||
+      "",
   ).trim();
   if (
     !title ||
@@ -410,7 +413,8 @@ function atlasSourceLibraryMatchHtml(source, matchedFields) {
     const related = keys.length
       ? sourceCatalogEntries()
           .filter(
-            (candidate) => sourceCatalogKey(candidate) !== sourceCatalogKey(source),
+            (candidate) =>
+              sourceCatalogKey(candidate) !== sourceCatalogKey(source),
           )
           .flatMap((candidate) =>
             (candidate.fields || [])
@@ -497,7 +501,7 @@ function atlasSourceLibraryPill(source) {
       </span>
     </button>
     ${badges ? `<span class="source-inclusion-badges">${badges}</span>` : ""}
-    <div class="source-library-pill-actions">${usage.manualSelected ? atlasReplaceSourceButton(source.sourceKey || source.alias || "") : ""}<button type="button" class="btn small source-library-action-button ${usage.manualSelected ? "danger source-library-remove-button" : "primary source-library-add-button"}" data-source-action="${usage.manualSelected ? "remove" : "add"}" data-source-key="${esc(source.sourceKey || source.alias || "")}">${usage.manualSelected ? "Remove" : "Use"}</button></div>
+    <div class="source-library-pill-actions">${typeof atlasCustomSourceManageButtons === "function" ? atlasCustomSourceManageButtons(source) : ""}${usage.manualSelected ? atlasReplaceSourceButton(source.sourceKey || source.alias || "") : ""}<button type="button" class="btn small source-library-action-button ${usage.manualSelected ? "danger source-library-remove-button" : "primary source-library-add-button"}" data-source-action="${usage.manualSelected ? "remove" : "add"}" data-source-key="${esc(source.sourceKey || source.alias || "")}">${usage.manualSelected ? "Remove" : "Use"}</button></div>
     ${matchHtml}
   </article>`;
 }
@@ -564,9 +568,7 @@ function fieldRowsForSource(sourceName) {
     );
     const orderNumber = Number(field.order);
     const order =
-      Number.isFinite(orderNumber) && orderNumber > 0
-        ? orderNumber
-        : index + 1;
+      Number.isFinite(orderNumber) && orderNumber > 0 ? orderNumber : index + 1;
     return {
       key: String(
         field.id ||
@@ -706,9 +708,7 @@ function renderSelectedSourceTable(sourceName) {
   );
   const included = Boolean(includedSource);
   const title =
-    atlasSourceDisambiguatedLabel(detail) ||
-    includedSource?.name ||
-    sourceName;
+    atlasSourceDisambiguatedLabel(detail) || includedSource?.name || sourceName;
   const technicalName =
     detail.alias ||
     identity.alias ||
@@ -788,6 +788,8 @@ function atlasCommitAuditSourceChange({ action, sourceKeyOrFile }) {
   renderSourceFieldBrowser?.();
   renderFieldPickerPanel?.();
   updateDashboardMetrics?.();
+  // Source issues (custom source, missing source) change with the selection.
+  globalThis.ATLASAuditIssues?.render?.();
 
   // Mark expensive backing data and hidden pages dirty; render them on first use.
   atlasMarkFieldPickerDirty?.();

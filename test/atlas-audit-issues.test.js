@@ -873,6 +873,7 @@ test("every configured fix action has one registered implementation", () => {
     "editAuditPurpose",
     "repairIssue",
     "repairSourceReplacement",
+    "replaceCustomSource",
   ]);
   configured.forEach((name) =>
     assert.equal(
@@ -2644,4 +2645,82 @@ test("join integrity flags an incomplete additional key pair and ignores blank r
   );
   assert.equal(issues[0].actionData.keyIndex, 1);
   assert.equal(issues[0].actionData.param, "right_field");
+});
+
+test("each custom source in the audit gets one production-source warning", async () => {
+  const audit = completeAudit();
+  audit.sources.push(
+    { sourceKey: "custom.bonus-file", sourceFile: "Bonus File" },
+    { sourceKey: "custom.bonus-file", sourceFile: "Bonus File" },
+  );
+  const context = await runtime(audit, {
+    sourceFiles: [
+      {
+        sourceKey: "source.one",
+        sourceFile: "Source One",
+        fields: [{ rawFieldName: "Status" }],
+      },
+      {
+        sourceKey: "custom.bonus-file",
+        sourceFile: "Bonus File",
+        origin: "custom",
+        fields: [{ rawFieldName: "Amount" }],
+      },
+    ],
+  });
+  const warnings = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.ruleId === "audit.sources.custom-source",
+  );
+  assert.equal(warnings.length, 1);
+  assert.equal(warnings[0].severity, "warning");
+  assert.equal(warnings[0].target.sourceKey, "custom.bonus-file");
+  assert.match(warnings[0].summary, /"Bonus File" is a custom source/);
+  assert.match(warnings[0].summary, /Submit a request/);
+});
+
+test("production sources do not get the custom source warning", async () => {
+  const context = await runtime(completeAudit(), {
+    sourceFiles: [
+      {
+        sourceKey: "source.one",
+        sourceFile: "Source One",
+        fields: [{ rawFieldName: "Status" }],
+      },
+    ],
+  });
+  assert.ok(
+    !context.ATLASAuditIssues.current().issues.some(
+      (entry) => entry.ruleId === "audit.sources.custom-source",
+    ),
+  );
+});
+
+test("a deleted custom source raises only the missing-source issue", async () => {
+  const audit = completeAudit();
+  audit.sources.push({
+    sourceKey: "custom.gone-file",
+    sourceFile: "Gone File",
+  });
+  const context = await runtime(audit, {
+    sourceFiles: [
+      {
+        sourceKey: "source.one",
+        sourceFile: "Source One",
+        fields: [{ rawFieldName: "Status" }],
+      },
+    ],
+  });
+  const ruleIds = context.ATLASAuditIssues.current().issues.map(
+    (entry) => entry.ruleId,
+  );
+  assert.ok(!ruleIds.includes("audit.sources.custom-source"));
+  assert.ok(ruleIds.includes("audit.sources.reference-integrity"));
+});
+
+test("the issue engine reads the Source Library from its lexical global", () => {
+  assert.match(
+    adapterSource,
+    /typeof repoLibraryState !== "undefined" \? repoLibraryState : null/,
+  );
+  assert.doesNotMatch(adapterSource, /array\(global\.repoLibraryState/);
 });
