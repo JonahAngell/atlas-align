@@ -228,6 +228,7 @@ function atlasApplyAuditSaveMetadata(payload, snapshot, sentGeneration) {
   state.activeAuditBaseline = JSON.stringify(snapshot);
   renderActiveAuditSelect?.();
   updateDashboardMetrics?.();
+  atlasRenderAuditIdentity?.(state.audit);
 }
 function atlasMarkDatabaseDirty(reason = "edit") {
   if (window.ATLASAuditReview?.isActive?.()) return;
@@ -332,6 +333,16 @@ async function atlasPerformDatabaseWrite(changeSummary) {
         atlasDatabaseWriteCoordinator.editGeneration;
       status?.(error.message, "warn");
       await window.ATLASWorkflow?.refresh?.();
+      return false;
+    }
+    if (error.code === "AUDIT_ID_TAKEN" || error.code === "AUDIT_ID_INVALID") {
+      // The draft keeps its ID field editable so the user can pick another one.
+      atlasClearDatabaseWriteTimers();
+      atlasDatabaseWriteCoordinator.acknowledgedGeneration =
+        atlasDatabaseWriteCoordinator.editGeneration;
+      atlasSetDatabaseSaveStatus(error.message);
+      atlasShowAuditIdError?.(error.message);
+      atlasRenderAuditIdentity?.(state.audit);
       return false;
     }
     if (error.status === 409) {

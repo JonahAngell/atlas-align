@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1" name="viewport" />
     <title>ATLAS Align - Audit Logic Builder</title>
+    <!-- Resolve relative asset paths from the root so deep links like /audits/{id}/steps load. -->
+    <base href="/" />
     <link href="styles.css" rel="stylesheet" />
   </head>
   <body>
@@ -428,6 +430,11 @@
     ></script>
     <script
       src="./js/28-validation-runner.js"
+      data-atlas-boot
+      type="text/plain"
+    ></script>
+    <script
+      src="./js/30-deep-links.js"
       data-atlas-boot
       type="text/plain"
     ></script>

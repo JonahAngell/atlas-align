@@ -11,6 +11,15 @@
       </div>
       <div class="toolbar">
         <button
+          aria-describedby="copyAuditLinkHint"
+          class="btn secondary small"
+          disabled
+          id="copyAuditLinkBtn"
+          type="button"
+        >
+          Copy Link
+        </button>
+        <button
           class="btn secondary small"
           id="duplicateAuditBtn"
           type="button"
@@ -26,6 +35,23 @@
           Delete Audit
         </button>
       </div>
+      <p class="hint" id="copyAuditLinkHint" hidden>
+        Save the audit to the database to get a shareable link.
+      </p>
+      <label>
+        Audit ID
+        <input
+          aria-describedby="auditIdHint auditIdError"
+          autocomplete="off"
+          id="auditIdInput"
+          maxlength="64"
+          spellcheck="false"
+        />
+      </label>
+      <p class="hint" id="auditIdHint">
+        Letters and numbers only. The ID is kept when you save the audit.
+      </p>
+      <p class="hint atlas-field-error" id="auditIdError" hidden></p>
       <label>
         Audit Name
         <input id="auditName" placeholder="Placeholder" />

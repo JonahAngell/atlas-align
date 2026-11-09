@@ -130,8 +130,12 @@ function bindEvents() {
       );
     const name = prompt("Name the new audit:", "New Audit Logic Flow");
     if (!name) return;
+    const fresh = defaultAudit();
+    const id = atlasPromptAuditId(fresh.id);
+    if (!id) return;
     if (!(await atlasSaveIfDirty("new audit"))) return;
-    state.audit = defaultAudit();
+    state.audit = fresh;
+    state.audit.id = id;
     state.audit.name = name;
     state.selectedStepId = null;
     state.activeAuditValue = `draft:${state.audit.id}`;
@@ -172,10 +176,12 @@ function bindEvents() {
         "The verified atlas-admin-team role is required to duplicate audits.",
         "warn",
       );
+    const id = atlasPromptAuditId(uid("audit"));
+    if (!id) return;
     if (!(await atlasSaveIfDirty("duplicate audit"))) return;
     capture();
     const clone = structuredClone(state.audit);
-    clone.id = uid("audit");
+    clone.id = id;
     clone.name = `${clone.name} Copy`;
     clone.steps = clone.steps.map((step) => ({
       ...step,
@@ -208,8 +214,11 @@ function bindEvents() {
         "Start a new audit logic flow? Unsaved changes remain in autosave until cleared.",
       )
     ) {
-      if (!(await atlasSaveIfDirty("new audit"))) return;
       const candidate = defaultAudit();
+      const id = atlasPromptAuditId(candidate.id);
+      if (!id) return;
+      candidate.id = id;
+      if (!(await atlasSaveIfDirty("new audit"))) return;
       const button = $("newAuditBtn");
       state.creatingAudit = true;
       if (button) {
@@ -217,7 +226,21 @@ function bindEvents() {
         button.setAttribute("aria-busy", "true");
       }
       try {
-        await atlasCreateAuditDocument(candidate, "Created audit");
+        for (;;) {
+          try {
+            await atlasCreateAuditDocument(candidate, "Created audit");
+            break;
+          } catch (err) {
+            if (
+              err.code !== "AUDIT_ID_TAKEN" &&
+              err.code !== "AUDIT_ID_INVALID"
+            )
+              throw err;
+            const retryId = atlasPromptAuditId(candidate.id, err.message);
+            if (!retryId) throw err;
+            candidate.id = retryId;
+          }
+        }
       } catch (err) {
         if (!hasSelectedAudit?.()) {
           state.activeAuditValue = "";
@@ -514,5 +537,8 @@ async function init() {
       : "Ready. Select source files, build logic steps, and export the audit.",
     startupFailures.length ? "warn" : "ok",
   );
+  // Open the audit and page named by a shared link, then keep the URL in sync.
+  if (typeof atlasOpenInitialRoute === "function")
+    await atlasOpenInitialRoute();
 }
 init();
