@@ -13,6 +13,25 @@ export async function acceptNextConfirmation(page) {
   });
 }
 
+/**
+ * New Audit asks for confirmation, then prompts for an audit ID with a
+ * generated ID suggested. Accepts both and keeps the suggested ID.
+ */
+export async function acceptNewAuditDialogs(page) {
+  const handler = async (dialog) => {
+    if (dialog.type() === "confirm") {
+      await dialog.accept();
+      return;
+    }
+    page.off("dialog", handler);
+    expect(dialog.type()).toBe("prompt");
+    expect(dialog.message()).toContain("Audit ID");
+    expect(dialog.defaultValue()).toBeTruthy();
+    await dialog.accept(dialog.defaultValue());
+  };
+  page.on("dialog", handler);
+}
+
 export async function openPage(page, section) {
   await page.evaluate(async (target) => {
     if (typeof window.atlasNavigateToSection === "function") {

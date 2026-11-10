@@ -2,6 +2,7 @@ import { test as base, expect } from "@playwright/test";
 import { lifecycleConfig, uniqueAuditName } from "../helpers/config.js";
 import {
   acceptNextConfirmation,
+  acceptNewAuditDialogs,
   activeAuditSnapshot,
   attachJson,
   waitForAtlasReady,
@@ -25,7 +26,7 @@ export const test = base.extend({
       "The authenticated identity must be able to create Preview audits",
     ).toBeVisible();
     await expect(createButton).toBeEnabled();
-    await acceptNextConfirmation(page);
+    await acceptNewAuditDialogs(page);
     const responsePromise = page.waitForResponse(isAuditCreateResponse);
     await createButton.click();
     const payload = await responseJson(await responsePromise);

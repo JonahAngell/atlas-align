@@ -1,11 +1,9 @@
 import { test, expect } from "./fixtures/atlas.fixture.js";
 import {
   activeAuditSnapshot,
-  openOwnedAudit,
   openPage,
   openHistory,
   setOverview,
-  waitForAtlasReady,
 } from "./helpers/ui.js";
 import {
   getAudit,
@@ -57,17 +55,23 @@ test("18-20.2 and 22 validate durable revision, reload, recovery boundary, and d
   await test.step("19 and 22 reload retain accepted state without cross-audit contamination", async () => {
     await page.reload();
     await expect(page).toHaveTitle(/ATLAS Align/i);
-    await waitForAtlasReady(page);
+    await expect(page.locator('body[data-atlas-ready="true"]')).toBeVisible();
 
-    await expect(page.locator("body")).toHaveClass(/audit-not-selected/);
-    await expect(page.locator("#activeAuditSelect")).toHaveValue("");
+    // The reload keeps the shareable /audits/{id} path and reopens that audit.
+    await expect(page).toHaveURL(new RegExp(`/audits/${ownedAudit.id}(/|$)`));
+    await expect
+      .poll(async () => (await activeAuditSnapshot(page))?.id)
+      .toBe(ownedAudit.id);
+    await expect(page.locator("body")).not.toHaveClass(/audit-not-selected/);
 
     const durable = auditPayloadDocument(
       await getAudit(page.request, ownedAudit.id),
     );
     expect(durable.name).toBe(finalName);
 
-    await openOwnedAudit(page, ownedAudit.id);
+    await expect
+      .poll(async () => (await activeAuditSnapshot(page))?.revisionId)
+      .toBeTruthy();
     const reopened = await activeAuditSnapshot(page);
     expect(reopened?.id).toBe(ownedAudit.id);
     expect(reopened?.persistenceAuditId).toBe(ownedAudit.id);
