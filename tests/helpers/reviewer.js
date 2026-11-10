@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { readAutosave } from "./indexeddb.js";
 import {
   acceptNextConfirmation,
+  acceptNewAuditDialogs,
   activeAuditSnapshot,
   attachJson,
   openOwnedAudit,
@@ -485,7 +486,7 @@ async function createAutomaticAudit(page, config, testInfo) {
     "Automatic provisioning requires audit creation capability",
   ).toBeEnabled();
 
-  await acceptNextConfirmation(page);
+  await acceptNewAuditDialogs(page);
   const createResponse = page.waitForResponse(isAuditCreateResponse);
   await createButton.click();
   const payload = await responseJson(await createResponse);
