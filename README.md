@@ -45,3 +45,17 @@ Workflow stages stay off until each `ATLAS_WORKFLOW_*_ENABLED` flag is the liter
 ## Development
 
 Node.js 22 or later. After cloning, install the tracked version hook with `npm run hooks:install`. `npm run version:bump`, `npm run version:sync`, and `npm run version:check` keep the browser version in `js/00-config-utils.js` aligned with the managed Markdown markers. `npm test` runs the Node suite. `node build-css.mjs --check` validates CSS source units without writing `styles.css`.
+
+### CodeGraph (optional, for AI coding agents)
+
+The repository is set up for [CodeGraph](https://github.com/colbymchenry/codegraph), a local code graph that lets Claude Code look up symbols, callers, and call paths across the `js/` scripts without reading whole files. Nothing is sent to a server except optional anonymous usage statistics.
+
+One-time setup on your machine:
+
+```bash
+npm i -g @colbymchenry/codegraph
+codegraph telemetry off   # optional
+codegraph init            # builds .codegraph/ (gitignored); it stays in sync while the MCP server runs
+```
+
+Claude Code picks up the committed `.mcp.json` (the `codegraph` MCP server), `.claude/settings.json` (allows its tools and adds a prompt hook that injects relevant code for structural questions), and `.claude/CLAUDE.md` (tells agents to use it). Without the CLI installed the hook does nothing and the MCP server simply fails to start. To rebuild the index from scratch, run `codegraph index --force`. Script overrides such as `renderGuidedBuilder = function …` are indexed under their inner function names, and tests that load scripts with `vm` are not linked to the code they test.

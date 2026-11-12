@@ -8,3 +8,6 @@ playwright-report/
 test-results/
 playwright/.auth/
 REVIEW_BUNDLE*.txt
+
+# CodeGraph local index (rebuilt with `codegraph init`)
+.codegraph/
