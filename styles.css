@@ -12984,6 +12984,108 @@ body.dark .created-column-token {
     animation: none;
   }
 }
+
+
+/* Condition bullet groups: nested AND/OR lists inside an IF / THEN rule. */
+.guided-condition-group {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 10px;
+  background: var(--surface);
+  animation: atlas-sort-row-enter 160ms ease-out;
+}
+
+
+.guided-condition-group .guided-condition-group {
+  border-left-color: var(--accent2);
+}
+
+
+.condition-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+
+.condition-group-header > .danger {
+  margin-left: auto;
+  min-height: 44px;
+}
+
+
+.condition-group-connector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+
+.condition-group-lead,
+.condition-bullet-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+
+.condition-group-items {
+  padding-left: 0.75rem;
+}
+
+ /* Indentation stops growing after three levels so deep groups stay usable. */
+.guided-condition-group[data-depth]
+  .guided-condition-group[data-depth]
+  .guided-condition-group
+  .condition-group-items {
+  padding-left: 0;
+}
+
+
+.condition-bullet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+
+.condition-bullet {
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--primary);
+}
+
+
+.condition-group-actions,
+.condition-root-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+
+.condition-group-actions button,
+.condition-root-actions button {
+  min-height: 44px;
+}
+
+
+.logic-bullet {
+  display: inline-block;
+  margin-left: calc(var(--logic-bullet-depth, 1) * 1rem);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .guided-condition-group {
+    animation: none;
+  }
+}
 #page-export {
   --export-gap: 1rem;
   --export-switch-off: var(--muted);

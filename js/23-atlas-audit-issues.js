@@ -90,7 +90,15 @@
     "is not blank",
   ]);
 
+  // Every single condition of a step, including those inside bullet groups.
   function conditionRows(step) {
+    const tree = conditionTree(step);
+    return typeof global.atlasConditionLeaves === "function"
+      ? global.atlasConditionLeaves(tree)
+      : tree;
+  }
+
+  function conditionTree(step) {
     const type = string(object(step).step_type || object(step).type).trim();
     if (type && !CONDITION_STEP_TYPES.has(type)) return [];
     if (typeof global.parseStepConditions === "function") {
@@ -2311,14 +2319,21 @@
   }
 
   function patchCondition(step, conditionId, patch) {
-    const conditions = readConditions(step);
-    let index = conditions.findIndex(
+    // Patch the leaf inside the stored tree so bullet groups are preserved.
+    const tree = conditionTree(step).filter(
+      (condition) => !condition.__parseError,
+    );
+    const leaves =
+      typeof global.atlasConditionLeaves === "function"
+        ? global.atlasConditionLeaves(tree)
+        : tree;
+    let target = leaves.find(
       (condition) => string(condition.id) === string(conditionId),
     );
-    if (index < 0 && conditions.length === 1) index = 0;
-    if (index < 0) return false;
-    Object.assign(conditions[index], patch);
-    writeConditions(step, conditions);
+    if (!target && leaves.length === 1) target = leaves[0];
+    if (!target) return false;
+    Object.assign(target, patch);
+    writeConditions(step, tree);
     return true;
   }
 

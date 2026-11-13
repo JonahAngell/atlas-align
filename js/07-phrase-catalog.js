@@ -340,6 +340,229 @@ function conditionToPlain(condition, omitSource = false) {
 }
 
 // -----------------------------------------------------------------------------
+// Condition tree (bullet groups)
+// -----------------------------------------------------------------------------
+// A step's conditions are a list of nodes. A node is either a single condition
+// or a group: { conditionType: "group", connector, groupConnector, items }.
+// `connector` joins the node to the list it sits in; `groupConnector` (AND/OR)
+// joins every item inside the group. Groups nest without a depth limit.
+
+/**
+ * Returns whether a condition node is a bullet group.
+ * @param {any} node - Condition node from a step's condition list.
+ */
+function atlasIsConditionGroup(node) {
+  return !!node && node.conditionType === "group";
+}
+
+/**
+ * Normalizes a connector to AND or OR.
+ * @param {any} value - Stored connector text.
+ * @param {string} fallback - Connector used when the value is not AND/OR.
+ */
+function atlasConditionConnectorOf(value, fallback = "AND") {
+  const normalized = String(value || "")
+    .trim()
+    .toUpperCase();
+  return normalized === "OR" || normalized === "AND" ? normalized : fallback;
+}
+
+/**
+ * Returns a group's child nodes.
+ * @param {any} group - Bullet group node.
+ */
+function atlasConditionGroupItems(group) {
+  return Array.isArray(group?.items) ? group.items : [];
+}
+
+/**
+ * Lists every single condition in a condition tree, depth first.
+ * @param {Array<any>} nodes - Condition nodes.
+ */
+function atlasConditionLeaves(nodes) {
+  const leaves = [];
+  const visit = (list) =>
+    (Array.isArray(list) ? list : []).forEach((node) => {
+      if (atlasIsConditionGroup(node)) visit(atlasConditionGroupItems(node));
+      else if (node) leaves.push(node);
+    });
+  visit(nodes);
+  return leaves;
+}
+
+/**
+ * Lists every single condition of a step, including those inside groups.
+ * @param {any} step - Logic step object being read.
+ */
+function stepConditionLeaves(step) {
+  return atlasConditionLeaves(parseStepConditions(step));
+}
+
+/**
+ * Rebuilds a condition tree, transforming each node while keeping the groups.
+ * @param {Array<any>} nodes - Condition nodes.
+ * @param {{leaf?: Function, group?: Function}} mappers - leaf(node, index,
+ *   depth) returns the new condition; group(node, index, depth) returns the
+ *   group's new properties (its items are mapped separately).
+ * @param {number} depth - Nesting depth of `nodes` (0 = top level).
+ */
+function atlasMapConditionTree(nodes, mappers = {}, depth = 0) {
+  return (Array.isArray(nodes) ? nodes : []).map((node, index) => {
+    if (atlasIsConditionGroup(node)) {
+      const next = mappers.group
+        ? mappers.group(node, index, depth)
+        : { ...node };
+      return {
+        ...next,
+        items: atlasMapConditionTree(
+          atlasConditionGroupItems(node),
+          mappers,
+          depth + 1,
+        ),
+      };
+    }
+    return mappers.leaf ? mappers.leaf(node, index, depth) : { ...node };
+  });
+}
+
+/**
+ * Rebuilds a condition tree, transforming only the single conditions.
+ * @param {Array<any>} nodes - Condition nodes.
+ * @param {Function} fn - fn(condition, index, depth) returns the new condition.
+ */
+function atlasMapConditionLeaves(nodes, fn) {
+  return atlasMapConditionTree(nodes, { leaf: fn });
+}
+
+/**
+ * Finds a node anywhere in a condition tree.
+ * @param {Array<any>} nodes - Condition nodes.
+ * @param {string} id - Node id.
+ * @returns {{node:any, list:Array<any>, index:number, parent:any, depth:number}|null}
+ */
+function atlasFindConditionNode(nodes, id, parent = null, depth = 0) {
+  const list = Array.isArray(nodes) ? nodes : [];
+  for (let index = 0; index < list.length; index += 1) {
+    const node = list[index];
+    if (node && String(node.id) === String(id))
+      return { node, list, index, parent, depth };
+    if (atlasIsConditionGroup(node)) {
+      const found = atlasFindConditionNode(
+        atlasConditionGroupItems(node),
+        id,
+        node,
+        depth + 1,
+      );
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+/**
+ * Cleans a condition tree in place-safe form: the first top-level node gets
+ * IF, items inside a group take the group's connector, and empty groups drop.
+ * @param {Array<any>} nodes - Condition nodes.
+ * @param {string|null} groupConnector - Connector of the enclosing group, or
+ *   null at the top level.
+ */
+function atlasNormalizeConditionTree(nodes, groupConnector = null) {
+  return (Array.isArray(nodes) ? nodes : [])
+    .filter(Boolean)
+    .map((node) => {
+      if (!atlasIsConditionGroup(node)) return { ...node };
+      const inner = atlasConditionConnectorOf(node.groupConnector, "OR");
+      return {
+        ...node,
+        groupConnector: inner,
+        items: atlasNormalizeConditionTree(
+          atlasConditionGroupItems(node),
+          inner,
+        ),
+      };
+    })
+    .filter((node) => !atlasIsConditionGroup(node) || node.items.length > 0)
+    .map((node, index) => ({
+      ...node,
+      connector:
+        groupConnector !== null
+          ? groupConnector
+          : index === 0
+            ? "IF"
+            : atlasConditionConnectorOf(node.connector),
+    }));
+}
+
+/**
+ * Formats a condition tree as analyst text. Top-level nodes read inline; a
+ * group ends its line with "AND:"/"OR:" and lists its items as indented
+ * bullets, each ending with the group's connector except the last.
+ * @param {Array<any>} nodes - Top-level condition nodes.
+ * @param {Function} leafText - leafText(condition) returns the condition text.
+ */
+function conditionTreePlain(nodes, leafText) {
+  const bulletLines = (group, depth) => {
+    const items = atlasConditionGroupItems(group);
+    const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
+    const lines = [];
+    items.forEach((item, index) => {
+      const indent = "  ".repeat(depth);
+      const trailing = index < items.length - 1 ? ` ${inner}` : "";
+      if (atlasIsConditionGroup(item)) {
+        const header =
+          atlasConditionConnectorOf(item.groupConnector, "OR") === "AND"
+            ? "ALL OF:"
+            : "ANY OF:";
+        lines.push(`${indent}• ${header}`);
+        const nested = bulletLines(item, depth + 1);
+        if (trailing && nested.length) nested[nested.length - 1] += trailing;
+        lines.push(...nested);
+      } else lines.push(`${indent}• ${leafText(item)}${trailing}`);
+    });
+    return lines;
+  };
+  let text = "";
+  (Array.isArray(nodes) ? nodes : []).forEach((node, index) => {
+    const connector =
+      index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
+    if (atlasIsConditionGroup(node)) {
+      text += `${text && !text.endsWith("\n") ? " " : ""}${connector}:\n${bulletLines(node, 1).join("\n")}\n`;
+      return;
+    }
+    const line = renderCatalogPhrase("analyst_logic.if_then.condition_line", {
+      connector,
+      condition_text: leafText(node),
+    });
+    text += `${text && !text.endsWith("\n") ? " " : ""}${line}`;
+  });
+  return text.replace(/\n+$/, "").trim();
+}
+
+/**
+ * Formats a condition tree as one expression, wrapping each group in
+ * parentheses, e.g. IF a AND (b OR c OR (d AND e)).
+ * @param {Array<any>} nodes - Top-level condition nodes.
+ * @param {Function} leafText - leafText(condition) returns the expression.
+ */
+function conditionTreeExpression(nodes, leafText) {
+  const groupText = (group) => {
+    const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
+    return `(${atlasConditionGroupItems(group)
+      .map((item) =>
+        atlasIsConditionGroup(item) ? groupText(item) : leafText(item),
+      )
+      .join(` ${inner} `)})`;
+  };
+  return (Array.isArray(nodes) ? nodes : [])
+    .map((node, index) => {
+      const connector =
+        index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
+      return `${connector} ${atlasIsConditionGroup(node) ? groupText(node) : leafText(node)}`;
+    })
+    .join(" ");
+}
+
+// -----------------------------------------------------------------------------
 // Condition normalization and analyst logic
 // -----------------------------------------------------------------------------
 /**
@@ -473,9 +696,20 @@ function invertedConditionsForStep(step) {
     : typeof defaultGuidedCondition === "function"
       ? [defaultGuidedCondition(step)]
       : [];
-  return conditions.map((condition, index) =>
-    invertGuidedCondition(condition, index),
-  );
+  // De Morgan at every level: invert each condition, swap every connector.
+  return atlasMapConditionTree(conditions, {
+    leaf: (condition, index, depth) =>
+      invertGuidedCondition(condition, depth === 0 ? index : 1),
+    group: (group, index, depth) => ({
+      ...group,
+      id: uid("cond"),
+      connector:
+        depth === 0 && index === 0
+          ? "IF"
+          : inverseConditionConnector(group.connector),
+      groupConnector: inverseConditionConnector(group.groupConnector || "OR"),
+    }),
+  });
 }
 
 /**
@@ -483,16 +717,9 @@ function invertedConditionsForStep(step) {
  * @param {any} step - Logic step object being read or modified.
  */
 function conditionGroupPlain(step) {
-  return parseStepConditions(step)
-    .map((condition, index) => {
-      const connector = index === 0 ? "IF" : condition.connector || "AND";
-      return renderCatalogPhrase("analyst_logic.if_then.condition_line", {
-        connector,
-        condition_text: conditionToPlain(condition, false),
-      });
-    })
-    .join(" ")
-    .trim();
+  return conditionTreePlain(parseStepConditions(step), (condition) =>
+    conditionToPlain(condition, false),
+  );
 }
 
 /**

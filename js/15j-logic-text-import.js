@@ -328,9 +328,7 @@ function atlasImportSplitConnectors(text) {
     return { ok: true, parts: [{ connector: "IF", text: source }] };
   const connectors = splits.map((item) => item.connector);
   if (connectors.includes("AND") && connectors.includes("OR"))
-    return atlasImportFail(
-      "Mixed AND and OR connectors are not supported in one condition group. Use one connector type.",
-    );
+    return atlasImportFail(ATLAS_IMPORT_MIXED_CONNECTORS);
   const parts = [];
   let cursor = 0;
   splits.forEach((item, index) => {
@@ -439,6 +437,7 @@ function atlasImportDraft(stepType, details) {
     title: ATLAS_IMPORT_TITLES[stepType] || "Logic Step",
     params: details.params || {},
     conditions: details.conditions || [],
+    ...(details.conditionTree ? { conditionTree: details.conditionTree } : {}),
     references: details.references || [],
     controls: details.controls || [],
   };
@@ -575,7 +574,240 @@ function atlasImportOperatorsForMode(valueMode) {
   ];
 }
 
+const ATLAS_IMPORT_MIXED_CONNECTORS =
+  "Mixed AND and OR connectors are not supported in one condition list. Put the other connector inside parentheses or a bullet group.";
+
+/**
+ * Converts bulleted condition lines into parenthesized groups before the text
+ * is flattened, e.g. "AND:" followed by "• a OR" / "• b" becomes "AND ( a OR b )".
+ * "ALL OF:" / "ANY OF:" bullets open nested groups; indentation closes them.
+ * @param {string} value - Raw pasted logic text.
+ */
+function atlasImportBulletsToParens(value) {
+  const lines = String(value || "").split(/\r?\n/);
+  const bullet = /^(\s*)[•*-]\s+(.*)$/;
+  if (!lines.some((line) => bullet.test(line))) return String(value || "");
+  let out = "";
+  const stack = [];
+  const close = () => {
+    const trailing = /\s+(AND|OR)\s*$/i.exec(out);
+    if (trailing) out = out.slice(0, trailing.index);
+    out += " )";
+    if (trailing) out += ` ${trailing[1].toUpperCase()}`;
+    stack.pop();
+  };
+  let pendingOpen = false;
+  lines.forEach((line) => {
+    if (!line.trim()) return;
+    const match = bullet.exec(line);
+    if (!match) {
+      while (stack.length) close();
+      out += ` ${line.trim().replace(/\b(AND|OR|IF)\s*:\s*$/i, "$1 (")}`;
+      pendingOpen = /\($/.test(out);
+      return;
+    }
+    const indent = match[1].replace(/\t/g, "    ").length;
+    if (pendingOpen) {
+      stack.push(indent);
+      pendingOpen = false;
+    }
+    while (stack.length > 1 && indent < stack.at(-1)) close();
+    const text = match[2].trim();
+    const header = /^(ALL|ANY)\s+OF\s*:\s*(AND|OR)?$/i.exec(text);
+    if (header) {
+      out += " (";
+      pendingOpen = true;
+      return;
+    }
+    out += ` ${text}`;
+  });
+  while (stack.length) close();
+  return out.trim();
+}
+
+/**
+ * Splits condition text into top-level items: plain text chunks and
+ * parenthesized groups. Only "(" at the start or after IF/AND/OR opens a
+ * group; other parentheses (for example inside an expression) are literal.
+ * @param {string} text - Condition text without the THEN part.
+ */
+function atlasImportSplitGroups(text) {
+  const source = String(text || "");
+  const mask = atlasImportMaskQuotes(source);
+  const items = [];
+  const stack = [];
+  let cursor = 0;
+  for (let index = 0; index < mask.length; index += 1) {
+    const char = mask[index];
+    if (char === "(") {
+      const before = mask.slice(0, index).trimEnd();
+      const opensGroup = !before || /\b(IF|AND|OR)$/i.test(before);
+      if (opensGroup && !stack.some((type) => type === "literal")) {
+        if (!stack.length) {
+          items.push({ kind: "text", text: source.slice(cursor, index) });
+          cursor = index + 1;
+        }
+        stack.push("group");
+      } else stack.push("literal");
+    } else if (char === ")" && stack.length) {
+      const type = stack.pop();
+      if (type === "group" && !stack.length) {
+        items.push({ kind: "group", text: source.slice(cursor, index) });
+        cursor = index + 1;
+      }
+    }
+  }
+  if (stack.includes("group"))
+    return atlasImportFail(
+      "A condition group is missing its closing parenthesis.",
+    );
+  items.push({ kind: "text", text: source.slice(cursor) });
+  return {
+    ok: true,
+    items: items.filter((item) => item.kind === "group" || item.text.trim()),
+  };
+}
+
+/**
+ * Parses condition text with parenthesized groups into a tree skeleton whose
+ * leaves point at entries of a flat condition list.
+ * @param {string} text - Condition text.
+ * @param {Array<any>} leaves - Collects parsed conditions in order.
+ * @param {boolean} isRoot - Whether this is the top-level list.
+ */
+function atlasImportParseConditionList(text, leaves, isRoot) {
+  const split = atlasImportSplitGroups(
+    isRoot
+      ? String(text || "")
+          .trim()
+          .replace(/^if\b\s*/i, "")
+      : text,
+  );
+  if (!split.ok) return split;
+  const nodes = [];
+  let pendingConnector = "";
+  for (const item of split.items) {
+    if (item.kind === "group") {
+      const inner = atlasImportParseConditionList(item.text, leaves, false);
+      if (!inner.ok) return inner;
+      const connectors = inner.nodes.slice(1).map((node) => node.connector);
+      nodes.push({
+        conditionType: "group",
+        connector: pendingConnector || (nodes.length ? "" : "IF"),
+        groupConnector: connectors[0] || "OR",
+        items: inner.nodes,
+      });
+      pendingConnector = "";
+      continue;
+    }
+    let chunk = item.text.trim();
+    const leading = /^(AND|OR)\b\s*/i.exec(chunk);
+    if (leading) {
+      pendingConnector = leading[1].toUpperCase();
+      chunk = chunk.slice(leading[0].length);
+    }
+    const trailing = /\s*\b(AND|OR)$/i.exec(chunk);
+    const trailingConnector = trailing ? trailing[1].toUpperCase() : "";
+    if (trailing) chunk = chunk.slice(0, trailing.index);
+    if (chunk.trim()) {
+      const parts = atlasImportSplitConnectors(chunk);
+      if (!parts.ok) return parts;
+      parts.parts.forEach((part, index) => {
+        nodes.push({
+          leafIndex: leaves.length,
+          connector:
+            index === 0
+              ? pendingConnector || (nodes.length ? "" : "IF")
+              : part.connector,
+        });
+        leaves.push(part);
+      });
+    }
+    pendingConnector = trailingConnector;
+  }
+  if (nodes.slice(1).some((node) => !node.connector))
+    return atlasImportFail("A condition group needs AND or OR before it.");
+  const connectors = new Set(nodes.slice(1).map((node) => node.connector));
+  if (connectors.size > 1)
+    return atlasImportFail(ATLAS_IMPORT_MIXED_CONNECTORS);
+  if (!nodes.length)
+    return atlasImportFail(
+      "A condition group is empty. Each group needs at least one condition.",
+    );
+  return { ok: true, nodes };
+}
+
+/**
+ * Replaces a tree skeleton's leaf pointers with the finished conditions.
+ * @param {Array<any>} skeleton - Nodes from atlasImportParseConditionList.
+ * @param {Array<any>} conditions - Finished flat conditions, by leaf index.
+ */
+function atlasImportAssembleConditionTree(skeleton, conditions) {
+  let groupCount = 0;
+  const build = (nodes, groupConnector) =>
+    nodes.map((node, index) => {
+      const connector =
+        groupConnector || (index === 0 ? "IF" : node.connector || "AND");
+      if (node.conditionType === "group") {
+        groupCount += 1;
+        return {
+          id: `cond_group_${groupCount}`,
+          conditionType: "group",
+          connector,
+          groupConnector: node.groupConnector || "OR",
+          items: build(node.items || [], node.groupConnector || "OR"),
+        };
+      }
+      return { ...conditions[node.leafIndex], connector };
+    });
+  return build(skeleton, null);
+}
+
+/** Lists every node (groups and conditions) of a condition tree. */
+function atlasImportConditionNodes(nodes) {
+  return (nodes || []).flatMap((node) => [
+    node,
+    ...(node?.conditionType === "group"
+      ? atlasImportConditionNodes(node.items)
+      : []),
+  ]);
+}
+
 function atlasImportParseConditions(groupText) {
+  if (/\(/.test(atlasImportMaskQuotes(String(groupText || "")))) {
+    const leaves = [];
+    const tree = atlasImportParseConditionList(groupText, leaves, true);
+    if (!tree.ok) return tree;
+    const hasGroups = tree.nodes.some((node) => node.conditionType === "group");
+    if (hasGroups) {
+      const conditions = [];
+      const references = [];
+      const controls = [];
+      for (let index = 0; index < leaves.length; index += 1) {
+        const parsed = atlasImportReadCondition(leaves[index].text);
+        if (!parsed)
+          return atlasImportFail(
+            `Condition ${index + 1} could not be read. Use file "alias" column "field", then an operator such as is equal to.`,
+          );
+        const drafted = atlasImportConditionDraft(
+          parsed,
+          index,
+          index === 0 ? "IF" : `Condition ${index + 1}`,
+        );
+        drafted.condition.connector = index === 0 ? "IF" : "AND";
+        conditions.push(drafted.condition);
+        references.push(...drafted.references);
+        controls.push(...drafted.controls);
+      }
+      return {
+        ok: true,
+        conditions,
+        conditionTree: tree.nodes,
+        references,
+        controls,
+      };
+    }
+  }
   const split = atlasImportSplitConnectors(groupText);
   if (!split.ok) return split;
   const conditions = [];
@@ -1622,6 +1854,10 @@ function atlasImportParseDuplicates(text) {
 function atlasImportParseFilter(before, action) {
   const parsed = atlasImportParseConditions(before);
   if (!parsed.ok) return parsed;
+  if (parsed.conditionTree)
+    return atlasImportFail(
+      "Condition groups are only supported in IF / THEN rules.",
+    );
   if (parsed.conditions.length !== 1)
     return atlasImportFail("Filter rows uses one condition.");
   const filter = ATLAS_IMPORT_FILTERS.find(
@@ -1677,6 +1913,10 @@ function atlasImportRetargetFilterReference(reference) {
 function atlasImportParseFlag(before, details) {
   const parsed = atlasImportParseConditions(before);
   if (!parsed.ok) return parsed;
+  if (parsed.conditionTree)
+    return atlasImportFail(
+      "Condition groups are only supported in IF / THEN rules.",
+    );
   if (parsed.conditions.length !== 1)
     return atlasImportFail("Flag records uses one condition.");
   const condition = parsed.conditions[0];
@@ -1741,6 +1981,7 @@ function atlasImportParseIfThen(before, action) {
   return atlasImportDraft("if_then", {
     params: thenAction.params,
     conditions: parsed.conditions,
+    conditionTree: parsed.conditionTree,
     references: [...parsed.references, ...thenAction.references],
     controls: [...parsed.controls, ...thenAction.controls],
   });
@@ -1761,7 +2002,7 @@ function atlasImportParseElse(text) {
 }
 
 function atlasParseImportedLogicText(value) {
-  const text = atlasImportNormalizeText(value);
+  const text = atlasImportNormalizeText(atlasImportBulletsToParens(value));
   if (!text) return atlasImportFail("Enter a logic sentence to import.");
   const head = text.toLowerCase();
   if (head.startsWith("reference source file"))
@@ -1784,6 +2025,10 @@ function atlasParseImportedLogicText(value) {
   if (/^if\b/i.test(text)) {
     const split = atlasImportSplitThen(text);
     if (!split) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
+    // Grouped conditions only exist on IF / THEN rules, whatever the action.
+    const grouped = atlasImportParseConditions(split.before);
+    if (grouped.ok && grouped.conditionTree)
+      return atlasImportParseIfThen(split.before, split.after);
     if (/^(keep matching rows|exclude matching rows)$/i.test(split.after))
       return atlasImportParseFilter(split.before, split.after);
     if (/^do NOT display\b/.test(split.after))
@@ -2066,7 +2311,14 @@ function atlasImportMaterialize(draft, choices = {}) {
       expression: condition.expression || "",
     }));
     if (draft.stepType === "if_then")
-      cloned.params.conditions_json = JSON.stringify(cloned.conditions);
+      cloned.params.conditions_json = JSON.stringify(
+        draft.conditionTree
+          ? atlasImportAssembleConditionTree(
+              draft.conditionTree,
+              cloned.conditions,
+            )
+          : cloned.conditions,
+      );
   }
   if (draft.stepType === "remove_duplicates")
     atlasImportFinishDuplicateFields(cloned.params);
@@ -2792,17 +3044,19 @@ function atlasCommitLogicImport() {
     typeof uid === "function" ? uid("step") : `step_${Date.now()}`;
   if (built.step.step_type === "if_then") {
     const conditions = JSON.parse(built.step.params.conditions_json || "[]");
-    conditions.forEach((condition) => {
+    atlasImportConditionNodes(conditions).forEach((condition) => {
       if (!condition.id || String(condition.id).startsWith("cond_"))
         condition.id = typeof uid === "function" ? uid("cond") : condition.id;
     });
     built.step.params.conditions_json = JSON.stringify(conditions);
-    built.step.conditions = conditions.map((condition) => ({
-      id: condition.id,
-      field: condition.fieldName,
-      operator: condition.operator,
-      value: condition.compareValue,
-    }));
+    built.step.conditions = atlasImportConditionNodes(conditions)
+      .filter((condition) => condition.conditionType !== "group")
+      .map((condition) => ({
+        id: condition.id,
+        field: condition.fieldName,
+        operator: condition.operator,
+        value: condition.compareValue,
+      }));
   }
   normalizeCatalogStep?.(built.step);
   const steps = state.audit.steps || [];

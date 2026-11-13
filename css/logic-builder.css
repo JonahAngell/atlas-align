@@ -4758,4 +4758,106 @@ body.dark .created-column-token {
     animation: none;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1605:END */
+/* ATLAS-SOURCE-UNIT:u1605:END */ /* ATLAS-SOURCE-UNIT:u1616:BEGIN */
+
+/* Condition bullet groups: nested AND/OR lists inside an IF / THEN rule. */
+.guided-condition-group {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 10px;
+  background: var(--surface);
+  animation: atlas-sort-row-enter 160ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1616:END */ /* ATLAS-SOURCE-UNIT:u1617:BEGIN */
+.guided-condition-group .guided-condition-group {
+  border-left-color: var(--accent2);
+}
+
+/* ATLAS-SOURCE-UNIT:u1617:END */ /* ATLAS-SOURCE-UNIT:u1618:BEGIN */
+.condition-group-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1618:END */ /* ATLAS-SOURCE-UNIT:u1619:BEGIN */
+.condition-group-header > .danger {
+  margin-left: auto;
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1619:END */ /* ATLAS-SOURCE-UNIT:u1620:BEGIN */
+.condition-group-connector {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1620:END */ /* ATLAS-SOURCE-UNIT:u1621:BEGIN */
+.condition-group-lead,
+.condition-bullet-label {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* ATLAS-SOURCE-UNIT:u1621:END */ /* ATLAS-SOURCE-UNIT:u1622:BEGIN */
+.condition-group-items {
+  padding-left: 0.75rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1622:END */ /* ATLAS-SOURCE-UNIT:u1623:BEGIN */ /* Indentation stops growing after three levels so deep groups stay usable. */
+.guided-condition-group[data-depth]
+  .guided-condition-group[data-depth]
+  .guided-condition-group
+  .condition-group-items {
+  padding-left: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1623:END */ /* ATLAS-SOURCE-UNIT:u1624:BEGIN */
+.condition-bullet-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1624:END */ /* ATLAS-SOURCE-UNIT:u1625:BEGIN */
+.condition-bullet {
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--primary);
+}
+
+/* ATLAS-SOURCE-UNIT:u1625:END */ /* ATLAS-SOURCE-UNIT:u1626:BEGIN */
+.condition-group-actions,
+.condition-root-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1626:END */ /* ATLAS-SOURCE-UNIT:u1627:BEGIN */
+.condition-group-actions button,
+.condition-root-actions button {
+  min-height: 44px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1627:END */ /* ATLAS-SOURCE-UNIT:u1628:BEGIN */
+.logic-bullet {
+  display: inline-block;
+  margin-left: calc(var(--logic-bullet-depth, 1) * 1rem);
+}
+
+/* ATLAS-SOURCE-UNIT:u1628:END */ /* ATLAS-SOURCE-UNIT:u1629:BEGIN */
+@media (prefers-reduced-motion: reduce) {
+  .guided-condition-group {
+    animation: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1629:END */

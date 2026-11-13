@@ -576,6 +576,46 @@ function sourceAliasHidden(params) {
 }
 
 /**
+ * Reads the condition editor's rows and bullet groups back into a tree.
+ * Returns null when the container has no tree-aware condition list, so callers
+ * can fall back to reading rows as a flat list.
+ * @param {Element} container - Editor root or step card holding the rows.
+ * @param {(row: Element, index: number) => any} readLeaf - Reads one row.
+ */
+function atlasReadConditionTreeFromDom(container, readLeaf) {
+  const stack = container?.querySelector?.(
+    ".condition-guided-stack[data-condition-list]",
+  );
+  if (!stack) return null;
+  const readList = (list, depth) =>
+    [...list.children].flatMap((node, index) => {
+      if (node.matches(".guided-condition-group")) {
+        const header = node.querySelector(":scope > .condition-group-header");
+        const items = node.querySelector(":scope > [data-condition-list]");
+        return [
+          {
+            id: node.dataset.conditionId || uid("cond"),
+            conditionType: "group",
+            connector:
+              header?.querySelector('[data-condition-field="connector"]')
+                ?.value || "AND",
+            groupConnector: atlasConditionConnectorOf(
+              header?.querySelector('[data-group-field="groupConnector"]')
+                ?.value,
+              "OR",
+            ),
+            items: items ? readList(items, depth + 1) : [],
+          },
+        ];
+      }
+      if (node.matches(".guided-condition-row"))
+        return [readLeaf(node, depth === 0 ? index : Math.max(index, 1))];
+      return [];
+    });
+  return readList(stack, 0);
+}
+
+/**
  * Writes guided IF conditions back to a step in the canonical params/summary shape.
  * @param {any} step - Step to update.
  * @param {Array<any>} conditions - Guided condition list.
@@ -583,8 +623,10 @@ function sourceAliasHidden(params) {
 function atlasWriteLiveEditorConditions(step, conditions) {
   step.params =
     step.params && typeof step.params === "object" ? step.params : {};
-  step.params.conditions_json = JSON.stringify(conditions || []);
-  step.conditions = (conditions || []).map((condition) => ({
+  const tree = atlasNormalizeConditionTree(conditions || []);
+  step.params.conditions_json = JSON.stringify(tree);
+  // The legacy flat mirror lists every single condition, including grouped ones.
+  step.conditions = atlasConditionLeaves(tree).map((condition) => ({
     id: condition.id,
     field: condition.fieldName,
     operator: condition.operator,
@@ -1006,7 +1048,7 @@ capture = function captureCatalogDriven() {
     });
     const conditionRows = [...card.querySelectorAll(".guided-condition-row")];
     if (conditionRows.length) {
-      const conditions = conditionRows.map((row, index) => {
+      const readLeaf = (row, index) => {
         /**
          * Handles the get portion of the ATLAS Align client-side workflow.
          * @param {any} field - Field record.
@@ -1031,7 +1073,10 @@ capture = function captureCatalogDriven() {
           expression: get("expression"),
           compareMathJson: get("compareMathJson"),
         };
-      });
+      };
+      const conditions =
+        atlasReadConditionTreeFromDom(card, readLeaf) ||
+        conditionRows.map(readLeaf);
       atlasWriteLiveEditorConditions(step, conditions);
     }
     if (step.params.source_file) {
@@ -1051,7 +1096,7 @@ capture = function captureCatalogDriven() {
  * @param {any} ifStep - Input used by createOrUpdateElseStep.
  */
 function atlasConditionSummaries(conditions) {
-  return (conditions || []).map((condition) => ({
+  return atlasConditionLeaves(conditions || []).map((condition) => ({
     id: condition.id,
     field: condition.fieldName || condition.field || "",
     operator: condition.operator || "is equal to",
@@ -1065,10 +1110,14 @@ function atlasCloneInverseConditionsForTarget(sourceStep, targetStep = null) {
     typeof invertedConditionsForStep === "function"
       ? invertedConditionsForStep(sourceStep)
       : [];
-  const existing = targetStep ? parseStepConditions(targetStep) : [];
-  return inverted.map((condition, index) => ({
+  // Reuse the target's ids by position so ELSE edits keep stable identities.
+  const existingLeaves = targetStep
+    ? atlasConditionLeaves(parseStepConditions(targetStep))
+    : [];
+  let leafIndex = 0;
+  return atlasMapConditionLeaves(inverted, (condition) => ({
     ...condition,
-    id: existing[index]?.id || condition.id || uid("cond"),
+    id: existingLeaves[leafIndex++]?.id || condition.id || uid("cond"),
   }));
 }
 
@@ -1076,7 +1125,7 @@ function atlasSourceForInverseStep(sourceStep, conditions) {
   return (
     sourceStep?.params?.source_file ||
     sourceStep?.source ||
-    conditions?.[0]?.sourceFile ||
+    atlasConditionLeaves(conditions || [])[0]?.sourceFile ||
     ""
   );
 }
@@ -1677,10 +1726,12 @@ function atlasLogicFieldReferences(steps = state.audit.steps || []) {
       add(r.sourceFile, r.fieldName),
     );
     try {
-      (JSON.parse(p.conditions_json || "[]") || []).forEach((c) => {
-        add(c.sourceFile, c.fieldName);
-        add(c.compareSourceFile || c.sourceFile, c.compareFieldName);
-      });
+      atlasConditionLeaves(JSON.parse(p.conditions_json || "[]")).forEach(
+        (c) => {
+          add(c.sourceFile, c.fieldName);
+          add(c.compareSourceFile || c.sourceFile, c.compareFieldName);
+        },
+      );
     } catch (_error) {
       /* Existing validation reports malformed condition JSON. */
     }

@@ -445,12 +445,26 @@ function atlasSourceMatchForValue(value, preferredSource = null) {
   return null;
 }
 
+/**
+ * Escapes unquoted logic text and turns bullet-group lines ("\n  • ...") into
+ * line breaks with depth-based indentation.
+ * @param {string} part - Unquoted logic text.
+ */
+function atlasLogicTextWithBullets(part) {
+  return esc(part).replace(
+    /\n( *)• /g,
+    (_match, spaces) =>
+      `<br class="logic-bullet-break"><span class="logic-bullet" style="--logic-bullet-depth:${Math.max(1, Math.floor(spaces.length / 2))}">•</span> `,
+  );
+}
+
 renderLogicWithPills = function atlasRenderLogicWithSourceAndFieldPills(text) {
   const parts = String(text || "").split(/("[^"]+")/g);
   let activeSource = null;
   return parts
     .map((part) => {
-      if (!part.startsWith('"') || !part.endsWith('"')) return esc(part);
+      if (!part.startsWith('"') || !part.endsWith('"'))
+        return atlasLogicTextWithBullets(part);
       const value = part.slice(1, -1);
       const match = atlasSourceMatchForValue(value, activeSource);
       if (match?.kind === "source") activeSource = match;
@@ -933,16 +947,19 @@ function atlasNormalizeReferenceSubstep(step) {
     step.params && typeof step.params === "object" ? step.params : {};
   step.params.source_file = inherited;
   step.params.source_alias = alias;
-  const conditions = (parseStepConditions?.(step) || []).map((condition) => ({
-    ...condition,
-    sourceFile: inherited,
-    sourceAlias: alias,
-    compareSourceFile: condition.compareSourceFile || inherited,
-    compareSourceAlias:
-      condition.compareSourceAlias ||
-      sourceAliasFor?.(condition.compareSourceFile || inherited) ||
-      alias,
-  }));
+  const conditions = atlasMapConditionLeaves(
+    parseStepConditions?.(step) || [],
+    (condition) => ({
+      ...condition,
+      sourceFile: inherited,
+      sourceAlias: alias,
+      compareSourceFile: condition.compareSourceFile || inherited,
+      compareSourceAlias:
+        condition.compareSourceAlias ||
+        sourceAliasFor?.(condition.compareSourceFile || inherited) ||
+        alias,
+    }),
+  );
   if (conditions.length) atlasWriteLiveEditorConditions?.(step, conditions);
   return inherited;
 }
