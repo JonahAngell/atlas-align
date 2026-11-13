@@ -69,12 +69,26 @@
   "developer_logic": {
     "labels": {
       "excel": "Excel:",
-      "sql_server": "SQL Server:"
+      "sql_server": "SQL Server:",
+      "python": "Python (pandas):"
     },
     "else_step": "ELSE (Step {step_number})",
+    "else_included": "ELSE (Step {step_number}): included in the Step {step_number} formulas.",
     "display_notes": {
       "display": "Note: Display - Keep only rows that match this condition.",
-      "do_not_display": "Note: Do Not Display - Keep only rows that do not match this condition."
+      "do_not_display": "Note: Do Not Display - Keep only rows that do not match this condition.",
+      "else_display": "Note: ELSE Display - Keep only rows that do not match the parent IF.",
+      "else_do_not_display": "Note: ELSE Do Not Display - Keep only rows that match the parent IF."
+    },
+    "notes": {
+      "freeform_action": "Note: THEN action is free text and is not in the formulas: {action}",
+      "matching_rows": "Note: The formulas mark rows that match this condition.",
+      "free_text_expression": "Note: The expression is free text and is copied as written. Review it before running.",
+      "unknown_format": "Note: Format \"{format}\" is not a standard option. Check the formulas before running.",
+      "missing_delimiter": "Note: Split On is empty. Add the delimiter before running.",
+      "split_sql_version": "Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.",
+      "keep_true_rows": "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "excel_join_limit": "Note: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel."
     },
     "join": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" on \"{left_field}\" to \"{right_alias}\" on \"{right_field}\".",
     "join_multi": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" to \"{right_alias}\" where {key_pairs}.",

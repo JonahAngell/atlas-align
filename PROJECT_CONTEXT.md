@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.2.5
+**Current Version:** v3.2.6
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
@@ -342,7 +342,18 @@ An error rolls back the transaction, including the live-table replacement. The S
 
 **Rendering and virtualization.** Content-only commits update state and dependent previews/validation without rebuilding the selected-step editor DOM, preserving the focused control, caret, selection, and in-progress value. Structural changes use the shared scheduled structural render path. The final rule list is virtualized by `js/15g-visual-ui-events.js`: it mounts a measured visible window plus overscan, caches measurements transiently, omits collapsed descendants only from presentation, expands ancestors before reveal/focus, and temporarily expands the mounted range during drag without changing persisted hierarchy data.
 
-**Generated text.** `js/07-phrase-catalog.js` produces Analyst Logic from catalog templates and normalized step parameters. `js/02-logic-rendering.js` and later wrappers produce Developer Logic for conditions, joins, source-field operations, calculations, rounding, and string transformations. Saved steps and canonical field references remain the input; rendered text is not a separate source of audit identity.
+**Generated text.** `js/07-phrase-catalog.js` produces Analyst Logic from catalog templates and normalized step parameters. Saved steps and canonical field references remain the input; rendered text is not a separate source of audit identity.
+
+**Developer Logic formulas.** `js/02b-developer-formulas.js` is the only Developer Logic generator. It loads right after `js/02-logic-rendering.js` and defines the final `developerLogic(step)`; no later script wraps it. For every step type it writes a short lead line and three approximate, row-level formulas: `Excel:`, `SQL Server:`, and `Python (pandas):`. These are expressions for that one line's logic, not complete queries or scripts. `atlasDeveloperFormulas(step)` returns `{ lead, excel, sql, python, notes }`, and `atlasDeveloperFormulaText()` joins them into the stored text. Generation errors are logged with `console.warn` and never block rendering.
+
+- **Dialects.** Excel targets Excel 365 (`SORTBY`, `UNIQUE`, `VSTACK`, `TEXTSPLIT`, `XLOOKUP`) and uses `[@[Field]]` table references. SQL Server uses `[Field]`, adds the source alias (`[alias].[Field]`) only when the same field name exists in more than one audit source, and uses `CASE WHEN … END AS [Target]` for outputs. Python uses `df["Field"]`, builds a `mask`, and assigns with `df.loc[mask, "Target"]`; multi-source steps use `sources["alias"]`.
+- **Conditions.** Bullet condition groups become parenthesized groups, and AND binds before OR. Multi-value comparisons use `OR(...)`, `IN`/`NOT IN`, and `.isin()`. Text-match wildcards are escaped in each dialect. Numeric fields compare as numbers and code-like values stay quoted.
+- **IF/ELSE.** An ELSE step's action folds into its parent IF's formulas (the IF `else` slot, SQL `ELSE`, and the negated pandas mask). The ELSE line keeps its `ELSE (Step N)` label and repeats the formulas. Display filters return TRUE for rows to keep, or use `WHERE` / `WHERE NOT (…)`.
+- **Calculations.** Rounding gives the same result as Excel in every dialect. Division is guarded with `IFERROR`, `NULLIF`, or pandas division.
+- **Wording.** The section labels, ELSE wording, and notes live under `developer_logic` in `catalogs/logic_phrase_catalog.json`.
+- **Display.** Requirements Preview and the Logic Builder table render the text in `td.developer-logic-cell` (`css/requirements-preview.css`), which keeps line breaks. CSV and Markdown exports keep the sections; Markdown uses `<br>`.
+
+`js/02-logic-rendering.js` still owns the shared math, join-key, sort, and duplicate helpers that the generator calls. Tests: `test/developer-logic.test.js`.
 
 #### Display Fields and Requirements Preview
 
@@ -828,6 +839,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/01-state-dom.js` — Shared `state`, cached DOM references, theme, navigation, and unsaved-change detection.
 - `js/02-hierarchy.js` — Logic step parent/child order, numbering, and child creation.
 - `js/02-logic-rendering.js` — Base `renderAll()` and the targeted render scheduler. Later scripts may replace individual surfaces.
+- `js/02b-developer-formulas.js` — The only Developer Logic generator. Defines `developerLogic(step)`, which writes approximate Excel, SQL Server, and Python (pandas) formulas for each logic step.
 - `js/03-capture-actions.js` — Reads the open controls back into `state` before save, export, and autosave.
 - `js/04-persistence.js` — IndexedDB crash recovery. PostgreSQL is the shared store.
 - `js/05-tutorials.js` — Positions tutorial cards and handles tutorial navigation. Tutorial step lists live in `tutorials/`.
@@ -1218,6 +1230,7 @@ These run against a deployed Preview URL, separate from `npm test`.
 - `tests/audit-assignments-sources.spec.js` — Assigns analysts and selects sources.
 - `tests/audit-creation-overview.spec.js` — Creates an audit and edits Audit Overview.
 - `tests/audit-exports.spec.js` — Export actions.
+- `test/developer-logic.test.js` — Developer Logic formulas: labels, IF/ELSE folding, condition groups and precedence, escaping, rounding, joins, unions, and every step type.
 - `test/export-page.test.js` — Export page markup, format registry, file names, save-before-export, locked exports, and clipboard copy.
 - `test/audit-lock-repository.test.js` — Lock and unlock transactions, including pending and approved audits.
 - `tests/audit-issues-readiness.spec.js` — Audit Issues and readiness.

@@ -357,7 +357,7 @@ renderLogicTablePreviewRows =
               typeof developerLogic === "function"
                 ? developerLogic(entry.step)
                 : "";
-            return `<tr class="${state.selectedStepId === entry.step.id ? "selected-row" : ""}" data-table-step-id="${esc(entry.step.id)}"><td>${esc(entry.number)}</td><td>${esc(atlasStepTypeLabel ? atlasStepTypeLabel(entry.step) : entry.step.step_type || "Logic Step")}</td><td>${renderLogicWithPills(analystLogic(entry.step))}</td><td>${esc(dev)}</td><td>${entry.step.enabled === false ? '<span class="badge red">Disabled</span>' : '<span class="badge blue">Active</span>'}</td></tr>`;
+            return `<tr class="${state.selectedStepId === entry.step.id ? "selected-row" : ""}" data-table-step-id="${esc(entry.step.id)}"><td>${esc(entry.number)}</td><td>${esc(atlasStepTypeLabel ? atlasStepTypeLabel(entry.step) : entry.step.step_type || "Logic Step")}</td><td>${renderLogicWithPills(analystLogic(entry.step))}</td><td class="developer-logic-cell">${esc(dev)}</td><td>${entry.step.enabled === false ? '<span class="badge red">Disabled</span>' : '<span class="badge blue">Active</span>'}</td></tr>`;
           })
           .join("")
       : '<tr><td colspan="5" class="hint">No logic steps yet.</td></tr>';
