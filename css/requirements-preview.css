@@ -294,4 +294,11 @@ body:has(#page-preview.active) {
   #page-preview .preview-pane .section-title {
     display: none;
   }
-}/* ATLAS-SOURCE-UNIT:u1373:END */
+}/* ATLAS-SOURCE-UNIT:u1373:END *//* ATLAS-SOURCE-UNIT:u1630:BEGIN */
+
+/* Developer Logic keeps its Excel / SQL Server / Python line breaks. */
+.developer-logic-cell {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* ATLAS-SOURCE-UNIT:u1630:END */

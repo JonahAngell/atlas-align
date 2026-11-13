@@ -9140,6 +9140,13 @@ body:has(#page-preview.active) .content > .page:not(#page-preview) {
     display: none;
   }
 }
+
+/* Developer Logic keeps its Excel / SQL Server / Python line breaks. */
+.developer-logic-cell {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 #page-steps .logic-builder-layout,
 #page-steps .logic-builder-layout > *,
 #page-steps .logic-editor-form,
