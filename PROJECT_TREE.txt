@@ -156,6 +156,7 @@
 │   ├── 01-state-dom.js
 │   ├── 02-hierarchy.js
 │   ├── 02-logic-rendering.js
+│   ├── 02b-developer-formulas.js
 │   ├── 03-capture-actions.js
 │   ├── 04-persistence.js
 │   ├── 05-tutorials.js
@@ -503,6 +504,7 @@
 │   ├── boot-loader.test.js
 │   ├── custom-source.test.js
 │   ├── deep-links.test.js
+│   ├── developer-logic.test.js
 │   ├── display-fields-bulk.test.js
 │   ├── export-logic-indent.test.js
 │   ├── export-page.test.js
