@@ -114,6 +114,20 @@ function atlasAutoMatchSourceReplacement(oldField, candidates) {
   return unique(keyed);
 }
 
+// Bullet-group helpers come from 07-phrase-catalog.js; plain lists still work
+// when this module is loaded on its own.
+function atlasReplacementLeaves(nodes) {
+  return typeof atlasConditionLeaves === "function"
+    ? atlasConditionLeaves(nodes)
+    : nodes || [];
+}
+
+function atlasReplacementMapLeaves(nodes, fn) {
+  return typeof atlasMapConditionLeaves === "function"
+    ? atlasMapConditionLeaves(nodes, fn)
+    : (nodes || []).map(fn);
+}
+
 function atlasReplacementConditions(step) {
   const params = step?.params || {};
   if (params.conditions_json) {
@@ -280,18 +294,20 @@ function atlasCollectSourceReplacementRows(audit, oldSource, metadata = {}) {
     atlasStepReplacementPairs(step).forEach((pair) =>
       add(pair.source, pair.field),
     );
-    atlasReplacementConditions(step).forEach((condition) => {
-      add(condition.sourceFile, condition.fieldName || condition.field);
-      add(condition.compareSourceFile, condition.compareFieldName);
-      atlasReplacementMathOps(condition.compareMathJson).forEach(
-        (operation) => {
-          add(
-            operation.operandSourceFile || operation.operand_source_file,
-            operation.operandFieldName || operation.operand_field_name,
-          );
-        },
-      );
-    });
+    atlasReplacementLeaves(atlasReplacementConditions(step)).forEach(
+      (condition) => {
+        add(condition.sourceFile, condition.fieldName || condition.field);
+        add(condition.compareSourceFile, condition.compareFieldName);
+        atlasReplacementMathOps(condition.compareMathJson).forEach(
+          (operation) => {
+            add(
+              operation.operandSourceFile || operation.operand_source_file,
+              operation.operandFieldName || operation.operand_field_name,
+            );
+          },
+        );
+      },
+    );
     const params = step.params || {};
     ["source_math_json", "then_math_json"].forEach((key) => {
       atlasReplacementMathOps(params[key]).forEach((operation) => {
@@ -392,43 +408,47 @@ function atlasRewriteSourceReplacementReferences(
       );
     }
     let conditionsChanged = false;
-    const conditions = atlasReplacementConditions(step).map((condition) => {
-      const next = { ...condition };
-      if (atlasReplacementSourceMatches(next.sourceFile, identity)) {
-        const destination = destinationFor(next.fieldName || next.field);
-        if (destination) {
-          next.sourceFile = destination.sourceKey;
-          next.sourceAlias = destination.alias;
-          next.fieldName = destination.field;
-          if ("field" in next) next.field = destination.field;
-          conditionsChanged = true;
+    const conditions = atlasReplacementMapLeaves(
+      atlasReplacementConditions(step),
+      (condition) => {
+        const next = { ...condition };
+        if (atlasReplacementSourceMatches(next.sourceFile, identity)) {
+          const destination = destinationFor(next.fieldName || next.field);
+          if (destination) {
+            next.sourceFile = destination.sourceKey;
+            next.sourceAlias = destination.alias;
+            next.fieldName = destination.field;
+            if ("field" in next) next.field = destination.field;
+            conditionsChanged = true;
+          }
         }
-      }
-      if (atlasReplacementSourceMatches(next.compareSourceFile, identity)) {
-        const destination = destinationFor(next.compareFieldName);
-        if (destination) {
-          next.compareSourceFile = destination.sourceKey;
-          next.compareSourceAlias = destination.alias;
-          next.compareFieldName = destination.field;
-          conditionsChanged = true;
+        if (atlasReplacementSourceMatches(next.compareSourceFile, identity)) {
+          const destination = destinationFor(next.compareFieldName);
+          if (destination) {
+            next.compareSourceFile = destination.sourceKey;
+            next.compareSourceAlias = destination.alias;
+            next.compareFieldName = destination.field;
+            conditionsChanged = true;
+          }
         }
-      }
-      if (next.compareMathJson) {
-        const rewritten = atlasRewriteMathReplacement(
-          next.compareMathJson,
-          identity,
-          destinationFor,
-        );
-        if (rewritten !== next.compareMathJson) {
-          next.compareMathJson = rewritten;
-          conditionsChanged = true;
+        if (next.compareMathJson) {
+          const rewritten = atlasRewriteMathReplacement(
+            next.compareMathJson,
+            identity,
+            destinationFor,
+          );
+          if (rewritten !== next.compareMathJson) {
+            next.compareMathJson = rewritten;
+            conditionsChanged = true;
+          }
         }
-      }
-      return next;
-    });
+        return next;
+      },
+    );
     if (conditionsChanged) {
       params.conditions_json = JSON.stringify(conditions);
-      if (Array.isArray(step.conditions)) step.conditions = conditions;
+      if (Array.isArray(step.conditions))
+        step.conditions = atlasReplacementLeaves(conditions);
     }
     ["source_math_json", "then_math_json"].forEach((key) => {
       if (!params[key]) return;

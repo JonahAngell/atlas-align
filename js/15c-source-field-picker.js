@@ -59,7 +59,8 @@ function conditionsForLiveEditor(step) {
 }
 function writeLiveConditions(step, conditions) {
   step.params = step.params || {};
-  step.conditions = conditions.map((condition) => ({
+  conditions = atlasNormalizeConditionTree(conditions);
+  step.conditions = atlasConditionLeaves(conditions).map((condition) => ({
     id: condition.id || uid("cond"),
     field: condition.fieldName || condition.field || "",
     operator: condition.operator || "is equal to",
@@ -87,21 +88,22 @@ document.addEventListener(
         step.params.source_alias =
           sourceAliasFor?.(liveParam.value) || liveParam.value;
         const conditions = conditionsForLiveEditor(step);
-        conditions[0].sourceFile = liveParam.value;
-        conditions[0].sourceAlias = step.params.source_alias;
+        atlasConditionLeaves(conditions)[0].sourceFile = liveParam.value;
+        atlasConditionLeaves(conditions)[0].sourceAlias =
+          step.params.source_alias;
         writeLiveConditions(step, conditions);
       }
       if (key === "field_name") {
         step.field = liveParam.value;
         const conditions = conditionsForLiveEditor(step);
-        conditions[0].fieldName = liveParam.value;
+        atlasConditionLeaves(conditions)[0].fieldName = liveParam.value;
         writeLiveConditions(step, conditions);
       }
     }
     if (liveCondition) {
       const key = liveCondition.dataset.liveCondition;
       const conditions = conditionsForLiveEditor(step);
-      conditions[0][key] =
+      atlasConditionLeaves(conditions)[0][key] =
         key === "compareValue"
           ? valuesToLines(liveCondition.value)
           : liveCondition.value;
@@ -135,7 +137,9 @@ document.addEventListener(
     }
     if (liveField.dataset.liveCondition === "compareValue") {
       const conditions = conditionsForLiveEditor(step);
-      conditions[0].compareValue = valuesToLines(liveField.value);
+      atlasConditionLeaves(conditions)[0].compareValue = valuesToLines(
+        liveField.value,
+      );
       writeLiveConditions(step, conditions);
       step.params.compare_value = valuesToLines(liveField.value);
     }

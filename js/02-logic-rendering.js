@@ -975,7 +975,7 @@ const ATLAS_LOGIC_LINE_BREAK_MARKER = "\u2028";
 function renderStepCardLogic(text) {
   if (!state.splitLogicConnectors) return renderLogicWithPills(text);
   const connector = new RegExp(
-    `\\s+\\b(${ATLAS_LOGIC_LINE_BREAK_CONNECTORS.join("|")})\\b\\s+`,
+    `[ \\t]+\\b(${ATLAS_LOGIC_LINE_BREAK_CONNECTORS.join("|")})\\b[ \\t]+`,
     "g",
   );
   const marked = String(text || "")
@@ -1371,14 +1371,13 @@ function ifThenDeveloperLogic(step) {
     return "";
   const conditions = parseStepConditions(step);
   if (!conditions.length) return "";
-  const conditionJoin = (condition, index, options) =>
-    `${index === 0 ? "IF" : condition.connector || "AND"} ${developerConditionExpression(condition, options)}`;
-  const excelLogic = conditions
-    .map((condition, index) => conditionJoin(condition, index, { sql: false }))
-    .join(" ");
-  const sqlLogic = conditions
-    .map((condition, index) => conditionJoin(condition, index, { sql: true }))
-    .join(" ");
+  // Bullet groups become parenthesized groups: IF a AND (b OR c).
+  const excelLogic = conditionTreeExpression(conditions, (condition) =>
+    developerConditionExpression(condition, { sql: false }),
+  );
+  const sqlLogic = conditionTreeExpression(conditions, (condition) =>
+    developerConditionExpression(condition, { sql: true }),
+  );
   const displayNote = ifThenDisplayDeveloperNote(step);
   const block = developerFormulaBlock(excelLogic, sqlLogic);
   return displayNote ? `${block}\n\n${displayNote}` : block;

@@ -329,7 +329,7 @@ function qtestOutputColumns(entries) {
  * @param {Set<string>} outputColumns - Lowercased produced column names.
  */
 function qtestConditionUsesOutputColumn(step, outputColumns) {
-  const fields = parseStepConditions(step).flatMap((condition) => [
+  const fields = stepConditionLeaves(step).flatMap((condition) => [
     condition.fieldName,
     condition.compareFieldName,
   ]);

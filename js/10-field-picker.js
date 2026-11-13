@@ -664,10 +664,11 @@ function applyLibraryFieldToSelectedStep(sourceFile, fieldName) {
   step.params.source_alias = sourceAliasFor?.(sourceFile) || sourceFile;
   step.params.field_name = fieldName;
   const conditions = parseStepConditions?.(step) || [];
-  if (step.step_type === "if_then" && conditions.length) {
-    conditions[0].sourceFile = sourceFile;
-    conditions[0].sourceAlias = step.params.source_alias;
-    conditions[0].fieldName = fieldName;
+  const firstCondition = atlasConditionLeaves(conditions)[0];
+  if (step.step_type === "if_then" && firstCondition) {
+    firstCondition.sourceFile = sourceFile;
+    firstCondition.sourceAlias = step.params.source_alias;
+    firstCondition.fieldName = fieldName;
     step.params.conditions_json = JSON.stringify(conditions);
   }
   atlasMarkFieldPickerDirty?.();

@@ -35,7 +35,7 @@ function atlasCaptureGuidedFields(root, step) {
   });
   const conditionRows = [...root.querySelectorAll(".guided-condition-row")];
   if (conditionRows.length) {
-    const conditions = conditionRows.map((row, index) => {
+    const readLeaf = (row, index) => {
       const get = (field) =>
         row.querySelector(`[data-condition-field="${field}"]`)?.value || "";
       const sourceFile = get("sourceFile");
@@ -55,14 +55,11 @@ function atlasCaptureGuidedFields(root, step) {
         compareFieldName: get("compareFieldName"),
         expression: get("expression"),
       };
-    });
-    step.params.conditions_json = JSON.stringify(conditions);
-    step.conditions = conditions.map((condition) => ({
-      id: condition.id,
-      field: condition.fieldName,
-      operator: condition.operator,
-      value: condition.compareValue,
-    }));
+    };
+    const conditions =
+      atlasReadConditionTreeFromDom(root, readLeaf) ||
+      conditionRows.map(readLeaf);
+    atlasWriteLiveEditorConditions(step, conditions);
   }
   if (step.params.source_file) {
     step.source = step.params.source_file;
@@ -291,7 +288,7 @@ atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithMath(
   atlasCaptureGuidedFieldsBeforeMathUpdate(root, step);
   const conditionRows = [...root.querySelectorAll(".guided-condition-row")];
   if (!conditionRows.length) return;
-  const conditions = conditionRows.map((row, index) => {
+  const readLeaf = (row, index) => {
     const get = (field) =>
       row.querySelector(`[data-condition-field="${field}"]`)?.value || "";
     const sourceFile = get("sourceFile");
@@ -318,7 +315,10 @@ atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithMath(
       expression: get("expression"),
       compareMathJson,
     };
-  });
+  };
+  const conditions =
+    atlasReadConditionTreeFromDom(root, readLeaf) ||
+    conditionRows.map(readLeaf);
   atlasWriteLiveEditorConditions(step, conditions);
 };
 // ATLAS-MATH-OPERATIONS-UPDATE:END
