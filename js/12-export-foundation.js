@@ -316,7 +316,10 @@ function qtestOutputColumns(entries) {
   };
   entries.forEach(({ step, action }) => {
     if (step.step_type === "create_column")
-      add(step.params?.column_name || step.field);
+      (typeof atlasCreatedColumnNames === "function"
+        ? atlasCreatedColumnNames(step)
+        : [step.params?.column_name || step.field]
+      ).forEach(add);
     if (action.kind === "display_text") add(action.outputColumn);
     if (action.kind === "set_column") add(action.targetColumn);
   });
@@ -476,6 +479,17 @@ function qtestExpectedOutcomes(step, action, { auditName, ifNumber }) {
       ];
     }
     case "create_column": {
+      const created =
+        typeof atlasCreatedColumnNames === "function"
+          ? atlasCreatedColumnNames(step)
+          : [];
+      if (created.length > 1 || params.string_operation === "split") {
+        const names = created.map(quotePhraseValue).join(", ") || '""';
+        return [
+          `Columns ${names} are created from the parts of the split source value.`,
+          `Each of columns ${names} holds the matching part of the source value, and parts that do not exist are blank.`,
+        ];
+      }
       const name = quotePhraseValue(params.column_name || step.field || "");
       const blank =
         (params.value_mode === "Static value" || !params.value_mode) &&

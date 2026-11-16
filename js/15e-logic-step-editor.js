@@ -414,7 +414,10 @@ function atlasCreatedColumnMatchForValue(value) {
   const step = (audit?.steps || []).find(
     (candidate) =>
       candidate?.step_type === "create_column" &&
-      String(candidate.params?.column_name || "").trim() === normalized,
+      (typeof atlasCreatedColumnNames === "function"
+        ? atlasCreatedColumnNames(candidate)
+        : [String(candidate.params?.column_name || "").trim()]
+      ).includes(normalized),
   );
   return step
     ? {
