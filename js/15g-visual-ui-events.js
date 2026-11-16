@@ -505,89 +505,112 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
   return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label></div>`;
 };
 
-/* Bullet groups: nested condition lists inside an IF / THEN rule. */
-const ATLAS_CONDITION_GROUP_CONNECTOR_OPTIONS = ["OR", "AND"];
+/* Condition lists: any condition can hold sub-conditions, shown as indented
+ * bullets under it. Every list uses one connector, set by the AND/OR toggle
+ * between its items. */
 
-function atlasConditionBulletMarker(index, groupConnector) {
-  return `<span class="condition-bullet" aria-hidden="true">•</span><span class="condition-bullet-label">${index === 0 ? "" : esc(groupConnector)}</span><input type="hidden" data-condition-field="connector" value="${esc(groupConnector)}">`;
+/**
+ * Returns the connector that joins the items of one condition list.
+ * @param {Array<any>} nodes - Items of the list.
+ * @param {string|null} groupConnector - Owning group's connector, or null at
+ *   the top level.
+ */
+function atlasConditionLevelConnector(nodes, groupConnector) {
+  if (groupConnector) return atlasConditionConnectorOf(groupConnector, "OR");
+  const second = (nodes || [])[1];
+  return second ? atlasConditionConnectorOf(second.connector) : "AND";
 }
 
 /**
- * Renders a condition row as a bullet: the connector picker becomes a bullet
- * marker that shows the group's connector.
- * @param {any} condition - Condition inside a group.
- * @param {number} index - Position inside the group.
- * @param {string} groupConnector - The group's AND/OR connector.
+ * Renders the AND/OR toggle between two items of a condition list. Every
+ * toggle in a list shows the same value; changing one changes the list.
+ * @param {string} connector - Current connector of the list.
+ * @param {string} listId - Owning group id, or "" for the top level.
+ * @param {number} position - Index of the item after the toggle.
  */
-function atlasRenderBulletConditionRow(condition, index, groupConnector) {
+function atlasConditionJoin(connector, listId, position) {
+  const option = (value) => {
+    const on = value === connector;
+    return `<button type="button" class="condition-join-option" role="radio" aria-checked="${on}" tabindex="${on ? 0 : -1}" data-join-value="${value}"><span>${value}</span></button>`;
+  };
+  return `<div class="condition-join" data-condition-join data-list-id="${esc(listId)}" data-join-position="${position}"><div class="condition-join-toggle" role="radiogroup" aria-label="Join conditions with">${option("AND")}${option("OR")}</div></div>`;
+}
+
+/**
+ * Renders one condition card: an IF badge on the rule's first condition, a
+ * bullet for sub-conditions, and Sub-condition / Delete actions.
+ * @param {any} condition - Condition to render.
+ * @param {number} index - Position in its list.
+ * @param {number} depth - Nesting depth (0 = top level).
+ * @param {string} connector - Connector of its list.
+ */
+function atlasRenderConditionListRow(condition, index, depth, connector) {
   const template = document.createElement("template");
-  template.innerHTML = renderConditionRow(condition, Math.max(index, 1));
+  template.innerHTML = renderConditionRow(
+    condition,
+    depth === 0 ? index : Math.max(index, 1),
+  );
   const row = template.content.querySelector(".guided-condition-row");
   const header = row?.querySelector(".condition-row-header");
   if (!row || !header) return template.innerHTML;
-  row.classList.add("is-bullet");
-  header.classList.add("condition-bullet-header");
-  header.innerHTML = atlasConditionBulletMarker(index, groupConnector);
+  const first = depth === 0 && index === 0;
+  header.innerHTML = `${first ? '<span class="condition-lead">IF</span>' : ""}<input type="hidden" data-condition-field="connector" value="${esc(first ? "IF" : connector)}">`;
+  header.hidden = !first;
+  if (depth > 0) row.classList.add("is-bullet");
+  const remove = row.querySelector(":scope > [data-guided-delete-condition]");
+  if (remove) {
+    const actions = document.createElement("div");
+    actions.className = "condition-row-actions";
+    actions.innerHTML = `<button type="button" class="secondary small" data-guided-add-sub="${esc(row.dataset.conditionId || "")}">+ Sub-condition</button>`;
+    remove.replaceWith(actions);
+    remove.textContent = "Delete";
+    actions.append(remove);
+  }
   return template.innerHTML;
 }
 
 /**
- * Renders a bullet group with its own AND/OR choice and add/delete actions.
+ * Renders a group's items as indented bullets. A group that follows a
+ * condition belongs to it and grows from that condition's Sub-condition
+ * button; a group with no condition before it gets an Add Bullet button.
  * @param {any} group - Group node.
- * @param {number} index - Position in the parent list.
- * @param {number} depth - Nesting depth (0 = top level).
- * @param {string|null} parentConnector - Enclosing group's connector, or null.
+ * @param {number} depth - Nesting depth of the list holding the group.
+ * @param {boolean} attached - Whether a condition comes right before it.
  */
-function atlasRenderConditionGroup(group, index, depth, parentConnector) {
+function atlasRenderConditionGroup(group, depth, attached) {
   const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
   const id = group.id || uid("cond");
   const items = atlasConditionGroupItems(group);
-  const lead =
-    depth === 0
-      ? index === 0
-        ? `<span class="condition-group-lead">IF</span><input type="hidden" data-condition-field="connector" value="IF">`
-        : atlasChoiceControl({
-            options: ["AND", "OR"],
-            selected: atlasConditionConnectorOf(group.connector),
-            variant: "segment",
-            label: "Group connector",
-            attributes: 'data-condition-field="connector"',
-          })
-      : atlasConditionBulletMarker(index, parentConnector);
   const count = atlasConditionLeaves(items).length;
-  return `<div class="guided-condition-group" role="group" aria-label="Bullet group, ${count} condition${count === 1 ? "" : "s"} joined by ${inner}" data-condition-id="${esc(id)}" data-depth="${depth + 1}">
-    <div class="condition-group-header">
-      ${lead}
-      <div class="condition-group-connector"><span class="atlas-choice-heading">Bullets joined by</span>${atlasChoiceControl(
-        {
-          options: ATLAS_CONDITION_GROUP_CONNECTOR_OPTIONS,
-          selected: inner,
-          variant: "segment",
-          label: "Bullets joined by",
-          attributes: 'data-group-field="groupConnector"',
-        },
-      )}</div>
-      <button type="button" class="danger small" data-guided-delete-condition>Delete Group</button>
-    </div>
-    <div class="condition-guided-stack condition-group-items" data-condition-list data-group-id="${esc(id)}">${atlasRenderConditionNodes(items, depth + 1, inner)}</div>
-    <div class="row condition-group-actions"><button type="button" class="secondary small" data-guided-add-condition="${esc(inner)}" data-target-group="${esc(id)}">+ Bullet</button><button type="button" class="secondary small" data-guided-add-group="${esc(inner)}" data-target-group="${esc(id)}">+ Nested Group</button></div>
+  return `<div class="guided-condition-group" role="group" aria-label="Sub-conditions: ${count} joined by ${inner}" data-condition-id="${esc(id)}" data-depth="${depth + 1}">
+    <div class="condition-group-header" hidden><input type="hidden" data-condition-field="connector" value="${esc(atlasConditionConnectorOf(group.connector))}"><input type="hidden" data-group-field="groupConnector" value="${esc(inner)}"></div>
+    <div class="condition-guided-stack condition-group-items" data-condition-list data-group-id="${esc(id)}">${atlasRenderConditionNodes(items, depth + 1, inner, id)}</div>
+    ${attached ? "" : `<button type="button" class="condition-add-link" data-guided-add-condition="${esc(inner)}" data-target-group="${esc(id)}">+ Add Bullet</button>`}
   </div>`;
 }
 
 /**
- * Renders a list of condition nodes (rows and groups).
- * @param {Array<any>} nodes - Condition nodes.
+ * Renders a condition list with AND/OR toggles between its items.
+ * @param {Array<any>} nodes - Items of the list.
  * @param {number} depth - Nesting depth (0 = top level).
- * @param {string|null} groupConnector - Enclosing group's connector, or null.
+ * @param {string|null} groupConnector - Owning group's connector, or null.
+ * @param {string} listId - Owning group id, or "" for the top level.
  */
-function atlasRenderConditionNodes(nodes, depth, groupConnector) {
-  return (nodes || [])
+function atlasRenderConditionNodes(nodes, depth, groupConnector, listId = "") {
+  const list = nodes || [];
+  const connector = atlasConditionLevelConnector(list, groupConnector);
+  return list
     .map((node, index) => {
-      if (atlasIsConditionGroup(node))
-        return atlasRenderConditionGroup(node, index, depth, groupConnector);
-      return depth === 0
-        ? renderConditionRow(node, index)
-        : atlasRenderBulletConditionRow(node, index, groupConnector);
+      const join =
+        index > 0 ? atlasConditionJoin(connector, listId, index) : "";
+      const body = atlasIsConditionGroup(node)
+        ? atlasRenderConditionGroup(
+            node,
+            depth,
+            index > 0 && !atlasIsConditionGroup(list[index - 1]),
+          )
+        : atlasRenderConditionListRow(node, index, depth, connector);
+      return join + body;
     })
     .join("");
 }
@@ -616,7 +639,8 @@ function atlasRenderIfThenTabbedBuilder(step) {
     conditions,
     0,
     null,
-  )}</div><div class="row condition-root-actions"><button type="button" class="secondary small" data-guided-add-condition="AND">+ AND</button><button type="button" class="secondary small" data-guided-add-condition="OR">+ OR</button><button type="button" class="secondary small" data-guided-add-group="AND" title="Add a bullet list joined to the rule by AND">+ AND Group</button><button type="button" class="secondary small" data-guided-add-group="OR" title="Add a bullet list joined to the rule by OR">+ OR Group</button></div>`;
+    "",
+  )}</div><div class="row condition-root-actions"><button type="button" class="secondary small" data-guided-add-condition="${atlasConditionLevelConnector(conditions, null)}">+ Add Condition</button></div>`;
   const actionHtml = atlasRenderThenActionBuilder(p);
   return `
     <div class="guided-builder if-then-tabbed-builder">
@@ -1288,99 +1312,9 @@ function atlasRefreshConditionSurfaces() {
   renderValidationPanel?.();
 }
 
-const ATLAS_MIXED_CONNECTOR_MESSAGE =
-  "Each condition list uses one connector, AND or OR. To mix them, add a group: its bullets can use the other connector.";
-
 /** Returns the condition row or bullet group that contains an element. */
 function atlasConditionNodeElement(element) {
   return element?.closest?.(".guided-condition-row, .guided-condition-group");
-}
-
-/** Returns the direct rows and groups of the list that holds a node element. */
-function atlasConditionSiblingElements(nodeElement) {
-  const list = nodeElement?.parentElement;
-  return list
-    ? [...list.children].filter((child) =>
-        child.matches(".guided-condition-row, .guided-condition-group"),
-      )
-    : [];
-}
-
-/** Reads a top-level node's connector, whether it is a row or a group. */
-function atlasConditionNodeConnector(nodeElement) {
-  const scope = nodeElement.matches(".guided-condition-group")
-    ? nodeElement.querySelector(":scope > .condition-group-header")
-    : nodeElement;
-  return atlasConditionConnectorValue(
-    scope?.querySelector('[data-condition-field="connector"]')?.value,
-  );
-}
-
-document.addEventListener(
-  "change",
-  (event) => {
-    const groupConnector = event.target.closest?.(
-      '.guided-condition-group [data-group-field="groupConnector"]',
-    );
-    if (groupConnector) {
-      groupConnector.value = atlasConditionConnectorOf(
-        groupConnector.value,
-        "OR",
-      );
-      atlasSyncChoiceSelection?.(groupConnector);
-      atlasCommitLiveEditor?.({ rerender: true });
-      return;
-    }
-    const connector = event.target.closest?.(
-      '.guided-condition-row [data-condition-field="connector"], .guided-condition-group [data-condition-field="connector"]',
-    );
-    if (!connector) return;
-    const node = atlasConditionNodeElement(connector);
-    const siblings = atlasConditionSiblingElements(node);
-    const index = siblings.indexOf(node);
-    if (index <= 0) {
-      connector.value = "IF";
-      atlasSyncChoiceSelection?.(connector);
-      return;
-    }
-    const nextConnector = atlasConditionConnectorValue(connector.value);
-    const conflict = siblings
-      .filter((sibling, position) => position > 0 && sibling !== node)
-      .some(
-        (sibling) => atlasConditionNodeConnector(sibling) !== nextConnector,
-      );
-    if (conflict) {
-      const root = connector.closest("[data-live-editor-step-id]");
-      const step = atlasStepForConditionEditor(root);
-      const stored = atlasFindConditionNode(
-        parseStepConditions?.(step) || [],
-        node.dataset.conditionId,
-      )?.node;
-      connector.value = atlasConditionConnectorValue(stored?.connector);
-      atlasSyncChoiceSelection?.(connector);
-      status?.(ATLAS_MIXED_CONNECTOR_MESSAGE, "warn");
-      return;
-    }
-    connector.value = nextConnector;
-    atlasSyncChoiceSelection?.(connector);
-    atlasCommitLiveEditor?.({ rerender: true });
-  },
-  true,
-);
-
-/** Builds a new bullet group holding two empty bullets. */
-function atlasNewConditionGroup(step, connector, groupConnector) {
-  const inner = atlasConditionConnectorOf(groupConnector, "OR");
-  return {
-    id: uid("cond"),
-    conditionType: "group",
-    connector,
-    groupConnector: inner,
-    items: [
-      atlasDefaultConditionForConnector(step, inner),
-      atlasDefaultConditionForConnector(step, inner),
-    ],
-  };
 }
 
 /** Moves focus to the first control of a condition node after a re-render. */
@@ -1395,66 +1329,198 @@ function atlasFocusConditionNode(nodeId) {
   });
 }
 
+/** Moves focus back to a list's AND/OR toggle after a re-render. */
+function atlasFocusConditionJoin(listId, position) {
+  requestAnimationFrame(() => {
+    document
+      .querySelector(
+        `[data-live-editor-step-id] [data-condition-join][data-list-id="${CSS.escape(listId)}"][data-join-position="${CSS.escape(String(position))}"] [aria-checked="true"]`,
+      )
+      ?.focus();
+  });
+}
+
+/**
+ * Saves the editor's pending input and returns the step with its conditions,
+ * or null when the step cannot be edited.
+ * @param {Element} element - Element inside the live editor.
+ */
+function atlasConditionEditContext(element) {
+  const root = element.closest("[data-live-editor-step-id]");
+  const step = atlasStepForConditionEditor(root);
+  if (!step || step.autoGeneratedReference) return null;
+  atlasCommitLiveEditor?.({ rerender: false });
+  return { step, conditions: parseStepConditions?.(step) || [] };
+}
+
+/** Writes an edited condition tree and refreshes the editor. */
+function atlasSaveConditionEdit(step, conditions, message) {
+  atlasWriteConditionList(step, conditions);
+  atlasRefreshConditionSurfaces();
+  scheduleAutosave?.();
+  if (message) status?.(message, "ok");
+}
+
+/**
+ * Returns the item list a list id names ("" is the top level) and its group.
+ * @param {Array<any>} conditions - Condition tree.
+ * @param {string} listId - Group id, or "".
+ */
+function atlasConditionListById(conditions, listId) {
+  if (!listId) return { list: conditions, group: null };
+  const group = atlasFindConditionNode(conditions, listId)?.node;
+  if (!atlasIsConditionGroup(group)) return null;
+  group.items = atlasConditionGroupItems(group);
+  return { list: group.items, group };
+}
+
+/** Sets one connector for every item of a list. */
+function atlasSetConditionListConnector(target, connector) {
+  if (target.group) target.group.groupConnector = connector;
+  target.list.forEach((node, index) => {
+    if (target.group || index > 0) node.connector = connector;
+  });
+}
+
+/**
+ * Adds a sub-condition under a condition. The first one starts a sub-list
+ * right after the condition, joined by the other connector; later ones
+ * extend that list.
+ * @returns {any|null} The new condition, or null when nothing was added.
+ */
+function atlasAddSubCondition(step, conditions, conditionId) {
+  const found = atlasFindConditionNode(conditions, conditionId);
+  if (!found || atlasIsConditionGroup(found.node)) return null;
+  const next = found.list[found.index + 1];
+  if (atlasIsConditionGroup(next)) {
+    const leaf = atlasDefaultConditionForConnector(step, next.groupConnector);
+    next.items = [...atlasConditionGroupItems(next), leaf];
+    return leaf;
+  }
+  const level = found.parent
+    ? atlasConditionConnectorOf(found.parent.groupConnector, "OR")
+    : atlasConditionLevelConnector(found.list, null);
+  const inner = level === "AND" ? "OR" : "AND";
+  const leaf = atlasDefaultConditionForConnector(step, inner);
+  found.list.splice(found.index + 1, 0, {
+    id: uid("cond"),
+    conditionType: "group",
+    connector: level,
+    groupConnector: inner,
+    items: [leaf],
+  });
+  return leaf;
+}
+
+/**
+ * Deletes a condition. Its sub-conditions are kept: they take its place when
+ * it was alone in its list, and otherwise stay as their own bullet list.
+ * @returns {boolean} Whether the condition was found.
+ */
+function atlasDeleteConditionNode(conditions, conditionId) {
+  const found = atlasFindConditionNode(conditions, conditionId);
+  if (!found) return false;
+  const { list, index, parent } = found;
+  const next = list[index + 1];
+  if (atlasIsConditionGroup(found.node) || !atlasIsConditionGroup(next)) {
+    list.splice(index, 1);
+    return true;
+  }
+  const inner = atlasConditionConnectorOf(next.groupConnector, "OR");
+  const items = atlasConditionGroupItems(next);
+  if (list.length === 2) {
+    list.splice(0, 2, ...items.map((item) => ({ ...item, connector: inner })));
+    if (parent) parent.groupConnector = inner;
+  } else if (items.length === 1) {
+    list.splice(index, 2, { ...items[0], connector: next.connector });
+  } else list.splice(index, 1);
+  return true;
+}
+
+document.addEventListener(
+  "keydown",
+  (event) => {
+    const option = event.target.closest?.(".condition-join-option");
+    if (
+      !option ||
+      !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)
+    )
+      return;
+    event.preventDefault();
+    option
+      .closest(".condition-join-toggle")
+      ?.querySelector('[aria-checked="false"]')
+      ?.click();
+  },
+  true,
+);
+
 document.addEventListener(
   "click",
   (event) => {
-    const add = event.target.closest?.(
-      "[data-guided-add-condition], [data-guided-add-group]",
-    );
+    const joinOption = event.target.closest?.("[data-join-value]");
+    if (joinOption) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (joinOption.getAttribute("aria-checked") === "true") return;
+      const join = joinOption.closest("[data-condition-join]");
+      const context = join && atlasConditionEditContext(joinOption);
+      if (!context) return;
+      const listId = join.dataset.listId || "";
+      const target = atlasConditionListById(context.conditions, listId);
+      if (!target) return;
+      atlasSetConditionListConnector(
+        target,
+        atlasConditionConnectorValue(joinOption.dataset.joinValue),
+      );
+      atlasSaveConditionEdit(context.step, context.conditions);
+      atlasFocusConditionJoin(listId, join.dataset.joinPosition);
+      return;
+    }
+
+    const addSub = event.target.closest?.("[data-guided-add-sub]");
+    if (addSub) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const context = atlasConditionEditContext(addSub);
+      if (!context) return;
+      const leaf = atlasAddSubCondition(
+        context.step,
+        context.conditions,
+        addSub.dataset.guidedAddSub,
+      );
+      if (!leaf) return;
+      atlasSaveConditionEdit(
+        context.step,
+        context.conditions,
+        "Added sub-condition.",
+      );
+      atlasFocusConditionNode(leaf.id);
+      return;
+    }
+
+    const add = event.target.closest?.("[data-guided-add-condition]");
     if (add) {
       event.preventDefault();
       event.stopImmediatePropagation();
-      const root = add.closest("[data-live-editor-step-id]");
-      const step = atlasStepForConditionEditor(root);
-      if (!step || step.autoGeneratedReference) return;
-      atlasCommitLiveEditor?.({ rerender: false });
-      const addingGroup = add.hasAttribute("data-guided-add-group");
-      const connector = atlasConditionConnectorValue(
-        addingGroup
-          ? add.dataset.guidedAddGroup
-          : add.dataset.guidedAddCondition,
+      const context = atlasConditionEditContext(add);
+      if (!context) return;
+      const target = atlasConditionListById(
+        context.conditions,
+        add.dataset.targetGroup || "",
       );
-      const conditions = parseStepConditions?.(step) || [];
-      const targetId = add.dataset.targetGroup || "";
-      let list = conditions;
-      if (targetId) {
-        const target = atlasFindConditionNode(conditions, targetId)?.node;
-        if (!atlasIsConditionGroup(target)) return;
-        target.items = atlasConditionGroupItems(target);
-        list = target.items;
-      } else {
-        const existingConnectors = conditions
-          .slice(1)
-          .map((condition) =>
-            atlasConditionConnectorValue(condition.connector),
-          );
-        if (
-          existingConnectors.length &&
-          existingConnectors.some((value) => value !== connector)
-        ) {
-          status?.(ATLAS_MIXED_CONNECTOR_MESSAGE, "warn");
-          return;
-        }
-      }
-      // A nested group defaults to the other connector, which is why it exists.
-      const node = addingGroup
-        ? atlasNewConditionGroup(
-            step,
-            connector,
-            targetId ? (connector === "OR" ? "AND" : "OR") : "OR",
-          )
-        : atlasDefaultConditionForConnector(step, connector);
-      list.push(node);
-      atlasWriteConditionList(step, conditions);
-      atlasRefreshConditionSurfaces();
-      scheduleAutosave?.();
-      atlasFocusConditionNode(node.id);
-      status?.(
-        addingGroup
-          ? `Added ${targetId ? "nested group" : `${connector} group`}.`
-          : `Added ${targetId ? "bullet" : `${connector} condition`}.`,
-        "ok",
+      if (!target) return;
+      const connector = target.group
+        ? atlasConditionConnectorOf(target.group.groupConnector, "OR")
+        : atlasConditionLevelConnector(target.list, null);
+      const leaf = atlasDefaultConditionForConnector(context.step, connector);
+      target.list.push(leaf);
+      atlasSaveConditionEdit(
+        context.step,
+        context.conditions,
+        target.group ? "Added bullet." : "Added condition.",
       );
+      atlasFocusConditionNode(leaf.id);
       return;
     }
 
@@ -1463,24 +1529,16 @@ document.addEventListener(
     event.preventDefault();
     event.stopImmediatePropagation();
     const node = atlasConditionNodeElement(remove);
-    const root = remove.closest("[data-live-editor-step-id]");
-    const step = atlasStepForConditionEditor(root);
-    if (!step || step.autoGeneratedReference || !node) return;
-    atlasCommitLiveEditor?.({ rerender: false });
-    const conditions = parseStepConditions?.(step) || [];
-    const found = atlasFindConditionNode(conditions, node.dataset.conditionId);
-    if (!found) return;
-    const removedGroup = atlasIsConditionGroup(found.node);
-    found.list.splice(found.index, 1);
-    const remaining = atlasNormalizeConditionTree(conditions);
+    const context = node && atlasConditionEditContext(remove);
+    if (!context) return;
+    if (!atlasDeleteConditionNode(context.conditions, node.dataset.conditionId))
+      return;
+    const remaining = atlasNormalizeConditionTree(context.conditions);
     if (!atlasConditionLeaves(remaining).length) {
       status?.("An IF / THEN rule must keep at least one condition.", "warn");
       return;
     }
-    atlasWriteConditionList(step, remaining);
-    atlasRefreshConditionSurfaces();
-    scheduleAutosave?.();
-    status?.(removedGroup ? "Deleted group." : "Deleted condition.", "ok");
+    atlasSaveConditionEdit(context.step, remaining, "Deleted condition.");
   },
   true,
 );

@@ -4760,90 +4760,187 @@ body.dark .created-column-token {
 }
 /* ATLAS-SOURCE-UNIT:u1605:END */ /* ATLAS-SOURCE-UNIT:u1616:BEGIN */
 
-/* Condition bullet groups: nested AND/OR lists inside an IF / THEN rule. */
-.guided-condition-group {
-  display: grid;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  border-radius: 10px;
-  background: var(--surface);
-  animation: atlas-sort-row-enter 160ms ease-out;
+/* Condition lists: sub-conditions sit under their condition as indented
+   bullets, and a slim AND/OR toggle joins the items of each list. */
+#page-steps .condition-guided-stack[data-condition-list] {
+  gap: 0;
 }
 
 /* ATLAS-SOURCE-UNIT:u1616:END */ /* ATLAS-SOURCE-UNIT:u1617:BEGIN */
-.guided-condition-group .guided-condition-group {
-  border-left-color: var(--accent2);
+.guided-condition-group {
+  display: grid;
+  gap: 0.25rem;
+  margin-left: 1rem;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid var(--border);
+  animation: atlas-sort-row-enter 160ms ease-out;
+}
+
+/* Indentation stops growing after three levels so deep lists stay usable. */
+.guided-condition-group .guided-condition-group .guided-condition-group {
+  margin-left: 0;
 }
 
 /* ATLAS-SOURCE-UNIT:u1617:END */ /* ATLAS-SOURCE-UNIT:u1618:BEGIN */
-.condition-group-header {
+.guided-condition-row.is-bullet {
+  position: relative;
+}
+
+.guided-condition-row.is-bullet::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: calc(-1rem - 1px);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+  transform: translateX(-50%);
+}
+
+/* ATLAS-SOURCE-UNIT:u1618:END */ /* ATLAS-SOURCE-UNIT:u1619:BEGIN */
+.condition-row-header[hidden],
+.condition-group-header[hidden] {
+  display: none;
+}
+
+.condition-lead {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* ATLAS-SOURCE-UNIT:u1619:END */ /* ATLAS-SOURCE-UNIT:u1620:BEGIN */
+.condition-join {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1618:END */ /* ATLAS-SOURCE-UNIT:u1619:BEGIN */
-.condition-group-header > .danger {
-  margin-left: auto;
-  min-height: 44px;
+.condition-join::before,
+.condition-join::after {
+  content: "";
+  border-top: 1px solid var(--border);
 }
 
-/* ATLAS-SOURCE-UNIT:u1619:END */ /* ATLAS-SOURCE-UNIT:u1620:BEGIN */
-.condition-group-connector {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
+.condition-join::before {
+  width: 1rem;
+}
+
+.condition-join::after {
+  flex: 1;
 }
 
 /* ATLAS-SOURCE-UNIT:u1620:END */ /* ATLAS-SOURCE-UNIT:u1621:BEGIN */
-.condition-group-lead,
-.condition-bullet-label {
-  font-weight: 700;
-  font-size: 0.8rem;
-  color: var(--muted);
+.condition-join-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.15rem;
+}
+
+/* The visible track is shorter than the 44px hit area of its buttons. */
+.condition-join-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0.45rem 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
 }
 
 /* ATLAS-SOURCE-UNIT:u1621:END */ /* ATLAS-SOURCE-UNIT:u1622:BEGIN */
-.condition-group-items {
-  padding-left: 0.75rem;
+#page-steps .condition-join-option {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  cursor: pointer;
 }
 
-/* ATLAS-SOURCE-UNIT:u1622:END */ /* ATLAS-SOURCE-UNIT:u1623:BEGIN */ /* Indentation stops growing after three levels so deep groups stay usable. */
-.guided-condition-group[data-depth]
-  .guided-condition-group[data-depth]
-  .guided-condition-group
-  .condition-group-items {
-  padding-left: 0;
+.condition-join-option span {
+  display: block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1622:END */ /* ATLAS-SOURCE-UNIT:u1623:BEGIN */
+.condition-join-option:hover span {
+  background: var(--accent2);
+  color: var(--text);
+}
+
+.condition-join-option[aria-checked="true"] span {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.condition-join-option[aria-checked="true"]:hover span {
+  background: var(--primary2);
+}
+
+#page-steps .condition-join-option:focus-visible {
+  outline: none;
+}
+
+.condition-join-option:focus-visible span {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 /* ATLAS-SOURCE-UNIT:u1623:END */ /* ATLAS-SOURCE-UNIT:u1624:BEGIN */
-.condition-bullet-header {
+.condition-row-actions {
+  grid-column: 1 / -1;
   display: flex;
-  align-items: center;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.condition-row-actions button {
+  min-height: 44px;
 }
 
 /* ATLAS-SOURCE-UNIT:u1624:END */ /* ATLAS-SOURCE-UNIT:u1625:BEGIN */
-.condition-bullet {
-  font-weight: 700;
-  font-size: 1.25rem;
-  line-height: 1;
+#page-steps .condition-add-link {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.condition-add-link:hover {
+  text-decoration: underline;
 }
 
 /* ATLAS-SOURCE-UNIT:u1625:END */ /* ATLAS-SOURCE-UNIT:u1626:BEGIN */
-.condition-group-actions,
 .condition-root-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 /* ATLAS-SOURCE-UNIT:u1626:END */ /* ATLAS-SOURCE-UNIT:u1627:BEGIN */
-.condition-group-actions button,
 .condition-root-actions button {
   min-height: 44px;
 }
@@ -4858,6 +4955,10 @@ body.dark .created-column-token {
 @media (prefers-reduced-motion: reduce) {
   .guided-condition-group {
     animation: none;
+  }
+
+  .condition-join-option span {
+    transition: none;
   }
 }
 /* ATLAS-SOURCE-UNIT:u1629:END */

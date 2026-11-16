@@ -98,7 +98,7 @@ test("normalizing sets IF first, group connectors inside, and drops empty groups
   assert.equal(normalized[1].items[2].items[0].connector, "AND");
 });
 
-test("analyst text lists groups as indented bullets", () => {
+test("analyst text lists sub-conditions as indented bullets under their condition", () => {
   const ctx = loadPhraseCatalog();
   const text = ctx.conditionGroupPlain(stepWith(tree()));
   assert.equal(
@@ -106,8 +106,7 @@ test("analyst text lists groups as indented bullets", () => {
     [
       'IF file "sap" column "x" is equal to "y" AND:',
       '  • file "sap" column "z" is equal to "q" OR',
-      '  • file "sap" column "r" is equal to "l" OR',
-      "  • ALL OF:",
+      '  • file "sap" column "r" is equal to "l" OR:',
       '    • file "sap" column "a" is equal to "1" AND',
       '    • file "sap" column "b" is equal to "2"',
     ].join("\n"),
@@ -159,8 +158,7 @@ test("pasted bullet text imports as nested groups", () => {
   const text = [
     `IF ${cond("x", "y")} AND:`,
     `  • ${cond("z", "q")} OR`,
-    `  • ${cond("r", "l")} OR`,
-    "  • ALL OF:",
+    `  • ${cond("r", "l")} OR:`,
     `    • ${cond("a", "1")} AND`,
     `    • ${cond("b", "2")}`,
     "THEN do not display",
@@ -179,6 +177,21 @@ test("pasted bullet text imports as nested groups", () => {
   assert.equal(built[1].groupConnector, "OR");
   assert.equal(built[1].items[2].groupConnector, "AND");
   assert.equal(built[1].items[2].items[1].fieldName, "b");
+});
+
+test("pasted ALL OF bullets still import as a nested group", () => {
+  const { atlasParseImportedLogicText } = loadImport();
+  const text = [
+    `IF ${cond("x", "y")} AND:`,
+    `  • ${cond("z", "q")} OR`,
+    "  • ALL OF:",
+    `    • ${cond("a", "1")} AND`,
+    `    • ${cond("b", "2")}`,
+    "THEN do not display",
+  ].join("\n");
+  const result = atlasParseImportedLogicText(text);
+  assert.equal(result.ok, true, result.message);
+  assert.equal(result.conditionTree[1].items[1].groupConnector, "AND");
 });
 
 test("typed parentheses import as a group", () => {
@@ -206,4 +219,126 @@ test("step-card split view leaves bullet connectors on their own line", () => {
     source,
     /\[ \\\\t\]\+\\\\b\(\$\{ATLAS_LOGIC_LINE_BREAK_CONNECTORS/,
   );
+});
+
+test("a group with one item reads as a plain condition", () => {
+  const ctx = loadPhraseCatalog();
+  const single = [
+    leaf("c1", "x", "y", "IF"),
+    {
+      id: "g1",
+      conditionType: "group",
+      connector: "AND",
+      groupConnector: "OR",
+      items: [leaf("c2", "z", "q", "OR")],
+    },
+  ];
+  assert.equal(
+    ctx.conditionGroupPlain(stepWith(single)),
+    'IF file "sap" column "x" is equal to "y" AND file "sap" column "z" is equal to "q"',
+  );
+  assert.equal(
+    ctx.conditionTreeExpression(single, (item) => item.fieldName),
+    "IF x AND z",
+  );
+});
+
+function declarationFrom(source, name) {
+  const start = source.indexOf(`function ${name}(`);
+  assert.notEqual(start, -1, `${name} declaration should exist`);
+  const bodyStart = source.indexOf("{", source.indexOf(")", start));
+  let depth = 0;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    if (source[index] === "{") depth += 1;
+    if (source[index] === "}") depth -= 1;
+    if (depth === 0) return source.slice(start, index + 1);
+  }
+  throw new Error(`Unable to extract ${name}`);
+}
+
+function loadConditionEditing() {
+  const ctx = loadPhraseCatalog();
+  const source = read("js/15g-visual-ui-events.js");
+  let next = 0;
+  ctx.atlasDefaultConditionForConnector = (step, connector) =>
+    leaf(`new_${++next}`, "", "", connector);
+  vm.runInContext(
+    [
+      "atlasConditionLevelConnector",
+      "atlasConditionListById",
+      "atlasSetConditionListConnector",
+      "atlasAddSubCondition",
+      "atlasDeleteConditionNode",
+    ]
+      .map((name) => declarationFrom(source, name))
+      .join("\n"),
+    ctx,
+  );
+  return ctx;
+}
+
+test("the first sub-condition starts a list under its condition", () => {
+  const ctx = loadConditionEditing();
+  const conditions = [leaf("c1", "x", "y", "IF")];
+  const added = ctx.atlasAddSubCondition({}, conditions, "c1");
+  assert.equal(conditions.length, 2);
+  assert.equal(conditions[1].conditionType, "group");
+  assert.equal(conditions[1].connector, "AND");
+  assert.equal(conditions[1].groupConnector, "OR");
+  assert.equal(conditions[1].items[0].id, added.id);
+  ctx.atlasAddSubCondition({}, conditions, "c1");
+  assert.equal(conditions.length, 2);
+  assert.equal(conditions[1].items.length, 2);
+  assert.equal(conditions[1].items[1].connector, "OR");
+});
+
+test("a sub-condition of a bullet nests under that bullet", () => {
+  const ctx = loadConditionEditing();
+  const conditions = tree();
+  ctx.atlasAddSubCondition({}, conditions, "c2");
+  const nested = conditions[1].items[1];
+  assert.equal(nested.conditionType, "group");
+  assert.equal(nested.connector, "OR");
+  assert.equal(nested.groupConnector, "AND");
+});
+
+test("one toggle sets the connector for its whole list", () => {
+  const ctx = loadConditionEditing();
+  const conditions = [
+    leaf("c1", "x", "y", "IF"),
+    leaf("c2", "z", "q", "AND"),
+    leaf("c3", "r", "l", "AND"),
+  ];
+  ctx.atlasSetConditionListConnector(
+    ctx.atlasConditionListById(conditions, ""),
+    "OR",
+  );
+  assert.deepEqual(
+    conditions.map((item) => item.connector),
+    ["IF", "OR", "OR"],
+  );
+  const grouped = tree();
+  ctx.atlasSetConditionListConnector(
+    ctx.atlasConditionListById(grouped, "g1"),
+    "AND",
+  );
+  assert.equal(grouped[1].groupConnector, "AND");
+  assert.equal(grouped[1].items[0].connector, "AND");
+});
+
+test("deleting a condition keeps its sub-conditions", () => {
+  const ctx = loadConditionEditing();
+  const alone = tree();
+  ctx.atlasDeleteConditionNode(alone, "c1");
+  const lifted = ctx.atlasNormalizeConditionTree(alone);
+  assert.deepEqual([...lifted.map((item) => item.id)], ["c2", "c3", "g2"]);
+  assert.deepEqual(
+    [...lifted.map((item) => item.connector)],
+    ["IF", "OR", "OR"],
+  );
+
+  const withSibling = [...tree(), leaf("c6", "w", "v", "AND")];
+  ctx.atlasDeleteConditionNode(withSibling, "c1");
+  assert.equal(withSibling[0].id, "g1");
+  assert.equal(withSibling.length, 2);
 });
