@@ -133,7 +133,6 @@ const e = {
   status: $("status"),
 
   // Preview configuration controls.
-  previewStyle: $("previewStyle"),
   includeNotes: $("includeNotesToggle"),
   completeStatements: $("completeStatementsToggle"),
 

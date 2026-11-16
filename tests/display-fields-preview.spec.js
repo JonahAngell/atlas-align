@@ -20,5 +20,19 @@ test("15-16.4 validates Display Fields and Requirements Preview surfaces", async
     expect(order).toEqual(["requirementsFieldsPreview", "logicPreview"]);
     await page.locator("#completeStatementsToggle").check();
     await page.locator("#includeNotesToggle").uncheck();
+    await expect(page.locator("#refreshPreviewBtn")).toHaveCount(0);
+  });
+  await test.step("16.5 Preview tabs show Display Fields, Audit Logic, or both", async () => {
+    const tab = (name) => page.getByRole("tab", { name, exact: true });
+    await tab("Audit Logic").click();
+    await expect(tab("Audit Logic")).toHaveAttribute("aria-selected", "true");
+    await expect(page.locator("#requirementsFieldsPanel")).toBeHidden();
+    await expect(page.locator("#requirementsLogicPanel")).toBeVisible();
+    await tab("Display Fields").click();
+    await expect(page.locator("#requirementsFieldsPanel")).toBeVisible();
+    await expect(page.locator("#requirementsLogicPanel")).toBeHidden();
+    await tab("Both").click();
+    await expect(page.locator("#requirementsFieldsPanel")).toBeVisible();
+    await expect(page.locator("#requirementsLogicPanel")).toBeVisible();
   });
 });

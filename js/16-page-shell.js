@@ -419,14 +419,6 @@ document.addEventListener("click", (event) => {
     $("newAuditBtn")?.click();
     return;
   }
-  const previewTab = event.target.closest("[data-preview-tab]");
-  if (previewTab) {
-    document
-      .querySelectorAll("[data-preview-tab]")
-      .forEach((tab) => tab.classList.toggle("active", tab === previewTab));
-    if (e.previewStyle) e.previewStyle.value = previewTab.dataset.previewTab;
-    renderPreview?.();
-  }
 });
 
 globalThis.ATLASAssignmentEditor = Object.freeze({

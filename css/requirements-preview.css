@@ -42,13 +42,14 @@
     border: 2px solid CanvasText;
   }
 }
-/* ATLAS-SOURCE-UNIT:u0950:END *//* ATLAS-SOURCE-UNIT:u1344:BEGIN */
+/* ATLAS-SOURCE-UNIT:u0950:END */ /* ATLAS-SOURCE-UNIT:u1344:BEGIN */
 
 body:has(#page-preview.active) {
   overflow: hidden;
 }
 
-/* ATLAS-SOURCE-UNIT:u1344:END *//* ATLAS-SOURCE-UNIT:u1345:BEGIN */body:has(#page-preview.active) .main {
+/* ATLAS-SOURCE-UNIT:u1344:END */ /* ATLAS-SOURCE-UNIT:u1345:BEGIN */
+body:has(#page-preview.active) .main {
   display: flex;
   flex-direction: column;
   height: 100dvh;
@@ -57,11 +58,13 @@ body:has(#page-preview.active) {
   overflow: hidden;
 }
 
-/* ATLAS-SOURCE-UNIT:u1345:END *//* ATLAS-SOURCE-UNIT:u1346:BEGIN */body:has(#page-preview.active) .topbar {
+/* ATLAS-SOURCE-UNIT:u1345:END */ /* ATLAS-SOURCE-UNIT:u1346:BEGIN */
+body:has(#page-preview.active) .topbar {
   flex: 0 0 auto;
 }
 
-/* ATLAS-SOURCE-UNIT:u1346:END *//* ATLAS-SOURCE-UNIT:u1347:BEGIN */body:has(#page-preview.active) .content {
+/* ATLAS-SOURCE-UNIT:u1346:END */ /* ATLAS-SOURCE-UNIT:u1347:BEGIN */
+body:has(#page-preview.active) .content {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -69,11 +72,13 @@ body:has(#page-preview.active) {
   overflow: hidden;
 }
 
-/* ATLAS-SOURCE-UNIT:u1347:END *//* ATLAS-SOURCE-UNIT:u1348:BEGIN */body:has(#page-preview.active) .content > .page:not(#page-preview) {
+/* ATLAS-SOURCE-UNIT:u1347:END */ /* ATLAS-SOURCE-UNIT:u1348:BEGIN */
+body:has(#page-preview.active) .content > .page:not(#page-preview) {
   display: none !important;
 }
 
-/* ATLAS-SOURCE-UNIT:u1348:END *//* ATLAS-SOURCE-UNIT:u1349:BEGIN */#page-preview.page.active {
+/* ATLAS-SOURCE-UNIT:u1348:END */ /* ATLAS-SOURCE-UNIT:u1349:BEGIN */
+#page-preview.page.active {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
@@ -84,7 +89,8 @@ body:has(#page-preview.active) {
   container-name: preview-page;
 }
 
-/* ATLAS-SOURCE-UNIT:u1349:END *//* ATLAS-SOURCE-UNIT:u1350:BEGIN */#page-preview .preview-pagehead {
+/* ATLAS-SOURCE-UNIT:u1349:END */ /* ATLAS-SOURCE-UNIT:u1350:BEGIN */
+#page-preview .preview-pagehead {
   display: flex;
   flex: 0 0 auto;
   flex-wrap: wrap;
@@ -93,101 +99,143 @@ body:has(#page-preview.active) {
   gap: 0.75rem 1rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1350:END *//* ATLAS-SOURCE-UNIT:u1351:BEGIN */#page-preview .preview-heading {
+/* ATLAS-SOURCE-UNIT:u1350:END */ /* ATLAS-SOURCE-UNIT:u1351:BEGIN */
+#page-preview .preview-heading {
   min-width: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u1351:END *//* ATLAS-SOURCE-UNIT:u1352:BEGIN */#page-preview .preview-pagehead h1,
+/* ATLAS-SOURCE-UNIT:u1351:END */ /* ATLAS-SOURCE-UNIT:u1352:BEGIN */
+#page-preview .preview-pagehead h1,
 #page-preview .preview-pagehead .subtitle {
   margin: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u1352:END *//* ATLAS-SOURCE-UNIT:u1353:BEGIN */#page-preview .preview-pagehead .subtitle {
+/* ATLAS-SOURCE-UNIT:u1352:END */ /* ATLAS-SOURCE-UNIT:u1353:BEGIN */
+#page-preview .preview-pagehead .subtitle {
   margin-top: 0.15rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1353:END *//* ATLAS-SOURCE-UNIT:u1354:BEGIN */#page-preview .preview-toolbar {
+/* ATLAS-SOURCE-UNIT:u1353:END */ /* ATLAS-SOURCE-UNIT:u1354:BEGIN */
+#page-preview .preview-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem 1rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1354:END *//* ATLAS-SOURCE-UNIT:u1355:BEGIN */#page-preview .preview-toolbar .check,
-#page-preview #refreshPreviewBtn {
+/* ATLAS-SOURCE-UNIT:u1354:END */ /* ATLAS-SOURCE-UNIT:u1355:BEGIN */
+#page-preview .preview-toolbar .check {
   min-height: 44px;
 }
 
-/* ATLAS-SOURCE-UNIT:u1355:END *//* ATLAS-SOURCE-UNIT:u1356:BEGIN */#page-preview .preview-pane-switch {
-  display: none;
+/* ATLAS-SOURCE-UNIT:u1355:END */ /* ATLAS-SOURCE-UNIT:u1356:BEGIN */
+#page-preview .preview-pane-switch {
+  display: flex;
   flex: 0 0 auto;
+  gap: 0.25rem;
   border-bottom: 1px solid var(--border);
 }
 
-/* ATLAS-SOURCE-UNIT:u1356:END *//* ATLAS-SOURCE-UNIT:u1357:BEGIN */#page-preview .preview-pane-tab {
-  flex: 1 1 0;
+/* ATLAS-SOURCE-UNIT:u1356:END */ /* ATLAS-SOURCE-UNIT:u1631:BEGIN */
+#page-preview .preview-pane-tab {
+  flex: 0 0 auto;
   min-width: 44px;
   min-height: 44px;
   margin: 0 0 -1px;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 1rem;
   color: var(--muted);
   background: transparent;
   border: 0;
   border-bottom: 2px solid transparent;
-  border-radius: 0;
+  border-radius: 8px 8px 0 0;
   font: inherit;
   font-weight: 650;
   cursor: pointer;
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
+    background-color 160ms ease-out,
+    border-color 160ms ease-out,
+    color 160ms ease-out;
 }
 
-/* ATLAS-SOURCE-UNIT:u1357:END *//* ATLAS-SOURCE-UNIT:u1358:BEGIN */#page-preview .preview-pane-tab:hover {
+/* ATLAS-SOURCE-UNIT:u1631:END */ /* ATLAS-SOURCE-UNIT:u1632:BEGIN */
+#page-preview .preview-pane-tab:hover {
   background: var(--surface2);
   color: var(--text);
 }
 
-/* ATLAS-SOURCE-UNIT:u1358:END *//* ATLAS-SOURCE-UNIT:u1359:BEGIN */#page-preview .preview-pane-tab[aria-selected="true"] {
+/* ATLAS-SOURCE-UNIT:u1632:END */ /* ATLAS-SOURCE-UNIT:u1633:BEGIN */
+#page-preview .preview-pane-tab:active {
+  background: color-mix(in srgb, var(--surface2) 80%, var(--text) 20%);
+}
+
+/* ATLAS-SOURCE-UNIT:u1633:END */ /* ATLAS-SOURCE-UNIT:u1634:BEGIN */
+#page-preview .preview-pane-tab[aria-selected="true"] {
   color: var(--text);
-  background: transparent;
   border-bottom-color: var(--primary);
   font-weight: 750;
 }
 
-/* ATLAS-SOURCE-UNIT:u1359:END *//* ATLAS-SOURCE-UNIT:u1360:BEGIN */#page-preview .preview-pane-tab[aria-selected="true"]:hover {
-  background: var(--surface2);
-}
-
-/* ATLAS-SOURCE-UNIT:u1360:END *//* ATLAS-SOURCE-UNIT:u1361:BEGIN */#page-preview .preview-pane-tab:focus-visible {
+/* ATLAS-SOURCE-UNIT:u1634:END */ /* ATLAS-SOURCE-UNIT:u1635:BEGIN */
+#page-preview .preview-pane-tab:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* ATLAS-SOURCE-UNIT:u1361:END *//* ATLAS-SOURCE-UNIT:u1362:BEGIN */#page-preview .preview-panels {
-  display: grid;
+/* ATLAS-SOURCE-UNIT:u1635:END */ /* ATLAS-SOURCE-UNIT:u1636:BEGIN */ /* Fields, Logic, or Both stacked (Display Fields on top). A single table fills
+   the page and scrolls inside its card; Both scrolls the page area instead. */
+#page-preview .preview-panels {
+  display: flex;
   flex: 1 1 auto;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  flex-direction: column;
   gap: 0.75rem;
   min-height: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u1362:END *//* ATLAS-SOURCE-UNIT:u1363:BEGIN */#page-preview .preview-pane {
+/* ATLAS-SOURCE-UNIT:u1636:END */ /* ATLAS-SOURCE-UNIT:u1637:BEGIN */
+#page-preview[data-preview-view="both"] .preview-panels {
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* ATLAS-SOURCE-UNIT:u1637:END */ /* ATLAS-SOURCE-UNIT:u1638:BEGIN */
+#page-preview .preview-pane {
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
   margin: 0;
+}
+
+/* ATLAS-SOURCE-UNIT:u1638:END */ /* ATLAS-SOURCE-UNIT:u1639:BEGIN */
+#page-preview .preview-pane[hidden] {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1639:END */ /* ATLAS-SOURCE-UNIT:u1640:BEGIN */
+#page-preview:not([data-preview-view="both"]) .preview-pane {
+  flex: 1 1 auto;
   overflow: hidden;
 }
 
-/* ATLAS-SOURCE-UNIT:u1363:END *//* ATLAS-SOURCE-UNIT:u1364:BEGIN */#page-preview .preview-pane .section-title {
+/* ATLAS-SOURCE-UNIT:u1640:END */ /* ATLAS-SOURCE-UNIT:u1641:BEGIN */
+#page-preview[data-preview-view="both"] .preview-pane {
   flex: 0 0 auto;
-  margin-bottom: 0.5rem;
 }
 
-/* ATLAS-SOURCE-UNIT:u1364:END *//* ATLAS-SOURCE-UNIT:u1365:BEGIN */#page-preview #requirementsFieldsPreview,
+/* ATLAS-SOURCE-UNIT:u1641:END */ /* ATLAS-SOURCE-UNIT:u1642:BEGIN */
+#page-preview .preview-pane-heading {
+  flex: 0 0 auto;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+/* ATLAS-SOURCE-UNIT:u1642:END */ /* ATLAS-SOURCE-UNIT:u1643:BEGIN */
+#page-preview:not([data-preview-view="both"]) .preview-pane-heading {
+  display: none;
+}
+
+/* ATLAS-SOURCE-UNIT:u1643:END */ /* ATLAS-SOURCE-UNIT:u1644:BEGIN */
+#page-preview #requirementsFieldsPreview,
 #page-preview #logicPreview {
   display: flex;
   flex: 1 1 auto;
@@ -195,83 +243,132 @@ body:has(#page-preview.active) {
   min-height: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u1365:END *//* ATLAS-SOURCE-UNIT:u1366:BEGIN */#page-preview .logic-table-wrap {
+/* ATLAS-SOURCE-UNIT:u1644:END */ /* ATLAS-SOURCE-UNIT:u1645:BEGIN */
+#page-preview .logic-table-wrap {
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
 }
 
-/* ATLAS-SOURCE-UNIT:u1366:END *//* ATLAS-SOURCE-UNIT:u1367:BEGIN */#page-preview .logic-preview-table {
+/* ATLAS-SOURCE-UNIT:u1645:END */ /* ATLAS-SOURCE-UNIT:u1646:BEGIN */
+#page-preview[data-preview-view="both"] .logic-table-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* ATLAS-SOURCE-UNIT:u1646:END */ /* ATLAS-SOURCE-UNIT:u1647:BEGIN */
+#page-preview .logic-table-wrap:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1647:END */ /* ATLAS-SOURCE-UNIT:u1648:BEGIN */
+#page-preview .logic-preview-table {
   width: 100%;
   min-width: 0;
 }
 
-/* ATLAS-SOURCE-UNIT:u1367:END *//* ATLAS-SOURCE-UNIT:u1368:BEGIN */#page-preview .logic-preview-table th,
+/* ATLAS-SOURCE-UNIT:u1648:END */ /* ATLAS-SOURCE-UNIT:u1649:BEGIN */
+#page-preview .logic-preview-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--surface);
+}
+
+/* ATLAS-SOURCE-UNIT:u1649:END */ /* ATLAS-SOURCE-UNIT:u1650:BEGIN */
+#page-preview .logic-preview-table th,
 #page-preview .logic-preview-table td {
-  min-width: 7rem;
+  vertical-align: top;
   overflow-wrap: break-word;
 }
 
-#page-preview .requirements-fields-table th:first-child,
-#page-preview .requirements-fields-table td:first-child,
-#page-preview .logic-preview-panel .logic-preview-table th:first-child,
-#page-preview .logic-preview-panel .logic-preview-table td:first-child {
-  min-width: 2.75rem;
-  width: 2.75rem;
+/* ATLAS-SOURCE-UNIT:u1650:END */ /* ATLAS-SOURCE-UNIT:u1651:BEGIN */
+#page-preview .logic-preview-table th {
+  white-space: nowrap;
 }
 
-#page-preview .logic-preview-panel .logic-preview-table th:nth-child(2),
-#page-preview .logic-preview-panel .logic-preview-table td:nth-child(2),
+/* ATLAS-SOURCE-UNIT:u1651:END */ /* ATLAS-SOURCE-UNIT:u1652:BEGIN */
+#page-preview .preview-number-col {
+  width: 4.5rem;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+/* ATLAS-SOURCE-UNIT:u1652:END */ /* ATLAS-SOURCE-UNIT:u1653:BEGIN */
+#page-preview .preview-analyst-col {
+  min-width: 16rem;
+  padding-left: calc(0.75rem + var(--preview-depth, 0) * 1.25rem);
+}
+
+/* ATLAS-SOURCE-UNIT:u1653:END */ /* ATLAS-SOURCE-UNIT:u1654:BEGIN */
+#page-preview .preview-developer-col {
+  min-width: 14rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1654:END */ /* ATLAS-SOURCE-UNIT:u1655:BEGIN */
 #page-preview .preview-notes-col {
   min-width: 12rem;
 }
 
+/* ATLAS-SOURCE-UNIT:u1655:END */ /* ATLAS-SOURCE-UNIT:u1656:BEGIN */
 #page-preview .requirements-field-pill,
 #page-preview .logic-pill,
 #page-preview .source-pill,
 #page-preview .field-pill-token {
-  display: inline-flex !important;
-  max-width: none !important;
-  overflow-wrap: normal !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  overflow-wrap: break-word !important;
   word-break: normal !important;
-  white-space: nowrap !important;
 }
 
-/* ATLAS-SOURCE-UNIT:u1368:END *//* ATLAS-SOURCE-UNIT:u1369:BEGIN */#page-preview.is-notes-off .preview-notes-col {
+/* ATLAS-SOURCE-UNIT:u1656:END */ /* ATLAS-SOURCE-UNIT:u1657:BEGIN */
+#page-preview.is-notes-off .preview-notes-col {
   display: none;
 }
 
-/* ATLAS-SOURCE-UNIT:u1369:END *//* ATLAS-SOURCE-UNIT:u1370:BEGIN */@container preview-page (max-width: 960px) {
-  #page-preview .preview-pane-switch {
-    display: flex;
-  }
-
-  #page-preview .preview-panels {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  #page-preview .preview-pane:not(.is-preview-pane-active) {
-    display: none;
-  }
+/* ATLAS-SOURCE-UNIT:u1657:END */ /* ATLAS-SOURCE-UNIT:u1658:BEGIN */
+#page-preview .preview-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 14px;
 }
 
-/* ATLAS-SOURCE-UNIT:u1370:END *//* ATLAS-SOURCE-UNIT:u1371:BEGIN */@media (prefers-reduced-motion: reduce) {
+/* ATLAS-SOURCE-UNIT:u1658:END */ /* ATLAS-SOURCE-UNIT:u1659:BEGIN */
+#page-preview .preview-empty-state p {
+  margin: 0;
+  color: var(--muted);
+}
+
+/* ATLAS-SOURCE-UNIT:u1659:END */ /* ATLAS-SOURCE-UNIT:u1660:BEGIN */
+@media (prefers-reduced-motion: reduce) {
   #page-preview .preview-pane-tab {
     transition: none;
   }
 }
 
-/* ATLAS-SOURCE-UNIT:u1371:END *//* ATLAS-SOURCE-UNIT:u1372:BEGIN */@media (forced-colors: active) {
+/* ATLAS-SOURCE-UNIT:u1660:END */ /* ATLAS-SOURCE-UNIT:u1661:BEGIN */
+@media (forced-colors: active) {
   #page-preview .preview-pane-tab[aria-selected="true"] {
     border-bottom-color: Highlight;
   }
 
-  #page-preview .preview-pane-tab:focus-visible {
+  #page-preview .preview-pane-tab:focus-visible,
+  #page-preview .logic-table-wrap:focus-visible {
     outline-color: Highlight;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1372:END *//* ATLAS-SOURCE-UNIT:u1373:BEGIN */
 
+/* ATLAS-SOURCE-UNIT:u1661:END */ /* ATLAS-SOURCE-UNIT:u1662:BEGIN */
 @container preview-page (max-width: 520px) {
   #page-preview .preview-pagehead .subtitle {
     display: none;
@@ -279,22 +376,16 @@ body:has(#page-preview.active) {
 
   #page-preview .preview-toolbar {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 0.25rem 0.75rem;
+    gap: 0.25rem;
     width: 100%;
   }
 
-  #page-preview #refreshPreviewBtn {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
+  #page-preview .preview-pane-tab {
+    flex: 1 1 0;
+    padding: 0.5rem;
   }
-
-  #page-preview .preview-pane .section-title {
-    display: none;
-  }
-}/* ATLAS-SOURCE-UNIT:u1373:END *//* ATLAS-SOURCE-UNIT:u1630:BEGIN */
+}
+/* ATLAS-SOURCE-UNIT:u1662:END */ /* ATLAS-SOURCE-UNIT:u1630:BEGIN */
 
 /* Developer Logic keeps its Excel / SQL Server / Python line breaks. */
 .developer-logic-cell {
