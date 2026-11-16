@@ -9,10 +9,17 @@ const source = process.cwd();
 const sourceVersion = /ATLAS_APP_VERSION = "([^"]+)"/.exec(
   fs.readFileSync(path.join(source, "js/00-config-utils.js"), "utf8"),
 )[1];
-const nextVersion = sourceVersion.replace(
-  /^(v\d+\.\d+\.)(\d+)$/,
-  (_, prefix, patch) => `${prefix}${Number(patch) + 1}`,
-);
+// Mirrors tools/sync-app-version.mjs: minor and patch roll over after 9.
+const nextVersion = (() => {
+  const [major, minor, patch = 0] = sourceVersion
+    .slice(1)
+    .split(".")
+    .map(Number);
+  let next = [major, minor, patch + 1];
+  if (next[2] > 9) next = [next[0], next[1] + 1, 0];
+  if (next[1] > 9) next = [next[0] + 1, 0, 0];
+  return `v${next.join(".")}`;
+})();
 function git(root, ...args) {
   return spawnSync("git", args, { cwd: root, encoding: "utf8" });
 }
