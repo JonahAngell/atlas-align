@@ -12986,90 +12986,187 @@ body.dark .created-column-token {
 }
 
 
-/* Condition bullet groups: nested AND/OR lists inside an IF / THEN rule. */
+/* Condition lists: sub-conditions sit under their condition as indented
+   bullets, and a slim AND/OR toggle joins the items of each list. */
+#page-steps .condition-guided-stack[data-condition-list] {
+  gap: 0;
+}
+
+
 .guided-condition-group {
   display: grid;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--primary);
-  border-radius: 10px;
-  background: var(--surface);
+  gap: 0.25rem;
+  margin-left: 1rem;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid var(--border);
   animation: atlas-sort-row-enter 160ms ease-out;
 }
 
-
-.guided-condition-group .guided-condition-group {
-  border-left-color: var(--accent2);
+/* Indentation stops growing after three levels so deep lists stay usable. */
+.guided-condition-group .guided-condition-group .guided-condition-group {
+  margin-left: 0;
 }
 
 
-.condition-group-header {
+.guided-condition-row.is-bullet {
+  position: relative;
+}
+
+.guided-condition-row.is-bullet::before {
+  content: "";
+  position: absolute;
+  top: 1rem;
+  left: calc(-1rem - 1px);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--primary);
+  transform: translateX(-50%);
+}
+
+
+.condition-row-header[hidden],
+.condition-group-header[hidden] {
+  display: none;
+}
+
+.condition-lead {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+
+.condition-join {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
+.condition-join::before,
+.condition-join::after {
+  content: "";
+  border-top: 1px solid var(--border);
+}
 
-.condition-group-header > .danger {
-  margin-left: auto;
+.condition-join::before {
+  width: 1rem;
+}
+
+.condition-join::after {
+  flex: 1;
+}
+
+
+.condition-join-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.15rem;
+}
+
+/* The visible track is shorter than the 44px hit area of its buttons. */
+.condition-join-toggle::before {
+  content: "";
+  position: absolute;
+  inset: 0.45rem 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+
+#page-steps .condition-join-option {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.condition-join-option span {
+  display: block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+
+.condition-join-option:hover span {
+  background: var(--accent2);
+  color: var(--text);
+}
+
+.condition-join-option[aria-checked="true"] span {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.condition-join-option[aria-checked="true"]:hover span {
+  background: var(--primary2);
+}
+
+#page-steps .condition-join-option:focus-visible {
+  outline: none;
+}
+
+.condition-join-option:focus-visible span {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+.condition-row-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.condition-row-actions button {
   min-height: 44px;
 }
 
 
-.condition-group-connector {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-
-.condition-group-lead,
-.condition-bullet-label {
-  font-weight: 700;
-  font-size: 0.8rem;
-  color: var(--muted);
-}
-
-
-.condition-group-items {
-  padding-left: 0.75rem;
-}
-
- /* Indentation stops growing after three levels so deep groups stay usable. */
-.guided-condition-group[data-depth]
-  .guided-condition-group[data-depth]
-  .guided-condition-group
-  .condition-group-items {
-  padding-left: 0;
-}
-
-
-.condition-bullet-header {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-
-.condition-bullet {
-  font-weight: 700;
-  font-size: 1.25rem;
-  line-height: 1;
+#page-steps .condition-add-link {
+  justify-self: start;
+  min-height: 44px;
+  padding: 0 0.25rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
   color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.condition-add-link:hover {
+  text-decoration: underline;
 }
 
 
-.condition-group-actions,
 .condition-root-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 
-.condition-group-actions button,
 .condition-root-actions button {
   min-height: 44px;
 }
@@ -13084,6 +13181,10 @@ body.dark .created-column-token {
 @media (prefers-reduced-motion: reduce) {
   .guided-condition-group {
     animation: none;
+  }
+
+  .condition-join-option span {
+    transition: none;
   }
 }
 #page-export {

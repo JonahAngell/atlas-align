@@ -619,6 +619,12 @@ function atlasImportBulletsToParens(value) {
       pendingOpen = true;
       return;
     }
+    // A bullet ending in "AND:"/"OR:" owns the deeper bullets that follow it.
+    if (/\b(AND|OR)\s*:\s*$/i.test(text)) {
+      out += ` ${text.replace(/\s*:\s*$/, "")} (`;
+      pendingOpen = true;
+      return;
+    }
     out += ` ${text}`;
   });
   while (stack.length) close();

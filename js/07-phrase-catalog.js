@@ -494,9 +494,27 @@ function atlasNormalizeConditionTree(nodes, groupConnector = null) {
 }
 
 /**
- * Formats a condition tree as analyst text. Top-level nodes read inline; a
- * group ends its line with "AND:"/"OR:" and lists its items as indented
- * bullets, each ending with the group's connector except the last.
+ * Replaces any group holding a single item with that item, so a condition
+ * reads as a group only once it has two or more sub-conditions.
+ * @param {Array<any>} nodes - Condition nodes.
+ */
+function atlasCollapseSingleConditionGroups(nodes) {
+  return (Array.isArray(nodes) ? nodes : []).map((node) => {
+    if (!atlasIsConditionGroup(node)) return node;
+    const items = atlasCollapseSingleConditionGroups(
+      atlasConditionGroupItems(node),
+    );
+    if (items.length === 1) return { ...items[0], connector: node.connector };
+    return { ...node, items };
+  });
+}
+
+/**
+ * Formats a condition tree as analyst text. Top-level nodes read inline. A
+ * group that follows a condition belongs to it: that condition's line ends
+ * with "AND:"/"OR:" and the group's items follow as indented bullets, each
+ * ending with the group's connector except the last. A group with no
+ * condition before it opens with "ALL OF:"/"ANY OF:".
  * @param {Array<any>} nodes - Top-level condition nodes.
  * @param {Function} leafText - leafText(condition) returns the condition text.
  */
@@ -508,21 +526,29 @@ function conditionTreePlain(nodes, leafText) {
     items.forEach((item, index) => {
       const indent = "  ".repeat(depth);
       const trailing = index < items.length - 1 ? ` ${inner}` : "";
-      if (atlasIsConditionGroup(item)) {
-        const header =
-          atlasConditionConnectorOf(item.groupConnector, "OR") === "AND"
-            ? "ALL OF:"
-            : "ANY OF:";
-        lines.push(`${indent}• ${header}`);
-        const nested = bulletLines(item, depth + 1);
-        if (trailing && nested.length) nested[nested.length - 1] += trailing;
-        lines.push(...nested);
-      } else lines.push(`${indent}• ${leafText(item)}${trailing}`);
+      if (!atlasIsConditionGroup(item)) {
+        lines.push(`${indent}• ${leafText(item)}${trailing}`);
+        return;
+      }
+      const previous = items[index - 1];
+      if (previous && !atlasIsConditionGroup(previous) && lines.length)
+        lines[lines.length - 1] += ":";
+      else
+        lines.push(
+          `${indent}• ${
+            atlasConditionConnectorOf(item.groupConnector, "OR") === "AND"
+              ? "ALL OF:"
+              : "ANY OF:"
+          }`,
+        );
+      const nested = bulletLines(item, depth + 1);
+      if (trailing && nested.length) nested[nested.length - 1] += trailing;
+      lines.push(...nested);
     });
     return lines;
   };
   let text = "";
-  (Array.isArray(nodes) ? nodes : []).forEach((node, index) => {
+  atlasCollapseSingleConditionGroups(nodes).forEach((node, index) => {
     const connector =
       index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
     if (atlasIsConditionGroup(node)) {
@@ -539,8 +565,8 @@ function conditionTreePlain(nodes, leafText) {
 }
 
 /**
- * Formats a condition tree as one expression, wrapping each group in
- * parentheses, e.g. IF a AND (b OR c OR (d AND e)).
+ * Formats a condition tree as one expression, wrapping each group of two or
+ * more items in parentheses, e.g. IF a AND (b OR c OR (d AND e)).
  * @param {Array<any>} nodes - Top-level condition nodes.
  * @param {Function} leafText - leafText(condition) returns the expression.
  */
@@ -553,7 +579,7 @@ function conditionTreeExpression(nodes, leafText) {
       )
       .join(` ${inner} `)})`;
   };
-  return (Array.isArray(nodes) ? nodes : [])
+  return atlasCollapseSingleConditionGroups(nodes)
     .map((node, index) => {
       const connector =
         index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
