@@ -218,12 +218,20 @@ renderAuditLibrarySelect = function renderAuditLibraryContacts() {
   visual.innerHTML = `<div class="contacts-menu-header audit-library-search-row"><input id="auditLibrarySearch" value="${esc(currentSearch)}" placeholder="Search audits..."><button type="button" class="small" data-new-audit-from-library>+ New Audit</button></div><div class="contacts-list-shell audit-library-shell"><div class="contacts-list audit-library-list" data-contacts-list="audit">${rows}</div><div class="contacts-letter-index audit-letter-index">${letters.map((letter) => `<button type="button" data-scroll-letter="${esc(letter)}" data-scroll-scope="audit">${esc(letter)}</button>`).join("")}</div></div>`;
 };
 
+/** Source Library entries, without the audit's extra source versions. */
+function atlasLibraryCatalogEntries() {
+  return sourceCatalogEntries().filter(
+    (source) =>
+      typeof atlasIsSourceVersion !== "function" ||
+      !atlasIsSourceVersion(source),
+  );
+}
 function filteredSourceEntries() {
   const tab = activeSourceLibraryTab || "all";
   const query = ($("sourceFieldSearch")?.value || "").toLowerCase().trim();
   const selected = selectedSourceSet();
   return alphaSortItems(
-    sourceCatalogEntries(),
+    atlasLibraryCatalogEntries(),
     (source) => source.sourceFile,
   ).filter((source) => {
     if (tab === "selected" && !selected.has(sourceCatalogKey(source)))
@@ -331,6 +339,23 @@ function atlasReplaceSourceButton(sourceKey) {
   if (!key) return "";
   return `<button type="button" class="btn secondary small" data-replace-source="${esc(key)}">Replace</button>`;
 }
+function atlasAddSourceVersionButton(source) {
+  if (
+    typeof atlasAuditIsWorkflowLocked === "function" &&
+    atlasAuditIsWorkflowLocked()
+  )
+    return "";
+  if (!source?.id) return "";
+  const name = source.sourceFile || source.alias || source.sourceKey || "";
+  return `<button type="button" class="btn secondary small" data-add-source-version="${esc(source.id)}" title="Use ${esc(name)} again, for example for another date export">Add Version</button>`;
+}
+function atlasSourceVersionLabelField(source, version) {
+  const locked =
+    typeof atlasAuditIsWorkflowLocked === "function" &&
+    atlasAuditIsWorkflowLocked();
+  const inputId = `source-version-label-${source.id}`;
+  return `<label class="source-version-label-field" for="${esc(inputId)}"><span>Version label</span><input id="${esc(inputId)}" type="text" maxlength="60" value="${esc(version.label)}" placeholder="Version ${esc(version.number)}" data-source-version-label="${esc(source.id)}" ${locked ? "disabled" : ""}></label>`;
+}
 function atlasSafeAvatarUrl(value) {
   const avatar = String(value || "").trim();
   if (/^https:\/\//i.test(avatar)) return avatar;
@@ -386,7 +411,7 @@ function atlasSourceLibraryContext(source) {
   const systemLabels = { workday: "Workday", sap: "SAP", other: "Other" };
   const system = systemLabels[sourceSystem(source)] || "Other";
   const alias = String(source.alias || "").trim();
-  const label = atlasSourceDisambiguatedLabel(source);
+  const label = atlasSourceDisambiguatedLabel(source, { versions: false });
   const extraAlias =
     alias && alias !== title && !String(label).includes(alias) ? alias : "";
   return [system, extraAlias].filter(Boolean).join(" · ");
@@ -411,7 +436,7 @@ function atlasSourceLibraryMatchHtml(source, matchedFields) {
       .map((item) => String(item || "").trim())
       .filter(Boolean);
     const related = keys.length
-      ? sourceCatalogEntries()
+      ? atlasLibraryCatalogEntries()
           .filter(
             (candidate) =>
               sourceCatalogKey(candidate) !== sourceCatalogKey(source),
@@ -496,7 +521,7 @@ function atlasSourceLibraryPill(source) {
     <button type="button" class="audit-source-picker-main" data-source-detail-name="${esc(sourceCatalogKey(source))}">
       <span class="source-color-dot" aria-hidden="true"></span>
       <span class="source-library-pill-copy">
-        <strong>${esc(atlasSourceDisambiguatedLabel(source))}</strong>
+        <strong>${esc(atlasSourceDisambiguatedLabel(source, { versions: false }))}</strong>
         <small>${esc(countLabel)}${context ? ` · ${esc(context)}` : ""}</small>
       </span>
     </button>
@@ -541,7 +566,7 @@ renderSourceFieldBrowser = function renderSourceFieldBrowserAuditAwareInline() {
   const panel = $("sourceFieldBrowser");
   const tabRoot = $("sourceLibraryTabs");
   if (!panel) return;
-  const allSources = sourceCatalogEntries();
+  const allSources = atlasLibraryCatalogEntries();
   const sources = filteredSourceEntries();
   const includedCount = allSources.filter(
     (source) => atlasSourceUsageState(source).included,
@@ -745,8 +770,22 @@ renderSources = function renderCombinedSelectedSources() {
         source.sourceKey || atlasStableSourceKey(source) || source.name;
       const detail = selectedSourceDetail(identityKey);
       const rows = fieldRowsForSource(identityKey);
-      const title = atlasSourceDisambiguatedLabel(detail || source);
-      return `<div class="selected-source-compact-card" data-id="${esc(source.id)}" data-review-source-key="${esc(identityKey || source.id)}" style="--source-color:${esc(source.color || SOURCE_COLOR_PALETTE[0])}"><button type="button" class="selected-source-main" data-source-detail-name="${esc(identityKey)}"><span class="single-color-swatch" style="background:${esc(source.color || SOURCE_COLOR_PALETTE[0])}"></span><span><strong>${esc(title)}</strong><small>${esc(source.alias || detail?.alias || sourceAliasFor?.(identityKey) || identityKey)} · ${rows.length} fields</small></span></button>${renderSelectedSourceColorControl(source)}${atlasReplaceSourceButton(identityKey)}<button type="button" class="danger small" data-remove-selected-source="${esc(identityKey)}">Remove</button></div>`;
+      const version = atlasSourceVersionDetails?.(source) || null;
+      const title = version
+        ? String(
+            detail?.sourceMetadata?.sourceTitle ||
+              source.sourceFile ||
+              detail?.sourceFile ||
+              identityKey,
+          )
+        : atlasSourceDisambiguatedLabel(detail || source);
+      const chip = version
+        ? `<span class="source-version-chip" title="Version ${esc(version.number)}">${esc(version.chip)}</span>`
+        : "";
+      const labelField = version
+        ? atlasSourceVersionLabelField(source, version)
+        : "";
+      return `<div class="selected-source-compact-card${version ? " has-versions" : ""}" data-id="${esc(source.id)}" data-review-source-key="${esc(identityKey || source.id)}" style="--source-color:${esc(source.color || SOURCE_COLOR_PALETTE[0])}"><button type="button" class="selected-source-main" data-source-detail-name="${esc(identityKey)}"><span class="single-color-swatch" style="background:${esc(source.color || SOURCE_COLOR_PALETTE[0])}"></span><span><strong>${esc(title)}${chip}</strong><small>${esc(source.alias || detail?.alias || sourceAliasFor?.(identityKey) || identityKey)} · ${rows.length} fields</small></span></button>${renderSelectedSourceColorControl(source)}${atlasReplaceSourceButton(identityKey)}${atlasAddSourceVersionButton(source)}<button type="button" class="danger small" data-remove-selected-source="${esc(identityKey)}">Remove</button>${labelField}</div>`;
     })
     .join("")}</div>`;
 };
@@ -754,7 +793,12 @@ renderFields = function renderFieldsMergedIntoSources() {
   if (e.fieldsList) e.fieldsList.innerHTML = "";
 };
 
-function atlasCommitAuditSourceChange({ action, sourceKeyOrFile }) {
+function atlasCommitAuditSourceChange({
+  action,
+  sourceKeyOrFile,
+  sourceId = "",
+  label = "",
+}) {
   if (
     typeof atlasAuditIsWorkflowLocked === "function" &&
     atlasAuditIsWorkflowLocked()
@@ -766,7 +810,11 @@ function atlasCommitAuditSourceChange({ action, sourceKeyOrFile }) {
   const result =
     action === "remove"
       ? atlasRemoveSourceState(sourceKeyOrFile)
-      : atlasAddSourceState(sourceKeyOrFile);
+      : action === "version"
+        ? atlasAddSourceVersionState(sourceId)
+        : action === "rename-version"
+          ? atlasRenameSourceVersionState(sourceId, label)
+          : atlasAddSourceState(sourceKeyOrFile);
 
   if (!result.changed) return result;
 
@@ -798,12 +846,74 @@ function atlasCommitAuditSourceChange({ action, sourceKeyOrFile }) {
 
   // Persist exactly once, after all state and UI work is complete.
   scheduleAutosave();
-  status(
-    `${action === "remove" ? "Removed" : "Added"} ${result.sourceFile || sourceKeyOrFile} ${action === "remove" ? "from" : "to"} this audit.`,
-    "ok",
-  );
+  if (action === "version")
+    status(
+      `Added ${result.versionLabel} of ${result.sourceFile}. It has its own Reference step in Logic.`,
+      "ok",
+    );
+  else if (action !== "rename-version")
+    status(
+      `${action === "remove" ? "Removed" : "Added"} ${result.sourceFile || sourceKeyOrFile} ${action === "remove" ? "from" : "to"} this audit.`,
+      "ok",
+    );
   return result;
 }
+
+document.addEventListener(
+  "click",
+  (event) => {
+    const control = event.target.closest("[data-add-source-version]");
+    if (!control) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const sourceId = control.dataset.addSourceVersion || "";
+    const result = atlasCommitAuditSourceChange({
+      action: "version",
+      sourceId,
+    });
+    if (!result?.changed) return;
+    // Put focus on the new version's label so it can be named right away.
+    const added = (state.audit.sources || []).find(
+      (source) => source.sourceKey === result.sourceKey,
+    );
+    const input =
+      added &&
+      document.querySelector(
+        `[data-source-version-label="${CSS.escape(added.id)}"]`,
+      );
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  },
+  true,
+);
+
+document.addEventListener("change", (event) => {
+  const input = event.target.closest?.("[data-source-version-label]");
+  if (!input) return;
+  atlasCommitAuditSourceChange({
+    action: "rename-version",
+    sourceId: input.dataset.sourceVersionLabel || "",
+    label: input.value,
+  });
+});
+
+document.addEventListener("keydown", (event) => {
+  const input = event.target.closest?.("[data-source-version-label]");
+  if (!input) return;
+  if (event.key === "Enter") {
+    event.preventDefault();
+    input.blur();
+  } else if (event.key === "Escape") {
+    const source = (state.audit.sources || []).find(
+      (item) => item.id === input.dataset.sourceVersionLabel,
+    );
+    input.value =
+      atlasSourceVersionDetails?.(source)?.label || input.defaultValue;
+    input.blur();
+  }
+});
 
 function atlasSourceActionFromControl(control) {
   if (control.matches("[data-remove-selected-source]")) return "remove";
