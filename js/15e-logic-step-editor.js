@@ -140,6 +140,14 @@ function atlasResolveSelectedSourceIn(selectedSources, sourceLike) {
       .filter(Boolean);
     return fallbackKeys.some((key) => sourceFallbackKeys.includes(key));
   });
+  if (fallbackMatches.length > 1) {
+    // A source and its versions share a file name; a name that is one
+    // source's own key means that source.
+    const byKey = fallbackMatches.filter((source) =>
+      fallbackKeys.includes(atlasNormalizedSourceIdentity(source.sourceKey)),
+    );
+    if (byKey.length === 1) return byKey[0];
+  }
   return fallbackMatches.length === 1 ? fallbackMatches[0] : null;
 }
 
@@ -458,15 +466,38 @@ function atlasLogicTextWithBullets(part) {
   );
 }
 
+/**
+ * In `"file" as "alias"`, the file belongs to the alias's source. Versions of a
+ * source share the file name, so the alias decides whose colour it takes.
+ */
+function atlasSourceForFileBeforeAlias(parts, index) {
+  const between = parts[index + 1];
+  const next = parts[index + 2];
+  if (String(between || "").trim() !== "as") return null;
+  if (!next?.startsWith('"') || !next.endsWith('"')) return null;
+  const source = atlasResolveSelectedSource(next.slice(1, -1));
+  const file = parts[index].slice(1, -1);
+  if (!source || String(source.sourceFile || "").trim() !== file.trim())
+    return null;
+  return {
+    sourceFile: source.sourceFile || source.name,
+    sourceKey: atlasSourceStableKey(source),
+    color: atlasSelectedSourceColor(source),
+    kind: "source",
+  };
+}
+
 renderLogicWithPills = function atlasRenderLogicWithSourceAndFieldPills(text) {
   const parts = String(text || "").split(/("[^"]+")/g);
   let activeSource = null;
   return parts
-    .map((part) => {
+    .map((part, index) => {
       if (!part.startsWith('"') || !part.endsWith('"'))
         return atlasLogicTextWithBullets(part);
       const value = part.slice(1, -1);
-      const match = atlasSourceMatchForValue(value, activeSource);
+      const match =
+        atlasSourceForFileBeforeAlias(parts, index) ||
+        atlasSourceMatchForValue(value, activeSource);
       if (match?.kind === "source") activeSource = match;
       const klass =
         match?.kind === "created"

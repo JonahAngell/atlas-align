@@ -2850,15 +2850,78 @@ body.dark .import-source-error {
     transition: none;
   }
 }
-/* ATLAS-SOURCE-UNIT:u1595:END *//* ATLAS-SOURCE-UNIT:u1614:BEGIN */
-
+/* ATLAS-SOURCE-UNIT:u1595:END */ /* ATLAS-SOURCE-UNIT:u1614:BEGIN */
 
 .custom-source-delete-dialog {
   width: min(32rem, calc(100vw - 2rem));
 }
 
-/* ATLAS-SOURCE-UNIT:u1614:END *//* ATLAS-SOURCE-UNIT:u1615:BEGIN */.custom-source-delete-dialog .custom-source-actions {
+/* ATLAS-SOURCE-UNIT:u1614:END */ /* ATLAS-SOURCE-UNIT:u1615:BEGIN */
+.custom-source-delete-dialog .custom-source-actions {
   justify-content: flex-end;
 }
 
-/* ATLAS-SOURCE-UNIT:u1615:END */
+/* ATLAS-SOURCE-UNIT:u1615:END */ /* ATLAS-SOURCE-UNIT:u1663:BEGIN */ /* Source versions: the same library source used more than once in an audit. */
+.selected-source-compact-card {
+  grid-template-columns: minmax(0, 1fr) auto auto auto auto;
+}
+
+/* ATLAS-SOURCE-UNIT:u1663:END */ /* ATLAS-SOURCE-UNIT:u1665:BEGIN */
+.source-version-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 0.4rem;
+  padding: 0 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 750;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* ATLAS-SOURCE-UNIT:u1665:END */ /* ATLAS-SOURCE-UNIT:u1666:BEGIN */
+.source-version-label-field {
+  grid-column: 1 / -1;
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding-inline-start: 1.65rem;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+
+/* ATLAS-SOURCE-UNIT:u1666:END */ /* ATLAS-SOURCE-UNIT:u1667:BEGIN */
+.source-version-label-field input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  max-width: 22rem;
+  min-height: 44px;
+  font-size: 0.875rem;
+  transition: border-color 150ms ease-out;
+}
+
+/* ATLAS-SOURCE-UNIT:u1667:END */ /* ATLAS-SOURCE-UNIT:u1668:BEGIN */
+.source-version-label-field input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ATLAS-SOURCE-UNIT:u1668:END */ /* ATLAS-SOURCE-UNIT:u1669:BEGIN */
+.selected-source-compact-card [data-add-source-version] {
+  white-space: nowrap;
+}
+
+/* ATLAS-SOURCE-UNIT:u1669:END */ /* ATLAS-SOURCE-UNIT:u1670:BEGIN */
+@media (prefers-reduced-motion: reduce) {
+  .source-version-label-field input {
+    transition: none;
+  }
+}
+/* ATLAS-SOURCE-UNIT:u1670:END */

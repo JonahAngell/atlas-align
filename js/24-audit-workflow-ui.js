@@ -540,7 +540,9 @@ function atlasRenderAuditLockCard() {
   const activeAuditId = atlasActiveAuditId();
   const current = atlasWorkflowAuditId === activeAuditId;
   const w =
-    atlasWorkflowSummary?.auditId === activeAuditId ? atlasWorkflowSummary : null;
+    atlasWorkflowSummary?.auditId === activeAuditId
+      ? atlasWorkflowSummary
+      : null;
   const locked = Boolean(
     w?.workflowStatus === "Published" && w?.publishedLocked,
   );
@@ -597,7 +599,10 @@ async function atlasRunAuditLockChange(work) {
 }
 async function atlasLockAudit() {
   const trigger = document.activeElement;
-  if (typeof atlasSaveIfDirty === "function" && !(await atlasSaveIfDirty("lock")))
+  if (
+    typeof atlasSaveIfDirty === "function" &&
+    !(await atlasSaveIfDirty("lock"))
+  )
     throw new Error(
       "The audit could not be saved, so it was not locked. Resolve the save problem, then try again.",
     );
@@ -628,7 +633,10 @@ async function atlasLockAudit() {
           dialog.close();
           await atlasReloadAuditAfterLockChange(w.auditId);
         });
-        status("Audit locked. It is read-only and its Status is Complete.", "ok");
+        status(
+          "Audit locked. It is read-only and its Status is Complete.",
+          "ok",
+        );
       } catch (error) {
         button.disabled = false;
         if (error.status === 409) await atlasLoadWorkflowSummary();
@@ -740,6 +748,8 @@ const ATLAS_WORKFLOW_MUTATION_SELECTORS = [
   "[data-source-custom-color]",
   "[data-add-source-to-audit]",
   "[data-remove-selected-source]",
+  "[data-add-source-version]",
+  "[data-source-version-label]",
   "#addStepBtn",
   "[data-new-rule-type]",
   "[data-add-step]",

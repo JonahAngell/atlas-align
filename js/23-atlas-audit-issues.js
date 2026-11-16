@@ -205,11 +205,25 @@
         (field) => !field?.removed && field?.displayed !== false,
       ).length;
     })();
-    const catalogSources = librarySources();
+    // Versions of a source (the same library source used twice) are known
+    // sources with keys of their own.
+    const catalogSources =
+      typeof global.atlasCatalogWithSourceVersions === "function"
+        ? global.atlasCatalogWithSourceVersions(librarySources(), sources)
+        : librarySources();
     const sourceIdentityMap = Object.create(null);
-    const registerSourceIdentity = (value, canonical) => {
+    // Values that are some source's own key. A key always means its source,
+    // even when another source (such as a version) shares it as a file name.
+    const keyedIdentities = new Set();
+    const registerSourceIdentity = (value, canonical, isKey = false) => {
       const key = string(value).trim().toLocaleLowerCase();
       if (!key || !canonical) return;
+      if (isKey && !keyedIdentities.has(key)) {
+        keyedIdentities.add(key);
+        sourceIdentityMap[key] = canonical;
+        return;
+      }
+      if (!isKey && keyedIdentities.has(key)) return;
       if (!(key in sourceIdentityMap)) sourceIdentityMap[key] = canonical;
       else if (sourceIdentityMap[key] !== canonical)
         sourceIdentityMap[key] = null;
@@ -227,18 +241,15 @@
         ? string(sourceLike).trim()
         : sourceIdentity(sourceLike);
     };
-    catalogSources.forEach((source) => {
+    const registerSource = (source) => {
       const canonical = canonicalSource(source);
-      [source.sourceKey, source.sourceFile, source.alias, source.name].forEach(
-        (value) => registerSourceIdentity(value, canonical),
+      registerSourceIdentity(source.sourceKey, canonical, true);
+      [source.sourceFile, source.alias, source.name].forEach((value) =>
+        registerSourceIdentity(value, canonical),
       );
-    });
-    sources.forEach((source) => {
-      const canonical = canonicalSource(source);
-      [source.sourceKey, source.sourceFile, source.alias, source.name].forEach(
-        (value) => registerSourceIdentity(value, canonical),
-      );
-    });
+    };
+    catalogSources.forEach(registerSource);
+    sources.forEach(registerSource);
     const canonicalForValue = (value) => {
       const raw = string(value).trim();
       const key = raw.toLocaleLowerCase();

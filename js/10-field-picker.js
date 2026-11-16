@@ -48,6 +48,16 @@ function atlasSourceIdentityResults(catalogSources) {
   return results;
 }
 
+/** Library sources plus source versions, or the library alone without them. */
+function atlasSourceCatalogBase() {
+  if (typeof atlasLibrarySourcesWithVersions === "function")
+    return atlasLibrarySourcesWithVersions();
+  return typeof repoLibraryState !== "undefined" &&
+    Array.isArray(repoLibraryState?.sourceFiles)
+    ? repoLibraryState.sourceFiles
+    : [];
+}
+
 /**
  * Canonical source identity resolver.
  * Resolves legacy names and aliases against the catalog while preserving the
@@ -56,10 +66,7 @@ function atlasSourceIdentityResults(catalogSources) {
 function atlasResolveSourceIdentity(sourceLike = {}, catalog = null) {
   const catalogSources = Array.isArray(catalog)
     ? catalog
-    : typeof repoLibraryState !== "undefined" &&
-        Array.isArray(repoLibraryState?.sourceFiles)
-      ? repoLibraryState.sourceFiles
-      : [];
+    : atlasSourceCatalogBase();
   const input =
     typeof sourceLike === "string" ? { name: sourceLike } : sourceLike || {};
   const key = JSON.stringify(
@@ -110,6 +117,12 @@ function atlasResolveSourceIdentityIn(input, catalogSources) {
       ...stableValues(source),
       ...fallbackValues(source),
     ]);
+    // A name that is one source's key but another's file name (a source and
+    // its versions share the file name) means the source with that key.
+    if (matches.length > 1) {
+      const byKey = uniqueMatches(fallbackValues(input), stableValues);
+      if (byKey.length === 1) matches = byKey;
+    }
   }
   const match = matches.length === 1 ? matches[0] : {};
   const ambiguous = matches.length > 1;
@@ -167,7 +180,9 @@ function atlasSourceLookupAdd(map, value, source) {
     .toLowerCase();
   if (!key) return;
   const matches = map.get(key) || [];
-  matches.push(source);
+  // One source listed under several properties with the same value is still
+  // one match.
+  if (!matches.includes(source)) matches.push(source);
   map.set(key, matches);
 }
 
@@ -192,7 +207,7 @@ function sourceCatalogEntries() {
   )
     return atlasSourceCatalogCache.entries;
   const entries = new Map();
-  (repoLibraryState?.sourceFiles || []).forEach((source) => {
+  atlasLibrarySourcesWithVersions().forEach((source) => {
     const identity = atlasResolveSourceIdentity(source);
     const key = identity.sourceKey;
     if (!key) return;
@@ -254,12 +269,136 @@ function atlasNormalizeSourceToken(value) {
     .toLowerCase();
 }
 
+// -----------------------------------------------------------------------------
+// Source versions
+// -----------------------------------------------------------------------------
+// An audit can use the same library source more than once, for example two date
+// exports of one file. Each extra copy is a version: an audit source with its
+// own key (`<key>__v2`), alias (`<alias>_2`), colour and Reference step, and a
+// `versionOf` pointing at the library source it copies. Versions are added to
+// the catalog as entries of their own, so every lookup that resolves a source
+// by key tells them apart.
+function atlasIsSourceVersion(source) {
+  return Boolean(
+    source &&
+    typeof source === "object" &&
+    String(source.versionOf || "").trim(),
+  );
+}
+
+function atlasVersionAuditSources() {
+  const audit =
+    (typeof atlasDisplayDocument === "function" && atlasDisplayDocument()) ||
+    (typeof state !== "undefined" ? state?.audit : null);
+  return Array.isArray(audit?.sources) ? audit.sources : [];
+}
+
+function atlasSourceVersionBaseKey(source = {}) {
+  if (atlasIsSourceVersion(source)) return String(source.versionOf).trim();
+  return String(
+    typeof sourceCatalogKey === "function"
+      ? sourceCatalogKey(source)
+      : source.sourceKey || source.name || source.sourceFile || "",
+  ).trim();
+}
+
+function atlasSourceVersionCatalogEntry(base, version) {
+  return {
+    ...base,
+    sourceKey: version.sourceKey,
+    catalogKey: version.sourceKey,
+    sourceReferenceId: "",
+    baseSourceKey: "",
+    id: version.sourceKey,
+    name: version.sourceKey,
+    alias: version.alias,
+    versionOf: version.versionOf,
+    versionNumber: version.versionNumber,
+    versionLabel: version.versionLabel,
+  };
+}
+
+const atlasSourceVersionCatalogMemo = {
+  library: null,
+  signature: "",
+  catalog: [],
+};
+
+/**
+ * The Source Library plus one entry per source version in the audit. Returns
+ * the library array itself when the audit has no versions, and the same array
+ * while the versions are unchanged, so identity memos keyed by it still hit.
+ */
+function atlasLibrarySourcesWithVersions() {
+  const library =
+    typeof repoLibraryState !== "undefined" &&
+    Array.isArray(repoLibraryState?.sourceFiles)
+      ? repoLibraryState.sourceFiles
+      : [];
+  return atlasCatalogWithSourceVersions(library, atlasVersionAuditSources());
+}
+
+/** `library` plus an entry for each version among `auditSources`. */
+function atlasCatalogWithSourceVersions(library, auditSources) {
+  if (!Array.isArray(library)) library = [];
+  const versions = (Array.isArray(auditSources) ? auditSources : []).filter(
+    atlasIsSourceVersion,
+  );
+  if (!versions.length) return library;
+  const signature = JSON.stringify(
+    versions.map((version) => [
+      version.sourceKey,
+      version.versionOf,
+      version.alias,
+      version.versionNumber,
+      version.versionLabel,
+    ]),
+  );
+  const memo = atlasSourceVersionCatalogMemo;
+  if (memo.library === library && memo.signature === signature)
+    return memo.catalog;
+  const catalog = [...library];
+  versions.forEach((version) => {
+    const base = library.find(
+      (source) => atlasSourceVersionBaseKey(source) === version.versionOf,
+    );
+    if (base) catalog.push(atlasSourceVersionCatalogEntry(base, version));
+  });
+  memo.library = library;
+  memo.signature = signature;
+  memo.catalog = catalog;
+  return catalog;
+}
+
+/** Audit sources that copy the same library source as `source`, in order. */
+function atlasSourceVersionGroup(source, sources = atlasVersionAuditSources()) {
+  const baseKey = atlasSourceVersionBaseKey(source);
+  if (!baseKey) return [];
+  return sources.filter((item) => atlasSourceVersionBaseKey(item) === baseKey);
+}
+
+/**
+ * Version number and label for a source used more than once in the audit, or
+ * null when it is used once. The first copy is Version 1 unless renamed.
+ */
+function atlasSourceVersionDetails(sourceLike) {
+  const key = String(
+    (typeof sourceLike === "string" ? sourceLike : sourceLike?.sourceKey) || "",
+  ).trim();
+  if (!key) return null;
+  const sources = atlasVersionAuditSources();
+  const source = sources.find((item) => String(item.sourceKey || "") === key);
+  if (!source) return null;
+  if (atlasSourceVersionGroup(source, sources).length < 2) return null;
+  const number = Number(source.versionNumber) || 1;
+  const label = String(source.versionLabel || "").trim() || `Version ${number}`;
+  return { number, label, chip: `V${number}`, source };
+}
+
 function atlasDisplayNameCollision(displayName) {
   const token = atlasNormalizeSourceToken(displayName);
   if (!token) return false;
-  const sources = Array.isArray(repoLibraryState?.sourceFiles)
-    ? repoLibraryState.sourceFiles
-    : [];
+  const sources = atlasLibrarySourcesWithVersions();
   let count = 0;
   for (const source of sources) {
     if (atlasNormalizeSourceToken(source.sourceFile || source.name) === token)
@@ -286,9 +425,7 @@ function atlasSourceIdentityTokens(
     if (includeSharedDisplayName || !atlasDisplayNameCollision(value))
       values.push(value);
   });
-  return [
-    ...new Set(values.map(atlasNormalizeSourceToken).filter(Boolean)),
-  ];
+  return [...new Set(values.map(atlasNormalizeSourceToken).filter(Boolean))];
 }
 
 function atlasStableSourceKey(source = {}) {
@@ -300,15 +437,25 @@ function atlasStableSourceKey(source = {}) {
   if (stable) return stable;
   const alias = String(source.alias || source.sourceAlias || "").trim();
   if (alias) return alias;
-  const display = String(source.sourceFile || source.file || source.name || "").trim();
+  const display = String(
+    source.sourceFile || source.file || source.name || "",
+  ).trim();
   return display && !atlasDisplayNameCollision(display) ? display : "";
 }
 
-function atlasSourceDisambiguatedLabel(source = {}) {
+function atlasSourceDisambiguatedLabel(source = {}, { versions = true } = {}) {
   const title = String(
-    source.sourceMetadata?.sourceTitle || source.sourceFile || source.name || "",
+    source.sourceMetadata?.sourceTitle ||
+      source.sourceFile ||
+      source.name ||
+      "",
   ).trim();
   const alias = String(source.alias || source.sourceKey || "").trim();
+  const version =
+    versions && typeof atlasSourceVersionDetails === "function"
+      ? atlasSourceVersionDetails(source)
+      : null;
+  if (version) return `${title || alias} · ${version.label}`;
   if (title && alias && alias !== title && atlasDisplayNameCollision(title))
     return `${title} — ${alias}`;
   return title || alias;
@@ -413,7 +560,12 @@ function atlasSelectedSourceByKey(sourceKeyOrFile) {
   const wanted = String(sourceKeyOrFile || "").trim();
   if (!wanted) return null;
   const stable = sources.find((source) =>
-    [source.sourceKey, source.alias, source.catalogKey, source.sourceReferenceId]
+    [
+      source.sourceKey,
+      source.alias,
+      source.catalogKey,
+      source.sourceReferenceId,
+    ]
       .filter(Boolean)
       .includes(wanted),
   );
@@ -529,6 +681,132 @@ function atlasAddSourceState(sourceKeyOrFile) {
   return { changed: true, action: "add", sourceKey: key, sourceFile };
 }
 
+/** Field records for a new version, copied from the library or the original. */
+function atlasSourceVersionFields(root, version) {
+  const baseKey = version.versionOf;
+  const libraryFields = selectedSourceDetail(baseKey)?.fields || [];
+  const fields = libraryFields.length
+    ? libraryFields.map((field) => ({
+        raw: field.fieldName || field.name || field.label,
+        label:
+          field.vanityLabel || field.label || field.fieldName || field.name,
+      }))
+    : (state.audit.fields || [])
+        .filter(
+          (field) =>
+            !field.calculated &&
+            String(field.sourceKey || "").trim() ===
+              atlasSourceMutationKey(root),
+        )
+        .map((field) => ({
+          raw: field.rawFieldName || field.name,
+          label: field.name || field.rawFieldName,
+        }));
+  return fields
+    .filter((field) => field.raw)
+    .map((field) => ({
+      id: uid("field"),
+      name: field.label || field.raw,
+      type: "Source",
+      sourceKey: version.sourceKey,
+      sourceFile: version.sourceFile,
+      sourceAlias: version.alias,
+      rawFieldName: field.raw,
+      description: `${version.sourceFile} / ${field.raw}`,
+    }));
+}
+
+/**
+ * Adds another version of an audit source, right after its last version.
+ * The version gets its own key, alias, colour and (once references are
+ * synced) its own Reference step.
+ */
+function atlasAddSourceVersionState(sourceId) {
+  const sources = (state.audit.sources = state.audit.sources || []);
+  const picked = sources.find((source) => source.id === sourceId);
+  if (!picked) {
+    status("That source is no longer in this audit.", "warn");
+    return { changed: false, reason: "not-selected" };
+  }
+  const baseKey = atlasSourceVersionBaseKey(picked);
+  const group = atlasSourceVersionGroup(picked, sources);
+  const root = group.find((source) => !atlasIsSourceVersion(source)) || picked;
+  const sourceFile = String(root.sourceFile || picked.sourceFile || baseKey);
+  const baseAlias = String(
+    (atlasIsSourceVersion(root) ? "" : root.alias) || sourceFile || baseKey,
+  ).trim();
+  const fold = (value) =>
+    String(value || "")
+      .trim()
+      .toLowerCase();
+  const taken = new Set(
+    sources.flatMap((source) =>
+      [source.sourceKey, source.name, source.alias].map(fold).filter(Boolean),
+    ),
+  );
+  let number =
+    Math.max(1, ...group.map((source) => Number(source.versionNumber) || 1)) +
+    1;
+  while (
+    taken.has(fold(`${baseKey}__v${number}`)) ||
+    taken.has(fold(`${baseAlias}_${number}`))
+  )
+    number += 1;
+
+  const version = {
+    id: uid("source"),
+    sourceKey: `${baseKey}__v${number}`,
+    name: `${baseKey}__v${number}`,
+    sourceFile,
+    alias: `${baseAlias}_${number}`,
+    versionOf: baseKey,
+    versionNumber: number,
+    versionLabel: `Version ${number}`,
+    color: nextSourceColor(),
+    description: `Version ${number} of ${sourceFile}`,
+    sourceMetadata: root.sourceMetadata || picked.sourceMetadata || {},
+  };
+  const lastIndex = Math.max(...group.map((source) => sources.indexOf(source)));
+  sources.splice(lastIndex + 1, 0, version);
+  state.audit.fields = [
+    ...(state.audit.fields || []),
+    ...atlasSourceVersionFields(root, version),
+  ];
+  atlasInvalidateSourceDerivedState();
+  return {
+    changed: true,
+    action: "version",
+    sourceKey: version.sourceKey,
+    sourceFile,
+    versionLabel: version.versionLabel,
+  };
+}
+
+/** Renames a version; an empty label falls back to "Version N". */
+function atlasRenameSourceVersionState(sourceId, label) {
+  const source = (state.audit.sources || []).find(
+    (item) => item.id === sourceId,
+  );
+  if (!source) return { changed: false, reason: "not-selected" };
+  const number = Number(source.versionNumber) || 1;
+  const next = String(label || "")
+    .trim()
+    .slice(0, 60);
+  const current = String(source.versionLabel || "").trim();
+  if (next === current) return { changed: false, reason: "unchanged" };
+  if (next) source.versionLabel = next;
+  else if (atlasIsSourceVersion(source))
+    source.versionLabel = `Version ${number}`;
+  else delete source.versionLabel;
+  atlasInvalidateSourceDerivedState();
+  return {
+    changed: true,
+    action: "rename-version",
+    sourceKey: source.sourceKey,
+    sourceFile: source.sourceFile,
+  };
+}
+
 function atlasRemoveSourceState(sourceKeyOrFile) {
   const selected =
     typeof atlasSelectedSourceByKey === "function"
@@ -596,6 +874,10 @@ function referenceStepForSource(source, index) {
   const sourceFile =
     identity.sourceFile || source.sourceFile || source.name || "";
   const sourceAlias = identity.alias || source.alias || sourceFile;
+  const version =
+    typeof atlasSourceVersionDetails === "function"
+      ? atlasSourceVersionDetails(source)
+      : null;
   return {
     id: `reference_${source.id || source.name}`,
     enabled: true,
@@ -604,7 +886,9 @@ function referenceStepForSource(source, index) {
     parentId: null,
     branchType: "root",
     sortOrder: index + 1,
-    title: `Reference ${source.name}`,
+    title: version
+      ? `Reference ${sourceFile} · ${version.label}`
+      : `Reference ${source.name}`,
     type: "source",
     step_type: "reference_source",
     source: source.name,
