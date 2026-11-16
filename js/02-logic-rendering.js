@@ -106,26 +106,35 @@ function requirementsFieldRows(options = {}) {
   const sourceOrder = new Map();
   auditSources.forEach((source, index) => {
     const identity = requirementsSourceIdentity(source);
-    [identity.sourceKey, identity.sourceFile, identity.alias, source.name]
+    // Key and alias always place the source. A shared file name (a source and
+    // its versions) is skipped, and a later source never moves an earlier one.
+    const place = (value) => {
+      const part = requirementsFieldIdentityPart(value);
+      if (part && !sourceOrder.has(part)) sourceOrder.set(part, index);
+    };
+    [identity.sourceKey, identity.alias].filter(Boolean).forEach(place);
+    [identity.sourceFile, source.name]
       .filter(
         (value) =>
           value &&
           (typeof atlasDisplayNameCollision !== "function" ||
             !atlasDisplayNameCollision(value)),
       )
-      .forEach((value) =>
-        sourceOrder.set(requirementsFieldIdentityPart(value), index),
-      );
+      .forEach(place);
   });
+  // The key and alias always identify a source. The file name only does when
+  // no other source (a version) shares it, even if the key spells the same.
   const candidates = (identity) =>
-    [identity.sourceKey, identity.alias, identity.sourceFile]
-      .filter(
-        (value) =>
-          value &&
-          (value !== identity.sourceFile ||
-            typeof atlasDisplayNameCollision !== "function" ||
-            !atlasDisplayNameCollision(value)),
-      )
+    [
+      identity.sourceKey,
+      identity.alias,
+      identity.sourceFile &&
+      (typeof atlasDisplayNameCollision !== "function" ||
+        !atlasDisplayNameCollision(identity.sourceFile))
+        ? identity.sourceFile
+        : "",
+    ]
+      .filter(Boolean)
       .map(requirementsFieldIdentityPart)
       .filter(Boolean);
   // The same fields and catalog sources are compared against every reference,

@@ -490,17 +490,88 @@ function atlasSourceForFileBeforeAlias(parts, index) {
   };
 }
 
+/** A quoted value as a source pill, or null when it names no selected source. */
+function atlasSourcePillMatch(value) {
+  const direct = atlasResolveSelectedSource(String(value || "").trim());
+  return direct
+    ? {
+        sourceFile: direct.sourceFile || direct.name,
+        sourceKey: atlasSourceStableKey(direct),
+        color: atlasSelectedSourceColor(direct),
+        kind: "source",
+      }
+    : null;
+}
+
+/**
+ * A field pill for `value`: the field of the source named just before it, then
+ * a created column, then the first selected source with a field of that name.
+ */
+function atlasFieldPillMatch(value, activeSource) {
+  const normalized = String(value || "").trim();
+  if (!normalized) return null;
+  if (activeSource) {
+    const own = atlasFieldMatchForSource(normalized, activeSource);
+    if (own) return own;
+  }
+  const created = atlasCreatedColumnMatchForValue(normalized);
+  if (created) return created;
+  for (const source of atlasSelectedAuditSources()) {
+    const fieldMatch = atlasFieldMatchForSource(normalized, source);
+    if (fieldMatch) return fieldMatch;
+  }
+  return null;
+}
+
+// Words that put literal text in quotes: comparison operators, static and
+// display values, math operands and character labels.
+const ATLAS_LOGIC_LITERAL_LEAD =
+  /\b(?:to|than|contains?|with|like|values?|response|character|by|adding|subtracting|multiplying|dividing)\s*$/i;
+// Text between two quoted items of one list ("A", "B", or "C").
+const ATLAS_LOGIC_LIST_SEPARATOR = /^\s*(?:,|,?\s*or|,?\s*and)\s*$/;
+
+/**
+ * What a quoted token is, from the words just before it. The analyst sentences
+ * always write `file "X"`, `column "Y"` and `new column "Z"`, so the lead
+ * words decide; a bare list separator repeats the previous token's role.
+ */
+function atlasLogicTokenRole(before, previousRole) {
+  const lead = String(before || "");
+  if (/\bfile\s*$/i.test(lead) || /\bas\s*$/i.test(lead)) return "source";
+  if (/\bnew\s+columns?\s*:?\s*$/i.test(lead)) return "created";
+  if (/\bcolumns?\s*:?\s*$/i.test(lead)) return "field";
+  if (ATLAS_LOGIC_LIST_SEPARATOR.test(lead) && previousRole)
+    return previousRole;
+  if (ATLAS_LOGIC_LITERAL_LEAD.test(lead)) return "literal";
+  return "";
+}
+
 renderLogicWithPills = function atlasRenderLogicWithSourceAndFieldPills(text) {
   const parts = String(text || "").split(/("[^"]+")/g);
   let activeSource = null;
+  let previousRole = "";
   return parts
     .map((part, index) => {
       if (!part.startsWith('"') || !part.endsWith('"'))
         return atlasLogicTextWithBullets(part);
       const value = part.slice(1, -1);
-      const match =
-        atlasSourceForFileBeforeAlias(parts, index) ||
-        atlasSourceMatchForValue(value, activeSource);
+      const role = atlasLogicTokenRole(parts[index - 1], previousRole);
+      previousRole = role;
+      let match = atlasSourceForFileBeforeAlias(parts, index);
+      if (!match) {
+        if (role === "source") {
+          match = atlasSourcePillMatch(value);
+          // An unresolved file must not lend its columns the previous colour.
+          if (!match) activeSource = null;
+        } else if (role === "created")
+          match =
+            atlasCreatedColumnMatchForValue(value) ||
+            atlasFieldPillMatch(value, activeSource);
+        else if (role === "field")
+          match = atlasFieldPillMatch(value, activeSource);
+        else if (role === "literal") match = null;
+        else match = atlasSourceMatchForValue(value, activeSource);
+      }
       if (match?.kind === "source") activeSource = match;
       const klass =
         match?.kind === "created"

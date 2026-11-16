@@ -1626,6 +1626,7 @@
 │   ├── selected-source-lookup.test.js
 │   ├── server-robustness.test.js
 │   ├── sharepoint-field-library.test.js
+│   ├── source-field-display-regressions.test.js
 │   ├── source-identity-memo.test.js
 │   ├── source-library-authorization.test.js
 │   ├── source-library-identity.test.js

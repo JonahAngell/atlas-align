@@ -980,8 +980,11 @@ function analystLogic(step) {
   const stepType = step.step_type;
   if (stepType === "reference_source") {
     const sourceFile = params.source_file || step.source || "";
-    const alias = params.source_alias || sourceAliasFor(sourceFile);
-    return alias && alias !== sourceFile
+    // Always name the alias, even when it matches the file name, so every
+    // Reference step reads the same way on every screen.
+    const alias =
+      params.source_alias || sourceAliasFor(sourceFile) || sourceFile;
+    return alias
       ? renderCatalogPhrase("analyst_logic.reference_source.with_alias", {
           source_file: quotePhraseValue(sourceFile),
           source_alias: quotePhraseValue(alias),
