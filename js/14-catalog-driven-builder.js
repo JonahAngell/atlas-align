@@ -1903,6 +1903,98 @@ function atlasLogicFieldReferences(steps = state.audit.steps || []) {
   });
 }
 
+/**
+ * Removes the fields `stepId` registered under names it no longer produces.
+ * Only fields stamped with `createdByStepId` are touched.
+ */
+function atlasDropStepCreatedFields(fields, stepId, keepNames = []) {
+  if (!Array.isArray(fields) || !stepId) return 0;
+  const keep = new Set(
+    keepNames.map((name) =>
+      String(name || "")
+        .trim()
+        .toLowerCase(),
+    ),
+  );
+  let removed = 0;
+  for (let index = fields.length - 1; index >= 0; index -= 1) {
+    const item = fields[index];
+    const name = String(item?.fieldName || item?.name || "")
+      .trim()
+      .toLowerCase();
+    if (item?.createdByStepId === stepId && !keep.has(name)) {
+      fields.splice(index, 1);
+      removed += 1;
+    }
+  }
+  return removed;
+}
+
+/**
+ * Cleans an audit of calculated fields left behind by earlier edits: fields
+ * registered under a step's old column names, or by steps that are gone or no
+ * longer create columns, plus Display Fields preferences that only pointed at
+ * such a name. Returns the number of entries removed.
+ */
+function atlasPruneStaleCreatedFields(audit) {
+  if (!audit || !Array.isArray(audit.fields)) return 0;
+  const steps = Array.isArray(audit.steps) ? audit.steps : [];
+  const namesFor = (step) =>
+    step?.step_type === "create_column" ? atlasCreatedColumnNames(step) : [];
+  const byId = new Map(steps.map((step) => [step?.id, step]));
+  let removed = 0;
+  const stepIds = new Set(
+    audit.fields.map((field) => field?.createdByStepId).filter(Boolean),
+  );
+  stepIds.forEach((stepId) => {
+    removed += atlasDropStepCreatedFields(
+      audit.fields,
+      stepId,
+      namesFor(byId.get(stepId)),
+    );
+  });
+  if (Array.isArray(audit.displayFields)) {
+    const fold = (value) =>
+      String(value || "")
+        .trim()
+        .toLowerCase();
+    // Every name requirementsFieldRows can list as a calculated row.
+    const outputNames = (step) => {
+      const p = step?.params || {};
+      return [
+        p.output_column,
+        p.destination_column,
+        p.then_output_column,
+        p.then_target_column,
+        p.created_field,
+        p.column_name,
+      ];
+    };
+    const live = new Set(
+      steps
+        .flatMap((step) => [...namesFor(step), ...outputNames(step)])
+        .filter(Boolean)
+        .map(fold),
+    );
+    audit.fields.forEach((field) => {
+      if (field?.calculated || field?.created || field?.custom)
+        live.add(fold(field.fieldName || field.name));
+    });
+    const before = audit.displayFields.length;
+    audit.displayFields = audit.displayFields.filter((pref) => {
+      const calculated =
+        fold(pref?.sourceFile) === "calculated field" ||
+        fold(pref?.sourceKey) === "calculated-field";
+      // Preferences keyed to a step follow that step's current name.
+      if (!calculated || fold(pref?.canonicalKey).startsWith("calculated:"))
+        return true;
+      return live.has(fold(pref.fieldName));
+    });
+    removed += before - audit.displayFields.length;
+  }
+  return removed;
+}
+
 function atlasRegisterStringTransformResult(step) {
   if (
     !step ||
@@ -1912,8 +2004,15 @@ function atlasRegisterStringTransformResult(step) {
     return null;
   const config = atlasStringTransformConfig(step.params);
   if (config.operation === "split") return atlasRegisterSplitResults(step);
-  if (!config.destinationColumn) return null;
   const fields = state.audit.fields || (state.audit.fields = []);
+  // The step is normalized on every render, so each keystroke in the column
+  // name lands here. Drop what it registered under earlier names first.
+  atlasDropStepCreatedFields(
+    fields,
+    step.id,
+    config.destinationColumn ? [config.destinationColumn] : [],
+  );
+  if (!config.destinationColumn) return null;
   let field = fields.find(
     (item) =>
       String(item.fieldName || item.name || "") === config.destinationColumn &&
@@ -1950,18 +2049,8 @@ function atlasRegisterStringTransformResult(step) {
  */
 function atlasRegisterSplitResults(step) {
   const names = atlasCreatedColumnNames(step);
-  const wanted = new Set(names.map((name) => name.toLowerCase()));
   const fields = state.audit.fields || (state.audit.fields = []);
-  for (let index = fields.length - 1; index >= 0; index -= 1) {
-    const item = fields[index];
-    const name = String(item.fieldName || item.name || "").toLowerCase();
-    if (
-      item.createdByStepId === step.id &&
-      item.resultOperation === "split" &&
-      !wanted.has(name)
-    )
-      fields.splice(index, 1);
-  }
+  atlasDropStepCreatedFields(fields, step.id, names);
   const registered = names.map((name) => {
     let field = fields.find(
       (item) =>

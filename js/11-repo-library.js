@@ -332,6 +332,9 @@ function normalizeLoadedAudit(audit, sourceKind = "unknown") {
   normalized.steps.forEach((step, index) =>
     normalizeCatalogStep?.(step, index),
   );
+  // Older saves can hold calculated fields registered under half-typed names.
+  if (typeof atlasPruneStaleCreatedFields === "function")
+    atlasPruneStaleCreatedFields(normalized);
   return normalized;
 }
 

@@ -1531,7 +1531,7 @@ function atlasDevReferenceSource(step) {
     atlasDevPlaceholder("source", "[source]");
   return {
     excel: `=${atlasDevExcelTable(alias)}`,
-    sql: `SELECT * FROM ${atlasDevSqlSource(sourceFile || alias)}${sourceFile && sourceFile !== alias ? ` AS ${atlasDevSqlName(alias)}` : ""}`,
+    sql: `SELECT * FROM ${atlasDevSqlSource(sourceFile || alias)}${sourceFile ? ` AS ${atlasDevSqlName(alias)}` : ""}`,
     python: `df = ${atlasDevPySource(alias)}.copy()`,
     notes: [],
   };

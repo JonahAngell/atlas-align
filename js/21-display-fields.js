@@ -197,8 +197,7 @@ function atlasDisplayLogicKeys() {
     requirementsLogicFieldReferences().map((item) =>
       atlasDisplayKey({
         sourceFile:
-          atlasDisplayIdentity(item.sourceFile).sourceKey ||
-          item.sourceFile,
+          atlasDisplayIdentity(item.sourceFile).sourceKey || item.sourceFile,
         fieldName: item.fieldName,
       }),
     ),
@@ -209,7 +208,9 @@ function atlasDisplayCatalogRow(preference) {
     preference.sourceFile || preference.sourceKey,
   );
   const field = (
-    fieldsForSource?.(identity.sourceFile || preference.sourceFile) || []
+    fieldsForSource?.(
+      identity.sourceKey || identity.sourceFile || preference.sourceFile,
+    ) || []
   ).find((item) =>
     [item.rawFieldName, item.fieldName, item.name, item.label].some(
       (value) =>
@@ -584,7 +585,9 @@ function atlasDisplayPickerEntries() {
     const sourceColor =
       atlasDisplayResolvedSourceColor(identity) ||
       atlasDisplaySourceColor(identity);
-    return (fieldsForSource?.(sourceFile) || [])
+    // Look fields up by key: a version shares its file name with Version 1.
+    const lookup = identity.sourceKey || sourceFile;
+    return (fieldsForSource?.(lookup) || [])
       .filter((field) => !field.isCreatedField)
       .map((field) => {
         const fieldName =
@@ -621,7 +624,7 @@ function atlasDisplayPickerEntries() {
           badge: created ? "Custom" : "",
           creatorStepId: field.creatorStepId || "",
           disabled: selectedKeys.has(key),
-          pickerSource: sourceFile,
+          pickerSource: lookup,
           pickerField: fieldName,
         };
       });
@@ -757,17 +760,25 @@ function atlasStageCreatedDisplayField(entry) {
 }
 function atlasStageDisplayField(sourceFile, fieldName, entry = null) {
   if (entry?.custom) return atlasStageCreatedDisplayField(entry);
-  const identity = atlasDisplayPickerSources().find((source) =>
-    [source.sourceFile, source.sourceKey, source.alias]
-      .filter(Boolean)
-      .includes(sourceFile),
-  );
+  // Key, then alias, then file name: versions of a source share the file name.
+  const pickerSources = atlasDisplayPickerSources();
+  const identity =
+    ["sourceKey", "alias", "sourceFile"]
+      .map((prop) =>
+        pickerSources.find(
+          (source) => source[prop] && source[prop] === sourceFile,
+        ),
+      )
+      .find(Boolean) || null;
   const field = identity
-    ? (fieldsForSource?.(identity.sourceFile || sourceFile) || []).find(
-        (item) =>
-          [item.rawFieldName, item.fieldName, item.name, item.label].some(
-            (value) => atlasDisplayPart(value) === atlasDisplayPart(fieldName),
-          ),
+    ? (
+        fieldsForSource?.(
+          identity.sourceKey || identity.sourceFile || sourceFile,
+        ) || []
+      ).find((item) =>
+        [item.rawFieldName, item.fieldName, item.name, item.label].some(
+          (value) => atlasDisplayPart(value) === atlasDisplayPart(fieldName),
+        ),
       )
     : null;
   const resolvedFieldName =
