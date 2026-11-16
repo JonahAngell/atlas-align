@@ -671,13 +671,20 @@ function renderGuidedBuilder(step) {
       p.value_mode === "Expression/Calculation"
         ? ""
         : p.value_mode;
-    return `<div class="guided-builder"><h4>Create Column</h4><label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label><div class="atlas-choice-field">${atlasChoiceControl(
+    const namedSplit =
+      p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
+      p.string_operation === "split" &&
+      atlasStringTransformConfig(p).named;
+    const columnNameInput = namedSplit
+      ? `<input type="hidden" data-param="column_name" value="${esc(p.column_name || "")}">`
+      : `<label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label>`;
+    return `<div class="guided-builder"><h4>Create Column</h4>${columnNameInput}<div class="atlas-choice-field">${atlasChoiceControl(
       {
         options: atlasDescribedChoices(valueModes, {
           "Static value": "Write a fixed value into the new column.",
           "Source field value": "Copy or calculate from a source field.",
           [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
-            "Take characters or a character count from a field.",
+            "Take characters, a character count, or split parts from a field.",
           "Concatenate fields": "Join two fields into one value.",
         }),
         selected: selectedValueMode,
@@ -1543,14 +1550,38 @@ const ATLAS_STRING_TRANSFORM_OPERATIONS = [
   "first_characters",
   "last_characters",
   "character_count",
+  "split",
+];
+/** Split modes: each delimiter, or only the first or last one (two parts). */
+const ATLAS_STRING_SPLIT_MODES = ["every", "first", "last"];
+/** Most columns one split may name; keeps the editor and formulas readable. */
+const ATLAS_STRING_SPLIT_MAX_COLUMNS = 20;
+/** Word aliases offered for common delimiters, with the characters they mean. */
+const ATLAS_STRING_SPLIT_DELIMITERS = [
+  ["space", " ", "Space"],
+  ["comma", ",", "Comma"],
+  ["hyphen", "-", "Hyphen"],
+  ["underscore", "_", "Underscore"],
+  ["period", ".", "Period"],
+  ["slash", "/", "Forward slash"],
+  ["backslash", "\\", "Backslash"],
+  ["pipe", "|", "Pipe"],
+  ["semicolon", ";", "Semicolon"],
+  ["colon", ":", "Colon"],
+  ["tab", "\t", "Tab"],
 ];
 
-function atlasStringOperationChoice(paramName, selected) {
+function atlasStringOperationChoice(
+  paramName,
+  selected,
+  { split = false } = {},
+) {
   return atlasChoiceControl({
     options: [
       ["first_characters", "First characters"],
       ["last_characters", "Last characters"],
       ["character_count", "Character count"],
+      ...(split ? [["split", "Split on delimiter"]] : []),
     ],
     selected: selected || "first_characters",
     variant: "segment",
@@ -1602,7 +1633,13 @@ function atlasStringTransformConfig(value = {}, prefix = "") {
           : "first_characters"
         : "first_characters";
   const position = operation === "last_characters" ? "last" : "first";
+  const destinationColumn = String(
+    get("target_column", get("column_name", "")),
+  ).trim();
   return {
+    ...(operation === "split"
+      ? atlasStringSplitConfig(get, destinationColumn)
+      : {}),
     operation,
     sourceFile: String(
       get("string_source_file", get("source_file", "")),
@@ -1611,14 +1648,87 @@ function atlasStringTransformConfig(value = {}, prefix = "") {
     sourceField: String(get("string_source_field", "")).trim(),
     position,
     count: String(get("string_character_count", "")).trim(),
-    destinationColumn: String(
-      get("target_column", get("column_name", "")),
-    ).trim(),
+    destinationColumn,
     resultMetadata:
       operation === "character_count"
         ? { dataType: "integer", fieldType: "number", format: "whole number" }
         : { dataType: "string", fieldType: "text", format: "text" },
   };
+}
+
+/** Resolves a delimiter choice (word alias or "custom") to its characters. */
+function atlasStringSplitDelimiter(choice, custom = "") {
+  const key = String(choice || "")
+    .trim()
+    .toLowerCase();
+  if (key === "custom") return String(custom ?? "");
+  const known = ATLAS_STRING_SPLIT_DELIMITERS.find(([word]) => word === key);
+  return known ? known[1] : "";
+}
+
+/**
+ * Split settings for a String transformation step.
+ * A known column count (typed for "every", always 2 for first/last) means each
+ * output is named; with no count the base name is repeated as Name_1, Name_2...
+ */
+function atlasStringSplitConfig(get, baseColumn = "") {
+  const rawMode = String(get("string_split_mode") || "").trim();
+  const splitMode = ATLAS_STRING_SPLIT_MODES.includes(rawMode)
+    ? rawMode
+    : "every";
+  const rawChoice = String(get("string_split_delimiter") || "")
+    .trim()
+    .toLowerCase();
+  const delimiterChoice =
+    rawChoice === "custom" ||
+    ATLAS_STRING_SPLIT_DELIMITERS.some(([word]) => word === rawChoice)
+      ? rawChoice
+      : "space";
+  const customDelimiter = String(get("string_split_custom_delimiter") ?? "");
+  const delimiter = atlasStringSplitDelimiter(delimiterChoice, customDelimiter);
+  const typedCount = atlasPositiveWholeNumber(get("string_split_column_count"));
+  const columnCount =
+    splitMode === "every"
+      ? typedCount
+        ? String(Math.min(Number(typedCount), ATLAS_STRING_SPLIT_MAX_COLUMNS))
+        : ""
+      : "2";
+  const named = !!columnCount;
+  const outputColumns = named
+    ? Array.from({ length: Number(columnCount) }, (_, index) =>
+        String(get(`string_split_column_${index + 1}`) || "").trim(),
+      )
+    : [];
+  return {
+    splitMode,
+    delimiterChoice,
+    customDelimiter,
+    delimiter,
+    columnCount,
+    named,
+    outputColumns,
+    baseColumn: named ? "" : baseColumn,
+    outputPattern: !named && baseColumn ? `${baseColumn}_x` : "",
+  };
+}
+
+/**
+ * Column names a Create Column step adds. A split adds one per named part, or
+ * a single "Name_x" entry standing for Name_1, Name_2... when the count is open.
+ */
+function atlasCreatedColumnNames(step) {
+  if (!step || step.step_type !== "create_column") return [];
+  const p = step.params || {};
+  if (
+    p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
+    String(p.string_operation || "").trim() === "split"
+  ) {
+    const c = atlasStringTransformConfig(p);
+    const names = c.named ? c.outputColumns : [c.outputPattern];
+    return [...new Set(names.filter(Boolean))];
+  }
+  const name = String(p.column_name || step.field || "").trim();
+  return name ? [name] : [];
 }
 
 function atlasStringCharacterCountControl({
@@ -1664,6 +1774,54 @@ function atlasValidateStringTransform(value = {}, prefix = "") {
       code: "string_destination",
       message: "String transformation requires a destination column.",
     });
+  if (config.operation === "split") {
+    if (!config.delimiter)
+      issues.push({
+        level: "error",
+        code: "string_split_delimiter",
+        message:
+          "Split needs a delimiter. Choose one or type a custom delimiter.",
+      });
+    const count = String(
+      value[`${prefix}string_split_column_count`] ?? "",
+    ).trim();
+    if (
+      config.splitMode === "every" &&
+      count &&
+      !atlasPositiveWholeNumber(count)
+    )
+      issues.push({
+        level: "error",
+        code: "string_split_count",
+        message:
+          "Number of columns must be a positive whole number, or blank to number the columns automatically.",
+      });
+    if (config.named) {
+      const seen = new Set();
+      config.outputColumns.forEach((name, index) => {
+        const key = name.toLowerCase();
+        if (!name)
+          issues.push({
+            level: "error",
+            code: "string_split_column",
+            column: index + 1,
+            message: `Split column ${index + 1} needs a name.`,
+          });
+        else if (seen.has(key))
+          issues.push({
+            level: "error",
+            code: "string_split_column",
+            column: index + 1,
+            message: `Split column "${name}" is named more than once.`,
+          });
+        seen.add(key);
+      });
+    }
+    // Named splits take their names from the column list, not column_name.
+    return issues.filter(
+      (item) => !(config.named && item.code === "string_destination"),
+    );
+  }
   if (
     config.operation !== "character_count" &&
     !atlasPositiveWholeNumber(config.count)
@@ -1753,6 +1911,7 @@ function atlasRegisterStringTransformResult(step) {
   )
     return null;
   const config = atlasStringTransformConfig(step.params);
+  if (config.operation === "split") return atlasRegisterSplitResults(step);
   if (!config.destinationColumn) return null;
   const fields = state.audit.fields || (state.audit.fields = []);
   let field = fields.find(
@@ -1783,6 +1942,57 @@ function atlasRegisterStringTransformResult(step) {
   step.params.result_data_type = config.resultMetadata.dataType;
   step.params.result_field_type = config.resultMetadata.fieldType;
   return field;
+}
+
+/**
+ * Registers each split output as a calculated text field and drops fields this
+ * step created under names it no longer uses.
+ */
+function atlasRegisterSplitResults(step) {
+  const names = atlasCreatedColumnNames(step);
+  const wanted = new Set(names.map((name) => name.toLowerCase()));
+  const fields = state.audit.fields || (state.audit.fields = []);
+  for (let index = fields.length - 1; index >= 0; index -= 1) {
+    const item = fields[index];
+    const name = String(item.fieldName || item.name || "").toLowerCase();
+    if (
+      item.createdByStepId === step.id &&
+      item.resultOperation === "split" &&
+      !wanted.has(name)
+    )
+      fields.splice(index, 1);
+  }
+  const registered = names.map((name) => {
+    let field = fields.find(
+      (item) =>
+        String(item.fieldName || item.name || "") === name &&
+        atlasIsCustomField?.(item),
+    );
+    if (!field) {
+      field = {
+        id: uid("field"),
+        sourceFile: "Calculated Field",
+        fieldName: name,
+        name,
+      };
+      fields.push(field);
+    }
+    Object.assign(field, {
+      calculated: true,
+      created: true,
+      custom: true,
+      dataCategory: "Calculated Field/Custom Column",
+      fieldType: "text",
+      dataType: "string",
+      format: "text",
+      resultOperation: "split",
+      createdByStepId: step.id,
+    });
+    return field;
+  });
+  step.params.result_data_type = "string";
+  step.params.result_field_type = "text";
+  return registered[0] || null;
 }
 
 const atlasNormalizeCatalogStepBeforeStringTransform = normalizeCatalogStep;
@@ -1825,6 +2035,14 @@ normalizeCatalogStep = function normalizeCatalogStepWithStringTransform(
         p.string_source_file || p.source_file || normalized.source || "";
       p.string_source_alias =
         sourceAliasFor?.(p.string_source_file) || p.string_source_file;
+      if (normalizedString.operation === "split") {
+        p.string_split_mode = normalizedString.splitMode;
+        p.string_split_delimiter = normalizedString.delimiterChoice;
+        // Named splits keep column_name on the first output so checks and
+        // pickers that read one created name still find this step.
+        if (normalizedString.named && normalizedString.outputColumns[0])
+          p.column_name = normalizedString.outputColumns[0];
+      }
       atlasRegisterStringTransformResult(normalized);
     }
   }
@@ -1857,7 +2075,7 @@ renderCreateModeInputs = function renderCreateModeInputsWithStringTransform(p) {
   return `
     <div class="atlas-choice-field">
       <span class="atlas-choice-heading">Operation</span>
-      ${atlasStringOperationChoice("string_operation", c.operation)}
+      ${atlasStringOperationChoice("string_operation", c.operation, { split: true })}
     </div>
     
     <input 
@@ -1878,10 +2096,95 @@ renderCreateModeInputs = function renderCreateModeInputsWithStringTransform(p) {
               })}
             </label>
 
-    ${atlasStringCharacterCountControl({
-      operation: c.operation,
-      paramName: "string_character_count",
-      count: c.count,
-    })}`;
+    ${
+      c.operation === "split"
+        ? atlasStringSplitControls(p, c)
+        : atlasStringCharacterCountControl({
+            operation: c.operation,
+            paramName: "string_character_count",
+            count: c.count,
+          })
+    }`;
 };
+
+/** Existing field names offered while typing a split column name. */
+function atlasStringSplitNameSuggestions(c) {
+  const names = new Set();
+  const add = (value) => {
+    const text = String(value || "").trim();
+    if (text) names.add(text);
+  };
+  try {
+    (typeof fieldsForSource === "function"
+      ? fieldsForSource(c.sourceFile)
+      : []
+    ).forEach((field) => add(field.fieldName || field.name));
+  } catch (_error) {
+    /* Suggestions are optional; typing a name still works. */
+  }
+  (state.audit?.fields || []).forEach((field) =>
+    add(field.fieldName || field.name),
+  );
+  return [...names].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: "base", numeric: true }),
+  );
+}
+
+/** Delimiter, split mode, column count, and output names for a split. */
+function atlasStringSplitControls(p, c) {
+  const listId = `atlas-split-names-${esc(p.string_source_field || "field").replace(/[^A-Za-z0-9_-]/g, "-")}`;
+  const suggestions = atlasStringSplitNameSuggestions(c)
+    .map((name) => `<option value="${esc(name)}"></option>`)
+    .join("");
+  const custom =
+    c.delimiterChoice === "custom"
+      ? `<label>Custom delimiter<input data-param="string_split_custom_delimiter" value="${esc(c.customDelimiter)}" placeholder='e.g., " - " or "||"' aria-describedby="atlas-split-custom-hint"><small id="atlas-split-custom-hint" class="hint">Spaces count. The delimiter is matched exactly, not as a pattern.</small></label>`
+      : "";
+  const count =
+    c.splitMode === "every"
+      ? `<label>Number of columns<input type="number" data-param="string_split_column_count" inputmode="numeric" min="1" max="${ATLAS_STRING_SPLIT_MAX_COLUMNS}" step="1" value="${esc(c.columnCount)}" placeholder="Blank = number automatically" aria-describedby="atlas-split-count-hint"><small id="atlas-split-count-hint" class="hint">${
+          c.named
+            ? "Name each column below. Values with fewer parts leave the extra columns blank."
+            : `Leave blank to create ${esc(c.outputPattern || "Name_x")} columns (Name_1, Name_2, …) from the New Column Name.`
+        }</small></label>`
+      : `<p class="hint">Splitting on the ${c.splitMode} delimiter always makes two columns: the text before it and the text after it. Values without the delimiter keep the whole value in the first column and leave the second blank.</p>`;
+  const names = c.named
+    ? `<div class="split-column-names atlas-choice-field" role="group" aria-labelledby="${listId}-heading"><span class="atlas-choice-heading" id="${listId}-heading">Output column names</span>${c.outputColumns
+        .map(
+          (name, index) =>
+            `<label>Column ${index + 1}<input data-param="string_split_column_${index + 1}" value="${esc(name)}" list="${listId}" placeholder="Pick a field or type a new name"></label>`,
+        )
+        .join("")}<datalist id="${listId}">${suggestions}</datalist></div>`
+    : "";
+  return `
+    <div class="atlas-choice-field">
+      <span class="atlas-choice-heading">Split at</span>
+      ${atlasChoiceControl({
+        options: [
+          ["every", "Each delimiter"],
+          ["first", "First delimiter"],
+          ["last", "Last delimiter"],
+        ],
+        selected: c.splitMode,
+        variant: "segment",
+        label: "Split at",
+        attributes: 'data-param="string_split_mode"',
+      })}
+    </div>
+    <label>Delimiter<select data-param="string_split_delimiter">${[
+      ...ATLAS_STRING_SPLIT_DELIMITERS.map(([value, , label]) => [
+        value,
+        label,
+      ]),
+      ["custom", "Custom…"],
+    ]
+      .map(
+        ([value, label]) =>
+          `<option value="${esc(value)}"${value === c.delimiterChoice ? " selected" : ""}>${esc(label)}</option>`,
+      )
+      .join("")}</select></label>
+    ${custom}
+    ${count}
+    ${names}`;
+}
 // ATLAS-STRING-TRANSFORM-UPDATE:END

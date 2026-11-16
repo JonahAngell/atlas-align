@@ -2029,7 +2029,8 @@ document.addEventListener(
   (event) => {
     if (
       event.target.matches(
-        '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"]',
+        '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"], ' +
+          '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"]',
       )
     )
       atlasCommitLiveEditor?.({ rerender: true });
@@ -2252,35 +2253,35 @@ function atlasCreatedFieldEntries({
       : entries.length,
     target = found < 0 ? entries.length : found;
   return entries.flatMap((entry, index) => {
-    const step = entry.step,
-      name = String(step.params?.column_name || step.field || "").trim(),
+    const step = entry.step;
+    if (step.step_type !== "create_column") return [];
+    const names =
+        typeof atlasCreatedColumnNames === "function"
+          ? atlasCreatedColumnNames(step)
+          : [String(step.params?.column_name || step.field || "").trim()],
       placement = atlasCreatedFieldPlacement(step),
       available = index < target;
     if (
-      step.step_type !== "create_column" ||
-      !name ||
       (!includeUnavailable && !available) ||
       (sourceFile && !atlasCreatedFieldMatchesRequest(placement, sourceFile))
     )
       return [];
-    return [
-      {
-        fieldName: name,
-        rawFieldName: name,
-        vanityLabel: name,
-        label: name,
-        detail: `Created by Step ${entry.number || index + 1}`,
-        sourceKey: placement.sourceKey,
-        sourceFile: placement.sourceFile,
-        sourceAlias: placement.sourceAlias,
-        sourceColor: placement.sourceColor || ATLAS_CALCULATED_COLOR,
-        attached: placement.attached,
-        origin: "created",
-        isCreatedField: true,
-        creatorStepId: step.id,
-        available,
-      },
-    ];
+    return names.filter(Boolean).map((name) => ({
+      fieldName: name,
+      rawFieldName: name,
+      vanityLabel: name,
+      label: name,
+      detail: `Created by Step ${entry.number || index + 1}`,
+      sourceKey: placement.sourceKey,
+      sourceFile: placement.sourceFile,
+      sourceAlias: placement.sourceAlias,
+      sourceColor: placement.sourceColor || ATLAS_CALCULATED_COLOR,
+      attached: placement.attached,
+      origin: "created",
+      isCreatedField: true,
+      creatorStepId: step.id,
+      available,
+    }));
   });
 }
 function atlasUnifiedFieldEntries({ sourceFile = "", targetStepId = "" } = {}) {

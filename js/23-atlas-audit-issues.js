@@ -570,11 +570,25 @@
       context.audit.steps.forEach((item) => {
         if (!stepsById.has(item.id)) stepsById.set(item.id, item);
         if (item.type !== "create_column") return;
-        const name = string(item.params?.column_name || item.field || "")
-          .trim()
-          .toLocaleLowerCase();
-        if (!createdColumnsByName.has(name)) createdColumnsByName.set(name, []);
-        createdColumnsByName.get(name).push(item);
+        const createdNames =
+          typeof global.atlasCreatedColumnNames === "function"
+            ? array(
+                global.atlasCreatedColumnNames({
+                  step_type: "create_column",
+                  params: item.params || {},
+                  field: item.field,
+                }),
+              )
+            : [];
+        (createdNames.length
+          ? createdNames
+          : [item.params?.column_name || item.field || ""]
+        ).forEach((createdName) => {
+          const name = string(createdName).trim().toLocaleLowerCase();
+          if (!createdColumnsByName.has(name))
+            createdColumnsByName.set(name, []);
+          createdColumnsByName.get(name).push(item);
+        });
       });
       context.audit.sources.forEach((source, index) => {
         if (!source.identity)
@@ -1339,6 +1353,52 @@
       context.audit.steps
         .filter((step) => step.type === "create_column")
         .forEach((step) => {
+          const splitNames =
+            step.params.string_operation === "split" &&
+            step.params.value_mode === "String transformation" &&
+            typeof global.atlasCreatedColumnNames === "function"
+              ? array(
+                  global.atlasCreatedColumnNames({
+                    step_type: "create_column",
+                    params: step.params,
+                    field: step.field,
+                  }),
+                )
+              : null;
+          // A named split reports blank or repeated names on its own columns;
+          // only clashes with other created columns are checked here.
+          if (splitNames)
+            splitNames.forEach((splitName) => {
+              const key = string(splitName).trim().toLocaleLowerCase();
+              if (!key) return;
+              if (names.has(key) && names.get(key) !== step.id)
+                issues.push(
+                  issue(
+                    `${step.id}-duplicate-${key}`,
+                    {
+                      page: "steps",
+                      stepId: step.id,
+                      control: "param:string_operation",
+                    },
+                    {
+                      summary: `Created column "${splitName}" duplicates another created column name.`,
+                      control: "param:string_operation",
+                      fixKind: "text",
+                      actionData: {
+                        repair: "column-name",
+                        param: "column_name",
+                        stepId: step.id,
+                      },
+                    },
+                  ),
+                );
+              else names.set(key, step.id);
+            });
+          const namedSplit =
+            splitNames &&
+            (string(step.params.string_split_column_count).trim() ||
+              ["first", "last"].includes(step.params.string_split_mode));
+          if (splitNames && (namedSplit || splitNames.length)) return;
           const name = string(step.params.column_name || step.field).trim();
           const target = {
             page: "steps",
@@ -1524,8 +1584,17 @@
           array(global.atlasValidateStringTransform(value, prefix)).map(
             (problem, index) => {
               const code = string(problem.code || "string");
-              const param =
-                code === "string_source"
+              const splitParam = {
+                string_split_delimiter:
+                  value[`${prefix}string_split_delimiter`] === "custom"
+                    ? `${prefix}string_split_custom_delimiter`
+                    : `${prefix}string_split_delimiter`,
+                string_split_count: `${prefix}string_split_column_count`,
+                string_split_column: `${prefix}string_split_column_${problem.column || 1}`,
+              }[code];
+              const param = splitParam
+                ? splitParam
+                : code === "string_source"
                   ? `${prefix}string_source_file`
                   : code === "string_field"
                     ? `${prefix}string_source_field`

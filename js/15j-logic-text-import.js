@@ -1193,6 +1193,142 @@ function atlasImportStringTransformAction(details) {
   return { params, references, controls };
 }
 
+/**
+ * Parses: Create new columns "A", "B" by splitting file "x" column "y" on the
+ * first space. Also accepts "Name_x" (one for each part) and "each <delimiter>".
+ */
+function atlasImportParseCreateSplit(text) {
+  const lead = /^create new columns\s+/i.exec(text);
+  if (!lead) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
+  const by = /\s+by splitting\s+/i.exec(text.slice(lead[0].length));
+  if (!by)
+    return atlasImportFail(
+      'Split columns need "by splitting" followed by a file and column.',
+    );
+  let namesText = text.slice(lead[0].length, lead[0].length + by.index).trim();
+  const pattern = /\(one for each part\)\s*$/i.exec(namesText);
+  if (pattern) namesText = namesText.slice(0, pattern.index).trim();
+  const names = atlasImportReadQuotedList(
+    namesText.replace(/,\s*and\s+/i, ", "),
+  );
+  if (!names || !names.length)
+    return atlasImportFail("Split columns need quoted column names.");
+  const afterBy = text.slice(lead[0].length + by.index + by[0].length);
+  const column = atlasImportReadTableColumn(afterBy);
+  if (!column)
+    return atlasImportFail("Split columns need a source file and column.");
+  const onText = afterBy.slice(column.end).trim();
+  const at = /^on\s+(the first|the last|each)\s+/i.exec(onText);
+  if (!at)
+    return atlasImportFail(
+      'Split columns need "on the first", "on the last", or "on each" and a delimiter.',
+    );
+  const splitMode = /first/i.test(at[1])
+    ? "first"
+    : /last/i.test(at[1])
+      ? "last"
+      : "every";
+  const delimiterText = onText.slice(at[0].length);
+  let delimiterChoice = "";
+  let customDelimiter = "";
+  let rest = "";
+  const quoted = atlasImportReadQuote(delimiterText, 0);
+  if (quoted) {
+    delimiterChoice = "custom";
+    customDelimiter = quoted.value;
+    rest = delimiterText.slice(quoted.end);
+  } else {
+    const word = /^([a-z]+(?: slash)?)/i.exec(delimiterText);
+    const key = String(word?.[1] || "")
+      .toLowerCase()
+      .replace(/^forward slash$/, "slash");
+    const known =
+      typeof ATLAS_STRING_SPLIT_DELIMITERS !== "undefined"
+        ? ATLAS_STRING_SPLIT_DELIMITERS.map(([value]) => value)
+        : ["space", "comma"];
+    if (!known.includes(key))
+      return atlasImportFail(
+        `Unknown delimiter. Use a word such as space or comma, or a quoted delimiter like "-".`,
+      );
+    delimiterChoice = key;
+    rest = delimiterText.slice(word[0].length);
+  }
+  if (!atlasImportRemainderOk(rest))
+    return atlasImportFail("Remove the extra text after the delimiter.");
+  const dynamic = !!pattern || (names.length === 1 && /_x$/i.test(names[0]));
+  if (splitMode !== "every" && names.length !== 2)
+    return atlasImportFail(
+      `Splitting on ${at[1].toLowerCase()} delimiter makes exactly two columns. Name both.`,
+    );
+  const params = {
+    value_mode: "String transformation",
+    string_operation: "split",
+    string_split_mode: splitMode,
+    string_split_delimiter: delimiterChoice,
+    string_split_custom_delimiter: customDelimiter,
+  };
+  const controls = [];
+  if (dynamic) {
+    params.column_name = names[0].replace(/_x$/i, "");
+    params.string_split_column_count = "";
+    controls.push(
+      atlasImportTextControl(
+        "column-name",
+        "New column name",
+        params.column_name,
+        "params.column_name",
+      ),
+    );
+  } else {
+    if (splitMode === "every")
+      params.string_split_column_count = String(names.length);
+    names.forEach((name, index) => {
+      params[`string_split_column_${index + 1}`] = name;
+      controls.push(
+        atlasImportTextControl(
+          `split-column-${index + 1}`,
+          `Column ${index + 1} name`,
+          name,
+          `params.string_split_column_${index + 1}`,
+        ),
+      );
+    });
+    params.column_name = names[0];
+  }
+  if (delimiterChoice === "custom")
+    controls.push(
+      atlasImportTextControl(
+        "split-delimiter",
+        "Custom delimiter",
+        customDelimiter,
+        "params.string_split_custom_delimiter",
+      ),
+    );
+  const references = [];
+  if (column.sourceToken)
+    references.push(
+      atlasImportSourceReference(
+        "string-source",
+        column.sourceToken,
+        "Source file",
+        {
+          fileBind: "params.string_source_file",
+          aliasBind: "params.string_source_alias",
+        },
+      ),
+    );
+  references.push(
+    atlasImportFieldReference(
+      "string-field",
+      column.fieldToken,
+      "Source column",
+      column.sourceToken ? "string-source" : "",
+      "params.string_source_field",
+    ),
+  );
+  return atlasImportDraft("create_column", { params, references, controls });
+}
+
 function atlasImportParseReference(text) {
   const lead = /^reference source file\s+/i.exec(text);
   if (!lead) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
@@ -2013,6 +2149,8 @@ function atlasParseImportedLogicText(value) {
   const head = text.toLowerCase();
   if (head.startsWith("reference source file"))
     return atlasImportParseReference(text);
+  if (head.startsWith("create new columns"))
+    return atlasImportParseCreateSplit(text);
   if (
     head.startsWith("create new blank column") ||
     head.startsWith("create new column")

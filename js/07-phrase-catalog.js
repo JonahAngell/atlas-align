@@ -1321,7 +1321,46 @@ function atlasStringTransformAnalystValues(config) {
       phrasePlaceholder("positive_whole_number", "[positive whole number]"),
   };
 }
+/** "the first space", "each comma", or a quoted custom delimiter. */
+function atlasStringSplitAtPhrase(config) {
+  const custom = config.delimiterChoice === "custom";
+  const delimiter = custom
+    ? config.customDelimiter
+      ? `"${String(config.customDelimiter).replace(/"/g, '\\"')}"`
+      : phrasePlaceholder("delimiter", "[delimiter]")
+    : config.delimiterChoice;
+  if (config.splitMode === "first") return `the first ${delimiter}`;
+  if (config.splitMode === "last") return `the last ${delimiter}`;
+  return `each ${delimiter}`;
+}
+
+/** Quoted output columns for a split, or the numbered "Name_x" pattern. */
+function atlasStringSplitColumnsPhrase(config) {
+  if (!config.named)
+    return config.outputPattern
+      ? `${quotePhraseValue(config.outputPattern)} (one for each part)`
+      : phrasePlaceholder("column_name", "[column name]");
+  return config.outputColumns
+    .map((name, index) =>
+      name
+        ? quotePhraseValue(name)
+        : phrasePlaceholder("column_name", `[column ${index + 1} name]`),
+    )
+    .join(", ");
+}
+
 function atlasStringTransformAnalystPhrase(config, context = "create_column") {
+  if (config.operation === "split" && context === "create_column")
+    return renderCatalogPhrase("analyst_logic.create_column.split", {
+      output_columns: atlasStringSplitColumnsPhrase(config),
+      source_column:
+        tableColumnPlain(
+          config.sourceFile,
+          config.sourceAlias || sourceAliasFor(config.sourceFile),
+          config.sourceField,
+        ) || phrasePlaceholder("source_column", "[source column]"),
+      split_at: atlasStringSplitAtPhrase(config),
+    });
   const suffix =
     config.operation === "character_count" ? "string_length" : "substring";
   return renderCatalogPhrase(

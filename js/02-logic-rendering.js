@@ -48,6 +48,14 @@ function requirementsIsCustomField(field) {
   );
 }
 
+/** Columns a Create Column step adds; a split can add several. */
+function requirementsCreatedColumnNames(step) {
+  if (typeof atlasCreatedColumnNames === "function")
+    return atlasCreatedColumnNames(step);
+  const name = String(step?.params?.column_name || step?.field || "").trim();
+  return step?.step_type === "create_column" && name ? [name] : [];
+}
+
 /** Resolves stable source identity while preserving key, file, and alias. */
 function requirementsSourceIdentity(value) {
   const input = typeof value === "object" ? value || {} : { name: value };
@@ -174,9 +182,9 @@ function requirementsFieldRows(options = {}) {
     const matches = (audit.steps || []).filter(
       (step) =>
         step?.step_type === "create_column" &&
-        requirementsFieldIdentityPart(
-          step.params?.column_name || step.field,
-        ) === wanted,
+        requirementsCreatedColumnNames(step).some(
+          (name) => requirementsFieldIdentityPart(name) === wanted,
+        ),
     );
     return matches.length === 1 ? matches[0] : null;
   };
@@ -300,7 +308,9 @@ function requirementsFieldRows(options = {}) {
         params.then_output_column,
         usesTargetColumn ? params.then_target_column : "",
         params.created_field,
-        params.column_name,
+        ...(step.step_type === "create_column"
+          ? requirementsCreatedColumnNames(step)
+          : [params.column_name]),
       ]
         .filter(Boolean)
         .forEach((name) => {

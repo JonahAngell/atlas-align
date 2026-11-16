@@ -432,6 +432,122 @@ function atlasDevStringTransform(config = {}, dialect) {
   return `${last ? "RIGHT" : "LEFT"}(${field}, ${count})`;
 }
 
+/** Delimiter literal; Excel and SQL spell a tab as CHAR(9). */
+function atlasDevSplitLiteral(delimiter, dialect) {
+  if (delimiter === "\t" && dialect !== "python") return "CHAR(9)";
+  return atlasDevString(
+    delimiter || atlasDevPlaceholder("delimiter", "[delimiter]"),
+    dialect,
+  );
+}
+
+/** One part of a split, as an expression for the dialect. Parts are 1-based. */
+function atlasDevSplitPartExpression(config, part, dialect) {
+  const field = atlasDevField(
+    atlasDevFieldSpec(
+      config.sourceFile,
+      config.sourceAlias,
+      config.sourceField,
+    ),
+    dialect,
+  );
+  const d = atlasDevSplitLiteral(config.delimiter, dialect);
+  const size = Math.max(1, String(config.delimiter || "").length);
+  const text = `${field}.astype("string")`;
+  if (config.splitMode === "first" || config.splitMode === "last") {
+    const last = config.splitMode === "last";
+    if (dialect === "excel") {
+      const fn = part === 1 ? "TEXTBEFORE" : "TEXTAFTER";
+      return `IFERROR(${fn}(${field}, ${d}${last ? ", -1" : ""}), ${part === 1 ? field : '""'})`;
+    }
+    if (dialect === "sql") {
+      const found = `CHARINDEX(${d}, ${field}) > 0`;
+      if (!last)
+        return part === 1
+          ? `LEFT(${field}, CHARINDEX(${d}, ${field} + ${d}) - 1)`
+          : `CASE WHEN ${found} THEN SUBSTRING(${field}, CHARINDEX(${d}, ${field}) + ${size}, 4000) ELSE '' END`;
+      const fromEnd = `CHARINDEX(REVERSE(${d}), REVERSE(${field}))`;
+      return part === 1
+        ? `CASE WHEN ${found} THEN LEFT(${field}, LEN(${field} + 'x') - ${fromEnd} - ${size}) ELSE ${field} END`
+        : `CASE WHEN ${found} THEN RIGHT(${field}, ${fromEnd} - 1) ELSE '' END`;
+    }
+    const split = last
+      ? `${text}.str.rsplit(${d}, n=1)`
+      : `${text}.str.split(${d}, n=1, regex=False)`;
+    return part === 1 ? `${split}.str[0]` : `${split}.str[1].fillna("")`;
+  }
+  if (dialect === "excel")
+    return `IFERROR(INDEX(TEXTSPLIT(${field}, ${d}), 1, ${part}), "")`;
+  if (dialect === "sql")
+    return part === 1
+      ? `LEFT(${field}, CHARINDEX(${d}, ${field} + ${d}) - 1)`
+      : `ISNULL((SELECT [value] FROM STRING_SPLIT(${field}, ${d}, 1) WHERE [ordinal] = ${part}), '')`;
+  return `${text}.str.split(${d}, regex=False).str[${part - 1}].fillna("")`;
+}
+
+/**
+ * Formulas for a Create Column split: one assignment per named column, or a
+ * spill / expand into Name_1, Name_2... when the number of columns is open.
+ */
+function atlasDevSplitColumns(config = {}) {
+  const notes = [];
+  if (!config.delimiter)
+    notes.push(atlasDevPhrase("developer_logic.notes.missing_delimiter"));
+  if (!config.named) {
+    const base =
+      config.baseColumn || atlasDevPlaceholder("column_name", "[column name]");
+    const field = (dialect) =>
+      atlasDevField(
+        atlasDevFieldSpec(
+          config.sourceFile,
+          config.sourceAlias,
+          config.sourceField,
+        ),
+        dialect,
+      );
+    notes.push(
+      atlasDevPhrase("developer_logic.notes.split_numbered_columns", {
+        pattern: `${base}_1, ${base}_2`,
+      }),
+    );
+    return {
+      excel: `=TEXTSPLIT(${field("excel")}, ${atlasDevSplitLiteral(config.delimiter, "excel")})`,
+      sql: [
+        `CROSS APPLY STRING_SPLIT(${field("sql")}, ${atlasDevSplitLiteral(config.delimiter, "sql")}, 1) AS [split_parts]`,
+        `-- CONCAT(${atlasDevSqlString(`${base}_`)}, [split_parts].[ordinal]) AS [column_name], [split_parts].[value]`,
+      ].join("\n"),
+      python: [
+        `split_parts = ${field("python")}.astype("string").str.split(${atlasDevSplitLiteral(config.delimiter, "python")}, regex=False, expand=True).fillna("")`,
+        `split_parts.columns = [${atlasDevPyString(`${base}_`)} + str(i + 1) for i in split_parts.columns]`,
+        `df = df.join(split_parts)`,
+      ].join("\n"),
+      notes: [
+        ...notes,
+        atlasDevPhrase("developer_logic.notes.split_sql_version"),
+      ],
+    };
+  }
+  const columns = config.outputColumns.map(
+    (name, index) =>
+      name || atlasDevPlaceholder("column_name", `[column ${index + 1} name]`),
+  );
+  const assignments = columns.map((name, index) =>
+    atlasDevAssignment(name, (dialect) =>
+      atlasDevSplitPartExpression(config, index + 1, dialect),
+    ),
+  );
+  if (config.splitMode === "every" && columns.length > 1)
+    notes.push(atlasDevPhrase("developer_logic.notes.split_sql_version"));
+  return {
+    excel: assignments
+      .map((item, index) => `${columns[index]}: ${item.excel}`)
+      .join("\n"),
+    sql: assignments.map((item) => item.sql).join(",\n"),
+    python: assignments.map((item) => item.python).join("\n"),
+    notes,
+  };
+}
+
 function atlasDevStringTransformConfig(params = {}, prefix = "") {
   if (typeof atlasStringTransformConfig === "function")
     return atlasStringTransformConfig(params, prefix);
@@ -985,6 +1101,7 @@ function atlasDevCreateColumn(step) {
       : "String transformation")
   ) {
     const config = atlasDevStringTransformConfig(params);
+    if (config.operation === "split") return atlasDevSplitColumns(config);
     return {
       ...atlasDevAssignment(config.destinationColumn || target, (dialect) =>
         atlasDevStringTransform(config, dialect),
