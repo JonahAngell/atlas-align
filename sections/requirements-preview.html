@@ -1,4 +1,9 @@
-<section class="page" data-page="preview" id="page-preview">
+<section
+  class="page"
+  data-page="preview"
+  data-preview-view="both"
+  id="page-preview"
+>
   <div class="preview-pagehead">
     <div class="preview-heading">
       <h1>Requirements Preview</h1>
@@ -9,39 +14,31 @@
         ><input checked="" id="includeNotesToggle" type="checkbox" /> Include
         notes in preview/export</label
       >
-      <label class="check export-option"
+      <label
+        class="check export-option"
+        title="Each step repeats the conditions of the steps above it, so every row reads on its own."
         ><input id="completeStatementsToggle" type="checkbox" /> View as
         complete statements</label
       >
-      <button
-        class="btn secondary small"
-        id="refreshPreviewBtn"
-        onclick="renderPreview()"
-        type="button"
-      >
-        Refresh Preview
-      </button>
     </div>
   </div>
-  <select aria-hidden="true" class="visually-hidden" id="previewStyle">
-    <option selected="" value="table">Standard Table</option>
-  </select>
   <div
-    aria-label="Fields and audit logic"
+    aria-label="Requirements preview view"
     class="preview-pane-switch"
     data-preview-pane-switch
     role="tablist"
   >
     <button
       aria-controls="requirementsFieldsPanel"
-      aria-selected="true"
+      aria-selected="false"
       class="preview-pane-tab"
       data-preview-pane-tab="fields"
       id="previewPaneFieldsTab"
       role="tab"
+      tabindex="-1"
       type="button"
     >
-      Fields
+      Display Fields
     </button>
     <button
       aria-controls="requirementsLogicPanel"
@@ -55,26 +52,39 @@
     >
       Audit Logic
     </button>
+    <button
+      aria-controls="requirementsFieldsPanel requirementsLogicPanel"
+      aria-selected="true"
+      class="preview-pane-tab"
+      data-preview-pane-tab="both"
+      id="previewPaneBothTab"
+      role="tab"
+      type="button"
+    >
+      Both
+    </button>
   </div>
   <div class="preview-panels">
     <section
-      aria-labelledby="previewPaneFieldsTab"
+      aria-labelledby="previewFieldsHeading"
       class="card requirements-fields-panel preview-pane is-preview-pane-active"
       data-preview-pane="fields"
       id="requirementsFieldsPanel"
       role="tabpanel"
     >
-      <div class="section-title"><strong>Fields</strong></div>
+      <h2 class="preview-pane-heading" id="previewFieldsHeading">
+        Display Fields
+      </h2>
       <div id="requirementsFieldsPreview"></div>
     </section>
     <section
-      aria-labelledby="previewPaneLogicTab"
-      class="card logic-preview-panel preview-pane"
+      aria-labelledby="previewLogicHeading"
+      class="card logic-preview-panel preview-pane is-preview-pane-active"
       data-preview-pane="logic"
       id="requirementsLogicPanel"
       role="tabpanel"
     >
-      <div class="section-title"><strong>Audit Logic</strong></div>
+      <h2 class="preview-pane-heading" id="previewLogicHeading">Audit Logic</h2>
       <div id="logicPreview"></div>
     </section>
   </div>

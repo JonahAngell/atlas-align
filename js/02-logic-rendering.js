@@ -403,7 +403,24 @@ function renderRequirementsFieldsPreview() {
         : "";
     return `<span class="${classes}" style="--requirements-field-color:${esc(color)};--source-color:${esc(color)};--source-pill-color:${esc(color)}">${esc(value)}${badge}</span>`;
   };
-  target.innerHTML = `<div class="logic-table-wrap requirements-fields-table-wrap" tabindex="0" aria-label="Fields table"><table class="logic-preview-table requirements-fields-table"><thead><tr><th scope="col" aria-label="Row number"></th><th scope="col">Unique ID</th><th scope="col">Field Title</th><th scope="col">Vanity Label</th><th scope="col">Display Format</th><th scope="col">Data Category</th><th scope="col">Display</th><th class="preview-notes-col" scope="col">Notes</th></tr></thead><tbody>${rows.length ? rows.map((row) => `<tr${row.key ? ` data-display-field-row="${esc(row.key)}"` : ""}><td>${row.rowNumber}</td><td>${pill(row.uniqueId || "Calculated Field", row, "source")}</td><td>${pill(row.fieldTitle, row, "field")}</td><td>${esc(row.vanityLabel)}</td><td>${esc(row.displayFormat)}</td><td>${esc(row.dataCategory)}</td><td>${esc(row.display)}</td><td class="preview-notes-col">${esc(row.notes).replace(/\n/g, "<br>")}</td></tr>`).join("") : `<tr><td colspan="8" class="hint">No referenced or custom fields are available for this audit.</td></tr>`}</tbody></table></div>`;
+  if (!rows.length) {
+    target.innerHTML = atlasPreviewEmptyState({
+      title: "No display fields yet",
+      body: "Fields appear here once a logic step uses them or you add them on Display Fields.",
+      action: "Open Display Fields",
+      section: "display-fields",
+    });
+    return;
+  }
+  target.innerHTML = `<div class="logic-table-wrap requirements-fields-table-wrap" tabindex="0" aria-label="Display Fields table"><table class="logic-preview-table requirements-fields-table"><thead><tr><th scope="col" class="preview-number-col">#</th><th scope="col">Unique ID</th><th scope="col">Field Title</th><th scope="col">Vanity Label</th><th scope="col">Display Format</th><th scope="col">Data Category</th><th class="preview-notes-col" scope="col">Notes</th></tr></thead><tbody>${rows.map((row) => `<tr${row.key ? ` data-display-field-row="${esc(row.key)}"` : ""}><td class="preview-number-col">${row.rowNumber}</td><td>${pill(row.uniqueId || "Calculated Field", row, "source")}</td><td>${pill(row.fieldTitle, row, "field")}</td><td>${esc(row.vanityLabel)}</td><td>${esc(row.displayFormat)}</td><td>${esc(row.dataCategory)}</td><td class="preview-notes-col">${esc(row.notes).replace(/\n/g, "<br>")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+/**
+ * Empty-state markup for a Requirements Preview table: what will appear, why
+ * it is empty, and one way to fill it.
+ */
+function atlasPreviewEmptyState({ title, body, action, section }) {
+  return `<div class="preview-empty-state" role="status"><strong>${esc(title)}</strong><p>${esc(body)}</p><button class="btn secondary small" type="button" data-preview-empty-section="${esc(section)}">${esc(action)}</button></div>`;
 }
 
 /**
@@ -451,38 +468,155 @@ function completeStatementHasIndependentAction(step) {
 }
 
 /**
- * Removes the leading IF-style keyword from a condition group.
- * @param {string} text - Condition group text.
+ * Turns one step's top-level condition list into nodes that can be AND-ed with
+ * other conditions without changing its meaning. AND binds tighter than OR (as
+ * in the Developer Logic), so "a AND b OR c" becomes one group: ANY OF (ALL OF
+ * a, b), c.
+ * @param {Array<any>} nodes - Condition nodes from parseStepConditions.
  */
-function completeStatementStripIf(text) {
-  return String(text || "")
-    .trim()
-    .replace(/^(IF|ELSE IF)\s+/i, "")
-    .trim();
+function completeStatementConditionBlock(nodes) {
+  const list = atlasCollapseSingleConditionGroups(
+    atlasNormalizeConditionTree(nodes),
+  );
+  if (!list.length) return [];
+  const chunks = [[]];
+  list.forEach((node, index) => {
+    if (index > 0 && atlasConditionConnectorOf(node.connector) === "OR")
+      chunks.push([]);
+    chunks[chunks.length - 1].push(node);
+  });
+  if (chunks.length === 1) return chunks[0];
+  return [
+    {
+      id: uid("cond"),
+      conditionType: "group",
+      connector: "AND",
+      groupConnector: "OR",
+      items: chunks.map((chunk) =>
+        chunk.length === 1
+          ? chunk[0]
+          : {
+              id: uid("cond"),
+              conditionType: "group",
+              connector: "OR",
+              groupConnector: "AND",
+              items: chunk,
+            },
+      ),
+    },
+  ];
 }
 
 /**
- * Wraps OR condition groups before they are AND-ed with inherited context.
- * @param {string} text - Condition fragment.
+ * AND-joins condition blocks into one normalized condition tree. Single
+ * conditions come before bullet groups so the analyst text reads
+ * "IF x AND: • a OR • b" rather than leaving an AND hanging off the last bullet.
+ * @param {Array<Array<any>>} blocks - Blocks from completeStatementConditionBlock.
  */
-function completeStatementContextFragment(text) {
+function completeStatementJoinConditions(blocks) {
+  const nodes = blocks.flat().map((node) => ({ ...node, connector: "AND" }));
+  return atlasNormalizeConditionTree([
+    ...nodes.filter((node) => !atlasIsConditionGroup(node)),
+    ...nodes.filter((node) => atlasIsConditionGroup(node)),
+  ]);
+}
+
+/**
+ * The opposite of an IF step's conditions, written with opposite operators
+ * ("is less than or equal to", "does not contain") rather than NOT.
+ * @param {any} step - IF step to invert.
+ */
+function completeStatementInvertedBlock(step) {
+  if (!step || completeStatementStepType(step) !== "if_then") return [];
+  return completeStatementConditionBlock(invertedConditionsForStep(step));
+}
+
+/** Lowercases a phrase's first letter unless it starts an acronym. */
+function completeStatementLowerFirst(text) {
   const value = String(text || "").trim();
-  if (!value) return "";
-  if (/\bOR\b/i.test(value) && !/^\(.+\)$/.test(value)) return `(${value})`;
-  return value;
+  if (/^[A-Z][A-Z]/.test(value)) return value;
+  return value.charAt(0).toLowerCase() + value.slice(1);
 }
 
 /**
- * Gets only the condition portion of an IF step for inherited preview context.
+ * Writes a step as one complete statement under the given conditions.
  * @param {any} step - Logic step object being read for display.
- * @param {boolean} grouped - Whether the condition will be combined with another condition.
+ * @param {Array<any>} conditions - Every condition the step runs under.
  */
-function completeStatementConditionContext(step, grouped = true) {
-  if (completeStatementStepType(step) !== "if_then") return "";
-  const conditionText =
-    typeof conditionGroupPlain === "function" ? conditionGroupPlain(step) : "";
-  const plain = completeStatementStripIf(conditionText);
-  return grouped ? completeStatementContextFragment(plain) : plain;
+function completeStatementLogic(step, conditions) {
+  const stepType = completeStatementStepType(step);
+  if (!conditions.length)
+    return { analyst: analystLogic(step), developer: developerLogic(step) };
+  if (stepType === "if_then" || stepType === "else") {
+    // A display-only copy: the step's own action under the combined conditions.
+    const params = {
+      ...(step.params || {}),
+      conditions_json: JSON.stringify(conditions),
+    };
+    delete params.inverse_else;
+    delete params.inverse_of_step_id;
+    // An attached ELSE has its own row here, so keep it out of the IF formula.
+    params.include_else_branch = "No";
+    const copy = { ...step, step_type: "if_then", type: "if", params };
+    return { analyst: analystLogic(copy), developer: developerLogic(copy) };
+  }
+  const conditionText = ensureIfThenPrefix(
+    conditionTreePlain(conditions, (condition) =>
+      conditionToPlain(condition, false),
+    ),
+  );
+  const action = completeStatementLowerFirst(
+    String(analystLogic(step) || "").replace(/\.\s*$/, ""),
+  );
+  const analyst = renderCatalogPhrase(
+    "analyst_logic.if_then.condition_group_with_action",
+    { condition_group: conditionText, then_action: action },
+  );
+  return {
+    analyst,
+    developer: completeStatementDeveloperLogic(step, conditions),
+  };
+}
+
+/**
+ * Developer Logic for a non-IF step that runs under inherited conditions.
+ * Single-column assignments are wrapped in the condition (IF / CASE WHEN /
+ * df.loc[mask]); anything else lists the row condition before the step's own
+ * formulas.
+ * @param {any} step - Logic step object being read for display.
+ * @param {Array<any>} conditions - Every condition the step runs under.
+ */
+function completeStatementDeveloperLogic(step, conditions) {
+  normalizeCatalogStep?.(step);
+  const scope = atlasDevEachDialect((dialect) =>
+    atlasDevConditionTree(conditions, dialect),
+  );
+  let own = null;
+  try {
+    own = atlasDeveloperFormulas(step);
+  } catch (error) {
+    console.warn("Developer Logic could not be generated for a step.", error);
+  }
+  const excel = /^=([^\n]+)$/.exec(own?.excel || "");
+  const sql = /^([^\n]+) AS (\[[^\]\n]+\])$/.exec(own?.sql || "");
+  const python = /^df\[([^\]\n]+)\] = ([^\n]+)$/.exec(own?.python || "");
+  if (excel && sql && python)
+    return atlasDeveloperFormulaText({
+      lead: own.lead,
+      excel: `=IF(${scope.excel}, ${excel[1]}, "")`,
+      sql: `CASE WHEN ${scope.sql} THEN ${sql[1]} END AS ${sql[2]}`,
+      python: `mask = ${scope.python}\ndf.loc[mask, ${python[1]}] = ${python[2]}`,
+      notes: own.notes,
+    });
+  const rows = atlasDeveloperFormulaText({
+    lead: renderCatalogPhrase(
+      "developer_logic.notes.complete_statement_scope",
+      {},
+    ),
+    ...atlasDevFilterFormulas(scope, true),
+  });
+  const ownText = atlasDeveloperFormulaText(own);
+  return ownText ? `${rows}\n\n${ownText}` : rows;
 }
 
 /**
@@ -502,82 +636,95 @@ function completeStatementNotes(contextNotes = [], ownNote = "") {
 }
 
 /**
- * Applies inherited IF context to an IF step's analyst statement while preserving the THEN/action text.
- * @param {any} step - Logic step object being read for display.
- * @param {string[]} inheritedContext - Parent IF condition fragments.
- */
-function completeStatementAnalystLogic(step, inheritedContext = []) {
-  const base = analystLogic(step);
-  if (!inheritedContext.length || completeStatementStepType(step) !== "if_then")
-    return base;
-  const childCondition = completeStatementConditionContext(step, true);
-  if (!childCondition) return base;
-  const combinedCondition = `IF ${[...inheritedContext, childCondition].filter(Boolean).join(" AND ")}`;
-  const currentCondition =
-    typeof conditionGroupPlain === "function"
-      ? typeof ensureIfThenPrefix === "function"
-        ? ensureIfThenPrefix(conditionGroupPlain(step))
-        : conditionGroupPlain(step)
-      : "";
-  if (currentCondition && base.startsWith(currentCondition)) {
-    return `${combinedCondition}${base.slice(currentCondition.length)}`.trim();
-  }
-  const thenIndex = base.search(/\s+THEN\s+/i);
-  if (/^IF\b/i.test(base) && thenIndex > 0) {
-    return `${combinedCondition}${base.slice(thenIndex)}`.trim();
-  }
-  return base;
-}
-
-/**
- * Builds display-only flattened rows for the Requirements Preview complete statement mode.
+ * Builds display-only flattened rows for the Requirements Preview complete
+ * statement mode. Every step inherits the conditions of the steps above it, so
+ * each row reads on its own. ELSE branches inherit the opposite of the IF they
+ * follow. Parent IFs that only gate their children are folded into them.
  */
 function completeStatementPreviewRows() {
   syncAutoReferenceSteps?.();
   const entries = hierarchicalStepEntries({ includeDisabled: false });
+  const stepsById = new Map(
+    entries.map((entry) => [entry.step.id, entry.step]),
+  );
   const hasDisplayedChild = new Set(
     entries.map((entry) => entry.step.parentId).filter(Boolean),
   );
-  const contextByStepId = new Map();
-  const hiddenNotesByStepId = new Map();
+  // Blocks a step's THEN children run under, and the blocks above the step.
+  const thenBlocksById = new Map();
+  const outerBlocksById = new Map();
+  const hiddenNotesById = new Map();
+  const lastIfBySibling = new Map();
+  const elseIfsBySibling = new Map();
   const rows = [];
 
   entries.forEach((entry) => {
     const step = entry.step;
-    const parentContext = contextByStepId.get(step.parentId) || [];
-    const parentHiddenNotes = hiddenNotesByStepId.get(step.parentId) || [];
+    const parentId = step.parentId || null;
+    const parent = parentId ? stepsById.get(parentId) : null;
     const stepType = completeStatementStepType(step);
-    const isConditional = stepType === "if_then";
-    const hasChildren = hasDisplayedChild.has(step.id);
+    const branch = parent ? step.branchType || "then" : "root";
+
+    let outer;
+    if (parent && (branch === "else" || branch === "else-if")) {
+      // An ELSE branch runs when its parent IF and earlier ELSE IFs were not met.
+      outer = [
+        ...(outerBlocksById.get(parentId) || []),
+        completeStatementInvertedBlock(parent),
+        ...(elseIfsBySibling.get(parentId) || []).map(
+          completeStatementInvertedBlock,
+        ),
+      ];
+    } else {
+      outer = parent ? thenBlocksById.get(parentId) || [] : [];
+    }
+
+    let own = [];
+    if (stepType === "if_then")
+      own = completeStatementConditionBlock(parseStepConditions(step));
+    else if (stepType === "else")
+      own = completeStatementInvertedBlock(
+        stepsById.get(step.params?.parent_if_step_id) ||
+          lastIfBySibling.get(parentId),
+      );
+    const blocks = own.length ? [...outer, own] : outer;
+
+    if (stepType === "if_then" && branch !== "else-if")
+      lastIfBySibling.set(parentId, step);
+    if (parent && branch === "else-if" && stepType === "if_then")
+      elseIfsBySibling.set(parentId, [
+        ...(elseIfsBySibling.get(parentId) || []),
+        step,
+      ]);
+
     const isGateOnly =
-      isConditional &&
-      hasChildren &&
+      (stepType === "if_then" || stepType === "else") &&
+      hasDisplayedChild.has(step.id) &&
       !completeStatementHasIndependentAction(step);
-    const ownCondition = isConditional
-      ? completeStatementConditionContext(step, true)
-      : "";
-    const nextContext = ownCondition
-      ? [...parentContext, ownCondition]
-      : parentContext;
-    const ownNote = noteText(step, rows.length);
-    const nextHiddenNotes =
+    const parentHiddenNotes = hiddenNotesById.get(parentId) || [];
+    // A legacy ELSE's default note describes ELSE itself, which this view removes.
+    const ownNote =
+      stepType === "else" ? step.notes || "" : noteText(step, rows.length);
+    outerBlocksById.set(step.id, outer);
+    thenBlocksById.set(step.id, blocks);
+    hiddenNotesById.set(
+      step.id,
       isGateOnly && ownNote
         ? [...parentHiddenNotes, ownNote]
-        : parentHiddenNotes;
-
-    contextByStepId.set(step.id, nextContext);
-    hiddenNotesByStepId.set(step.id, nextHiddenNotes);
-
+        : parentHiddenNotes,
+    );
     if (isGateOnly) return;
 
+    const logic = completeStatementLogic(
+      step,
+      completeStatementJoinConditions(blocks),
+    );
     rows.push({
-      step: `${rows.length + 1}`,
+      step: `${entry.number}`,
       stepId: step.id,
       branch: "Root",
-      analyst: isConditional
-        ? completeStatementAnalystLogic(step, parentContext)
-        : analystLogic(step),
-      developer: developerLogic(step),
+      analyst: logic.analyst,
+      developer: logic.developer,
       notes: completeStatementNotes(parentHiddenNotes, ownNote),
       level: 0,
       source: step.source || step.params?.source_file || "",
@@ -1015,28 +1162,36 @@ let afterRenderSelectedStep = null;
 function renderPreview() {
   syncPreviewNotesLayout();
   renderRequirementsFieldsPreview();
-  const rows = isCompleteStatementsPreviewMode()
-    ? completeStatementPreviewRows()
-    : previewRows();
+  const complete = isCompleteStatementsPreviewMode();
+  const rows = complete ? completeStatementPreviewRows() : previewRows();
+  if (!rows.length) {
+    e.logicPreview.innerHTML = atlasPreviewEmptyState({
+      title: "No audit logic yet",
+      body: "Steps appear here as you add them in the Logic Builder.",
+      action: "Open Logic Builder",
+      section: "steps",
+    });
+    return;
+  }
   e.logicPreview.innerHTML = `
-    <div class="logic-table-wrap">
+    <div class="logic-table-wrap" tabindex="0" aria-label="Audit Logic table${complete ? ", complete statements" : ""}">
       <table class="logic-preview-table">
         <thead>
           <tr>
-            <th>Step</th>
-            <th>Analyst Logic</th>
-            <th>Developer Logic</th>
-            <th class="preview-notes-col">Notes</th>
+            <th scope="col" class="preview-number-col">Step</th>
+            <th scope="col">Analyst Logic</th>
+            <th scope="col">Developer Logic</th>
+            <th scope="col" class="preview-notes-col">Notes</th>
           </tr>
         </thead>
         <tbody>
           ${rows
             .map(
               (row) => `
-            <tr class="logic-row-depth-${row.level}"${row.stepId ? ` data-preview-step-id="${esc(row.stepId)}"` : ""}>
-              <td>${esc(row.step)}</td>
-              <td>${renderLogicWithPills(row.analyst)}</td>
-              <td class="developer-logic-cell">${esc(row.developer)}</td>
+            <tr class="logic-row-depth-${row.level}" style="--preview-depth:${Number(row.level) || 0}"${row.stepId ? ` data-preview-step-id="${esc(row.stepId)}"` : ""}>
+              <td class="preview-number-col">${esc(row.step)}</td>
+              <td class="preview-analyst-col">${renderLogicWithPills(row.analyst)}</td>
+              <td class="preview-developer-col developer-logic-cell">${esc(row.developer)}</td>
               <td class="preview-notes-col">${e.includeNotes?.checked ? renderLogicWithPills(row.notes) : ""}</td>
             </tr>`,
             )
@@ -1046,33 +1201,62 @@ function renderPreview() {
     </div>`;
 }
 
-/* Narrow preview pane switch. Both panels stay mounted; CSS shows one at a time. */
-function atlasActivatePreviewPane(pane) {
+const ATLAS_PREVIEW_VIEWS = ["fields", "logic", "both"];
+const ATLAS_PREVIEW_VIEW_KEY = "atlasAlignPreviewView";
+
+/** Returns the stored Requirements Preview view, or "both". */
+function atlasStoredPreviewView() {
+  try {
+    const stored = localStorage.getItem(ATLAS_PREVIEW_VIEW_KEY);
+    return ATLAS_PREVIEW_VIEWS.includes(stored) ? stored : "both";
+  } catch {
+    return "both";
+  }
+}
+
+/**
+ * Shows Display Fields, Audit Logic, or both stacked. Both panels stay
+ * mounted, so switching never re-renders the tables.
+ * @param {string} view - "fields", "logic", or "both".
+ * @param {{ remember?: boolean }} options - Whether to store the choice.
+ */
+function atlasActivatePreviewPane(view, { remember = true } = {}) {
   const page = document.getElementById("page-preview");
   if (!page) return;
-  const tabs = [...page.querySelectorAll("[data-preview-pane-tab]")];
-  const panels = [...page.querySelectorAll("[data-preview-pane]")];
-  if (!tabs.length || !panels.length) return;
-  const nextPane = pane === "logic" ? "logic" : "fields";
-  tabs.forEach((tab) => {
-    const selected = tab.dataset.previewPaneTab === nextPane;
+  const next = ATLAS_PREVIEW_VIEWS.includes(view) ? view : "both";
+  page.dataset.previewView = next;
+  page.querySelectorAll("[data-preview-pane-tab]").forEach((tab) => {
+    const selected = tab.dataset.previewPaneTab === next;
     tab.setAttribute("aria-selected", selected ? "true" : "false");
     tab.tabIndex = selected ? 0 : -1;
   });
-  panels.forEach((panel) => {
-    panel.classList.toggle(
-      "is-preview-pane-active",
-      panel.dataset.previewPane === nextPane,
+  page.querySelectorAll("[data-preview-pane]").forEach((panel) => {
+    const active = next === "both" || panel.dataset.previewPane === next;
+    panel.classList.toggle("is-preview-pane-active", active);
+    panel.hidden = !active;
+    panel.setAttribute(
+      "aria-labelledby",
+      next === "both"
+        ? panel.querySelector(".preview-pane-heading")?.id || ""
+        : next === "fields"
+          ? "previewPaneFieldsTab"
+          : "previewPaneLogicTab",
     );
   });
+  if (!remember) return;
+  try {
+    localStorage.setItem(ATLAS_PREVIEW_VIEW_KEY, next);
+  } catch {
+    /* The view still switches; it just is not remembered. */
+  }
 }
 
 function atlasBindPreviewPaneSwitch() {
-  const tablist = document.querySelector(
-    "#page-preview [data-preview-pane-switch]",
-  );
+  const page = document.getElementById?.("page-preview");
+  const tablist = page?.querySelector("[data-preview-pane-switch]");
   if (!tablist || tablist.dataset.bound === "true") return;
   tablist.dataset.bound = "true";
+  atlasActivatePreviewPane(atlasStoredPreviewView(), { remember: false });
   tablist.addEventListener("click", (event) => {
     const tab = event.target.closest("[data-preview-pane-tab]");
     if (!tab || !tablist.contains(tab)) return;
@@ -1093,6 +1277,14 @@ function atlasBindPreviewPaneSwitch() {
     event.preventDefault();
     atlasActivatePreviewPane(tabs[nextIndex].dataset.previewPaneTab);
     tabs[nextIndex].focus();
+  });
+  page.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-preview-empty-section]");
+    if (!button) return;
+    const section = button.dataset.previewEmptySection;
+    if (typeof atlasNavigateToSection === "function")
+      atlasNavigateToSection(section).catch?.(() => showSection?.(section));
+    else showSection?.(section);
   });
 }
 

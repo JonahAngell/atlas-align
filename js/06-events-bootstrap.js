@@ -29,8 +29,6 @@ function shouldSkipBaseBodyEditEvent(event) {
     "[data-live-editor-step-id]",
     "#completeStatementsToggle",
     "#includeNotesToggle",
-    "#previewStyle",
-    "[data-preview-tab]",
     ".visual-picker-modal-backdrop",
     ".join-picker-backdrop",
     ".source-replace-backdrop",
@@ -273,7 +271,6 @@ function bindEvents() {
   on("includeNotesToggle", "change", () =>
     atlasRequestRender?.({ preview: true }),
   );
-  on("previewStyle", "change", () => atlasRequestRender?.({ preview: true }));
   on("addStepBtn", "click", (event) => atlasToggleNewRuleTypeMenu?.(event));
   on("loadLibraryAuditBtn", "click", () =>
     loadSelectedLibraryAudit().catch((err) =>

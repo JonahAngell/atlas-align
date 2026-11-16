@@ -83,6 +83,7 @@
     "notes": {
       "freeform_action": "Note: THEN action is free text and is not in the formulas: {action}",
       "matching_rows": "Note: The formulas mark rows that match this condition.",
+      "complete_statement_scope": "Applies only to rows that match these conditions:",
       "free_text_expression": "Note: The expression is free text and is copied as written. Review it before running.",
       "unknown_format": "Note: Format \"{format}\" is not a standard option. Check the formulas before running.",
       "missing_delimiter": "Note: Split On is empty. Add the delimiter before running.",
