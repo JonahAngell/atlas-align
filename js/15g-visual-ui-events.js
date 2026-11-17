@@ -999,9 +999,14 @@ function atlasNewRuleTypeOptions() {
     ["sort_records", "Sort Records"],
     ["remove_duplicates", "Remove Duplicates"],
   ];
-  return selectableTypes.filter(([value]) =>
+  const builtIn = selectableTypes.filter(([value]) =>
     (STEP_TYPE_OPTIONS || []).some(([catalogValue]) => catalogValue === value),
   );
+  // Definitions from the step type registry follow the built-in rule types.
+  const defined = (globalThis.ATLASStepTypeRuntime?.typeOptions?.() || [])
+    .filter((option) => !builtIn.some(([value]) => value === option.id))
+    .map((option) => [option.id, option.label]);
+  return [...builtIn, ...defined];
 }
 function atlasDefaultSourceForNewRule() {
   return (
@@ -1090,6 +1095,9 @@ function atlasCreateRuleOfType(stepType, { afterStepId = "" } = {}) {
   return step;
 }
 function atlasRuleTypeDescription(stepType) {
+  const defined =
+    globalThis.ATLASStepTypeRuntime?.definitionById?.(stepType)?.description;
+  if (defined) return defined;
   const descriptions = {
     create_column: "Create or populate an output column.",
     if_then: "Add conditional IF / THEN logic.",

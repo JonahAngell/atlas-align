@@ -1,7 +1,17 @@
 # Dynamic Step Type Builder: Plan
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
-issue #5000). Phase 1 is in review (issue #5001). Later phases have not started.
+issue #5000). Phase 1 (issue #5001) and Phase 2 (issue #5002) are in review.
+Later phases have not started.
+
+Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
+(`js/13a-step-type-runtime.js`), which answers from the registry or returns
+null so the built-in code runs. Two owners also gained a registry-only path:
+the step-type validation rule `audit.logic.step-type-rules` in Audit Issues,
+and text import of sentences written by a definition's English template
+(`textImport.fromEnglish`). Script roles `source`, `join`, `union`, `sort` and
+`dedupe` place a step the way the matching built-in type is placed, so they
+expect that type's parameter names until phase 5.
 
 ## Goal
 

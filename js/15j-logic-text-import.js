@@ -19,6 +19,67 @@ const ATLAS_IMPORT_TITLES = {
   filter_rows: "Filter Rows",
   flag_records: "Flag Records",
 };
+const ATLAS_BUILT_IN_IMPORT_TITLES = Object.freeze({ ...ATLAS_IMPORT_TITLES });
+
+// Import titles follow the step type registry: built-ins plus every definition.
+globalThis.ATLASStepTypeRuntime?.onChange?.(() => {
+  Object.keys(ATLAS_IMPORT_TITLES).forEach((key) => {
+    delete ATLAS_IMPORT_TITLES[key];
+  });
+  Object.assign(
+    ATLAS_IMPORT_TITLES,
+    ATLAS_BUILT_IN_IMPORT_TITLES,
+    globalThis.ATLASStepTypeRuntime.importTitles(),
+  );
+});
+
+/**
+ * A draft for a sentence written by a step type definition's English
+ * template, or null when no definition reads it.
+ */
+function atlasImportParseDefinedType(text) {
+  const parsed = globalThis.ATLASStepTypeRuntime?.parseText?.(text);
+  if (!parsed) return null;
+  const references = [];
+  const controls = [];
+  parsed.captures.forEach((capture) => {
+    const bind = `params.${capture.param}`;
+    if (capture.kind === "source")
+      references.push(
+        atlasImportSourceReference(
+          `${capture.param}-source`,
+          capture.value,
+          `${parsed.title} file`,
+          { fileBind: bind, aliasBind: "" },
+        ),
+      );
+    else if (capture.kind === "field")
+      references.push(
+        atlasImportFieldReference(
+          `${capture.param}-field`,
+          capture.value,
+          `${parsed.title} column`,
+          capture.sourceParam ? `${capture.sourceParam}-source` : "",
+          bind,
+        ),
+      );
+    else
+      controls.push(
+        atlasImportTextControl(
+          capture.param,
+          capture.label,
+          capture.value,
+          bind,
+          false,
+        ),
+      );
+  });
+  return atlasImportDraft(parsed.stepType, {
+    params: parsed.params,
+    references,
+    controls,
+  });
+}
 
 const ATLAS_IMPORT_OPERATORS = [
   "is not equal to",
@@ -2406,7 +2467,10 @@ function atlasParseImportedLogicText(value) {
       });
     return atlasImportParseIfThen(split.before, split.after);
   }
-  return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
+  return (
+    atlasImportParseDefinedType(text) ||
+    atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED)
+  );
 }
 
 function atlasLogicImportNormalize(value) {
