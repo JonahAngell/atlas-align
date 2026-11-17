@@ -52,7 +52,39 @@
 
   const library = global.ATLASStepTypeLibrary || {};
   const HANDLERS = Object.freeze({ ...(library.handlers || {}) });
-  const BLOCKS = Object.freeze({ ...(library.blocks || {}) });
+  /**
+   * Behavior blocks. A block a later definition version replaced with fields
+   * (library.replacedBlocks: block name -> type id) is kept as a shim that
+   * renders through that type's latest definition, so a publication pinned
+   * to the old version still renders, with the same output.
+   */
+  const BLOCKS = Object.freeze({
+    ...Object.fromEntries(
+      Object.entries(library.replacedBlocks || {}).map(([block, typeId]) => [
+        block,
+        replacedBlockShim(typeId),
+      ]),
+    ),
+    ...(library.blocks || {}),
+  });
+
+  function replacedBlockShim(typeId) {
+    const latest = () => registry?.resolve(typeId) || null;
+    const through = (part) => (step) => {
+      const definition = latest();
+      // A latest definition that is itself a block cannot stand in.
+      if (!definition || definition.block) return undefined;
+      return part(definition, step);
+    };
+    return Object.freeze({
+      editor: through((definition, step) => renderEditorWith(definition, step)),
+      english: through((definition, step) => englishWith(definition, step)),
+      formulas: through((definition, step) => formulasWith(definition, step)),
+      createdColumns: through(
+        (definition, step) => createdColumnsWith(definition, step) || [],
+      ),
+    });
+  }
   /**
    * The field controls renderEditor draws, from the control palette
    * (catalogs/step-types/controls.json). A definition that names any other
@@ -603,7 +635,10 @@
   // ---------------------------------------------------------------------------
 
   function english(step) {
-    const definition = definitionFor(step);
+    return englishWith(definitionFor(step), step);
+  }
+
+  function englishWith(definition, step) {
     if (!definition) return null;
     const fromBlock = blockPart(definition, "english");
     if (fromBlock) return text(fromBlock(step));
@@ -624,7 +659,17 @@
 
   /** Automatic notes, or null to keep the built-in notes. */
   function autoNotes(step) {
-    const definition = definitionFor(step);
+    return autoNotesWith(definitionFor(step), step);
+  }
+
+  function autoNotesWith(definition, step) {
+    // Notes return null to keep the built-in ones, which a block part cannot
+    // say, so a replaced block's notes are read from its latest definition.
+    const replacedBy = library.replacedBlocks?.[definition?.block];
+    if (replacedBy && !BLOCKS[definition.block]?.notes) {
+      const latest = registry?.resolve(replacedBy);
+      if (latest && !latest.block) return autoNotesWith(latest, step);
+    }
     const fromBlock = blockPart(definition, "notes");
     if (fromBlock) return text(fromBlock(step));
     if (!definition?.autoNotes) return null;
@@ -671,7 +716,10 @@
    * Developer Logic expect, or null to keep the built-in formulas.
    */
   function formulas(step) {
-    const definition = definitionFor(step);
+    return formulasWith(definitionFor(step), step);
+  }
+
+  function formulasWith(definition, step) {
     if (!definition) return null;
     const fromBlock = blockPart(definition, "formulas");
     if (fromBlock) return fromBlock(step) || null;
@@ -718,7 +766,10 @@
 
   /** Columns the step adds to the data, or null for built-in code. */
   function createdColumns(step) {
-    const definition = definitionFor(step);
+    return createdColumnsWith(definitionFor(step), step);
+  }
+
+  function createdColumnsWith(definition, step) {
     if (!definition) return null;
     const fromBlock = blockPart(definition, "createdColumns");
     if (fromBlock) return [...new Set((fromBlock(step) || []).filter(Boolean))];
@@ -1255,7 +1306,10 @@
 
   /** The editor form for a step, or null for built-in editors. */
   function renderEditor(step) {
-    const definition = definitionFor(step);
+    return renderEditorWith(definitionFor(step), step);
+  }
+
+  function renderEditorWith(definition, step) {
     if (!definition) return null;
     const fromBlock = blockPart(definition, "editor");
     if (fromBlock) {

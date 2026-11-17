@@ -121,7 +121,12 @@ when a param from `ATLASStepTypeRuntime.rerenderParams()` changes.
 
 Format Field and Split Field are version 3, made of fields. They have no
 blocks, and `sync_format_field` / `sync_split_field` handlers keep their
-parameters normalized. Engine version 1.5.0. Stored param names and option
+parameters normalized. A publication pinned to v1 or v2 still renders: the
+removed `format_field` and `split_field` blocks stay registered as shims
+(`replacedBlocks` in `js/13-step-type-library.js`) that render through the
+latest field-based definition, and a test renders the snapshot corpus pinned
+to v2 against v3. Every later conversion keeps a shim for each block it
+removes. Engine version 1.6.0. Stored param names and option
 values never change, and snapshots are identical.
 
 ## Goal

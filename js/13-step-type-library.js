@@ -47,6 +47,10 @@
  *   join            Join and Union, with the join type picker
  *   union_sources   saved Union Sources steps (legacy; normalize makes a Join)
  *   filter_rows, flag_records   single-condition steps (legacy)
+ * Replaced blocks (replacedBlocks below) are the ones a later version
+ * rebuilt with fields: format_field and split_field. Only definitions pinned
+ * to their old versions name them; they render through the field-based
+ * definition.
  * A new type can name one of them and change its label, order and export.
  */
 (function initializeStepTypeLibrary(global) {
@@ -599,10 +603,22 @@
     ),
   });
 
+  /**
+   * Behavior blocks a later version of a type replaced with fields: block
+   * name -> the type whose latest definition renders it. The runtime keeps
+   * each as a shim, so a publication pinned to the old version still
+   * renders. Never remove an entry while such a version can be pinned.
+   */
+  const replacedBlocks = Object.freeze({
+    format_field: "format_field",
+    split_field: "split_field",
+  });
+
   global.ATLASStepTypeLibrary = Object.freeze({
     helpers,
     handlers,
     blocks,
+    replacedBlocks,
     formatKind,
     formatDigits,
     splitDelimiter,

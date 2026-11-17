@@ -467,6 +467,11 @@
 │   │   │   │   ├── synthetic-legacy-shapes.json
 │   │   │   │   └── synthetic-transforms.json
 │   │   │   └── synthetic-audits.js
+│   │   ├── step-types-pinned
+│   │   │   ├── format_field.v1.json
+│   │   │   ├── format_field.v2.json
+│   │   │   ├── split_field.v1.json
+│   │   │   └── split_field.v2.json
 │   │   ├── authorization-role-matrix.fixture.json
 │   │   └── file-utility-compile-verdicts.json
 │   ├── support
@@ -553,6 +558,7 @@
 │   ├── startup-recovery.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
+│   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js
 │   ├── step-type-publishing.test.js
 │   ├── step-type-repository.test.js
@@ -572,6 +578,20 @@
 │   ├── workflow-ui-contract.test.js
 │   ├── workflow-validation-matrix.test.js
 │   └── workspace-navigation.test.js
+├── test-results
+│   ├── logic-builder-inventory-5--03142-ommon-behavior-is-traceable-chromium
+│   ├── logic-builder-inventory-5--68d5b-ble-Logic-Builder-step-type-chromium
+│   ├── logic-builder-remove-dupli-4c42c--migrate-to-the-column-list-chromium
+│   ├── logic-builder-remove-dupli-608b0-dates-the-list-and-sentence-chromium
+│   ├── logic-builder-remove-dupli-ee804-nd-switches-records-to-keep-chromium
+│   ├── logic-builder-remove-dupli-fe8c6--before-any-column-is-added-chromium
+│   ├── logic-builder-runtime-opti-16793-cords-ELSE-runtime-controls-chromium
+│   ├── logic-builder-runtime-opti-22e21-rt-Records-runtime-controls-chromium
+│   ├── logic-builder-runtime-opti-237aa-ds-IF-THEN-runtime-controls-chromium
+│   ├── logic-builder-runtime-opti-68ca1-ate-Column-runtime-controls-chromium
+│   ├── logic-builder-runtime-opti-e15a5-rmat-Field-runtime-controls-chromium
+│   ├── logic-builder-runtime-opti-f0f40-on-Sources-runtime-controls-chromium
+│   └── .last-run.json
 ├── tests
 │   ├── fixtures
 │   │   ├── atlas.fixture.js
