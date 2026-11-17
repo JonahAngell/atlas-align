@@ -2157,6 +2157,7 @@
 │   │       │   ├── startup-parallel.test.js
 │   │       │   ├── startup-recovery.test.js
 │   │       │   ├── string-transform-split.test.js
+│   │       │   ├── structured-step-editors.test.js
 │   │       │   ├── user-impersonation.test.js
 │   │       │   ├── user-profile-persistence.test.js
 │   │       │   ├── user-profile-role-refresh.test.js
