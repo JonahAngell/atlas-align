@@ -24,6 +24,8 @@ const SQL = Object.freeze({
   getDefinitionVersion: sqlResource("get-definition-version"),
   recordEvent: sqlResource("record-event"),
   listStepTypes: sqlResource("list-step-types"),
+  listRetiredStepTypes: sqlResource("list-retired-step-types"),
+  retireDefinition: sqlResource("retire-definition"),
 });
 
 /** The author recorded on rows the server imports from the repository. */
@@ -152,6 +154,9 @@ export async function importRepositoryStepTypes(
 export async function listStepTypes(pool) {
   const { engineVersion, schemaVersions } = loadStepTypeEngine();
   const rows = (await pool.query(SQL.listStepTypes)).rows;
+  const retired = (await pool.query(SQL.listRetiredStepTypes)).rows.map(
+    (row) => row.type_id,
+  );
   const latest = {};
   rows.forEach((row) => {
     if (row.latest) latest[row.type_id] = Number(row.version);
@@ -160,10 +165,49 @@ export async function listStepTypes(pool) {
     engineVersion,
     schemaVersions,
     latest,
+    retired,
     definitions: rows.map((row) => ({
       status: row.status,
       contentHash: row.content_hash,
       definition: row.definition,
     })),
   };
+}
+
+/**
+ * Retires one published version (the Step Type Builder's Retire action) and
+ * records a 'retired' event in the same transaction. Publications pinned to
+ * it keep rendering with it; when no published version of the type is left
+ * the type leaves the picker. Returns the retired row, or null when that
+ * version is not published (missing, a draft, or already retired).
+ */
+export async function retireStepTypeVersion(
+  pool,
+  { typeId, version, actor, reason = "" } = {},
+) {
+  if (!actor?.userId || !actor?.username || !actor?.fullName)
+    throw new Error("retireStepTypeVersion() needs the acting user");
+  return withTransaction(pool, async (client) => {
+    const retired = (
+      await client.query(SQL.retireDefinition, [
+        typeId,
+        version,
+        actor.userId,
+        actor.username,
+        actor.fullName,
+      ])
+    ).rows[0];
+    if (!retired) return null;
+    await client.query(SQL.recordEvent, [
+      retired.id,
+      retired.type_id,
+      retired.version,
+      "retired",
+      JSON.stringify(reason ? { reason: String(reason) } : {}),
+      actor.userId,
+      actor.username,
+      actor.fullName,
+    ]);
+    return retired;
+  });
 }

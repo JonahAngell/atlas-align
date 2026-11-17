@@ -420,7 +420,85 @@ with these properties:
   code ATLAS Align runs. Upgrading the builder's engine is a one-line lock
   change followed by a rebuild.
 - **Real previews:** the builder page loads the copied engine scripts in the
-  browser, so the editor preview is the markup ATLAS would render.
+  browser, so the editor preview is the markup ATLAS would render. The
+  `preview` section of `engine-manifest.json` lists every file the preview
+  page needs, found by removing scripts from the full `index.html` list until
+  an output changed. `scripts` is the whole page in load order (the engine
+  scripts appear where they load):
+
+  1. `js/00-icons.js`
+  2. `js/00-config-utils.js`
+  3. `js/step-types/00-templates.js`
+  4. `js/step-types/01-schema.js`
+  5. `js/step-types/02-definitions.js`
+  6. `js/step-types/03-migrations.js`
+  7. `js/step-types/04-registry.js`
+  8. `js/step-types/definitions.generated.js`
+  9. `js/01-state-dom.js`
+  10. `js/02-hierarchy.js`
+  11. `js/02-logic-rendering.js`
+  12. `js/02b-developer-formulas.js`
+  13. `js/03-capture-actions.js`
+  14. `js/07-phrase-catalog.js`
+  15. `js/09-workbook-import.js`
+  16. `js/10-field-picker.js`
+  17. `js/11-repo-library.js`
+  18. `js/12-export-foundation.js`
+  19. `js/12b-code-export.js`
+  20. `js/13-step-type-library.js`
+  21. `js/13a-step-type-runtime.js`
+  22. `js/14-catalog-driven-builder.js`
+  23. `js/15a-audit-library-ui.js`
+  24. `js/15d-logic-rules-list.js`
+  25. `js/15e-logic-step-editor.js`
+  26. `js/15f-join-picker.js`
+  27. `js/15g-visual-ui-events.js`
+
+  plus `css/global.css`, `css/sources.css` and `css/logic-builder.css` (in
+  that order) and `catalogs/logic_phrase_catalog.json`. After the scripts
+  load, the page calls `initPhraseCatalog()` and puts the draft in a registry
+  with `ATLASStepTypeRuntime.useRegistry()`, then calls
+  `renderGuidedBuilder(step)`, `analystLogic(step)`, `developerLogic(step)`,
+  `atlasDeveloperFormulas(step)`, `buildAuditSqlScript()`,
+  `buildAuditPythonScript()` and `qtestSectionsFromLogicSteps()` on a one-step
+  `state.audit`. `test/step-type-preview-scripts.test.js` loads only these
+  files on a bare page and checks every step type renders, and that the
+  outputs equal the whole app's snapshots. Engine version 1.5.0 adds the list.
+
+- **Drafts** live in `atlas_step_type_drafts`
+  (`.launch/migrations/20261117130000_create_atlas_step_type_drafts.sql`):
+
+  ```sql
+  CREATE TABLE atlas_step_type_drafts (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    type_id text NOT NULL UNIQUE,        -- ^[a-z][a-z0-9_]*$, one draft per type
+    base_version integer NULL,           -- published version it started from; NULL = new type
+    definition jsonb NOT NULL,           -- an object whose "id" equals type_id
+    revision integer NOT NULL DEFAULT 1, -- optimistic concurrency, +1 on every save
+    created_by_user_id / _username / _full_name text NOT NULL,  -- not blank
+    created_at timestamptz NOT NULL DEFAULT current_timestamp,
+    updated_by_user_id / _username / _full_name text NOT NULL,  -- not blank
+    updated_at timestamptz NOT NULL DEFAULT current_timestamp
+  );
+  ```
+
+  A save is `UPDATE ... SET definition = $1, revision = revision + 1,
+updated_* = ... WHERE type_id = $2 AND revision = $3`; no row updated means
+  someone else saved first. Publishing inserts the definition with
+  `sql/step-type-repository/insert-definition.sql` (`origin = 'builder'`,
+  status `published`), records a `published` event with `record-event.sql`
+  and deletes the draft, in one transaction. `atlas_step_type_events.event`
+  also allows `draft_saved` and `draft_discarded`; those rows have a NULL
+  `definition_id` (a draft has no definition row), `version` holds the
+  draft's `base_version`, and `details` holds the revision. Every other event
+  still needs its definition row.
+
+- **Retire** is `sql/step-type-repository/retire-definition.sql` plus a
+  `retired` event (`retireStepTypeVersion()` in
+  `src/step-type-repository.js`). It changes only status and `updated_*`.
+  `GET /api/step-types` keeps sending retired versions that publications are
+  pinned to and lists types with no published version left in `retired`, so
+  the browser drops them from the picker while existing steps keep rendering.
 - **Exports target this repository.** The `.zip` layout below is relative to
   the ATLAS Align repository root, not the builder's.
 

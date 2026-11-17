@@ -17,7 +17,8 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   └── settings.json
+│   ├── settings.json
+│   └── settings.local.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -59,7 +60,8 @@
 │   │   ├── 20261026120000_cascade_audit_id_updates.sql
 │   │   ├── 20261028120000_add_manual_audit_lock_publications.sql
 │   │   ├── 20261116120000_create_atlas_audit_runs.sql
-│   │   └── 20261117120000_create_atlas_step_type_definitions.sql
+│   │   ├── 20261117120000_create_atlas_step_type_definitions.sql
+│   │   └── 20261117130000_create_atlas_step_type_drafts.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
@@ -391,8 +393,10 @@
 │   ├── step-type-repository
 │   │   ├── get-definition-version.sql
 │   │   ├── insert-definition.sql
+│   │   ├── list-retired-step-types.sql
 │   │   ├── list-step-types.sql
-│   │   └── record-event.sql
+│   │   ├── record-event.sql
+│   │   └── retire-definition.sql
 │   ├── user-impersonation
 │   │   ├── create-impersonation-session.sql
 │   │   ├── invalidate-impersonation-token.sql
@@ -546,6 +550,7 @@
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
 │   ├── step-type-engine.test.js
+│   ├── step-type-preview-scripts.test.js
 │   ├── step-type-publishing.test.js
 │   ├── step-type-repository.test.js
 │   ├── step-type-runtime.test.js

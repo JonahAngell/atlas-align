@@ -230,3 +230,61 @@ test("definitions this engine cannot read are an Audit Issue for admins only", a
     /future_type version 1 needs a newer ATLAS Align/,
   );
 });
+
+test("a retired type leaves the picker but its steps and pinned publications still render", async () => {
+  const context = await loadApp();
+  const pickerIds = () =>
+    run(context, "ATLASStepTypeRuntime.typeOptions()").map(
+      (option) => option.id,
+    );
+  assert.ok(pickerIds().includes("sort_records"));
+  const before = english(context);
+
+  // Every version of sort_records is retired. The server still sends the
+  // version a publication is pinned to, and names the type as retired.
+  const { fetch } = serverFetch({
+    latest: {},
+    retired: ["sort_records"],
+    definitions: [{ status: "retired", definition: SORT_V1 }],
+  });
+  await loadFrom(context, fetch);
+  assert.ok(!pickerIds().includes("sort_records"), "hidden from the picker");
+  assert.ok(pickerIds().includes("remove_duplicates"), "others stay");
+  // Existing steps of the type keep rendering.
+  assert.equal(english(context), before);
+  // And so does a publication pinned to the retired version.
+  vm.runInContext(
+    "ATLASStepTypeRuntime.usePinnedVersions({ sort_records: 1 })",
+    context,
+  );
+  assert.equal(english(context), before);
+  vm.runInContext("ATLASStepTypeRuntime.usePinnedVersions(null)", context);
+});
+
+test("retiring one version keeps the type in the picker at its published version", async () => {
+  const context = await loadApp();
+  const { fetch } = serverFetch({
+    latest: { sort_records: 1 },
+    retired: [],
+    definitions: [
+      { status: "published", definition: SORT_V1 },
+      { status: "retired", definition: SORT_V2 },
+    ],
+  });
+  await loadFrom(context, fetch);
+  assert.equal(
+    run(context, 'ATLASStepTypeRuntime.definitionById("sort_records").version'),
+    1,
+  );
+  assert.ok(
+    run(context, "ATLASStepTypeRuntime.typeOptions()").some(
+      (option) => option.id === "sort_records",
+    ),
+  );
+  vm.runInContext(
+    "ATLASStepTypeRuntime.usePinnedVersions({ sort_records: 2 })",
+    context,
+  );
+  assert.match(english(context), /^Order the rows by /);
+  vm.runInContext("ATLASStepTypeRuntime.usePinnedVersions(null)", context);
+});

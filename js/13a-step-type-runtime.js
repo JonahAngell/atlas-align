@@ -237,6 +237,11 @@
           if (Number.isInteger(Number(version)))
             latestVersions[id] = Number(version);
         });
+        // A type retired in the builder has no latest version, so it leaves
+        // the picker; its steps still render with its highest version.
+        (Array.isArray(payload?.retired) ? payload.retired : []).forEach(
+          (id) => delete latestVersions[id],
+        );
         const loaded = create({
           ...registryOptions(),
           schema: bundle.schema,
