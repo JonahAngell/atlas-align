@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { STEP_TYPE_SCRIPTS } from "./support/step-type-scripts.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -30,6 +31,7 @@ function load({
     "js/07-phrase-catalog.js",
     "js/02-logic-rendering.js",
     "js/02b-developer-formulas.js",
+    ...STEP_TYPE_SCRIPTS,
     "js/12b-code-export.js",
   ])
     vm.runInContext(read(file), context, { filename: file });
