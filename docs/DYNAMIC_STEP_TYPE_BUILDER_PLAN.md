@@ -1,6 +1,7 @@
 # Dynamic Step Type Builder: Plan
 
-Status: draft for review (2026-11-16). Nothing in this plan is implemented yet.
+Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
+issue #5000). Later phases have not started.
 
 ## Goal
 
@@ -17,22 +18,26 @@ files. A record holds:
 - the validation rules
 - how to read the type back from text
 
-A separate Step Type Builder app, attached to the same database, creates and
-edits these records without code. It exports them as a `.zip` that unzips into
+A separate Step Type Builder app, in its own repository and attached to the
+same database, creates and edits these records without code. It exports them as a `.zip` that unzips into
 the repository for commit and deploy.
 
 ## Decisions taken
 
-| #   | Decision                                                                                                                                                 |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Definitions are stored as Postgres rows. The app also loads JSON definitions from the repository, which the builder exports as a `.zip`.                 |
-| 2   | Both simple and complex step types are built without code.                                                                                               |
-| 3   | All 11 existing types move into the new structure. Existing audits, imports and saved revisions keep working unchanged.                                  |
-| 4   | Persisted parameter names and values stay as they are (`value_mode: "Static value"`, `join_type: "INNER JOIN"` and so on). Each definition maps to them. |
-| 5   | "Notes" means the automatic manual notes some types fill in when the analyst leaves Notes blank (Join, Union and ELSE today, from `noteText()`).         |
-| 6   | The builder is a separate app deployed on StudioShare Launch, connected to the same database as ATLAS Align.                                             |
-| 7   | New types work in every export: Requirements Preview, Developer Logic, the full SQL and Python scripts, qTest, the workbook and JSON.                    |
-| 8   | ELSE, Filter Rows, Flag Records, Split Field and `union_sources` stay as hidden legacy definitions.                                                      |
+| #   | Decision                                                                                                                                                                                                              |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Definitions are stored as Postgres rows. The app also loads JSON definitions from the repository, which the builder exports as a `.zip`.                                                                              |
+| 2   | Both simple and complex step types are built without code.                                                                                                                                                            |
+| 3   | All 11 existing types move into the new structure. Existing audits, imports and saved revisions keep working unchanged.                                                                                               |
+| 4   | Persisted parameter names and values stay as they are (`value_mode: "Static value"`, `join_type: "INNER JOIN"` and so on). Each definition maps to them.                                                              |
+| 5   | "Notes" means the automatic manual notes some types fill in when the analyst leaves Notes blank (Join, Union and ELSE today, from `noteText()`).                                                                      |
+| 6   | The builder is a separate app deployed on StudioShare Launch, connected to the same database as ATLAS Align.                                                                                                          |
+| 7   | New types work in every export: Requirements Preview, Developer Logic, the full SQL and Python scripts, qTest, the workbook and JSON.                                                                                 |
+| 8   | ELSE, Filter Rows, Flag Records, Split Field and `union_sources` stay as hidden legacy definitions.                                                                                                                   |
+| A   | Publishing in the builder makes a type live in ATLAS for whichever database the builder is attached to. The `.zip` and a deploy carry it to other environments and make it the versioned baseline in this repository. |
+| B   | Published and locked audits render with the definition versions recorded on the publication. Editable audits use the latest published version.                                                                        |
+| C   | The builder lives in its own repository. It copies the step type engine from this repository at build time.                                                                                                           |
+| D   | Phase branches use issue numbers starting at 5001, one number per branch in order (Phase 0 used 5000).                                                                                                                |
 
 ## What exists today
 
@@ -280,7 +285,11 @@ How the two are reconciled:
    repository JSON. The registry never ends up empty.
 3. **Drafts** exist only in the builder. ATLAS shows a published version to
    admins and analysts once the builder publishes it, with no deploy needed.
-   The `.zip` makes it the permanent, versioned baseline (see open decision A).
+   The `.zip` makes it the permanent, versioned baseline (decision A).
+4. **Engine compatibility.** Each definition names its `schemaVersion`. ATLAS
+   Align loads only definitions whose `schemaVersion` its engine supports and
+   reports the rest as an Audit Issue for admins. A builder built from a newer
+   engine therefore can't publish a type that the deployed ATLAS can't render.
 
 ### 5. Old audits and publications
 
@@ -291,7 +300,7 @@ How the two are reconciled:
 - Published snapshots and locked audits render with the definition versions
   that were current when they were published. Those versions are recorded on
   the publication, so later wording changes don't rewrite already-approved
-  requirements (see open decision B). Editable audits always use the latest
+  requirements (decision B). Editable audits always use the latest
   published version.
 - The audit document gets no new field on each step. Content hashes, revisions
   and approvals are not touched by this update.
@@ -310,16 +319,29 @@ How the two are reconciled:
 
 ### 7. The Step Type Builder app
 
-A separate Launch app (decision 6) with these properties:
+A separate Launch app in its own GitLab/GitHub repository (decisions 6 and C)
+with these properties:
 
 - **Runtime:** Express on Node 22 Alpine, `USER 1000:1000`, port 8080,
   `/api/health`. Uses MyID login and allows only the `atlas-align-admin` role,
-  checked on the server for every request.
+  checked on the server for every request. Its own Dockerfile, webhook and
+  service-account setup follow the Launch checklist.
 - **Database:** connects with `STUDIOSHARE_DB_URL` and reads and writes only
   the `atlas_step_type_*` tables. It ships no migrations. ATLAS Align owns the
   schema, so the two apps can never disagree about it.
-- **Shared engine:** loads the same `js/` engine files as ATLAS Align, so its
-  previews come from the real code.
+- **Shared engine, copied at build time:** ATLAS Align keeps the step type
+  engine in one self-contained folder, `js/step-types/`. That folder holds the
+  template renderer, the registry, the blocks and the form renderer, plus the
+  scripts the engine depends on, listed in `js/step-types/engine-manifest.json`
+  together with an engine version. The builder repository pins an ATLAS Align
+  tag or commit in `atlas-engine.lock`. Its build step fetches those files at
+  that revision and copies them into the image, so its previews run the same
+  code ATLAS Align runs. Upgrading the builder's engine is a one-line lock
+  change followed by a rebuild.
+- **Real previews:** the builder page loads the copied engine scripts in the
+  browser, so the editor preview is the markup ATLAS would render.
+- **Exports target this repository.** The `.zip` layout below is relative to
+  the ATLAS Align repository root, not the builder's.
 
 Screens:
 
@@ -346,7 +368,7 @@ Screens:
    a new immutable version. Retire hides a type from the ATLAS picker; existing
    steps keep rendering.
 5. **Export .zip.** One button. The archive is laid out from the repository
-   root, so unzipping it at the root puts every file in place:
+   root of ATLAS Align, so unzipping it at that root puts every file in place:
 
    ```
    catalogs/step-types/<id>.json
@@ -367,39 +389,24 @@ rate-limited, and actions are logged without definition bodies or tokens.
 
 ## Phases
 
-Each phase is its own branch and merge request
-(`feature-<ISSUE>-step-types-<phase>`), with no visible change to ATLAS
-behavior until phase 7.
+Each phase is its own branch and merge request, with no visible change to
+ATLAS behavior until phase 7. Phase 0 used issue 5000. Later branches take the
+next issue number in order, starting at 5001 (decision D), for example
+`feature-5001-step-types-engine`. A phase that needs more than one branch uses
+one number per branch. Phase 7 is built in the builder's own repository
+(decision C), so its branches and merge requests live there.
 
-| Phase                           | Work                                                                                                                                                                                                                                                                                                                                                                         | Done when                                                                                                     |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **0. Snapshot current output**  | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                               | `npm test` stores and compares the snapshots. No app change.                                                  |
-| **1. Engine**                   | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files loaded early in `index.html` and testable through `node:vm` like the current tests.                                                                                                                                                                | Unit tests cover every template feature, schema errors and migrations.                                        |
-| **2. Registry entry points**    | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                    | Snapshots unchanged.                                                                                          |
-| **3. Simple types**             | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                     | Snapshots identical for these types.                                                                          |
-| **4. Blocks and complex types** | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`. | Snapshots identical; Playwright Logic Builder checks pass.                                                    |
-| **5. Exports and validation**   | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                      | Snapshots identical, Audit Issues tests pass.                                                                 |
-| **6. Postgres**                 | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications.                                                                                                                              | Contract tests for import, conflict rejection, fallback and pinned rendering.                                 |
-| **7. Builder app**              | The app, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                                                                                                         | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production. |
-| **8. Docs**                     | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                          | Docs reviewed.                                                                                                |
+| Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                         | Done when                                                                                                     |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **0. Snapshot current output** (done, #5000) | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                               | `npm test` stores and compares the snapshots. No app change.                                                  |
+| **1. Engine**                                | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files in `js/step-types/`, listed in `engine-manifest.json`, loaded early in `index.html` and testable through `node:vm`.                                                                                                                                | Unit tests cover every template feature, schema errors and migrations.                                        |
+| **2. Registry entry points**                 | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                    | Snapshots unchanged.                                                                                          |
+| **3. Simple types**                          | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                     | Snapshots identical for these types.                                                                          |
+| **4. Blocks and complex types**              | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`. | Snapshots identical; Playwright Logic Builder checks pass.                                                    |
+| **5. Exports and validation**                | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                      | Snapshots identical, Audit Issues tests pass.                                                                 |
+| **6. Postgres**                              | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications (decision B).                                                                                                                 | Contract tests for import, conflict rejection, fallback and pinned rendering.                                 |
+| **7. Builder app**                           | In the builder's own repository: the app, `atlas-engine.lock` and the engine copy step, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                          | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production. |
+| **8. Docs**                                  | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                          | Docs reviewed.                                                                                                |
 
 Phases 0–5 are a refactor that keeps output identical. The phase 0 snapshots
 are what make it safe to delete the old per-type code.
-
-## Open decisions
-
-- **A. When does a builder publish go live?** Recommended: Publish in the
-  builder makes the type live in ATLAS for whichever database the builder is
-  attached to. The zip-and-deploy step is how it reaches other environments
-  and becomes the versioned baseline. The alternative is to treat builder
-  publishes as staging-only, so a type only goes live after deploy.
-- **B. Pin definition versions on publication?** Recommended: yes. Without
-  pinning, changing a template rewrites the wording of already-published
-  requirements.
-- **C. Where the builder's code lives.** Recommended: in this repository under
-  `builder/` with its own `Dockerfile.builder`, so it shares `js/` and
-  `catalogs/` directly. This only works if Launch can point a second app at the
-  same GitLab repository with a different Dockerfile path. If it can't, the
-  builder becomes its own repository and copies the engine files at build time.
-- **D. Issue numbers** for the phase branches, so names follow
-  `feature-<ISSUE>-…`.
