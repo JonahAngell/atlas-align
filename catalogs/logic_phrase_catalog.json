@@ -85,12 +85,10 @@
       "matching_rows": "Note: The formulas mark rows that match this condition.",
       "complete_statement_scope": "Applies only to rows that match these conditions:",
       "free_text_expression": "Note: The expression is free text and is copied as written. Review it before running.",
-      "unknown_format": "Note: Format \"{format}\" is not a standard option. Check the formulas before running.",
       "missing_delimiter": "Note: Split On is empty. Add the delimiter before running.",
       "append_message_excel": "Note: {column} keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into {column}.",
       "split_numbered_columns": "Note: The number of parts can vary, so the columns are numbered {pattern}, and so on. Excel spills one part into each column to the right. SQL Server returns one row per part with its ordinal; pivot the rows to get one column per part.",
       "split_sql_version": "Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.",
-      "keep_true_rows": "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
       "excel_join_limit": "Note: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel."
     },
     "join": "{join_type}: keep {kept_rows} when joining \"{left_alias}\" on \"{left_field}\" to \"{right_alias}\" on \"{right_field}\".",
@@ -109,22 +107,7 @@
     }
   },
   "analyst_logic": {
-    "reference_source": {
-      "with_alias": "Reference source file {source_file} as {source_alias}:",
-      "without_alias": "Reference source file {source_file}:"
-    },
-    "format_field": {
-      "default": "Format {table_column} as {format}{format_suffix}."
-    },
-    "split_field": {
-      "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}."
-    },
-    "sort_records": {
-      "default": "Sort records by {table_column} in {sort_direction} order.",
-      "then_clause": ", then by {table_column} in {sort_direction} order"
-    },
     "remove_duplicates": {
-      "default": "Identify rows where all values match across these columns: {column_list}, remove duplicates and {keep_clause}.",
       "keep_clauses": {
         "Keep first record": "keep the first record",
         "Keep last record": "keep the last record",

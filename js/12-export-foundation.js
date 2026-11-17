@@ -360,17 +360,10 @@ function qtestSectionForStep(step, action, outputColumns) {
   const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
   if (defined?.section) return defined.section;
   switch (step.step_type) {
-    case "reference_source":
-      return "G";
     case "join":
     case "union_sources":
     case "create_column":
-    case "format_field":
-    case "split_field":
       return "D";
-    case "sort_records":
-    case "remove_duplicates":
-      return "E";
   }
   if (action.kind === "display_text")
     return /^research\b/i.test(String(action.message).trim()) ? "C" : "A";
@@ -390,15 +383,10 @@ function qtestTestTypeForStep(step, action) {
   const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
   if (defined?.testType) return defined.testType;
   switch (step.step_type) {
-    case "reference_source":
     case "join":
     case "union_sources":
       return "Integration";
     case "create_column":
-    case "format_field":
-    case "split_field":
-    case "sort_records":
-    case "remove_duplicates":
       return "Data Validation";
   }
   if (action.kind === "display_text" || action.kind === "none") return "UAT";

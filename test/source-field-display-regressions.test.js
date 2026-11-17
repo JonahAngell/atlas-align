@@ -5,6 +5,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import vm from "node:vm";
+import {
+  STEP_TYPE_ENGINE_SCRIPTS,
+  STEP_TYPE_RUNTIME_SCRIPTS,
+} from "./support/step-type-scripts.js";
 
 const read = (file) =>
   fs.readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -69,6 +73,19 @@ function load(files, extra = {}, setup = "") {
     const context = baseContext(extra);
     for (const name of stubs)
       if (!(name in context)) context[name] = () => undefined;
+    // The step type scripts install on window; in a browser that is the
+    // global object, which the app's own scripts read them from.
+    for (const name of [
+      "ATLASStepTypes",
+      "ATLASStepTypeLibrary",
+      "ATLASStepTypeRuntime",
+    ])
+      Object.defineProperty(context.window, name, {
+        get: () => context[name],
+        set: (value) => {
+          context[name] = value;
+        },
+      });
     vm.createContext(context);
     try {
       for (const file of files)
@@ -86,6 +103,7 @@ function load(files, extra = {}, setup = "") {
 }
 
 const APP_FILES = [
+  ...STEP_TYPE_ENGINE_SCRIPTS,
   "js/01-state-dom.js",
   "js/07-phrase-catalog.js",
   "js/02-logic-rendering.js",
@@ -94,6 +112,7 @@ const APP_FILES = [
   "js/09-workbook-import.js",
   "js/10-field-picker.js",
   "js/11-repo-library.js",
+  ...STEP_TYPE_RUNTIME_SCRIPTS,
   "js/14-catalog-driven-builder.js",
   "js/15a-audit-library-ui.js",
   "js/15e-logic-step-editor.js",
@@ -204,7 +223,7 @@ test("reference: developer SQL always names the alias", () => {
   const ctx = app();
   ctx.add("sap.currency");
   ctx.sync();
-  const dev = ctx.atlasDevReferenceSource(references(ctx)[0]);
+  const dev = ctx.atlasDeveloperFormulas(references(ctx)[0]);
   assert.match(dev.sql, / AS /);
 });
 

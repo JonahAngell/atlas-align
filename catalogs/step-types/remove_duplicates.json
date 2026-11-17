@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "id": "remove_duplicates",
+  "version": 1,
+  "label": "Remove Duplicates",
+  "description": "Remove records whose selected columns all match.",
+  "category": "transform",
+  "order": 70,
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    },
+    {
+      "op": "default",
+      "param": "duplicate_action",
+      "value": "Keep first record"
+    },
+    {
+      "op": "handler",
+      "name": "sync_duplicate_fields"
+    }
+  ],
+  "fields": [
+    {
+      "param": "duplicate_fields_json",
+      "control": "block",
+      "block": "duplicate_keys",
+      "label": "Columns to compare"
+    },
+    {
+      "param": "duplicate_action",
+      "control": "choice",
+      "label": "Records to keep",
+      "heading": "Records to Keep",
+      "display": "cards",
+      "popover": "list",
+      "default": "Keep first record",
+      "options": [
+        {
+          "value": "Keep first record",
+          "label": "Keep first",
+          "description": "Keep the earliest matching record."
+        },
+        {
+          "value": "Drop all duplicated records",
+          "label": "Keep none",
+          "description": "Remove every record that has a duplicate."
+        },
+        {
+          "value": "Keep last record",
+          "label": "Keep last",
+          "description": "Keep the latest matching record."
+        }
+      ]
+    }
+  ],
+  "english": {
+    "default": "Identify rows where all values match across these columns: {{#each (duplicateKeys param) separator=\", \" lastSeparator=\", and \" pairSeparator=\" and \"}}{{tableColumn sourceFile sourceAlias fieldName sameSource}}{{else}}{{placeholder \"duplicate_columns\" \"[selected columns]\"}}{{/each}}, remove duplicates and {{#switch (default (trim param.duplicate_action) \"Keep first record\")}}{{#case \"Keep first record\"}}keep the first record{{/case}}{{#case \"Keep last record\"}}keep the last record{{/case}}{{#case \"Drop all duplicated records\"}}keep none of the duplicated records{{/case}}{{#default}}keeping the first record{{/default}}{{/switch}}."
+  },
+  "formulas": {
+    "shape": "frame",
+    "default": {
+      "excel": "=COUNTIFS({{#each (duplicateKeys param legacy=true) separator=\", \"}}{{#switch (default param.duplicate_action \"Keep first record\")}}{{#case \"Keep last record\"}}{{field sourceFile fieldName alias=sourceAlias}}:INDEX({{firstKeyTable (duplicateKeys param legacy=true) param.source_file param.source_alias}}[{{excelColumn (default fieldName (placeholder \"field\" \"[field]\"))}}], ROWS({{firstKeyTable (duplicateKeys param legacy=true) param.source_file param.source_alias}}[{{excelColumn (default fieldName (placeholder \"field\" \"[field]\"))}}])), {{field sourceFile fieldName alias=sourceAlias}}{{/case}}{{#case \"Drop all duplicated records\"}}{{firstKeyTable (duplicateKeys param legacy=true) param.source_file param.source_alias}}[{{excelColumn (default fieldName (placeholder \"field\" \"[field]\"))}}], {{field sourceFile fieldName alias=sourceAlias}}{{/case}}{{#default}}INDEX({{firstKeyTable (duplicateKeys param legacy=true) param.source_file param.source_alias}}[{{excelColumn (default fieldName (placeholder \"field\" \"[field]\"))}}], 1):{{field sourceFile fieldName alias=sourceAlias}}, {{field sourceFile fieldName alias=sourceAlias}}{{/default}}{{/switch}}{{/each}})=1",
+      "sql": "{{#switch (default param.duplicate_action \"Keep first record\")}}{{#case \"Drop all duplicated records\"}}COUNT(*) OVER (PARTITION BY {{#each (duplicateKeys param legacy=true) separator=\", \"}}{{field sourceFile fieldName alias=sourceAlias}}{{/each}}) AS [Duplicate Count] -- keep rows where [Duplicate Count] = 1{{/case}}{{#case \"Keep last record\"}}ROW_NUMBER() OVER (PARTITION BY {{#each (duplicateKeys param legacy=true) separator=\", \"}}{{field sourceFile fieldName alias=sourceAlias}}{{/each}} ORDER BY (SELECT NULL)) AS [Duplicate Rank], COUNT(*) OVER (PARTITION BY {{#each (duplicateKeys param legacy=true) separator=\", \"}}{{field sourceFile fieldName alias=sourceAlias}}{{/each}}) AS [Duplicate Count] -- keep rows where [Duplicate Rank] = [Duplicate Count]{{/case}}{{#default}}ROW_NUMBER() OVER (PARTITION BY {{#each (duplicateKeys param legacy=true) separator=\", \"}}{{field sourceFile fieldName alias=sourceAlias}}{{/each}} ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1{{/default}}{{/switch}}",
+      "python": "df = df.drop_duplicates(subset=[{{#each (duplicateKeys param legacy=true) separator=\", \"}}{{quote fieldName}}{{/each}}], keep={{#switch (default param.duplicate_action \"Keep first record\")}}{{#case \"Drop all duplicated records\"}}False{{/case}}{{#case \"Keep last record\"}}\"last\"{{/case}}{{#default}}\"first\"{{/default}}{{/switch}})"
+    },
+    "notes": [
+      "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order."
+    ]
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "dedupe",
+    "qtest": {
+      "section": "E",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

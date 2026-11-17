@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "id": "split_field",
+  "version": 1,
+  "label": "Split Field",
+  "description": "Split a field into a derived output.",
+  "category": "transform",
+  "status": "legacy",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "hidden"
+    },
+    {
+      "param": "source_alias",
+      "control": "hidden",
+      "valueTemplate": "{{alias param.source_file}}"
+    },
+    {
+      "param": "field_name",
+      "control": "field_picker",
+      "label": "Field",
+      "placeholder": "Select field",
+      "sourceParam": "source_file"
+    },
+    {
+      "param": "split_on",
+      "control": "text",
+      "label": "Split On"
+    },
+    {
+      "param": "split_part",
+      "control": "text",
+      "label": "Display Part",
+      "placeholder": "e.g., first value"
+    },
+    {
+      "param": "output_column",
+      "control": "field_picker",
+      "label": "Output Column",
+      "placeholder": "Select field"
+    }
+  ],
+  "english": {
+    "default": "Split {{tableColumn param.source_file param.source_alias param.field_name}} on the {{quote param.split_on}} and display {{param.split_part}} in column {{quote param.output_column}}."
+  },
+  "formulas": {
+    "shape": "assignment",
+    "target": "{{default param.output_column (placeholder \"output_column\" \"[output column]\")}}",
+    "default": {
+      "excel": "{{#if (eq (splitPart param.split_part) \"last\")}}TAKE(TEXTSPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}), , -1){{else}}INDEX(TEXTSPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}), {{splitPart param.split_part}}){{/if}}",
+      "sql": "{{#switch (splitPart param.split_part)}}{{#case \"last\"}}RIGHT({{field param.source_file param.field_name alias=param.source_alias}}, CHARINDEX(REVERSE({{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}), REVERSE({{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}} + {{field param.source_file param.field_name alias=param.source_alias}})) - 1){{/case}}{{#case 1}}LEFT({{field param.source_file param.field_name alias=param.source_alias}}, CHARINDEX({{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}, {{field param.source_file param.field_name alias=param.source_alias}} + {{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}) - 1){{/case}}{{#default}}(SELECT [value] FROM STRING_SPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}, 1) WHERE [ordinal] = {{splitPart param.split_part}}){{/default}}{{/switch}}",
+      "python": "{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\").str.split({{quote (orEmpty (splitDelimiter param.split_on) (placeholder \"delimiter\" \"[delimiter]\"))}}, regex=False).str[{{#if (eq (splitPart param.split_part) \"last\")}}-1{{else}}{{minus (splitPart param.split_part) 1}}{{/if}}]"
+    },
+    "notes": [
+      "{{#if (eq (splitDelimiter param.split_on) \"\")}}Note: Split On is empty. Add the delimiter before running.{{/if}}",
+      "{{#if (gt (splitPart param.split_part) 1)}}Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.{{/if}}"
+    ]
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

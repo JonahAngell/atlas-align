@@ -7,15 +7,10 @@ const ATLAS_IMPORT_UNRECOGNIZED =
   'This text could not be read as a Logic Builder step. Use a sentence the builder already writes, such as: If file "sap.hi0256" column "Nationality" is equal to text values "US" or "Minor Outl. Isl." THEN do not display. Reference source, Create new column, Join, UNION, Format, Split, Sort records, Remove duplicate records, and filter sentences are also supported.';
 
 const ATLAS_IMPORT_TITLES = {
-  reference_source: "Reference Source",
   create_column: "Create Column",
   if_then: "IF / THEN",
   else: "ELSE",
   join: "Join / Union Sources",
-  format_field: "Format Field",
-  split_field: "Split Field",
-  sort_records: "Sort Records",
-  remove_duplicates: "Remove Duplicates",
   filter_rows: "Filter Rows",
   flag_records: "Flag Records",
 };
