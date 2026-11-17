@@ -1,0 +1,513 @@
+{
+  "entries": [
+    {
+      "id": "legacy-source",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-join",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-create",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-if",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-compare",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-transform",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-unknown",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "legacy-source",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd\" as \"wd\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "formulas": {
+        "excel": "=wd",
+        "sql": "SELECT * FROM [wd] AS [wd]",
+        "python": "df = sources[\"wd\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Review source file",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "legacy-create",
+      "stepType": "create_column",
+      "english": "Create new blank column \"Output Field\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Output Field]\n\nPython (pandas):\ndf[\"Output Field\"] = pd.NA",
+      "formulas": {
+        "excel": "=\"\"",
+        "sql": "NULL AS [Output Field]",
+        "python": "df[\"Output Field\"] = pd.NA",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Output Field\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Output Field",
+          "value_mode": "Static value",
+          "static_value": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "source_file": "wd",
+          "column_name": "Output Field",
+          "value_mode": "Static value",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "legacy-if",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Status\" equals \"Open\" THEN display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Status]]=\"Open\"\n\nSQL Server:\nWHERE [Status] = 'Open'\n\nPython (pandas):\nmask = df[\"Status\"] == \"Open\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Status]]=\"Open\"",
+        "sql": "WHERE [Status] = 'Open'",
+        "python": "mask = df[\"Status\"] == \"Open\"\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"do_not_display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Only matching records will be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Display - Keep only rows that match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display",
+          "then_action": "Display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Status",
+          "conditions_json": "[{\"id\":\"c1\",\"connector\":\"IF\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Status\",\"operator\":\"equals\",\"valueMode\":\"values\",\"compareValue\":\"Open\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\",\"compareMathJson\":\"\",\"compareValues\":[\"Open\"]}]",
+          "then_action_type": "display"
+        }
+      }
+    },
+    {
+      "id": "legacy-compare",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Comparison\" is equal to THEN display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Comparison]]=\"\"\n\nSQL Server:\nWHERE [Comparison] = ''\n\nPython (pandas):\nmask = df[\"Comparison\"] == \"\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Comparison]]=\"\"",
+        "sql": "WHERE [Comparison] = ''",
+        "python": "mask = df[\"Comparison\"] == \"\"\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"do_not_display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Only matching records will be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Display - Keep only rows that match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Comparison",
+          "conditions_json": "[{\"id\":\"cond_00000000\",\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Comparison\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"\",\"compareValues\":[]}]",
+          "then_action_type": "display"
+        }
+      }
+    },
+    {
+      "id": "legacy-join",
+      "stepType": "join",
+      "english": "Join  and .",
+      "autoNotes": "An INNER JOIN keeps only records where file 1 ([file 1]) and file 2 ([file 2]) both have matching keys \"[file 1 key]\" / \"[file 2 key]\". Rows from either file will not be kept if the keys do not match.",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".\n\nExcel:\n=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")\n\nSQL Server:\nFROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\nPython (pandas):\ndf = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+      "formulas": {
+        "lead": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".",
+        "excel": "=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")",
+        "sql": "FROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]",
+        "python": "df = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"INNER JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">INNER JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"legacy-join\">Choose Join Type</button></div><p class=\"hint\">Only rows where the left and right sources match.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-legacy-join\"><input type=\"hidden\" data-param=\"left_source\" value=\"\"><input type=\"hidden\" data-param=\"right_source\" value=\"\"><input type=\"hidden\" data-param=\"left_field\" value=\"\"><input type=\"hidden\" data-param=\"right_field\" value=\"\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey_00000000&quot;,&quot;left_field&quot;:&quot;&quot;,&quot;right_field&quot;:&quot;&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-legacy-join\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey_00000000\"><input type=\"hidden\" data-join-key-left value=\"\"><input type=\"hidden\" data-join-key-right value=\"\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Select left field</strong></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Select right field</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "source_file": "wd + sap",
+          "join_type": "INNER JOIN"
+        }
+      }
+    },
+    {
+      "id": "legacy-transform",
+      "stepType": "filter_rows",
+      "english": "IF file \"wd\" column \"Status\" is equal to, THEN Keep matching rows.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Status]]=\"\"\n\nSQL Server:\nWHERE [Status] = ''\n\nPython (pandas):\nmask = df[\"Status\"] == \"\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Status]]=\"\"",
+        "sql": "WHERE [Status] = ''",
+        "python": "mask = df[\"Status\"] == \"\"\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Filter Rows</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Status</strong><small>wd.Status</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Operator: is equal to\"><span class=\"atlas-choice-heading\">Operator</span><span class=\"atlas-choice-current\">is equal to</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-chips\" role=\"radiogroup\" aria-label=\"Operator\"><input type=\"hidden\" data-param=\"operator\" value=\"is equal to\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"is equal to\" tabindex=\"0\"><span class=\"atlas-choice-label\">is equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not equal to\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"contains\" tabindex=\"-1\"><span class=\"atlas-choice-label\">contains</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"does not contain\" tabindex=\"-1\"><span class=\"atlas-choice-label\">does not contain</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is greater than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is greater than</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is less than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is less than</span></button></div></div></div></div><label>Compare Value<textarea data-param=\"compare_value\" placeholder=\"One or more values\"></textarea></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Filter Action</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Filter action\"><input type=\"hidden\" data-param=\"filter_action\" value=\"Keep matching rows\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Keep matching rows\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep matching rows</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Exclude matching rows\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Exclude matching rows</span></button></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "filter_rows",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Status"
+        }
+      }
+    },
+    {
+      "id": "legacy-unknown",
+      "stepType": "mystery",
+      "english": "[Missing phrase path: analyst_logic.mystery]",
+      "autoNotes": "",
+      "developer": "",
+      "formulas": null,
+      "editorHtml": "<div class=\"selected-source-only-builder\"></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "mystery",
+        "type": "transform",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"WD_Workers\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [WD_Workers] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"SAP_HI0256\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [SAP_HI0256] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "3",
+      "stepId": "legacy-source",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "4",
+      "stepId": "legacy-join",
+      "branch": "Root",
+      "analyst": "Join  and .",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".\n\nExcel:\n=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")\n\nSQL Server:\nFROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\nPython (pandas):\ndf = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+      "notes": "An INNER JOIN keeps only records where file 1 ([file 1]) and file 2 ([file 2]) both have matching keys \"[file 1 key]\" / \"[file 2 key]\". Rows from either file will not be kept if the keys do not match.",
+      "level": 0,
+      "source": "wd + sap"
+    },
+    {
+      "step": "5",
+      "stepId": "legacy-create",
+      "branch": "Root",
+      "analyst": "Create new blank column \"Output Field\".",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Output Field]\n\nPython (pandas):\ndf[\"Output Field\"] = pd.NA",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "6",
+      "stepId": "legacy-if",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" equals \"Open\" THEN display record.",
+      "developer": "Excel:\n=[@[Status]]=\"Open\"\n\nSQL Server:\nWHERE [Status] = 'Open'\n\nPython (pandas):\nmask = df[\"Status\"] == \"Open\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "7",
+      "stepId": "legacy-compare",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Comparison\" is equal to THEN display record.",
+      "developer": "Excel:\n=[@[Comparison]]=\"\"\n\nSQL Server:\nWHERE [Comparison] = ''\n\nPython (pandas):\nmask = df[\"Comparison\"] == \"\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "8",
+      "stepId": "legacy-transform",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" is equal to, THEN Keep matching rows.",
+      "developer": "Excel:\n=[@[Status]]=\"\"\n\nSQL Server:\nWHERE [Status] = ''\n\nPython (pandas):\nmask = df[\"Status\"] == \"\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "9",
+      "stepId": "legacy-unknown",
+      "branch": "Root",
+      "analyst": "[Missing phrase path: analyst_logic.mystery]",
+      "developer": "",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    }
+  ],
+  "sqlScript": "-- Legacy step shapes - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 9 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- TODO: 2 steps could not be converted and are skipped below:\n--   - Step 4: Missing values: [left key], [left source], [right key], [right source].\n--   - Step 9: This step type has no code equivalent.\n--\n-- Review:\n--   - The audit does not list the columns of wd, sap, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [WD_Workers]: wd\n--   - [SAP_HI0256]: sap\n--   - [wd]\n\nWITH\n-- Step 1: Reference wd\n-- Reference source file \"WD_Workers\" as \"wd\":\nstep_1 AS (\n  SELECT * FROM [WD_Workers] AS [wd]\n),\n\n-- Step 2: Reference sap\n-- Reference source file \"SAP_HI0256\" as \"sap\":\nstep_2 AS (\n  SELECT * FROM [SAP_HI0256] AS [sap]\n),\n\n-- Step 3: Review source file\n-- Reference source file \"wd\" as \"wd\":\nstep_3 AS (\n  SELECT * FROM [wd] AS [wd]\n),\n\n-- TODO (skipped) Step 4: Join / Union Sources\n-- Join  and .\n-- Reason: Missing values: [left key], [left source], [right key], [right source].\n-- Developer Logic:\n-- FROM [[left source]]]\n-- INNER JOIN [[right source]]]\n--   ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\n-- Step 5: Create Column\n-- Create new blank column \"Output Field\".\nstep_5 AS (\n  SELECT *, NULL AS [Output Field]\n  FROM step_3\n),\n\n-- Step 6: IF / THEN\n-- IF file \"wd\" column \"Status\" equals \"Open\" THEN display record.\n-- Note: Display - Keep only rows that match this condition.\nstep_6 AS (\n  SELECT *\n  FROM step_5\n  WHERE [Status] = 'Open'\n),\n\n-- Step 7: IF / THEN\n-- IF file \"wd\" column \"Comparison\" is equal to THEN display record.\n-- Note: Display - Keep only rows that match this condition.\nstep_7 AS (\n  SELECT *\n  FROM step_6\n  WHERE [Comparison] = ''\n),\n\n-- Step 8: Logic Step\n-- IF file \"wd\" column \"Status\" is equal to, THEN Keep matching rows.\n-- Note: Display - Keep only rows that match this condition.\nstep_8 AS (\n  SELECT *\n  FROM step_7\n  WHERE [Status] = ''\n)\n\n-- TODO (skipped) Step 9: Logic Step\n-- [Missing phrase path: analyst_logic.mystery]\n-- Reason: This step type has no code equivalent.\n\nSELECT *\nFROM step_8;\n",
+  "pythonScript": "# Legacy step shapes - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 9 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# TODO: 2 steps could not be converted and are skipped below:\n#   - Step 4: Missing values: [left key], [left source], [right key], [right source].\n#   - Step 9: This step type has no code equivalent.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd\": \"\",\n    \"sap\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd\n    # Reference source file \"WD_Workers\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 2: Reference sap\n    # Reference source file \"SAP_HI0256\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 3: Review source file\n    # Reference source file \"wd\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # TODO (skipped) Step 4: Join / Union Sources\n    # Join  and .\n    # Reason: Missing values: [left key], [left source], [right key], [right source].\n    # Developer Logic:\n    # df = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")\n\n    # Step 5: Create Column\n    # Create new blank column \"Output Field\".\n    df[\"Output Field\"] = pd.NA\n\n    # Step 6: IF / THEN\n    # IF file \"wd\" column \"Status\" equals \"Open\" THEN display record.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Status\"] == \"Open\"\n    df = df[mask]\n\n    # Step 7: IF / THEN\n    # IF file \"wd\" column \"Comparison\" is equal to THEN display record.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Comparison\"] == \"\"\n    df = df[mask]\n\n    # Step 8: Logic Step\n    # IF file \"wd\" column \"Status\" is equal to, THEN Keep matching rows.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Status\"] == \"\"\n    df = df[mask]\n\n    # TODO (skipped) Step 9: Logic Step\n    # [Missing phrase path: analyst_logic.mystery]\n    # Reason: This step type has no code equivalent.\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" equals \"Open\" THEN display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"wd\" column \"Status\" equals \"Open\".",
+          "comments": "",
+          "number": 1
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Comparison\" is equal to THEN display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"wd\" column \"Comparison\" is equal to.",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" is equal to, THEN Keep matching rows.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No Legacy step shapes audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the condition for this step is met.",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "[Missing phrase path: analyst_logic.mystery]",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet this condition.",
+          "comments": "",
+          "number": 4
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join  and .",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where  equals ; joined values display on the Legacy step shapes audit record.",
+          "sourceDataExpectedOutcome": "Source values for  and  agree for each joined record.",
+          "comments": "",
+          "number": 5
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new blank column \"Output Field\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Output Field\" is added to the Legacy step shapes audit record for later logic steps to populate.",
+          "sourceDataExpectedOutcome": "Column \"Output Field\" is present in the output.",
+          "comments": "",
+          "number": 6
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"WD_Workers\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"WD_Workers\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"WD_Workers\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 7
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"SAP_HI0256\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"SAP_HI0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"SAP_HI0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 8
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Legacy step shapes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 9
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.logic.join-integrity|legacy-join-left-field|steps|legacy-join||join|param:left_field",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|legacy-join-left-source|steps|legacy-join||join|param:left_source",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|legacy-join-right-field|steps|legacy-join||join|param:right_field",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|legacy-join-right-source|steps|legacy-join||join|param:right_source",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.condition-integrity|legacy-compare-cond_00000000-value|steps|legacy-compare|cond_00000000|condition|condition-compareValue",
+      "severity": "warning",
+      "message": "Condition is incomplete"
+    },
+    {
+      "key": "audit.logic.action-missing|legacy-transform|steps|legacy-transform||action|param:then_action_type",
+      "severity": "warning",
+      "message": "Action is missing"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

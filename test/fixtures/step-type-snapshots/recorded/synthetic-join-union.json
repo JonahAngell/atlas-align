@@ -1,0 +1,643 @@
+{
+  "entries": [
+    {
+      "id": "ref-wd",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "ref-sap",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "inner",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "left-multi",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "right",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "full",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "empty-join",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "union",
+      "number": "8",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-union",
+      "number": "9",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "ref-wd",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd\" as \"wd\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "formulas": {
+        "excel": "=wd",
+        "sql": "SELECT * FROM [wd] AS [wd]",
+        "python": "df = sources[\"wd\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "ref-sap",
+      "stepType": "reference_source",
+      "english": "Reference source file \"sap\" as \"sap\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [sap] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "formulas": {
+        "excel": "=sap",
+        "sql": "SELECT * FROM [sap] AS [sap]",
+        "python": "df = sources[\"sap\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>SAP_HI0256</strong><small>sap</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"sap\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "sap",
+          "source_alias": "sap"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Source",
+        "params": {
+          "source_file": "sap",
+          "source_alias": "sap"
+        }
+      }
+    },
+    {
+      "id": "inner",
+      "stepType": "join",
+      "english": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "autoNotes": "An INNER JOIN keeps only records where file 1 (wd) and file 2 (sap) both have matching keys \"Worker ID\" / \"PERNR\". Rows from either file will not be kept if the keys do not match.",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nINNER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"inner\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+      "formulas": {
+        "lead": "INNER JOIN: keep only rows that match in both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".",
+        "excel": "=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")",
+        "sql": "FROM [wd]\nINNER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]",
+        "python": "df = sources[\"wd\"].merge(sources[\"sap\"], how=\"inner\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"INNER JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">INNER JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"inner\">Choose Join Type</button></div><p class=\"hint\">Only rows where the left and right sources match.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-inner\"><input type=\"hidden\" data-param=\"left_source\" value=\"wd\"><input type=\"hidden\" data-param=\"right_source\" value=\"sap\"><input type=\"hidden\" data-param=\"left_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"right_field\" value=\"PERNR\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;Worker ID&quot;,&quot;right_field&quot;:&quot;PERNR&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-inner\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"Worker ID\"><input type=\"hidden\" data-join-key-right value=\"PERNR\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "INNER JOIN",
+          "left_source": "wd",
+          "left_alias": "wd",
+          "left_field": "Worker ID",
+          "right_source": "sap",
+          "right_alias": "sap",
+          "right_field": "PERNR"
+        }
+      }
+    },
+    {
+      "id": "left-multi",
+      "stepType": "join",
+      "english": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", and also match file \"wd\" column \"Position\" with file \"sap\" column \"PLANS\".",
+      "autoNotes": "A LEFT JOIN keeps every record from file 1 (wd) and adds matching details from file 2 (sap) when a match is found. Rows in file 2 (sap) will not be kept if the keys \"Worker ID\" / \"PERNR\", \"Position\" / \"PLANS\" do not match. As a result, rows from file 1 (wd) may contain NULL values if no match is found in file 2 (sap).",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" to \"sap\" where \"wd\".\"Worker ID\" = \"sap\".\"PERNR\" AND \"wd\".\"Position\" = \"sap\".\"PLANS\".\n\nExcel:\n=XLOOKUP(1, (sap[PERNR]=[@[Worker ID]])*(sap[PLANS]=[@[Position]]), sap, \"\")\n\nSQL Server:\nFROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR] AND [wd].[Position] = [sap].[PLANS]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=[\"Worker ID\", \"Position\"], right_on=[\"PERNR\", \"PLANS\"])",
+      "formulas": {
+        "lead": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" to \"sap\" where \"wd\".\"Worker ID\" = \"sap\".\"PERNR\" AND \"wd\".\"Position\" = \"sap\".\"PLANS\".",
+        "excel": "=XLOOKUP(1, (sap[PERNR]=[@[Worker ID]])*(sap[PLANS]=[@[Position]]), sap, \"\")",
+        "sql": "FROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR] AND [wd].[Position] = [sap].[PLANS]",
+        "python": "df = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=[\"Worker ID\", \"Position\"], right_on=[\"PERNR\", \"PLANS\"])",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"LEFT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">LEFT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"left-multi\">Choose Join Type</button></div><p class=\"hint\">All rows from the left source, plus matching rows from the right source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-left-multi\"><input type=\"hidden\" data-param=\"left_source\" value=\"wd\"><input type=\"hidden\" data-param=\"right_source\" value=\"sap\"><input type=\"hidden\" data-param=\"left_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"right_field\" value=\"PERNR\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;k1&quot;,&quot;left_field&quot;:&quot;Worker ID&quot;,&quot;right_field&quot;:&quot;PERNR&quot;},{&quot;id&quot;:&quot;k2&quot;,&quot;left_field&quot;:&quot;Position&quot;,&quot;right_field&quot;:&quot;PLANS&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-left-multi\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"k1\"><input type=\"hidden\" data-join-key-left value=\"Worker ID\"><input type=\"hidden\" data-join-key-right value=\"PERNR\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"k2\"><input type=\"hidden\" data-join-key-left value=\"Position\"><input type=\"hidden\" data-join-key-right value=\"PLANS\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label sr-only\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Position</strong><small>wd.Position</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label sr-only\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PLANS</strong><small>sap.PLANS</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 2\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "LEFT JOIN",
+          "left_source": "wd",
+          "right_source": "sap",
+          "left_field": "Worker ID",
+          "right_field": "PERNR",
+          "join_keys_json": "[{\"id\":\"k1\",\"left_field\":\"Worker ID\",\"right_field\":\"PERNR\"},{\"id\":\"k2\",\"left_field\":\"Position\",\"right_field\":\"PLANS\"}]"
+        }
+      }
+    },
+    {
+      "id": "right",
+      "stepType": "join",
+      "english": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "autoNotes": "A RIGHT JOIN keeps every record from file 2 (sap) and adds matching details from file 1 (wd) when a match is found. Rows in file 1 (wd) will not be kept if the keys \"Worker ID\" / \"PERNR\" do not match. As a result, rows from file 2 (sap) may contain NULL values if no match is found in file 1 (wd).",
+      "developer": "RIGHT JOIN: keep all rows from the right source and matching rows from the left source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nRIGHT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"right\", left_on=\"Worker ID\", right_on=\"PERNR\")\n\nNote: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel.",
+      "formulas": {
+        "lead": "RIGHT JOIN: keep all rows from the right source and matching rows from the left source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".",
+        "excel": "=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")",
+        "sql": "FROM [wd]\nRIGHT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]",
+        "python": "df = sources[\"wd\"].merge(sources[\"sap\"], how=\"right\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+        "notes": [
+          "Note: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"RIGHT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">RIGHT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"right\">Choose Join Type</button></div><p class=\"hint\">All rows from the right source, plus matching rows from the left source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-right\"><input type=\"hidden\" data-param=\"left_source\" value=\"wd\"><input type=\"hidden\" data-param=\"right_source\" value=\"sap\"><input type=\"hidden\" data-param=\"left_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"right_field\" value=\"PERNR\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;Worker ID&quot;,&quot;right_field&quot;:&quot;PERNR&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-right\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"Worker ID\"><input type=\"hidden\" data-join-key-right value=\"PERNR\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "RIGHT JOIN",
+          "left_source": "wd",
+          "right_source": "sap",
+          "left_field": "Worker ID",
+          "right_field": "PERNR"
+        }
+      }
+    },
+    {
+      "id": "full",
+      "stepType": "join",
+      "english": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "autoNotes": "A FULL OUTER JOIN keeps every record from file 1 (wd) and every record from file 2 (sap). Matching records are combined when the keys \"Worker ID\" / \"PERNR\" match. As a result, rows from either file may contain NULL values for the other file columns if no match is found.",
+      "developer": "FULL OUTER JOIN: keep all rows from both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nFULL OUTER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"outer\", left_on=\"Worker ID\", right_on=\"PERNR\")\n\nNote: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel.",
+      "formulas": {
+        "lead": "FULL OUTER JOIN: keep all rows from both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".",
+        "excel": "=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")",
+        "sql": "FROM [wd]\nFULL OUTER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]",
+        "python": "df = sources[\"wd\"].merge(sources[\"sap\"], how=\"outer\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+        "notes": [
+          "Note: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"FULL OUTER JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">FULL OUTER JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"full\">Choose Join Type</button></div><p class=\"hint\">All rows from both sources, whether matched or unmatched.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-full\"><input type=\"hidden\" data-param=\"left_source\" value=\"wd\"><input type=\"hidden\" data-param=\"right_source\" value=\"sap\"><input type=\"hidden\" data-param=\"left_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"right_field\" value=\"PERNR\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;Worker ID&quot;,&quot;right_field&quot;:&quot;PERNR&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-full\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"Worker ID\"><input type=\"hidden\" data-join-key-right value=\"PERNR\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "FULL OUTER JOIN",
+          "left_source": "wd",
+          "right_source": "sap",
+          "left_field": "Worker ID",
+          "right_field": "PERNR"
+        }
+      }
+    },
+    {
+      "id": "empty-join",
+      "stepType": "join",
+      "english": "Join  and .",
+      "autoNotes": "An INNER JOIN keeps only records where file 1 ([file 1]) and file 2 ([file 2]) both have matching keys \"[file 1 key]\" / \"[file 2 key]\". Rows from either file will not be kept if the keys do not match.",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".\n\nExcel:\n=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")\n\nSQL Server:\nFROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\nPython (pandas):\ndf = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+      "formulas": {
+        "lead": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".",
+        "excel": "=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")",
+        "sql": "FROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]",
+        "python": "df = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"INNER JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">INNER JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"empty-join\">Choose Join Type</button></div><p class=\"hint\">Only rows where the left and right sources match.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-empty-join\"><input type=\"hidden\" data-param=\"left_source\" value=\"\"><input type=\"hidden\" data-param=\"right_source\" value=\"\"><input type=\"hidden\" data-param=\"left_field\" value=\"\"><input type=\"hidden\" data-param=\"right_field\" value=\"\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey_00000000&quot;,&quot;left_field&quot;:&quot;&quot;,&quot;right_field&quot;:&quot;&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-empty-join\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey_00000000\"><input type=\"hidden\" data-join-key-left value=\"\"><input type=\"hidden\" data-join-key-right value=\"\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Select left field</strong></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Select right field</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      }
+    },
+    {
+      "id": "union",
+      "stepType": "join",
+      "english": "UNION file \"wd\" and file \"sap\", reference as file \"Combined\"",
+      "autoNotes": "A UNION stacks records from file 1 (wd) and file 2 (sap) into one combined file (Combined). Records are not matched on keys; the rows from both files are kept together in the combined output. Use this when both files represent the same type of record and should be reviewed together.",
+      "developer": "Excel:\n=VSTACK(wd, sap)\n\nSQL Server:\nSELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]\n\nPython (pandas):\ndf = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+      "formulas": {
+        "excel": "=VSTACK(wd, sap)",
+        "sql": "SELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]",
+        "python": "df = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Union Sources</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"UNION\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">UNION</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"union\">Choose Join Type</button></div><p class=\"hint\">Append rows from both sources into one combined output. Matching keys are not required.</p></div><div class=\"logic-picker-pair join-union-input-pair\"><label>Left Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"left_source\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Right Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"right_source\" data-picker-source=\"\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>SAP_HI0256</strong><small>sap</small></span><span aria-hidden=\"true\">⌄</span></button></label></div><label>Output Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"output_source\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Combined</strong><small>Combined</small></span><span aria-hidden=\"true\">⌄</span></button></label><p class=\"hint join-builder-union-hint\">Union appends rows from both files into one combined output. No matching key is needed.</p></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "UNION"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "UNION",
+          "left_source": "wd",
+          "right_source": "sap",
+          "output_source": "Combined"
+        }
+      }
+    },
+    {
+      "id": "legacy-union",
+      "stepType": "join",
+      "english": "UNION file \"wd\" and file \"sap\", reference as file \"Combined Legacy\"",
+      "autoNotes": "A UNION stacks records from file 1 (wd) and file 2 (sap) into one combined file (Combined Legacy). Records are not matched on keys; the rows from both files are kept together in the combined output. Use this when both files represent the same type of record and should be reviewed together.",
+      "developer": "Excel:\n=VSTACK(wd, sap)\n\nSQL Server:\nSELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]\n\nPython (pandas):\ndf = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+      "formulas": {
+        "excel": "=VSTACK(wd, sap)",
+        "sql": "SELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]",
+        "python": "df = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Union Sources</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"UNION\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">UNION</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"legacy-union\">Choose Join Type</button></div><p class=\"hint\">Append rows from both sources into one combined output. Matching keys are not required.</p></div><div class=\"logic-picker-pair join-union-input-pair\"><label>Left Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"left_source\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Right Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"right_source\" data-picker-source=\"\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>SAP_HI0256</strong><small>sap</small></span><span aria-hidden=\"true\">⌄</span></button></label></div><label>Output Source<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"output_source\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Combined Legacy</strong><small>Combined Legacy</small></span><span aria-hidden=\"true\">⌄</span></button></label><p class=\"hint join-builder-union-hint\">Union appends rows from both files into one combined output. No matching key is needed.</p></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "UNION"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "union_left_source": "wd",
+          "union_right_source": "sap",
+          "output_source": "Combined Legacy",
+          "join_type": "UNION",
+          "left_source": "wd",
+          "right_source": "sap",
+          "left_alias": "wd",
+          "right_alias": "sap",
+          "left_field": "",
+          "right_field": ""
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"WD_Workers\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [WD_Workers] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"SAP_HI0256\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [SAP_HI0256] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "3",
+      "stepId": "ref-wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "4",
+      "stepId": "ref-sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [sap] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "5",
+      "stepId": "inner",
+      "branch": "Root",
+      "analyst": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nINNER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"inner\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+      "notes": "An INNER JOIN keeps only records where file 1 (wd) and file 2 (sap) both have matching keys \"Worker ID\" / \"PERNR\". Rows from either file will not be kept if the keys do not match.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "6",
+      "stepId": "left-multi",
+      "branch": "Root",
+      "analyst": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", and also match file \"wd\" column \"Position\" with file \"sap\" column \"PLANS\".",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" to \"sap\" where \"wd\".\"Worker ID\" = \"sap\".\"PERNR\" AND \"wd\".\"Position\" = \"sap\".\"PLANS\".\n\nExcel:\n=XLOOKUP(1, (sap[PERNR]=[@[Worker ID]])*(sap[PLANS]=[@[Position]]), sap, \"\")\n\nSQL Server:\nFROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR] AND [wd].[Position] = [sap].[PLANS]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=[\"Worker ID\", \"Position\"], right_on=[\"PERNR\", \"PLANS\"])",
+      "notes": "A LEFT JOIN keeps every record from file 1 (wd) and adds matching details from file 2 (sap) when a match is found. Rows in file 2 (sap) will not be kept if the keys \"Worker ID\" / \"PERNR\", \"Position\" / \"PLANS\" do not match. As a result, rows from file 1 (wd) may contain NULL values if no match is found in file 2 (sap).",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "7",
+      "stepId": "right",
+      "branch": "Root",
+      "analyst": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "developer": "RIGHT JOIN: keep all rows from the right source and matching rows from the left source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nRIGHT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"right\", left_on=\"Worker ID\", right_on=\"PERNR\")\n\nNote: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel.",
+      "notes": "A RIGHT JOIN keeps every record from file 2 (sap) and adds matching details from file 1 (wd) when a match is found. Rows in file 1 (wd) will not be kept if the keys \"Worker ID\" / \"PERNR\" do not match. As a result, rows from file 2 (sap) may contain NULL values if no match is found in file 1 (wd).",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "8",
+      "stepId": "full",
+      "branch": "Root",
+      "analyst": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "developer": "FULL OUTER JOIN: keep all rows from both sources when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nFULL OUTER JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"outer\", left_on=\"Worker ID\", right_on=\"PERNR\")\n\nNote: Excel formulas cannot add unmatched rows from the right source. Use Power Query Merge for this join type in Excel.",
+      "notes": "A FULL OUTER JOIN keeps every record from file 1 (wd) and every record from file 2 (sap). Matching records are combined when the keys \"Worker ID\" / \"PERNR\" match. As a result, rows from either file may contain NULL values for the other file columns if no match is found.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "9",
+      "stepId": "empty-join",
+      "branch": "Root",
+      "analyst": "Join  and .",
+      "developer": "INNER JOIN: keep only rows that match in both sources when joining \"[left source]\" on \"[left key]\" to \"[right source]\" on \"[right key]\".\n\nExcel:\n=XLOOKUP([@['[left key']]], right_source['[right key']], right_source, \"\")\n\nSQL Server:\nFROM [[left source]]]\nINNER JOIN [[right source]]]\n  ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\nPython (pandas):\ndf = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")",
+      "notes": "An INNER JOIN keeps only records where file 1 ([file 1]) and file 2 ([file 2]) both have matching keys \"[file 1 key]\" / \"[file 2 key]\". Rows from either file will not be kept if the keys do not match.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "10",
+      "stepId": "union",
+      "branch": "Root",
+      "analyst": "UNION file \"wd\" and file \"sap\", reference as file \"Combined\"",
+      "developer": "Excel:\n=VSTACK(wd, sap)\n\nSQL Server:\nSELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]\n\nPython (pandas):\ndf = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+      "notes": "A UNION stacks records from file 1 (wd) and file 2 (sap) into one combined file (Combined). Records are not matched on keys; the rows from both files are kept together in the combined output. Use this when both files represent the same type of record and should be reviewed together.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "11",
+      "stepId": "legacy-union",
+      "branch": "Root",
+      "analyst": "UNION file \"wd\" and file \"sap\", reference as file \"Combined Legacy\"",
+      "developer": "Excel:\n=VSTACK(wd, sap)\n\nSQL Server:\nSELECT * FROM [wd]\nUNION ALL\nSELECT * FROM [sap]\n\nPython (pandas):\ndf = pd.concat([sources[\"wd\"], sources[\"sap\"]], ignore_index=True)",
+      "notes": "A UNION stacks records from file 1 (wd) and file 2 (sap) into one combined file (Combined Legacy). Records are not matched on keys; the rows from both files are kept together in the combined output. Use this when both files represent the same type of record and should be reviewed together.",
+      "level": 0,
+      "source": ""
+    }
+  ],
+  "sqlScript": "-- Join and Union types - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 11 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- TODO: 1 step could not be converted and is skipped below:\n--   - Step 9: Missing values: [left key], [left source], [right key], [right source].\n--\n-- Review:\n--   - The audit does not list the columns of wd, sap, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [WD_Workers]: wd\n--   - [SAP_HI0256]: sap\n--   - [wd]\n--   - [sap]\n\nWITH\n-- Step 1: Reference wd\n-- Reference source file \"WD_Workers\" as \"wd\":\nstep_1 AS (\n  SELECT * FROM [WD_Workers] AS [wd]\n),\n\n-- Step 2: Reference sap\n-- Reference source file \"SAP_HI0256\" as \"sap\":\nstep_2 AS (\n  SELECT * FROM [SAP_HI0256] AS [sap]\n),\n\n-- Step 3: Reference Source\n-- Reference source file \"wd\" as \"wd\":\nstep_3 AS (\n  SELECT * FROM [wd] AS [wd]\n),\n\n-- Step 4: Reference Source\n-- Reference source file \"sap\" as \"sap\":\nstep_4 AS (\n  SELECT * FROM [sap] AS [sap]\n),\n\n-- Step 5: Join / Union Sources\n-- Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\nstep_5 AS (\n  SELECT [wd].*,\n         [sap].*\n  FROM step_4 AS [wd]\n  INNER JOIN [sap] AS [sap]\n    ON [wd].[Worker ID] = [sap].[PERNR]\n),\n\n-- Step 6: Join / Union Sources\n-- Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", and also match file \"wd\" column \"Position\" with file \"sap\" column \"PLANS\".\nstep_6 AS (\n  SELECT [wd].*,\n         [sap].*\n  FROM step_5 AS [wd]\n  LEFT JOIN [sap] AS [sap]\n    ON [wd].[Worker ID] = [sap].[PERNR] AND [wd].[Position] = [sap].[PLANS]\n),\n\n-- Step 7: Join / Union Sources\n-- Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\nstep_7 AS (\n  SELECT [wd].*,\n         [sap].*\n  FROM step_6 AS [wd]\n  RIGHT JOIN [sap] AS [sap]\n    ON [wd].[Worker ID] = [sap].[PERNR]\n),\n\n-- Step 8: Join / Union Sources\n-- Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\nstep_8 AS (\n  SELECT [wd].*,\n         [sap].*\n  FROM step_7 AS [wd]\n  FULL OUTER JOIN [sap] AS [sap]\n    ON [wd].[Worker ID] = [sap].[PERNR]\n),\n\n-- TODO (skipped) Step 9: Join / Union Sources\n-- Join  and .\n-- Reason: Missing values: [left key], [left source], [right key], [right source].\n-- Developer Logic:\n-- FROM [[left source]]]\n-- INNER JOIN [[right source]]]\n--   ON [[left source]]].[[left key]]] = [[right source]]].[[right key]]]\n\n-- Step 10: Join / Union Sources\n-- UNION file \"wd\" and file \"sap\", reference as file \"Combined\"\nstep_10 AS (\n  SELECT * FROM step_8\n  UNION ALL\n  SELECT * FROM [sap]\n),\n\n-- Step 11: Join / Union Sources\n-- UNION file \"wd\" and file \"sap\", reference as file \"Combined Legacy\"\nstep_11 AS (\n  SELECT * FROM step_10\n  UNION ALL\n  SELECT * FROM [sap]\n)\n\nSELECT *\nFROM step_11;\n",
+  "pythonScript": "# Join and Union types - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 11 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# TODO: 1 step could not be converted and is skipped below:\n#   - Step 9: Missing values: [left key], [left source], [right key], [right source].\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd\": \"\",\n    \"sap\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd\n    # Reference source file \"WD_Workers\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 2: Reference sap\n    # Reference source file \"SAP_HI0256\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 3: Reference Source\n    # Reference source file \"wd\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 4: Reference Source\n    # Reference source file \"sap\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 5: Join / Union Sources\n    # Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\n    df = df.merge(sources[\"sap\"], how=\"inner\", left_on=\"Worker ID\", right_on=\"PERNR\", suffixes=(\"\", \"_sap\"))\n\n    # Step 6: Join / Union Sources\n    # Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", and also match file \"wd\" column \"Position\" with file \"sap\" column \"PLANS\".\n    df = df.merge(sources[\"sap\"], how=\"left\", left_on=[\"Worker ID\", \"Position\"], right_on=[\"PERNR\", \"PLANS\"], suffixes=(\"\", \"_sap\"))\n\n    # Step 7: Join / Union Sources\n    # Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\n    df = df.merge(sources[\"sap\"], how=\"right\", left_on=\"Worker ID\", right_on=\"PERNR\", suffixes=(\"\", \"_sap\"))\n\n    # Step 8: Join / Union Sources\n    # Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\n    df = df.merge(sources[\"sap\"], how=\"outer\", left_on=\"Worker ID\", right_on=\"PERNR\", suffixes=(\"\", \"_sap\"))\n\n    # TODO (skipped) Step 9: Join / Union Sources\n    # Join  and .\n    # Reason: Missing values: [left key], [left source], [right key], [right source].\n    # Developer Logic:\n    # df = sources[\"[left source]\"].merge(sources[\"[right source]\"], how=\"inner\", left_on=\"[left key]\", right_on=\"[right key]\")\n\n    # Step 10: Join / Union Sources\n    # UNION file \"wd\" and file \"sap\", reference as file \"Combined\"\n    df = pd.concat([df, sources[\"sap\"]], ignore_index=True)\n\n    # Step 11: Join / Union Sources\n    # UNION file \"wd\" and file \"sap\", reference as file \"Combined Legacy\"\n    df = pd.concat([df, sources[\"sap\"]], ignore_index=True)\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"wd\" column \"Worker ID\" equals file \"sap\" column \"PERNR\"; joined values display on the Join and Union types audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\" agree for each joined record.",
+          "comments": "",
+          "number": 1
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", and also match file \"wd\" column \"Position\" with file \"sap\" column \"PLANS\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"wd\" column \"Worker ID\" equals file \"sap\" column \"PERNR\" and file \"wd\" column \"Position\" equals file \"sap\" column \"PLANS\"; joined values display on the Join and Union types audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\", file \"wd\" column \"Position\" and file \"sap\" column \"PLANS\" agree for each joined record.",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"wd\" column \"Worker ID\" equals file \"sap\" column \"PERNR\"; joined values display on the Join and Union types audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\" agree for each joined record.",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"wd\" column \"Worker ID\" equals file \"sap\" column \"PERNR\"; joined values display on the Join and Union types audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\" agree for each joined record.",
+          "comments": "",
+          "number": 4
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join  and .",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where  equals ; joined values display on the Join and Union types audit record.",
+          "sourceDataExpectedOutcome": "Source values for  and  agree for each joined record.",
+          "comments": "",
+          "number": 5
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "UNION file \"wd\" and file \"sap\", reference as file \"Combined\"",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records from \"wd\" and \"sap\" are combined into \"Combined\".",
+          "sourceDataExpectedOutcome": "The combined record count reconciles to the records in \"wd\" and \"sap\".",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "UNION file \"wd\" and file \"sap\", reference as file \"Combined Legacy\"",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records from \"wd\" and \"sap\" are combined into \"Combined Legacy\".",
+          "sourceDataExpectedOutcome": "The combined record count reconciles to the records in \"wd\" and \"sap\".",
+          "comments": "",
+          "number": 7
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"WD_Workers\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"WD_Workers\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"WD_Workers\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 8
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"SAP_HI0256\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"SAP_HI0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"SAP_HI0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 9
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 10
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Join and Union types audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 11
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.logic.join-integrity|empty-join-left-field|steps|empty-join||join|param:left_field",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|empty-join-left-source|steps|empty-join||join|param:left_source",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|empty-join-right-field|steps|empty-join||join|param:right_field",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.logic.join-integrity|empty-join-right-source|steps|empty-join||join|param:right_source",
+      "severity": "critical",
+      "message": "Join is incomplete"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

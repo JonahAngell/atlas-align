@@ -1,0 +1,1314 @@
+{
+  "entries": [
+    {
+      "id": "ref-wd",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "static",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "blank",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "copy",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "calc-divide",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "calc-chain",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "round-up",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "concat",
+      "number": "8",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "first-chars",
+      "number": "9",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "last-chars",
+      "number": "10",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "char-count",
+      "number": "11",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "split-every",
+      "number": "12",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "split-first",
+      "number": "13",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "split-last-custom",
+      "number": "14",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-expression",
+      "number": "15",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-expression-first",
+      "number": "16",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "legacy-concat-shared-source",
+      "number": "17",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "ref-wd",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd\" as \"wd\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "formulas": {
+        "excel": "=wd",
+        "sql": "SELECT * FROM [wd] AS [wd]",
+        "python": "df = sources[\"wd\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "static",
+      "stepType": "create_column",
+      "english": "Create new column \"Flag\" and set value to \"Y\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"Y\"\n\nSQL Server:\n'Y' AS [Flag]\n\nPython (pandas):\ndf[\"Flag\"] = \"Y\"",
+      "formulas": {
+        "excel": "=\"Y\"",
+        "sql": "'Y' AS [Flag]",
+        "python": "df[\"Flag\"] = \"Y\"",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Flag\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"Y\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Flag",
+          "value_mode": "Static value",
+          "static_value": "Y"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Flag",
+          "value_mode": "Static value",
+          "static_value": "Y",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "blank",
+      "stepType": "create_column",
+      "english": "Create new blank column \"Empty\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Empty]\n\nPython (pandas):\ndf[\"Empty\"] = pd.NA",
+      "formulas": {
+        "excel": "=\"\"",
+        "sql": "NULL AS [Empty]",
+        "python": "df[\"Empty\"] = pd.NA",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Empty\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Empty",
+          "value_mode": "Static value",
+          "static_value": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Empty",
+          "value_mode": "Static value",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "copy",
+      "stepType": "create_column",
+      "english": "Create new column \"Worker Copy\" using file \"wd\" column \"Worker ID\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Worker ID]]\n\nSQL Server:\n[Worker ID] AS [Worker Copy]\n\nPython (pandas):\ndf[\"Worker Copy\"] = df[\"Worker ID\"]",
+      "formulas": {
+        "excel": "=[@[Worker ID]]",
+        "sql": "[Worker ID] AS [Worker Copy]",
+        "python": "df[\"Worker Copy\"] = df[\"Worker ID\"]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Worker Copy\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Source field value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Source field value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Source field value\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Source field value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Source Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"math-operations-editor\" data-math-editor data-math-param=\"source_math_json\" data-base-source=\"wd\"><input type=\"hidden\" data-param=\"source_math_json\" data-math-json value=\"[]\"><div class=\"math-operations-header\"><strong>Mathematical operations</strong><button type=\"button\" class=\"secondary small\" data-add-math-operation>Add Operation</button></div><p class=\"hint\">Operations are applied in listed order. Division by a field returns blank/NULL when its value is zero.</p><div class=\"math-operation-list\"></div></div><div class=\"math-rounding-grid\"><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Rounding</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Rounding\"><input type=\"hidden\" data-param=\"rounding_mode\" value=\"none\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"none\" tabindex=\"0\"><span class=\"atlas-choice-label\">None</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"nearest\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Nearest</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"up\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Up</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"down\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Down</span></button></div></div><label>Decimal places<input data-param=\"rounding_decimal_places\" inputmode=\"numeric\" value=\"0\"></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Worker Copy",
+          "value_mode": "Source field value"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Worker Copy",
+          "value_mode": "Source field value",
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "calc-divide",
+      "stepType": "create_column",
+      "english": "Create new column \"Rate\" using file \"wd\" column \"Pay\" divided by file \"wd\" column \"Hours\", then round down to 2 decimal places.",
+      "autoNotes": "",
+      "developer": "Excel:\n=IFERROR(ROUNDDOWN([@[Pay]] / [@[Hours]], 2), \"\")\n\nSQL Server:\nROUND([Pay] / NULLIF([Hours], 0), 2, 1) AS [Rate]\n\nPython (pandas):\ndf[\"Rate\"] = np.trunc((df[\"Pay\"] / df[\"Hours\"].replace(0, np.nan)) * 10**2) / 10**2",
+      "formulas": {
+        "excel": "=IFERROR(ROUNDDOWN([@[Pay]] / [@[Hours]], 2), \"\")",
+        "sql": "ROUND([Pay] / NULLIF([Hours], 0), 2, 1) AS [Rate]",
+        "python": "df[\"Rate\"] = np.trunc((df[\"Pay\"] / df[\"Hours\"].replace(0, np.nan)) * 10**2) / 10**2",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Rate\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Source field value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Source field value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Source field value\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Source field value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Source Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Pay</strong><small>wd.Pay</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"math-operations-editor\" data-math-editor data-math-param=\"source_math_json\" data-base-source=\"wd\"><input type=\"hidden\" data-param=\"source_math_json\" data-math-json value=\"[{&quot;id&quot;:&quot;math_00000000&quot;,&quot;operator&quot;:&quot;/&quot;,&quot;operandType&quot;:&quot;field&quot;,&quot;operand&quot;:&quot;&quot;,&quot;operandSourceFile&quot;:&quot;&quot;,&quot;operandSourceAlias&quot;:&quot;&quot;,&quot;operandFieldName&quot;:&quot;Hours&quot;}]\"><div class=\"math-operations-header\"><strong>Mathematical operations</strong><button type=\"button\" class=\"secondary small\" data-add-math-operation>Add Operation</button></div><p class=\"hint\">Operations are applied in listed order. Division by a field returns blank/NULL when its value is zero.</p><div class=\"math-operation-list\"><div class=\"math-operation-row\" data-math-row data-math-id=\"math_00000000\"><div class=\"atlas-choice-field math-operator-control\"><span class=\"atlas-choice-heading\">Operator</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Math operator\"><input type=\"hidden\" data-math-operator=\"\" value=\"/\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"+\" tabindex=\"-1\"><span class=\"atlas-choice-label\">+</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"-\" tabindex=\"-1\"><span class=\"atlas-choice-label\">−</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"*\" tabindex=\"-1\"><span class=\"atlas-choice-label\">×</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"/\" tabindex=\"0\"><span class=\"atlas-choice-label\">÷</span></button></div></div><div class=\"math-operand-mode\"><span class=\"math-control-label\">Operand type</span><label class=\"math-mode-switch\"><input type=\"checkbox\" role=\"switch\" data-math-operand-mode checked aria-label=\"Use a source field for this mathematical operand\"><span class=\"math-mode-switch-track\" aria-hidden=\"true\"></span><span data-math-mode-label>Source Field</span></label><input type=\"hidden\" data-math-operand-type value=\"field\"></div><div class=\"math-active-operand\"><label class=\"math-number-operand\" hidden>Value<input data-math-operand inputmode=\"decimal\" value=\"\" placeholder=\"e.g., -1.5\"></label><div class=\"math-field-operand\" ><span class=\"math-control-label\">Value</span><input type=\"hidden\" data-math-source value=\"\"><input type=\"hidden\" data-math-field value=\"Hours\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"math_operand_field\" data-picker-source=\"\" aria-label=\"Choose field operand\"><span class=\"visual-picker-trigger-copy\"><strong>Hours</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small math-remove\" data-remove-math-operation>Remove</button></div></div></div><div class=\"math-rounding-grid\"><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Rounding</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Rounding\"><input type=\"hidden\" data-param=\"rounding_mode\" value=\"down\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"none\" tabindex=\"-1\"><span class=\"atlas-choice-label\">None</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"nearest\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Nearest</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"up\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Up</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"down\" tabindex=\"0\"><span class=\"atlas-choice-label\">Down</span></button></div></div><label>Decimal places<input data-param=\"rounding_decimal_places\" inputmode=\"numeric\" value=\"2\"></label></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Rate",
+          "value_mode": "Source field value",
+          "source_file": "wd",
+          "field_name": "Pay",
+          "source_math_json": "[{\"id\":\"math_00000000\",\"operator\":\"/\",\"operandType\":\"field\",\"operand\":\"\",\"operandSourceFile\":\"\",\"operandSourceAlias\":\"\",\"operandFieldName\":\"Hours\"}]",
+          "rounding_mode": "down",
+          "rounding_decimal_places": "2",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "calc-chain",
+      "stepType": "create_column",
+      "english": "Create new column \"Adjusted\" using file \"wd\" column \"Pay\" plus 10 times 1.5 minus file \"wd\" column \"Bonus\", then round to 1 decimal place.",
+      "autoNotes": "",
+      "developer": "Excel:\n=ROUND((([@[Pay]] + 10) * 1.5) - [@[Bonus]], 1)\n\nSQL Server:\nROUND((([Pay] + 10) * 1.5) - [Bonus], 1) AS [Adjusted]\n\nPython (pandas):\ndf[\"Adjusted\"] = np.sign(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * np.floor(np.abs(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * 10**1 + 0.5) / 10**1",
+      "formulas": {
+        "excel": "=ROUND((([@[Pay]] + 10) * 1.5) - [@[Bonus]], 1)",
+        "sql": "ROUND((([Pay] + 10) * 1.5) - [Bonus], 1) AS [Adjusted]",
+        "python": "df[\"Adjusted\"] = np.sign(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * np.floor(np.abs(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * 10**1 + 0.5) / 10**1",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Adjusted\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Source field value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Source field value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Source field value\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Source field value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Source Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Pay</strong><small>wd.Pay</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"math-operations-editor\" data-math-editor data-math-param=\"source_math_json\" data-base-source=\"wd\"><input type=\"hidden\" data-param=\"source_math_json\" data-math-json value=\"[{&quot;id&quot;:&quot;math_00000000&quot;,&quot;operator&quot;:&quot;+&quot;,&quot;operandType&quot;:&quot;number&quot;,&quot;operand&quot;:&quot;10&quot;,&quot;operandSourceFile&quot;:&quot;&quot;,&quot;operandSourceAlias&quot;:&quot;&quot;,&quot;operandFieldName&quot;:&quot;&quot;},{&quot;id&quot;:&quot;math_00000000&quot;,&quot;operator&quot;:&quot;*&quot;,&quot;operandType&quot;:&quot;number&quot;,&quot;operand&quot;:&quot;1.5&quot;,&quot;operandSourceFile&quot;:&quot;&quot;,&quot;operandSourceAlias&quot;:&quot;&quot;,&quot;operandFieldName&quot;:&quot;&quot;},{&quot;id&quot;:&quot;math_00000000&quot;,&quot;operator&quot;:&quot;-&quot;,&quot;operandType&quot;:&quot;field&quot;,&quot;operand&quot;:&quot;&quot;,&quot;operandSourceFile&quot;:&quot;&quot;,&quot;operandSourceAlias&quot;:&quot;&quot;,&quot;operandFieldName&quot;:&quot;Bonus&quot;}]\"><div class=\"math-operations-header\"><strong>Mathematical operations</strong><button type=\"button\" class=\"secondary small\" data-add-math-operation>Add Operation</button></div><p class=\"hint\">Operations are applied in listed order. Division by a field returns blank/NULL when its value is zero.</p><div class=\"math-operation-list\"><div class=\"math-operation-row\" data-math-row data-math-id=\"math_00000000\"><div class=\"atlas-choice-field math-operator-control\"><span class=\"atlas-choice-heading\">Operator</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Math operator\"><input type=\"hidden\" data-math-operator=\"\" value=\"+\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"+\" tabindex=\"0\"><span class=\"atlas-choice-label\">+</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"-\" tabindex=\"-1\"><span class=\"atlas-choice-label\">−</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"*\" tabindex=\"-1\"><span class=\"atlas-choice-label\">×</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"/\" tabindex=\"-1\"><span class=\"atlas-choice-label\">÷</span></button></div></div><div class=\"math-operand-mode\"><span class=\"math-control-label\">Operand type</span><label class=\"math-mode-switch\"><input type=\"checkbox\" role=\"switch\" data-math-operand-mode aria-label=\"Use a source field for this mathematical operand\"><span class=\"math-mode-switch-track\" aria-hidden=\"true\"></span><span data-math-mode-label>Static Value</span></label><input type=\"hidden\" data-math-operand-type value=\"number\"></div><div class=\"math-active-operand\"><label class=\"math-number-operand\" >Value<input data-math-operand inputmode=\"decimal\" value=\"10\" placeholder=\"e.g., -1.5\"></label><div class=\"math-field-operand\" hidden><span class=\"math-control-label\">Value</span><input type=\"hidden\" data-math-source value=\"\"><input type=\"hidden\" data-math-field value=\"\"><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"math_operand_field\" data-picker-source=\"\" aria-label=\"Choose field operand\"><span class=\"visual-picker-trigger-copy\"><strong>Select field...</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small math-remove\" data-remove-math-operation>Remove</button></div><div class=\"math-operation-row\" data-math-row data-math-id=\"math_00000000\"><div class=\"atlas-choice-field math-operator-control\"><span class=\"atlas-choice-heading\">Operator</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Math operator\"><input type=\"hidden\" data-math-operator=\"\" value=\"*\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"+\" tabindex=\"-1\"><span class=\"atlas-choice-label\">+</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"-\" tabindex=\"-1\"><span class=\"atlas-choice-label\">−</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"*\" tabindex=\"0\"><span class=\"atlas-choice-label\">×</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"/\" tabindex=\"-1\"><span class=\"atlas-choice-label\">÷</span></button></div></div><div class=\"math-operand-mode\"><span class=\"math-control-label\">Operand type</span><label class=\"math-mode-switch\"><input type=\"checkbox\" role=\"switch\" data-math-operand-mode aria-label=\"Use a source field for this mathematical operand\"><span class=\"math-mode-switch-track\" aria-hidden=\"true\"></span><span data-math-mode-label>Static Value</span></label><input type=\"hidden\" data-math-operand-type value=\"number\"></div><div class=\"math-active-operand\"><label class=\"math-number-operand\" >Value<input data-math-operand inputmode=\"decimal\" value=\"1.5\" placeholder=\"e.g., -1.5\"></label><div class=\"math-field-operand\" hidden><span class=\"math-control-label\">Value</span><input type=\"hidden\" data-math-source value=\"\"><input type=\"hidden\" data-math-field value=\"\"><button type=\"button\" class=\"visual-picker-trigger-button field-token empty\" data-open-mini-picker=\"field\" data-param-name=\"math_operand_field\" data-picker-source=\"\" aria-label=\"Choose field operand\"><span class=\"visual-picker-trigger-copy\"><strong>Select field...</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small math-remove\" data-remove-math-operation>Remove</button></div><div class=\"math-operation-row\" data-math-row data-math-id=\"math_00000000\"><div class=\"atlas-choice-field math-operator-control\"><span class=\"atlas-choice-heading\">Operator</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Math operator\"><input type=\"hidden\" data-math-operator=\"\" value=\"-\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"+\" tabindex=\"-1\"><span class=\"atlas-choice-label\">+</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"-\" tabindex=\"0\"><span class=\"atlas-choice-label\">−</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"*\" tabindex=\"-1\"><span class=\"atlas-choice-label\">×</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"/\" tabindex=\"-1\"><span class=\"atlas-choice-label\">÷</span></button></div></div><div class=\"math-operand-mode\"><span class=\"math-control-label\">Operand type</span><label class=\"math-mode-switch\"><input type=\"checkbox\" role=\"switch\" data-math-operand-mode checked aria-label=\"Use a source field for this mathematical operand\"><span class=\"math-mode-switch-track\" aria-hidden=\"true\"></span><span data-math-mode-label>Source Field</span></label><input type=\"hidden\" data-math-operand-type value=\"field\"></div><div class=\"math-active-operand\"><label class=\"math-number-operand\" hidden>Value<input data-math-operand inputmode=\"decimal\" value=\"\" placeholder=\"e.g., -1.5\"></label><div class=\"math-field-operand\" ><span class=\"math-control-label\">Value</span><input type=\"hidden\" data-math-source value=\"\"><input type=\"hidden\" data-math-field value=\"Bonus\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"math_operand_field\" data-picker-source=\"\" aria-label=\"Choose field operand\"><span class=\"visual-picker-trigger-copy\"><strong>Bonus</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small math-remove\" data-remove-math-operation>Remove</button></div></div></div><div class=\"math-rounding-grid\"><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Rounding</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Rounding\"><input type=\"hidden\" data-param=\"rounding_mode\" value=\"nearest\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"none\" tabindex=\"-1\"><span class=\"atlas-choice-label\">None</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"nearest\" tabindex=\"0\"><span class=\"atlas-choice-label\">Nearest</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"up\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Up</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"down\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Down</span></button></div></div><label>Decimal places<input data-param=\"rounding_decimal_places\" inputmode=\"numeric\" value=\"1\"></label></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Adjusted",
+          "value_mode": "Source field value",
+          "source_file": "wd",
+          "field_name": "Pay",
+          "source_math_json": "[{\"id\":\"math_00000000\",\"operator\":\"+\",\"operandType\":\"number\",\"operand\":\"10\",\"operandSourceFile\":\"\",\"operandSourceAlias\":\"\",\"operandFieldName\":\"\"},{\"id\":\"math_00000000\",\"operator\":\"*\",\"operandType\":\"number\",\"operand\":\"1.5\",\"operandSourceFile\":\"\",\"operandSourceAlias\":\"\",\"operandFieldName\":\"\"},{\"id\":\"math_00000000\",\"operator\":\"-\",\"operandType\":\"field\",\"operand\":\"\",\"operandSourceFile\":\"\",\"operandSourceAlias\":\"\",\"operandFieldName\":\"Bonus\"}]",
+          "rounding_mode": "nearest",
+          "rounding_decimal_places": "1",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "round-up",
+      "stepType": "create_column",
+      "english": "Create new column \"Whole\" using file \"wd\" column \"Pay\", then round up to the nearest whole number.",
+      "autoNotes": "",
+      "developer": "Excel:\n=ROUNDUP([@[Pay]], 0)\n\nSQL Server:\nSIGN([Pay]) * CEILING(ABS([Pay])) AS [Whole]\n\nPython (pandas):\ndf[\"Whole\"] = np.sign(df[\"Pay\"]) * np.ceil(np.abs(df[\"Pay\"]))",
+      "formulas": {
+        "excel": "=ROUNDUP([@[Pay]], 0)",
+        "sql": "SIGN([Pay]) * CEILING(ABS([Pay])) AS [Whole]",
+        "python": "df[\"Whole\"] = np.sign(df[\"Pay\"]) * np.ceil(np.abs(df[\"Pay\"]))",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Whole\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Source field value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Source field value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Source field value\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Source field value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Source Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Pay</strong><small>wd.Pay</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"math-operations-editor\" data-math-editor data-math-param=\"source_math_json\" data-base-source=\"wd\"><input type=\"hidden\" data-param=\"source_math_json\" data-math-json value=\"[]\"><div class=\"math-operations-header\"><strong>Mathematical operations</strong><button type=\"button\" class=\"secondary small\" data-add-math-operation>Add Operation</button></div><p class=\"hint\">Operations are applied in listed order. Division by a field returns blank/NULL when its value is zero.</p><div class=\"math-operation-list\"></div></div><div class=\"math-rounding-grid\"><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Rounding</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Rounding\"><input type=\"hidden\" data-param=\"rounding_mode\" value=\"up\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"none\" tabindex=\"-1\"><span class=\"atlas-choice-label\">None</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"nearest\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Nearest</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"up\" tabindex=\"0\"><span class=\"atlas-choice-label\">Up</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"down\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Down</span></button></div></div><label>Decimal places<input data-param=\"rounding_decimal_places\" inputmode=\"numeric\" value=\"0\"></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Whole",
+          "value_mode": "Source field value",
+          "source_math_json": "[]",
+          "rounding_mode": "up",
+          "rounding_decimal_places": "0"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Whole",
+          "value_mode": "Source field value",
+          "source_file": "wd",
+          "field_name": "Pay",
+          "rounding_mode": "up",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "concat",
+      "stepType": "create_column",
+      "english": "Create new column \"Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Worker ID]]&[@[PERNR]]\n\nSQL Server:\nCONCAT([Worker ID], [PERNR]) AS [Key]\n\nPython (pandas):\ndf[\"Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"PERNR\"].fillna(\"\").astype(str)",
+      "formulas": {
+        "excel": "=[@[Worker ID]]&[@[PERNR]]",
+        "sql": "CONCAT([Worker ID], [PERNR]) AS [Key]",
+        "python": "df[\"Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"PERNR\"].fillna(\"\").astype(str)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Key\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Concatenate fields\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Concatenate fields</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Concatenate fields\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Concatenate fields\" tabindex=\"0\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"logic-picker-pair\"><input type=\"hidden\" data-param=\"concat_source_1\" value=\"wd\"><label>First Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"concat_field_1\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button><button type=\"button\" class=\"secondary small\" data-clear-concat-field=\"1\" aria-label=\"Clear First Field\" >Clear</button></label><input type=\"hidden\" data-param=\"concat_source_2\" value=\"sap\"><label>Second Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"concat_field_2\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button><button type=\"button\" class=\"secondary small\" data-clear-concat-field=\"2\" aria-label=\"Clear Second Field\" >Clear</button></label></div><label>Separator<input data-param=\"concat_separator\" value=\"\" maxlength=\"20\" placeholder='e.g., \" - \" (blank joins directly)' aria-describedby=\"atlas-concat-separator-hint\"><small id=\"atlas-concat-separator-hint\" class=\"hint\">Placed between the two values. Spaces count.</small></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Key",
+          "value_mode": "Concatenate fields"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Key",
+          "value_mode": "Concatenate fields",
+          "concat_source_1": "wd",
+          "concat_field_1": "Worker ID",
+          "concat_source_2": "sap",
+          "concat_field_2": "PERNR",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "first-chars",
+      "stepType": "create_column",
+      "english": "Create new column \"Prefix\" using the first 4 characters of file \"wd\" column \"Cost Center\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=LEFT([@[Cost Center]], 4)\n\nSQL Server:\nLEFT([Cost Center], 4) AS [Prefix]\n\nPython (pandas):\ndf[\"Prefix\"] = df[\"Cost Center\"].astype(\"string\").str[:4]",
+      "formulas": {
+        "excel": "=LEFT([@[Cost Center]], 4)",
+        "sql": "LEFT([Cost Center], 4) AS [Prefix]",
+        "python": "df[\"Prefix\"] = df[\"Cost Center\"].astype(\"string\").str[:4]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Prefix\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"first_characters\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"first_characters\" tabindex=\"0\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"split\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Cost Center</strong><small>wd.Cost Center</small></span><span aria-hidden=\"true\">⌄</span></button></label><label> Number of Characters <input type=\"number\" data-param=\"string_character_count\" inputmode=\"numeric\" pattern=\"[1-9][0-9]*\" min=\"1\" step=\"1\" value=\"4\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "column_name": "Prefix",
+          "string_operation": "first_characters",
+          "string_position": "first",
+          "string_character_count": "4"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Prefix",
+          "value_mode": "String transformation",
+          "string_operation": "first_characters",
+          "string_source_file": "wd",
+          "string_source_field": "Cost Center",
+          "string_character_count": "4",
+          "expression_type": "custom_expression",
+          "string_position": "first",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "last-chars",
+      "stepType": "create_column",
+      "english": "Create new column \"Suffix\" using the last 3 characters of file \"wd\" column \"Cost Center\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=RIGHT([@[Cost Center]], 3)\n\nSQL Server:\nRIGHT([Cost Center], 3) AS [Suffix]\n\nPython (pandas):\ndf[\"Suffix\"] = df[\"Cost Center\"].astype(\"string\").str[-3:]",
+      "formulas": {
+        "excel": "=RIGHT([@[Cost Center]], 3)",
+        "sql": "RIGHT([Cost Center], 3) AS [Suffix]",
+        "python": "df[\"Suffix\"] = df[\"Cost Center\"].astype(\"string\").str[-3:]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Suffix\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"last_characters\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"last_characters\" tabindex=\"0\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"split\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"last\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Cost Center</strong><small>wd.Cost Center</small></span><span aria-hidden=\"true\">⌄</span></button></label><label> Number of Characters <input type=\"number\" data-param=\"string_character_count\" inputmode=\"numeric\" pattern=\"[1-9][0-9]*\" min=\"1\" step=\"1\" value=\"3\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "column_name": "Suffix",
+          "string_operation": "last_characters",
+          "string_position": "last",
+          "string_character_count": "3"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Suffix",
+          "value_mode": "String transformation",
+          "string_operation": "last_characters",
+          "string_source_file": "wd",
+          "string_source_field": "Cost Center",
+          "string_character_count": "3",
+          "expression_type": "custom_expression",
+          "string_position": "last",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "char-count",
+      "stepType": "create_column",
+      "english": "Create new column \"Name Length\" and set its value to the character length of file \"wd\" column \"Legal Name\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=LEN([@[Legal Name]])\n\nSQL Server:\nLEN([Legal Name]) AS [Name Length]\n\nPython (pandas):\ndf[\"Name Length\"] = df[\"Legal Name\"].astype(\"string\").str.len()",
+      "formulas": {
+        "excel": "=LEN([@[Legal Name]])",
+        "sql": "LEN([Legal Name]) AS [Name Length]",
+        "python": "df[\"Name Length\"] = df[\"Legal Name\"].astype(\"string\").str.len()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Name Length\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"character_count\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"character_count\" tabindex=\"0\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"split\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Legal Name</strong><small>wd.Legal Name</small></span><span aria-hidden=\"true\">⌄</span></button></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "column_name": "Name Length",
+          "string_operation": "character_count",
+          "string_position": "first",
+          "string_character_count": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Name Length",
+          "value_mode": "String transformation",
+          "string_operation": "character_count",
+          "string_source_file": "wd",
+          "string_source_field": "Legal Name",
+          "expression_type": "custom_expression",
+          "string_position": "first",
+          "string_source_alias": "wd",
+          "result_data_type": "integer",
+          "result_field_type": "number"
+        }
+      }
+    },
+    {
+      "id": "split-every",
+      "stepType": "create_column",
+      "english": "Create new columns \"Tag_x\" (one for each part) by splitting file \"wd\" column \"Tags\" on each comma.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXTSPLIT([@[Tags]], \",\")\n\nSQL Server:\nCROSS APPLY STRING_SPLIT([Tags], ',', 1) AS [split_parts]\n-- CONCAT('Tag_', [split_parts].[ordinal]) AS [column_name], [split_parts].[value]\n\nPython (pandas):\nsplit_parts = df[\"Tags\"].astype(\"string\").str.split(\",\", regex=False, expand=True).fillna(\"\")\nsplit_parts.columns = [\"Tag_\" + str(i + 1) for i in split_parts.columns]\ndf = df.join(split_parts)\n\nNote: The number of parts can vary, so the columns are numbered Tag_1, Tag_2, and so on. Excel spills one part into each column to the right. SQL Server returns one row per part with its ordinal; pivot the rows to get one column per part.\n\nNote: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.",
+      "formulas": {
+        "excel": "=TEXTSPLIT([@[Tags]], \",\")",
+        "sql": "CROSS APPLY STRING_SPLIT([Tags], ',', 1) AS [split_parts]\n-- CONCAT('Tag_', [split_parts].[ordinal]) AS [column_name], [split_parts].[value]",
+        "python": "split_parts = df[\"Tags\"].astype(\"string\").str.split(\",\", regex=False, expand=True).fillna(\"\")\nsplit_parts.columns = [\"Tag_\" + str(i + 1) for i in split_parts.columns]\ndf = df.join(split_parts)",
+        "notes": [
+          "Note: The number of parts can vary, so the columns are numbered Tag_1, Tag_2, and so on. Excel spills one part into each column to the right. SQL Server returns one row per part with its ordinal; pivot the rows to get one column per part.",
+          "Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Tag\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"split\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"split\" tabindex=\"0\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Tags</strong><small>wd.Tags</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Split at</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Split at\"><input type=\"hidden\" data-param=\"string_split_mode\" value=\"every\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"every\" tabindex=\"0\"><span class=\"atlas-choice-label\">Each delimiter</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First delimiter</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last delimiter</span></button></div></div><label>Delimiter<select data-param=\"string_split_delimiter\"><option value=\"space\">Space</option><option value=\"comma\" selected>Comma</option><option value=\"hyphen\">Hyphen</option><option value=\"underscore\">Underscore</option><option value=\"period\">Period</option><option value=\"slash\">Forward slash</option><option value=\"backslash\">Backslash</option><option value=\"pipe\">Pipe</option><option value=\"semicolon\">Semicolon</option><option value=\"colon\">Colon</option><option value=\"tab\">Tab</option><option value=\"custom\">Custom…</option></select></label><label>Number of columns<input type=\"number\" data-param=\"string_split_column_count\" inputmode=\"numeric\" min=\"1\" max=\"20\" step=\"1\" value=\"\" placeholder=\"Blank = number automatically\" aria-describedby=\"atlas-split-count-hint\"><small id=\"atlas-split-count-hint\" class=\"hint\">Leave blank to create Tag_x columns (Name_1, Name_2, …) from the New Column Name.</small></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "every",
+          "string_split_delimiter": "comma",
+          "string_split_custom_delimiter": "",
+          "column_name": "Tag",
+          "string_split_column_count": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "every",
+          "string_split_delimiter": "comma",
+          "string_source_file": "wd",
+          "string_source_field": "Tags",
+          "column_name": "Tag",
+          "expression_type": "custom_expression",
+          "string_position": "first",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "split-first",
+      "stepType": "create_column",
+      "english": "Create new columns \"First Name\", \"Last Name\" by splitting file \"wd\" column \"Legal Name\" on the first space.",
+      "autoNotes": "",
+      "developer": "Excel:\nFirst Name: =IFERROR(TEXTBEFORE([@[Legal Name]], \" \"), [@[Legal Name]])\nLast Name: =IFERROR(TEXTAFTER([@[Legal Name]], \" \"), \"\")\n\nSQL Server:\nLEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name],\nCASE WHEN CHARINDEX(' ', [Legal Name]) > 0 THEN SUBSTRING([Legal Name], CHARINDEX(' ', [Legal Name]) + 1, 4000) ELSE '' END AS [Last Name]\n\nPython (pandas):\ndf[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[0]\ndf[\"Last Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[1].fillna(\"\")",
+      "formulas": {
+        "excel": "First Name: =IFERROR(TEXTBEFORE([@[Legal Name]], \" \"), [@[Legal Name]])\nLast Name: =IFERROR(TEXTAFTER([@[Legal Name]], \" \"), \"\")",
+        "sql": "LEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name],\nCASE WHEN CHARINDEX(' ', [Legal Name]) > 0 THEN SUBSTRING([Legal Name], CHARINDEX(' ', [Legal Name]) + 1, 4000) ELSE '' END AS [Last Name]",
+        "python": "df[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[0]\ndf[\"Last Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[1].fillna(\"\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><input type=\"hidden\" data-param=\"column_name\" value=\"First Name\"><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"split\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"split\" tabindex=\"0\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Legal Name</strong><small>wd.Legal Name</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Split at</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Split at\"><input type=\"hidden\" data-param=\"string_split_mode\" value=\"first\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"every\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Each delimiter</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"first\" tabindex=\"0\"><span class=\"atlas-choice-label\">First delimiter</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last delimiter</span></button></div></div><label>Delimiter<select data-param=\"string_split_delimiter\"><option value=\"space\" selected>Space</option><option value=\"comma\">Comma</option><option value=\"hyphen\">Hyphen</option><option value=\"underscore\">Underscore</option><option value=\"period\">Period</option><option value=\"slash\">Forward slash</option><option value=\"backslash\">Backslash</option><option value=\"pipe\">Pipe</option><option value=\"semicolon\">Semicolon</option><option value=\"colon\">Colon</option><option value=\"tab\">Tab</option><option value=\"custom\">Custom…</option></select></label><p class=\"hint\">Splitting on the first delimiter always makes two columns: the text before it and the text after it. Values without the delimiter keep the whole value in the first column and leave the second blank.</p><div class=\"split-column-names atlas-choice-field\" role=\"group\" aria-labelledby=\"atlas-split-names-Legal-Name-heading\"><span class=\"atlas-choice-heading\" id=\"atlas-split-names-Legal-Name-heading\">Output column names</span><label>Column 1<input data-param=\"string_split_column_1\" value=\"First Name\" list=\"atlas-split-names-Legal-Name\" placeholder=\"Pick a field or type a new name\"></label><label>Column 2<input data-param=\"string_split_column_2\" value=\"Last Name\" list=\"atlas-split-names-Legal-Name\" placeholder=\"Pick a field or type a new name\"></label><datalist id=\"atlas-split-names-Legal-Name\"><option value=\"First Name\"></option><option value=\"Last Name\"></option><option value=\"Name Length\"></option><option value=\"Prefix\"></option><option value=\"Suffix\"></option><option value=\"Tag_x\"></option></datalist></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "first",
+          "string_split_delimiter": "space",
+          "string_split_custom_delimiter": "",
+          "string_split_column_1": "First Name",
+          "string_split_column_2": "Last Name",
+          "column_name": "First Name"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "first",
+          "string_split_delimiter": "space",
+          "string_source_file": "wd",
+          "string_source_field": "Legal Name",
+          "string_split_column_1": "First Name",
+          "string_split_column_2": "Last Name",
+          "column_name": "First Name",
+          "expression_type": "custom_expression",
+          "string_position": "first",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "split-last-custom",
+      "stepType": "create_column",
+      "english": "Create new columns \"Parent\", \"Leaf\" by splitting file \"wd\" column \"Path\" on the last \"::\".",
+      "autoNotes": "",
+      "developer": "Excel:\nParent: =IFERROR(TEXTBEFORE([@[Path]], \"::\", -1), [@[Path]])\nLeaf: =IFERROR(TEXTAFTER([@[Path]], \"::\", -1), \"\")\n\nSQL Server:\nCASE WHEN CHARINDEX('::', [Path]) > 0 THEN LEFT([Path], LEN([Path] + 'x') - CHARINDEX(REVERSE('::'), REVERSE([Path])) - 2) ELSE [Path] END AS [Parent],\nCASE WHEN CHARINDEX('::', [Path]) > 0 THEN RIGHT([Path], CHARINDEX(REVERSE('::'), REVERSE([Path])) - 1) ELSE '' END AS [Leaf]\n\nPython (pandas):\ndf[\"Parent\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[0]\ndf[\"Leaf\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[1].fillna(\"\")",
+      "formulas": {
+        "excel": "Parent: =IFERROR(TEXTBEFORE([@[Path]], \"::\", -1), [@[Path]])\nLeaf: =IFERROR(TEXTAFTER([@[Path]], \"::\", -1), \"\")",
+        "sql": "CASE WHEN CHARINDEX('::', [Path]) > 0 THEN LEFT([Path], LEN([Path] + 'x') - CHARINDEX(REVERSE('::'), REVERSE([Path])) - 2) ELSE [Path] END AS [Parent],\nCASE WHEN CHARINDEX('::', [Path]) > 0 THEN RIGHT([Path], CHARINDEX(REVERSE('::'), REVERSE([Path])) - 1) ELSE '' END AS [Leaf]",
+        "python": "df[\"Parent\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[0]\ndf[\"Leaf\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[1].fillna(\"\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><input type=\"hidden\" data-param=\"column_name\" value=\"Parent\"><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"split\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"split\" tabindex=\"0\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Path</strong><small>wd.Path</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Split at</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Split at\"><input type=\"hidden\" data-param=\"string_split_mode\" value=\"last\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"every\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Each delimiter</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"first\" tabindex=\"-1\"><span class=\"atlas-choice-label\">First delimiter</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"last\" tabindex=\"0\"><span class=\"atlas-choice-label\">Last delimiter</span></button></div></div><label>Delimiter<select data-param=\"string_split_delimiter\"><option value=\"space\">Space</option><option value=\"comma\">Comma</option><option value=\"hyphen\">Hyphen</option><option value=\"underscore\">Underscore</option><option value=\"period\">Period</option><option value=\"slash\">Forward slash</option><option value=\"backslash\">Backslash</option><option value=\"pipe\">Pipe</option><option value=\"semicolon\">Semicolon</option><option value=\"colon\">Colon</option><option value=\"tab\">Tab</option><option value=\"custom\" selected>Custom…</option></select></label><label>Custom delimiter<input data-param=\"string_split_custom_delimiter\" value=\"::\" placeholder='e.g., \" - \" or \"||\"' aria-describedby=\"atlas-split-custom-hint\"><small id=\"atlas-split-custom-hint\" class=\"hint\">Spaces count. The delimiter is matched exactly, not as a pattern.</small></label><p class=\"hint\">Splitting on the last delimiter always makes two columns: the text before it and the text after it. Values without the delimiter keep the whole value in the first column and leave the second blank.</p><div class=\"split-column-names atlas-choice-field\" role=\"group\" aria-labelledby=\"atlas-split-names-Path-heading\"><span class=\"atlas-choice-heading\" id=\"atlas-split-names-Path-heading\">Output column names</span><label>Column 1<input data-param=\"string_split_column_1\" value=\"Parent\" list=\"atlas-split-names-Path\" placeholder=\"Pick a field or type a new name\"></label><label>Column 2<input data-param=\"string_split_column_2\" value=\"Leaf\" list=\"atlas-split-names-Path\" placeholder=\"Pick a field or type a new name\"></label><datalist id=\"atlas-split-names-Path\"><option value=\"First Name\"></option><option value=\"Last Name\"></option><option value=\"Leaf\"></option><option value=\"Name Length\"></option><option value=\"Parent\"></option><option value=\"Prefix\"></option><option value=\"Suffix\"></option><option value=\"Tag_x\"></option></datalist></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "last",
+          "string_split_delimiter": "custom",
+          "string_split_custom_delimiter": "::",
+          "string_split_column_1": "Parent",
+          "string_split_column_2": "Leaf",
+          "column_name": "Parent"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "value_mode": "String transformation",
+          "string_operation": "split",
+          "string_split_mode": "last",
+          "string_split_delimiter": "custom",
+          "string_split_custom_delimiter": "::",
+          "string_source_file": "wd",
+          "string_source_field": "Path",
+          "string_split_column_1": "Parent",
+          "string_split_column_2": "Leaf",
+          "column_name": "Parent",
+          "expression_type": "custom_expression",
+          "string_position": "first",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "legacy-expression",
+      "stepType": "create_column",
+      "english": "Create new column \"Expr\" using expression: [Pay] * 12.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[Pay] * 12\n\nSQL Server:\n[Pay] * 12 AS [Expr]\n\nPython (pandas):\ndf[\"Expr\"] = [Pay] * 12\n\nNote: The expression is free text and is copied as written. Review it before running.",
+      "formulas": {
+        "excel": "=[Pay] * 12",
+        "sql": "[Pay] * 12 AS [Expr]",
+        "python": "df[\"Expr\"] = [Pay] * 12",
+        "notes": [
+          "Note: The expression is free text and is copied as written. Review it before running."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Expr\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Written expression (legacy)\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Written expression (legacy)</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Expression / calculation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Expression / calculation\" tabindex=\"0\"><span class=\"atlas-choice-label\">Written expression (legacy)</span><span class=\"atlas-choice-description\">Written in words (legacy). Choose a structured type.</span></button></div></div></div></div><div class=\"logic-editor-callout full\" role=\"note\">This column is written as an expression. Choose a value type above, such as String transformation or Date difference, so it runs the same way every time. The written text is kept below as the description.</div><input type=\"hidden\" data-param=\"expression\" value=\"[Pay] * 12\"><label class=\"full\">Description (not run)<textarea data-param=\"column_description\" placeholder=\"What this column is for\" aria-describedby=\"atlas-column-description-hint\">[Pay] * 12</textarea><small id=\"atlas-column-description-hint\" class=\"hint\">For readers only. It is not run as a formula.</small></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Expr",
+          "value_mode": "Expression / calculation",
+          "expression_type": "custom_expression",
+          "expression": "[Pay] * 12"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Expr",
+          "value_mode": "Expression / calculation",
+          "expression_type": "custom_expression",
+          "expression": "[Pay] * 12",
+          "column_description": "[Pay] * 12"
+        }
+      }
+    },
+    {
+      "id": "legacy-expression-first",
+      "stepType": "create_column",
+      "english": "Create new column \"Expr First\" using the first 2 characters of file \"wd\" column \"Cost Center\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=LEFT([@[Cost Center]], 2)\n\nSQL Server:\nLEFT([Cost Center], 2) AS [Expr First]\n\nPython (pandas):\ndf[\"Expr First\"] = df[\"Cost Center\"].astype(\"string\").str[:2]",
+      "formulas": {
+        "excel": "=LEFT([@[Cost Center]], 2)",
+        "sql": "LEFT([Cost Center], 2) AS [Expr First]",
+        "python": "df[\"Expr First\"] = df[\"Cost Center\"].astype(\"string\").str[:2]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Expr First\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: String transformation\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">String transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"String transformation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"String transformation\" tabindex=\"0\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"string_operation\" value=\"first_characters\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"first_characters\" tabindex=\"0\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"split\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Split on delimiter</span></button></div></div><input type=\"hidden\" data-param=\"string_position\" value=\"first\"><input type=\"hidden\" data-param=\"string_source_file\" value=\"wd\"><label> Source Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Cost Center</strong><small>wd.Cost Center</small></span><span aria-hidden=\"true\">⌄</span></button></label><label> Number of Characters <input type=\"number\" data-param=\"string_character_count\" inputmode=\"numeric\" pattern=\"[1-9][0-9]*\" min=\"1\" step=\"1\" value=\"2\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "value_mode": "String transformation",
+          "column_name": "Expr First",
+          "string_operation": "first_characters",
+          "string_position": "first",
+          "string_character_count": "2"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Expr First",
+          "value_mode": "String transformation",
+          "expression_type": "first_characters",
+          "source_file": "wd",
+          "expression_source_field": "Cost Center",
+          "character_count": "2",
+          "string_operation": "first_characters",
+          "string_position": "first",
+          "string_source_file": "wd",
+          "string_source_field": "Cost Center",
+          "string_character_count": "2",
+          "string_source_alias": "wd",
+          "result_data_type": "string",
+          "result_field_type": "text"
+        }
+      }
+    },
+    {
+      "id": "legacy-concat-shared-source",
+      "stepType": "create_column",
+      "english": "Create new column \"Legacy Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"wd\" column \"Position\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Worker ID]]&[@[Position]]\n\nSQL Server:\nCONCAT([Worker ID], [Position]) AS [Legacy Key]\n\nPython (pandas):\ndf[\"Legacy Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"Position\"].fillna(\"\").astype(str)",
+      "formulas": {
+        "excel": "=[@[Worker ID]]&[@[Position]]",
+        "sql": "CONCAT([Worker ID], [Position]) AS [Legacy Key]",
+        "python": "df[\"Legacy Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"Position\"].fillna(\"\").astype(str)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Legacy Key\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Concatenate fields\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Concatenate fields</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Concatenate fields\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Concatenate fields\" tabindex=\"0\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><div class=\"logic-picker-pair\"><input type=\"hidden\" data-param=\"concat_source_1\" value=\"wd\"><label>First Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"concat_field_1\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button><button type=\"button\" class=\"secondary small\" data-clear-concat-field=\"1\" aria-label=\"Clear First Field\" >Clear</button></label><input type=\"hidden\" data-param=\"concat_source_2\" value=\"wd\"><label>Second Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"concat_field_2\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Position</strong><small>wd.Position</small></span><span aria-hidden=\"true\">⌄</span></button><button type=\"button\" class=\"secondary small\" data-clear-concat-field=\"2\" aria-label=\"Clear Second Field\" >Clear</button></label></div><label>Separator<input data-param=\"concat_separator\" value=\"\" maxlength=\"20\" placeholder='e.g., \" - \" (blank joins directly)' aria-describedby=\"atlas-concat-separator-hint\"><small id=\"atlas-concat-separator-hint\" class=\"hint\">Placed between the two values. Spaces count.</small></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Legacy Key",
+          "value_mode": "Concatenate fields"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Legacy Key",
+          "value_mode": "Concatenate fields",
+          "source_file": "wd",
+          "concat_field_1": "Worker ID",
+          "concat_field_2": "Position",
+          "expression_type": "custom_expression",
+          "concat_source_1": "wd",
+          "concat_source_2": "wd"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"WD_Workers\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [WD_Workers] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"SAP_HI0256\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [SAP_HI0256] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "3",
+      "stepId": "ref-wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "4",
+      "stepId": "static",
+      "branch": "Root",
+      "analyst": "Create new column \"Flag\" and set value to \"Y\".",
+      "developer": "Excel:\n=\"Y\"\n\nSQL Server:\n'Y' AS [Flag]\n\nPython (pandas):\ndf[\"Flag\"] = \"Y\"",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "5",
+      "stepId": "blank",
+      "branch": "Root",
+      "analyst": "Create new blank column \"Empty\".",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Empty]\n\nPython (pandas):\ndf[\"Empty\"] = pd.NA",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "6",
+      "stepId": "copy",
+      "branch": "Root",
+      "analyst": "Create new column \"Worker Copy\" using file \"wd\" column \"Worker ID\".",
+      "developer": "Excel:\n=[@[Worker ID]]\n\nSQL Server:\n[Worker ID] AS [Worker Copy]\n\nPython (pandas):\ndf[\"Worker Copy\"] = df[\"Worker ID\"]",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "7",
+      "stepId": "calc-divide",
+      "branch": "Root",
+      "analyst": "Create new column \"Rate\" using file \"wd\" column \"Pay\" divided by file \"wd\" column \"Hours\", then round down to 2 decimal places.",
+      "developer": "Excel:\n=IFERROR(ROUNDDOWN([@[Pay]] / [@[Hours]], 2), \"\")\n\nSQL Server:\nROUND([Pay] / NULLIF([Hours], 0), 2, 1) AS [Rate]\n\nPython (pandas):\ndf[\"Rate\"] = np.trunc((df[\"Pay\"] / df[\"Hours\"].replace(0, np.nan)) * 10**2) / 10**2",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "8",
+      "stepId": "calc-chain",
+      "branch": "Root",
+      "analyst": "Create new column \"Adjusted\" using file \"wd\" column \"Pay\" plus 10 times 1.5 minus file \"wd\" column \"Bonus\", then round to 1 decimal place.",
+      "developer": "Excel:\n=ROUND((([@[Pay]] + 10) * 1.5) - [@[Bonus]], 1)\n\nSQL Server:\nROUND((([Pay] + 10) * 1.5) - [Bonus], 1) AS [Adjusted]\n\nPython (pandas):\ndf[\"Adjusted\"] = np.sign(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * np.floor(np.abs(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * 10**1 + 0.5) / 10**1",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "9",
+      "stepId": "round-up",
+      "branch": "Root",
+      "analyst": "Create new column \"Whole\" using file \"wd\" column \"Pay\", then round up to the nearest whole number.",
+      "developer": "Excel:\n=ROUNDUP([@[Pay]], 0)\n\nSQL Server:\nSIGN([Pay]) * CEILING(ABS([Pay])) AS [Whole]\n\nPython (pandas):\ndf[\"Whole\"] = np.sign(df[\"Pay\"]) * np.ceil(np.abs(df[\"Pay\"]))",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "10",
+      "stepId": "concat",
+      "branch": "Root",
+      "analyst": "Create new column \"Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "developer": "Excel:\n=[@[Worker ID]]&[@[PERNR]]\n\nSQL Server:\nCONCAT([Worker ID], [PERNR]) AS [Key]\n\nPython (pandas):\ndf[\"Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"PERNR\"].fillna(\"\").astype(str)",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "11",
+      "stepId": "first-chars",
+      "branch": "Root",
+      "analyst": "Create new column \"Prefix\" using the first 4 characters of file \"wd\" column \"Cost Center\".",
+      "developer": "Excel:\n=LEFT([@[Cost Center]], 4)\n\nSQL Server:\nLEFT([Cost Center], 4) AS [Prefix]\n\nPython (pandas):\ndf[\"Prefix\"] = df[\"Cost Center\"].astype(\"string\").str[:4]",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "12",
+      "stepId": "last-chars",
+      "branch": "Root",
+      "analyst": "Create new column \"Suffix\" using the last 3 characters of file \"wd\" column \"Cost Center\".",
+      "developer": "Excel:\n=RIGHT([@[Cost Center]], 3)\n\nSQL Server:\nRIGHT([Cost Center], 3) AS [Suffix]\n\nPython (pandas):\ndf[\"Suffix\"] = df[\"Cost Center\"].astype(\"string\").str[-3:]",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "13",
+      "stepId": "char-count",
+      "branch": "Root",
+      "analyst": "Create new column \"Name Length\" and set its value to the character length of file \"wd\" column \"Legal Name\".",
+      "developer": "Excel:\n=LEN([@[Legal Name]])\n\nSQL Server:\nLEN([Legal Name]) AS [Name Length]\n\nPython (pandas):\ndf[\"Name Length\"] = df[\"Legal Name\"].astype(\"string\").str.len()",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "14",
+      "stepId": "split-every",
+      "branch": "Root",
+      "analyst": "Create new columns \"Tag_x\" (one for each part) by splitting file \"wd\" column \"Tags\" on each comma.",
+      "developer": "Excel:\n=TEXTSPLIT([@[Tags]], \",\")\n\nSQL Server:\nCROSS APPLY STRING_SPLIT([Tags], ',', 1) AS [split_parts]\n-- CONCAT('Tag_', [split_parts].[ordinal]) AS [column_name], [split_parts].[value]\n\nPython (pandas):\nsplit_parts = df[\"Tags\"].astype(\"string\").str.split(\",\", regex=False, expand=True).fillna(\"\")\nsplit_parts.columns = [\"Tag_\" + str(i + 1) for i in split_parts.columns]\ndf = df.join(split_parts)\n\nNote: The number of parts can vary, so the columns are numbered Tag_1, Tag_2, and so on. Excel spills one part into each column to the right. SQL Server returns one row per part with its ordinal; pivot the rows to get one column per part.\n\nNote: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "15",
+      "stepId": "split-first",
+      "branch": "Root",
+      "analyst": "Create new columns \"First Name\", \"Last Name\" by splitting file \"wd\" column \"Legal Name\" on the first space.",
+      "developer": "Excel:\nFirst Name: =IFERROR(TEXTBEFORE([@[Legal Name]], \" \"), [@[Legal Name]])\nLast Name: =IFERROR(TEXTAFTER([@[Legal Name]], \" \"), \"\")\n\nSQL Server:\nLEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name],\nCASE WHEN CHARINDEX(' ', [Legal Name]) > 0 THEN SUBSTRING([Legal Name], CHARINDEX(' ', [Legal Name]) + 1, 4000) ELSE '' END AS [Last Name]\n\nPython (pandas):\ndf[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[0]\ndf[\"Last Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[1].fillna(\"\")",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "16",
+      "stepId": "split-last-custom",
+      "branch": "Root",
+      "analyst": "Create new columns \"Parent\", \"Leaf\" by splitting file \"wd\" column \"Path\" on the last \"::\".",
+      "developer": "Excel:\nParent: =IFERROR(TEXTBEFORE([@[Path]], \"::\", -1), [@[Path]])\nLeaf: =IFERROR(TEXTAFTER([@[Path]], \"::\", -1), \"\")\n\nSQL Server:\nCASE WHEN CHARINDEX('::', [Path]) > 0 THEN LEFT([Path], LEN([Path] + 'x') - CHARINDEX(REVERSE('::'), REVERSE([Path])) - 2) ELSE [Path] END AS [Parent],\nCASE WHEN CHARINDEX('::', [Path]) > 0 THEN RIGHT([Path], CHARINDEX(REVERSE('::'), REVERSE([Path])) - 1) ELSE '' END AS [Leaf]\n\nPython (pandas):\ndf[\"Parent\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[0]\ndf[\"Leaf\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[1].fillna(\"\")",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "17",
+      "stepId": "legacy-expression",
+      "branch": "Root",
+      "analyst": "Create new column \"Expr\" using expression: [Pay] * 12.",
+      "developer": "Excel:\n=[Pay] * 12\n\nSQL Server:\n[Pay] * 12 AS [Expr]\n\nPython (pandas):\ndf[\"Expr\"] = [Pay] * 12\n\nNote: The expression is free text and is copied as written. Review it before running.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "18",
+      "stepId": "legacy-expression-first",
+      "branch": "Root",
+      "analyst": "Create new column \"Expr First\" using the first 2 characters of file \"wd\" column \"Cost Center\".",
+      "developer": "Excel:\n=LEFT([@[Cost Center]], 2)\n\nSQL Server:\nLEFT([Cost Center], 2) AS [Expr First]\n\nPython (pandas):\ndf[\"Expr First\"] = df[\"Cost Center\"].astype(\"string\").str[:2]",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "19",
+      "stepId": "legacy-concat-shared-source",
+      "branch": "Root",
+      "analyst": "Create new column \"Legacy Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"wd\" column \"Position\".",
+      "developer": "Excel:\n=[@[Worker ID]]&[@[Position]]\n\nSQL Server:\nCONCAT([Worker ID], [Position]) AS [Legacy Key]\n\nPython (pandas):\ndf[\"Legacy Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"Position\"].fillna(\"\").astype(str)",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    }
+  ],
+  "sqlScript": "-- Create Column subtypes - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 19 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- TODO: 1 step could not be converted and is skipped below:\n--   - Step 14: Splitting into a varying number of columns returns one row per part in SQL Server; pivot the parts into columns by hand.\n--\n-- Review:\n--   - The audit does not list the columns of wd, sap, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [WD_Workers]: wd\n--   - [SAP_HI0256]: sap\n--   - [wd]\n\nWITH\n-- Step 1: Reference wd\n-- Reference source file \"WD_Workers\" as \"wd\":\nstep_1 AS (\n  SELECT * FROM [WD_Workers] AS [wd]\n),\n\n-- Step 2: Reference sap\n-- Reference source file \"SAP_HI0256\" as \"sap\":\nstep_2 AS (\n  SELECT * FROM [SAP_HI0256] AS [sap]\n),\n\n-- Step 3: Reference Source\n-- Reference source file \"wd\" as \"wd\":\nstep_3 AS (\n  SELECT * FROM [wd] AS [wd]\n),\n\n-- Step 4: Create Column\n-- Create new column \"Flag\" and set value to \"Y\".\nstep_4 AS (\n  SELECT *, 'Y' AS [Flag]\n  FROM step_3\n),\n\n-- Step 5: Create Column\n-- Create new blank column \"Empty\".\nstep_5 AS (\n  SELECT *, NULL AS [Empty]\n  FROM step_4\n),\n\n-- Step 6: Create Column\n-- Create new column \"Worker Copy\" using file \"wd\" column \"Worker ID\".\nstep_6 AS (\n  SELECT *, [Worker ID] AS [Worker Copy]\n  FROM step_5\n),\n\n-- Step 7: Create Column\n-- Create new column \"Rate\" using file \"wd\" column \"Pay\" divided by file \"wd\" column \"Hours\", then round down to 2 decimal places.\nstep_7 AS (\n  SELECT *, ROUND([Pay] / NULLIF([Hours], 0), 2, 1) AS [Rate]\n  FROM step_6\n),\n\n-- Step 8: Create Column\n-- Create new column \"Adjusted\" using file \"wd\" column \"Pay\" plus 10 times 1.5 minus file \"wd\" column \"Bonus\", then round to 1 decimal place.\nstep_8 AS (\n  SELECT *, ROUND((([Pay] + 10) * 1.5) - [Bonus], 1) AS [Adjusted]\n  FROM step_7\n),\n\n-- Step 9: Create Column\n-- Create new column \"Whole\" using file \"wd\" column \"Pay\", then round up to the nearest whole number.\nstep_9 AS (\n  SELECT *, SIGN([Pay]) * CEILING(ABS([Pay])) AS [Whole]\n  FROM step_8\n),\n\n-- Step 10: Create Column\n-- Create new column \"Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\nstep_10 AS (\n  SELECT *, CONCAT([Worker ID], [PERNR]) AS [Key]\n  FROM step_9\n),\n\n-- Step 11: Create Column\n-- Create new column \"Prefix\" using the first 4 characters of file \"wd\" column \"Cost Center\".\nstep_11 AS (\n  SELECT *, LEFT([Cost Center], 4) AS [Prefix]\n  FROM step_10\n),\n\n-- Step 12: Create Column\n-- Create new column \"Suffix\" using the last 3 characters of file \"wd\" column \"Cost Center\".\nstep_12 AS (\n  SELECT *, RIGHT([Cost Center], 3) AS [Suffix]\n  FROM step_11\n),\n\n-- Step 13: Create Column\n-- Create new column \"Name Length\" and set its value to the character length of file \"wd\" column \"Legal Name\".\nstep_13 AS (\n  SELECT *, LEN([Legal Name]) AS [Name Length]\n  FROM step_12\n),\n\n-- TODO (skipped) Step 14: Create Column\n-- Create new columns \"Tag_x\" (one for each part) by splitting file \"wd\" column \"Tags\" on each comma.\n-- Reason: Splitting into a varying number of columns returns one row per part in SQL Server; pivot the parts into columns by hand.\n-- Developer Logic:\n-- CROSS APPLY STRING_SPLIT([Tags], ',', 1) AS [split_parts]\n-- -- CONCAT('Tag_', [split_parts].[ordinal]) AS [column_name], [split_parts].[value]\n\n-- Step 15: Create Column\n-- Create new columns \"First Name\", \"Last Name\" by splitting file \"wd\" column \"Legal Name\" on the first space.\nstep_15 AS (\n  SELECT *, LEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name]\n  FROM step_13\n),\n\nstep_15_2 AS (\n  SELECT *, CASE WHEN CHARINDEX(' ', [Legal Name]) > 0 THEN SUBSTRING([Legal Name], CHARINDEX(' ', [Legal Name]) + 1, 4000) ELSE '' END AS [Last Name]\n  FROM step_15\n),\n\n-- Step 16: Create Column\n-- Create new columns \"Parent\", \"Leaf\" by splitting file \"wd\" column \"Path\" on the last \"::\".\nstep_16 AS (\n  SELECT *, CASE WHEN CHARINDEX('::', [Path]) > 0 THEN LEFT([Path], LEN([Path] + 'x') - CHARINDEX(REVERSE('::'), REVERSE([Path])) - 2) ELSE [Path] END AS [Parent]\n  FROM step_15_2\n),\n\nstep_16_2 AS (\n  SELECT *, CASE WHEN CHARINDEX('::', [Path]) > 0 THEN RIGHT([Path], CHARINDEX(REVERSE('::'), REVERSE([Path])) - 1) ELSE '' END AS [Leaf]\n  FROM step_16\n),\n\n-- Step 17: Create Column\n-- Create new column \"Expr\" using expression: [Pay] * 12.\n-- Note: The expression is free text and is copied as written. Review it before running.\nstep_17 AS (\n  SELECT *, [Pay] * 12 AS [Expr]\n  FROM step_16_2\n),\n\n-- Step 18: Create Column\n-- Create new column \"Expr First\" using the first 2 characters of file \"wd\" column \"Cost Center\".\nstep_18 AS (\n  SELECT *, LEFT([Cost Center], 2) AS [Expr First]\n  FROM step_17\n),\n\n-- Step 19: Create Column\n-- Create new column \"Legacy Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"wd\" column \"Position\".\nstep_19 AS (\n  SELECT *, CONCAT([Worker ID], [Position]) AS [Legacy Key]\n  FROM step_18\n)\n\nSELECT *\nFROM step_19;\n",
+  "pythonScript": "# Create Column subtypes - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 19 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd\": \"\",\n    \"sap\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd\n    # Reference source file \"WD_Workers\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 2: Reference sap\n    # Reference source file \"SAP_HI0256\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 3: Reference Source\n    # Reference source file \"wd\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 4: Create Column\n    # Create new column \"Flag\" and set value to \"Y\".\n    df[\"Flag\"] = \"Y\"\n\n    # Step 5: Create Column\n    # Create new blank column \"Empty\".\n    df[\"Empty\"] = pd.NA\n\n    # Step 6: Create Column\n    # Create new column \"Worker Copy\" using file \"wd\" column \"Worker ID\".\n    df[\"Worker Copy\"] = df[\"Worker ID\"]\n\n    # Step 7: Create Column\n    # Create new column \"Rate\" using file \"wd\" column \"Pay\" divided by file \"wd\" column \"Hours\", then round down to 2 decimal places.\n    df[\"Rate\"] = np.trunc((df[\"Pay\"] / df[\"Hours\"].replace(0, np.nan)) * 10**2) / 10**2\n\n    # Step 8: Create Column\n    # Create new column \"Adjusted\" using file \"wd\" column \"Pay\" plus 10 times 1.5 minus file \"wd\" column \"Bonus\", then round to 1 decimal place.\n    df[\"Adjusted\"] = np.sign(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * np.floor(np.abs(((df[\"Pay\"] + 10) * 1.5) - df[\"Bonus\"]) * 10**1 + 0.5) / 10**1\n\n    # Step 9: Create Column\n    # Create new column \"Whole\" using file \"wd\" column \"Pay\", then round up to the nearest whole number.\n    df[\"Whole\"] = np.sign(df[\"Pay\"]) * np.ceil(np.abs(df[\"Pay\"]))\n\n    # Step 10: Create Column\n    # Create new column \"Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\n    df[\"Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"PERNR\"].fillna(\"\").astype(str)\n\n    # Step 11: Create Column\n    # Create new column \"Prefix\" using the first 4 characters of file \"wd\" column \"Cost Center\".\n    df[\"Prefix\"] = df[\"Cost Center\"].astype(\"string\").str[:4]\n\n    # Step 12: Create Column\n    # Create new column \"Suffix\" using the last 3 characters of file \"wd\" column \"Cost Center\".\n    df[\"Suffix\"] = df[\"Cost Center\"].astype(\"string\").str[-3:]\n\n    # Step 13: Create Column\n    # Create new column \"Name Length\" and set its value to the character length of file \"wd\" column \"Legal Name\".\n    df[\"Name Length\"] = df[\"Legal Name\"].astype(\"string\").str.len()\n\n    # Step 14: Create Column\n    # Create new columns \"Tag_x\" (one for each part) by splitting file \"wd\" column \"Tags\" on each comma.\n    # Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.\n    split_parts = df[\"Tags\"].astype(\"string\").str.split(\",\", regex=False, expand=True).fillna(\"\")\n    split_parts.columns = [\"Tag_\" + str(i + 1) for i in split_parts.columns]\n    df = df.join(split_parts)\n\n    # Step 15: Create Column\n    # Create new columns \"First Name\", \"Last Name\" by splitting file \"wd\" column \"Legal Name\" on the first space.\n    df[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[0]\n    df[\"Last Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", n=1, regex=False).str[1].fillna(\"\")\n\n    # Step 16: Create Column\n    # Create new columns \"Parent\", \"Leaf\" by splitting file \"wd\" column \"Path\" on the last \"::\".\n    df[\"Parent\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[0]\n    df[\"Leaf\"] = df[\"Path\"].astype(\"string\").str.rsplit(\"::\", n=1).str[1].fillna(\"\")\n\n    # Step 17: Create Column\n    # Create new column \"Expr\" using expression: [Pay] * 12.\n    # Note: The expression is free text and is copied as written. Review it before running.\n    df[\"Expr\"] = [Pay] * 12\n\n    # Step 18: Create Column\n    # Create new column \"Expr First\" using the first 2 characters of file \"wd\" column \"Cost Center\".\n    df[\"Expr First\"] = df[\"Cost Center\"].astype(\"string\").str[:2]\n\n    # Step 19: Create Column\n    # Create new column \"Legacy Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"wd\" column \"Position\".\n    df[\"Legacy Key\"] = df[\"Worker ID\"].fillna(\"\").astype(str) + df[\"Position\"].fillna(\"\").astype(str)\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Flag\" and set value to \"Y\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Flag\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Flag\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 1
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new blank column \"Empty\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Empty\" is added to the Create Column subtypes audit record for later logic steps to populate.",
+          "sourceDataExpectedOutcome": "Column \"Empty\" is present in the output.",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Worker Copy\" using file \"wd\" column \"Worker ID\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Worker Copy\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Worker Copy\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Rate\" using file \"wd\" column \"Pay\" divided by file \"wd\" column \"Hours\", then round down to 2 decimal places.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Rate\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Rate\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 4
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Adjusted\" using file \"wd\" column \"Pay\" plus 10 times 1.5 minus file \"wd\" column \"Bonus\", then round to 1 decimal place.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Adjusted\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Adjusted\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 5
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Whole\" using file \"wd\" column \"Pay\", then round up to the nearest whole number.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Whole\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Whole\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Key\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Key\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 7
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Prefix\" using the first 4 characters of file \"wd\" column \"Cost Center\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Prefix\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Prefix\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 8
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Suffix\" using the last 3 characters of file \"wd\" column \"Cost Center\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Suffix\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Suffix\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 9
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Name Length\" and set its value to the character length of file \"wd\" column \"Legal Name\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Name Length\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Name Length\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 10
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new columns \"Tag_x\" (one for each part) by splitting file \"wd\" column \"Tags\" on each comma.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Columns \"Tag_x\" are created from the parts of the split source value.",
+          "sourceDataExpectedOutcome": "Each of columns \"Tag_x\" holds the matching part of the source value, and parts that do not exist are blank.",
+          "comments": "",
+          "number": 11
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new columns \"First Name\", \"Last Name\" by splitting file \"wd\" column \"Legal Name\" on the first space.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Columns \"First Name\", \"Last Name\" are created from the parts of the split source value.",
+          "sourceDataExpectedOutcome": "Each of columns \"First Name\", \"Last Name\" holds the matching part of the source value, and parts that do not exist are blank.",
+          "comments": "",
+          "number": 12
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new columns \"Parent\", \"Leaf\" by splitting file \"wd\" column \"Path\" on the last \"::\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Columns \"Parent\", \"Leaf\" are created from the parts of the split source value.",
+          "sourceDataExpectedOutcome": "Each of columns \"Parent\", \"Leaf\" holds the matching part of the source value, and parts that do not exist are blank.",
+          "comments": "",
+          "number": 13
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Expr\" using expression: [Pay] * 12.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Expr\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Expr\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 14
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Expr First\" using the first 2 characters of file \"wd\" column \"Cost Center\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Expr First\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Expr First\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 15
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Legacy Key\" by concatenating file \"wd\" column \"Worker ID\" and file \"wd\" column \"Position\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Legacy Key\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Legacy Key\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 16
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"WD_Workers\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"WD_Workers\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"WD_Workers\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 17
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"SAP_HI0256\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"SAP_HI0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"SAP_HI0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 18
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Create Column subtypes audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 19
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.logic.math-integrity|calc-chain-0-0|steps|calc-chain|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.math-integrity|calc-chain-0-1|steps|calc-chain|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.math-integrity|calc-divide-0-0|steps|calc-divide|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.math-integrity|calc-divide-0-1|steps|calc-divide|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.sources.reference-integrity|calc-chain-param-field_name-field|steps|calc-chain||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|calc-divide-param-field_name-field|steps|calc-divide||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|char-count-param-string_source_field-field|steps|char-count||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|concat-param-concat_field_1-field|steps|concat||field|param:concat_field_1",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|concat-param-concat_field_2-field|steps|concat||field|param:concat_field_2",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|copy-param-field_name-field|steps|copy||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|first-chars-param-string_source_field-field|steps|first-chars||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|last-chars-param-string_source_field-field|steps|last-chars||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|legacy-concat-shared-source-param-concat_field_1-field|steps|legacy-concat-shared-source||field|param:concat_field_1",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|legacy-concat-shared-source-param-concat_field_2-field|steps|legacy-concat-shared-source||field|param:concat_field_2",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|legacy-expression-first-param-string_source_field-field|steps|legacy-expression-first||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|round-up-param-field_name-field|steps|round-up||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|split-every-param-string_source_field-field|steps|split-every||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|split-first-param-string_source_field-field|steps|split-first||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|split-last-custom-param-string_source_field-field|steps|split-last-custom||field|param:string_source_field",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.logic.math-integrity|calc-divide-0-2|steps|calc-divide|||param:source_math_json",
+      "severity": "warning",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.structured-step-integrity|legacy-expression-0|steps|legacy-expression|||param:value_mode",
+      "severity": "warning",
+      "message": "Step setting is incomplete"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

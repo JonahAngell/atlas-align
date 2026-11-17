@@ -410,8 +410,27 @@
 │   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
+│   │   ├── step-type-snapshots
+│   │   │   ├── recorded
+│   │   │   │   ├── sample-active-employees-in-sap-not-wd.json
+│   │   │   │   ├── sample-Currency_Accuracy_Outside_North_America.json
+│   │   │   │   ├── sample-dcl-it210.json
+│   │   │   │   ├── sample-dcl-loa-90-day.json
+│   │   │   │   ├── sample-diesi-sapl---infotypes-missing.json
+│   │   │   │   ├── sample-sample-audit-logic-flow.json
+│   │   │   │   ├── sample-service-dates.json
+│   │   │   │   ├── sample-Untitled_Audit.json
+│   │   │   │   ├── synthetic-create-column.json
+│   │   │   │   ├── synthetic-if-then.json
+│   │   │   │   ├── synthetic-join-union.json
+│   │   │   │   ├── synthetic-legacy-shapes.json
+│   │   │   │   └── synthetic-transforms.json
+│   │   │   └── synthetic-audits.js
 │   │   ├── authorization-role-matrix.fixture.json
 │   │   └── file-utility-compile-verdicts.json
+│   ├── support
+│   │   ├── step-type-corpus.js
+│   │   └── step-type-harness.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js
@@ -490,6 +509,7 @@
 │   ├── source-versions.test.js
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
+│   ├── step-type-snapshots.test.js
 │   ├── string-transform-split.test.js
 │   ├── structured-step-editors.test.js
 │   ├── user-impersonation.test.js
@@ -533,6 +553,7 @@
 │   ├── clear_database.sql
 │   ├── create-review-bundle.mjs
 │   ├── install-git-hooks.mjs
+│   ├── record-step-type-snapshots.mjs
 │   └── sync-app-version.mjs
 ├── tutorials
 │   ├── tutorial-audit-library.js

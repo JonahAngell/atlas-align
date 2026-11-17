@@ -1,0 +1,1270 @@
+{
+  "entries": [
+    {
+      "id": "reference::HI0256_Maseke",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781549608839::3aadf35eda6e08",
+      "number": "1.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781549644021::dcec86c27fa418",
+      "number": "1.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781549700152::831f19e0558e3",
+      "number": "1.3",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "reference::DCL Leave Start",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1782142525278::518bcaa1cb05d",
+      "number": "2.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1782141267508::0703a410d08a48",
+      "number": "2.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1782142202617::6a555f854cc63",
+      "number": "2.3",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1782142306004::e1349fe902d81",
+      "number": "2.4",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1782142371334::2703958bc2f128",
+      "number": "2.5",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1782142405300::8a89c2e95d202",
+      "number": "2.6",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781549860377::a0aa577a4cf3",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "calculated::Error Message",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781549904206::bd411c9cb2cc08",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781549947993::f2bf52a9a73a68",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781549997714::16c5b9027c0cc",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "reference::HI0256_Maseke",
+      "stepType": "reference_source",
+      "english": "Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=sap_hi0256\n\nSQL Server:\nSELECT * FROM [HI0256_Maseke] AS [sap.hi0256]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].copy()",
+      "formulas": {
+        "excel": "=sap_hi0256",
+        "sql": "SELECT * FROM [HI0256_Maseke] AS [sap.hi0256]",
+        "python": "df = sources[\"sap.hi0256\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>HI0256_Maseke</strong><small>HI0256_Maseke</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"sap.hi0256\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "HI0256_Maseke",
+          "source_alias": "sap.hi0256"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference HI0256_Maseke",
+        "params": {
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "logic::1781549608839::3aadf35eda6e08",
+      "stepType": "format_field",
+      "english": "Format file \"sap.hi0256\" column \"persno\" as .",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[persno]], \"@\")\n\nSQL Server:\nCAST([persno] AS NVARCHAR(4000)) AS [persno]\n\nPython (pandas):\ndf[\"persno\"] = df[\"persno\"].astype(\"string\")",
+      "formulas": {
+        "excel": "=TEXT([@[persno]], \"@\")",
+        "sql": "CAST([persno] AS NVARCHAR(4000)) AS [persno]",
+        "python": "df[\"persno\"] = df[\"persno\"].astype(\"string\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sap.hi0256\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>HI0256_Maseke.persno</small></span><span aria-hidden=\"true\">⌄</span></button></label><input type=\"hidden\" data-param=\"format\" value=\"\"><div class=\"atlas-choice-field full\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: Text\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format_kind\" value=\"text\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"trim\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Trim spaces</span><span class=\"atlas-choice-description\">Remove spaces at the start and end.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"upper\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Upper case</span><span class=\"atlas-choice-description\">Change letters to upper case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"lower\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Lower case</span><span class=\"atlas-choice-description\">Change letters to lower case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Number</span><span class=\"atlas-choice-description\">Read the value as a number.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date</span><span class=\"atlas-choice-description\">Show the value as a date in a set format.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"zeroPad\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Leading zeros</span><span class=\"atlas-choice-description\">Pad whole numbers with zeros to a width.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "persno",
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke",
+          "format": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781549644021::dcec86c27fa418",
+      "stepType": "if_then",
+      "english": "IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[personnel_area]]<>\"\"\"2450\"\", \"\"3357\"\", \"\"3358\"\", \"\"3359\"\", \"\"3360\"\", \"\"3361\"\", \"\"3362\"\", \"\"3744\"\", \"\"3745\"\", \"\"3981\"\", \"\"3982\"\", \"\"3983\"\", \"\"3984\"\", \"\"4024\"\"\")\n\nSQL Server:\nWHERE NOT ([personnel_area] <> '\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"')\n\nPython (pandas):\nmask = df[\"personnel_area\"] != \"\\\"2450\\\", \\\"3357\\\", \\\"3358\\\", \\\"3359\\\", \\\"3360\\\", \\\"3361\\\", \\\"3362\\\", \\\"3744\\\", \\\"3745\\\", \\\"3981\\\", \\\"3982\\\", \\\"3983\\\", \\\"3984\\\", \\\"4024\\\"\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[personnel_area]]<>\"\"\"2450\"\", \"\"3357\"\", \"\"3358\"\", \"\"3359\"\", \"\"3360\"\", \"\"3361\"\", \"\"3362\"\", \"\"3744\"\", \"\"3745\"\", \"\"3981\"\", \"\"3982\"\", \"\"3983\"\", \"\"3984\"\", \"\"4024\"\"\")",
+        "sql": "WHERE NOT ([personnel_area] <> '\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"')",
+        "python": "mask = df[\"personnel_area\"] != \"\\\"2450\\\", \\\"3357\\\", \\\"3358\\\", \\\"3359\\\", \\\"3360\\\", \\\"3361\\\", \\\"3362\\\", \\\"3744\\\", \\\"3745\\\", \\\"3981\\\", \\\"3982\\\", \\\"3983\\\", \\\"3984\\\", \\\"4024\\\"\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"full atlas-choice-field exclude-scope-choice\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Hide: Matching records only\"><span class=\"atlas-choice-heading\">Records to Hide</span><span class=\"atlas-choice-current\">Matching records only</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to hide\"><input type=\"hidden\" data-param=\"then_exclude_scope\" value=\"matching\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"matching\" tabindex=\"0\"><span class=\"atlas-choice-label\">Matching records only</span><span class=\"atlas-choice-description\">Hide only the records that match.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"key\" tabindex=\"-1\"><span class=\"atlas-choice-label\">All records for the same key</span><span class=\"atlas-choice-description\">Also hide every other record that shares the key value, such as all records for this employee.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"personnel_area\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"\\\"2450\\\", \\\"3357\\\", \\\"3358\\\", \\\"3359\\\", \\\"3360\\\", \\\"3361\\\", \\\"3362\\\", \\\"3744\\\", \\\"3745\\\", \\\"3981\\\", \\\"3982\\\", \\\"3983\\\", \\\"3984\\\", \\\"4024\\\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.hi0256",
+          "left_field": "personnel_area",
+          "left_source": "HI0256_Maseke",
+          "operator": "is not equal to",
+          "source_alias": "sap.hi0256",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": "",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "logic::1781549700152::831f19e0558e3",
+      "stepType": "if_then",
+      "english": "IF file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[employment_status_number]]<>\"1\")\n\nSQL Server:\nWHERE NOT ([employment_status_number] <> '1')\n\nPython (pandas):\nmask = df[\"employment_status_number\"] != \"1\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[employment_status_number]]<>\"1\")",
+        "sql": "WHERE NOT ([employment_status_number] <> '1')",
+        "python": "mask = df[\"employment_status_number\"] != \"1\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"full atlas-choice-field exclude-scope-choice\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Hide: Matching records only\"><span class=\"atlas-choice-heading\">Records to Hide</span><span class=\"atlas-choice-current\">Matching records only</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to hide\"><input type=\"hidden\" data-param=\"then_exclude_scope\" value=\"matching\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"matching\" tabindex=\"0\"><span class=\"atlas-choice-label\">Matching records only</span><span class=\"atlas-choice-description\">Hide only the records that match.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"key\" tabindex=\"-1\"><span class=\"atlas-choice-label\">All records for the same key</span><span class=\"atlas-choice-description\">Also hide every other record that shares the key value, such as all records for this employee.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "1",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"employment_status_number\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"1\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.hi0256",
+          "left_field": "employment_status_number",
+          "left_source": "HI0256_Maseke",
+          "operator": "is not equal to",
+          "source_alias": "sap.hi0256",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": "",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "reference::DCL Leave Start",
+      "stepType": "reference_source",
+      "english": "Reference source file \"sensitive_churnover\" as \"sensitive_churnover\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=sensitive_churnover\n\nSQL Server:\nSELECT * FROM [sensitive_churnover] AS [sensitive_churnover]\n\nPython (pandas):\ndf = sources[\"sensitive_churnover\"].copy()",
+      "formulas": {
+        "excel": "=sensitive_churnover",
+        "sql": "SELECT * FROM [sensitive_churnover] AS [sensitive_churnover]",
+        "python": "df = sources[\"sensitive_churnover\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>sensitive_churnover</strong><small>sensitive_churnover</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"sensitive_churnover\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "sensitive_churnover",
+          "source_alias": "sensitive_churnover"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference sensitive_churnover",
+        "params": {
+          "source_alias": "sensitive_churnover",
+          "source_file": "sensitive_churnover"
+        }
+      }
+    },
+    {
+      "id": "logic::1782141267508::0703a410d08a48",
+      "stepType": "format_field",
+      "english": "Format file \"sensitive_churnover\" column \"persno\" as .",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[persno]], \"@\")\n\nSQL Server:\nCAST([persno] AS NVARCHAR(4000)) AS [persno]\n\nPython (pandas):\ndf[\"persno\"] = df[\"persno\"].astype(\"string\")",
+      "formulas": {
+        "excel": "=TEXT([@[persno]], \"@\")",
+        "sql": "CAST([persno] AS NVARCHAR(4000)) AS [persno]",
+        "python": "df[\"persno\"] = df[\"persno\"].astype(\"string\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sensitive_churnover\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"sensitive_churnover\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>sensitive_churnover.persno</small></span><span aria-hidden=\"true\">⌄</span></button></label><input type=\"hidden\" data-param=\"format\" value=\"\"><div class=\"atlas-choice-field full\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: Text\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format_kind\" value=\"text\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"trim\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Trim spaces</span><span class=\"atlas-choice-description\">Remove spaces at the start and end.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"upper\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Upper case</span><span class=\"atlas-choice-description\">Change letters to upper case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"lower\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Lower case</span><span class=\"atlas-choice-description\">Change letters to lower case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Number</span><span class=\"atlas-choice-description\">Read the value as a number.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date</span><span class=\"atlas-choice-description\">Show the value as a date in a set format.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"zeroPad\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Leading zeros</span><span class=\"atlas-choice-description\">Pad whole numbers with zeros to a width.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "persno",
+          "source_alias": "sensitive_churnover",
+          "source_file": "sensitive_churnover",
+          "format": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1782142202617::6a555f854cc63",
+      "stepType": "format_field",
+      "english": "Format file \"sensitive_churnover\" column \"act_type\" as text.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[act_type]], \"@\")\n\nSQL Server:\nCAST([act_type] AS NVARCHAR(4000)) AS [act_type]\n\nPython (pandas):\ndf[\"act_type\"] = df[\"act_type\"].astype(\"string\")",
+      "formulas": {
+        "excel": "=TEXT([@[act_type]], \"@\")",
+        "sql": "CAST([act_type] AS NVARCHAR(4000)) AS [act_type]",
+        "python": "df[\"act_type\"] = df[\"act_type\"].astype(\"string\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sensitive_churnover\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"sensitive_churnover\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>act_type</strong><small>sensitive_churnover.act_type</small></span><span aria-hidden=\"true\">⌄</span></button></label><input type=\"hidden\" data-param=\"format\" value=\"text\"><div class=\"atlas-choice-field full\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: Text\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format_kind\" value=\"text\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"trim\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Trim spaces</span><span class=\"atlas-choice-description\">Remove spaces at the start and end.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"upper\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Upper case</span><span class=\"atlas-choice-description\">Change letters to upper case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"lower\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Lower case</span><span class=\"atlas-choice-description\">Change letters to lower case.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Number</span><span class=\"atlas-choice-description\">Read the value as a number.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date</span><span class=\"atlas-choice-description\">Show the value as a date in a set format.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"zeroPad\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Leading zeros</span><span class=\"atlas-choice-description\">Pad whole numbers with zeros to a width.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "text"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "act_type",
+          "format": "text",
+          "source_alias": "sensitive_churnover",
+          "source_file": "sensitive_churnover",
+          "format_kind": "text",
+          "format_decimals": "",
+          "format_date_output": "",
+          "format_width": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1782142306004::e1349fe902d81",
+      "stepType": "if_then",
+      "english": "IF file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[act_type]]<>\"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\")\n\nSQL Server:\nWHERE NOT ([act_type] <> '''Start__LOA_with_Pay'', ''Start__LOA_without_P'', ''Start_LOA''')\n\nPython (pandas):\nmask = df[\"act_type\"] != \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[act_type]]<>\"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\")",
+        "sql": "WHERE NOT ([act_type] <> '''Start__LOA_with_Pay'', ''Start__LOA_without_P'', ''Start_LOA''')",
+        "python": "mask = df[\"act_type\"] != \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"full atlas-choice-field exclude-scope-choice\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Hide: Matching records only\"><span class=\"atlas-choice-heading\">Records to Hide</span><span class=\"atlas-choice-current\">Matching records only</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to hide\"><input type=\"hidden\" data-param=\"then_exclude_scope\" value=\"matching\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"matching\" tabindex=\"0\"><span class=\"atlas-choice-label\">Matching records only</span><span class=\"atlas-choice-description\">Hide only the records that match.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"key\" tabindex=\"-1\"><span class=\"atlas-choice-label\">All records for the same key</span><span class=\"atlas-choice-description\">Also hide every other record that shares the key value, such as all records for this employee.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"sensitive_churnover\",\"sourceAlias\":\"sensitive_churnover\",\"fieldName\":\"act_type\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sensitive_churnover",
+          "left_field": "act_type",
+          "left_source": "sensitive_churnover",
+          "operator": "is not equal to",
+          "source_alias": "sensitive_churnover",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": "",
+          "source_file": "sensitive_churnover"
+        }
+      }
+    },
+    {
+      "id": "logic::1782142371334::2703958bc2f128",
+      "stepType": "sort_records",
+      "english": "Sort records by file \"sensitive_churnover\" column \"start_date\" in Descending order.",
+      "autoNotes": "",
+      "developer": "Excel:\n=SORTBY(sensitive_churnover, sensitive_churnover[start_date], -1)\n\nSQL Server:\nORDER BY [start_date] DESC\n\nPython (pandas):\ndf = df.sort_values([\"start_date\"], ascending=[False], kind=\"stable\")",
+      "formulas": {
+        "excel": "=SORTBY(sensitive_churnover, sensitive_churnover[start_date], -1)",
+        "sql": "ORDER BY [start_date] DESC",
+        "python": "df = df.sort_values([\"start_date\"], ascending=[False], kind=\"stable\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Sort Records</h4><div class=\"sort-fields-editor\" data-sort-editor><input type=\"hidden\" data-param=\"sort_fields_json\" data-sort-json value=\"[{&quot;id&quot;:&quot;sort_00000000&quot;,&quot;sourceFile&quot;:&quot;sensitive_churnover&quot;,&quot;sourceAlias&quot;:&quot;sensitive_churnover&quot;,&quot;fieldName&quot;:&quot;start_date&quot;,&quot;direction&quot;:&quot;Descending&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"field_name\" value=\"start_date\"><input type=\"hidden\" data-param=\"sort_direction\" value=\"Descending\"><div class=\"sort-fields-header\"><strong>Sort fields</strong><button type=\"button\" class=\"secondary small\" data-add-sort-field>Add Field</button></div><p class=\"hint\">Fields are applied in listed order. Later fields break ties in earlier ones.</p><div class=\"sort-field-list\"><div class=\"sort-field-row\" data-sort-row data-sort-id=\"sort_00000000\"><span class=\"sort-field-position\" data-sort-position aria-hidden=\"true\">1</span><div class=\"sort-field-picker\"><input type=\"hidden\" data-sort-source value=\"sensitive_churnover\"><input type=\"hidden\" data-sort-field value=\"start_date\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"sort_field\" data-picker-source=\"\" aria-label=\"Choose start_date\"><span class=\"visual-picker-trigger-copy\"><strong>start_date</strong><small>sensitive_churnover</small></span><span aria-hidden=\"true\">⌄</span></button></div><div class=\"sort-field-direction\"><input type=\"hidden\" data-sort-direction value=\"Descending\"><button type=\"button\" class=\"sort-direction-toggle\" data-sort-direction-toggle aria-label=\"Sort direction: descending. Activate to sort ascending.\" title=\"Descending\"><svg class=\"app-icon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 4.5v15M3 16.5l3 3 3-3\"/><path d=\"M12 6h8.5M12 12h6M12 18h3.5\"/></svg></button></div><button type=\"button\" class=\"secondary small sort-field-remove\" data-remove-sort-field aria-label=\"Remove start_date\">Remove</button></div></div><div class=\"empty-state sort-fields-empty\" data-sort-empty hidden><p>No sort fields yet. Add a field to choose how records are ordered.</p></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "sort_records",
+        "params": {
+          "sort_direction": "Descending"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "sort_records",
+        "type": "transform",
+        "title": "Sort Records",
+        "params": {
+          "field_name": "start_date",
+          "sort_direction": "Descending",
+          "source_alias": "sensitive_churnover",
+          "source_file": "sensitive_churnover",
+          "sort_fields_json": "[{\"id\":\"sort_00000000\",\"sourceFile\":\"sensitive_churnover\",\"sourceAlias\":\"sensitive_churnover\",\"fieldName\":\"start_date\",\"direction\":\"Descending\"}]"
+        }
+      }
+    },
+    {
+      "id": "logic::1782142405300::8a89c2e95d202",
+      "stepType": "remove_duplicates",
+      "english": "Identify rows where all values match across these columns: file \"sensitive_churnover\" column \"persno\", remove duplicates and keep the first record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=COUNTIFS(INDEX(sensitive_churnover[persno], 1):[@[persno]], [@[persno]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [persno] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"persno\"], keep=\"first\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "formulas": {
+        "excel": "=COUNTIFS(INDEX(sensitive_churnover[persno], 1):[@[persno]], [@[persno]])=1",
+        "sql": "ROW_NUMBER() OVER (PARTITION BY [persno] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1",
+        "python": "df = df.drop_duplicates(subset=[\"persno\"], keep=\"first\")",
+        "notes": [
+          "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Remove Duplicates</h4><div class=\"duplicate-fields-editor\" data-duplicate-editor><input type=\"hidden\" data-param=\"duplicate_fields_json\" data-duplicate-json value=\"[{&quot;sourceFile&quot;:&quot;sensitive_churnover&quot;,&quot;sourceAlias&quot;:&quot;sensitive_churnover&quot;,&quot;fieldName&quot;:&quot;persno&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"field_name\" value=\"persno\"><div class=\"duplicate-fields-header\"><span class=\"atlas-choice-heading\">Columns to Match</span><span class=\"hint\">A record is a duplicate when every selected column matches another record.</span></div><ul class=\"duplicate-field-list\" aria-label=\"Columns that must match\"><li class=\"duplicate-field-row\" data-duplicate-field=\"sensitive_churnover::persno\"><span class=\"visual-picker-pill duplicate-field-source\"><span class=\"visual-picker-pill-main\">sensitive_churnover</span></span><span class=\"duplicate-field-name\">persno</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"sensitive_churnover::persno\" aria-label=\"Remove column persno from file sensitive_churnover\">Remove</button></li></ul><div class=\"duplicate-fields-actions\"><button type=\"button\" class=\"secondary small\" data-add-duplicate-field>Add Columns</button></div></div><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Keep: Keep first\"><span class=\"atlas-choice-heading\">Records to Keep</span><span class=\"atlas-choice-current\">Keep first</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to keep\"><input type=\"hidden\" data-param=\"duplicate_action\" value=\"Keep first record\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Keep first record\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep first</span><span class=\"atlas-choice-description\">Keep the earliest matching record.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Drop all duplicated records\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep none</span><span class=\"atlas-choice-description\">Remove every record that has a duplicate.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep last record\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep last</span><span class=\"atlas-choice-description\">Keep the latest matching record.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "remove_duplicates",
+        "type": "transform",
+        "title": "Remove Duplicates",
+        "params": {
+          "field_name": "persno",
+          "source_alias": "sensitive_churnover",
+          "source_file": "sensitive_churnover",
+          "duplicate_action": "Keep first record",
+          "duplicate_fields_json": "[{\"sourceFile\":\"sensitive_churnover\",\"sourceAlias\":\"sensitive_churnover\",\"fieldName\":\"persno\"}]"
+        }
+      }
+    },
+    {
+      "id": "logic::1782142525278::518bcaa1cb05d",
+      "stepType": "create_column",
+      "english": "Create new column \"Days on Leave\" using expression: REPORT DATE - start_date.",
+      "autoNotes": "",
+      "developer": "Excel:\n=REPORT DATE - start_date\n\nSQL Server:\nREPORT DATE - start_date AS [Days on Leave]\n\nPython (pandas):\ndf[\"Days on Leave\"] = REPORT DATE - start_date\n\nNote: The expression is free text and is copied as written. Review it before running.",
+      "formulas": {
+        "excel": "=REPORT DATE - start_date",
+        "sql": "REPORT DATE - start_date AS [Days on Leave]",
+        "python": "df[\"Days on Leave\"] = REPORT DATE - start_date",
+        "notes": [
+          "Note: The expression is free text and is copied as written. Review it before running."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Days on Leave\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Written expression (legacy)\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Written expression (legacy)</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Expression / calculation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Static value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Expression / calculation\" tabindex=\"0\"><span class=\"atlas-choice-label\">Written expression (legacy)</span><span class=\"atlas-choice-description\">Written in words (legacy). Choose a structured type.</span></button></div></div></div></div><div class=\"logic-editor-callout full\" role=\"note\">This column is written as an expression. Choose a value type above, such as String transformation or Date difference, so it runs the same way every time. The written text is kept below as the description.</div><input type=\"hidden\" data-param=\"expression\" value=\"REPORT DATE - start_date\"><label class=\"full\">Description (not run)<textarea data-param=\"column_description\" placeholder=\"What this column is for\" aria-describedby=\"atlas-column-description-hint\">REPORT DATE - start_date</textarea><small id=\"atlas-column-description-hint\" class=\"hint\">For readers only. It is not run as a formula.</small></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Days on Leave",
+          "value_mode": "Expression / calculation",
+          "expression_type": "custom_expression",
+          "expression": "REPORT DATE - start_date"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Days on Leave",
+          "expression": "REPORT DATE - start_date",
+          "source_alias": "sensitive_churnover",
+          "value_mode": "Expression / calculation",
+          "source_file": "sensitive_churnover",
+          "expression_type": "custom_expression",
+          "column_description": "REPORT DATE - start_date"
+        }
+      }
+    },
+    {
+      "id": "calculated::Error Message",
+      "stepType": "create_column",
+      "english": "Create new blank column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Error Message]\n\nPython (pandas):\ndf[\"Error Message\"] = pd.NA",
+      "formulas": {
+        "excel": "=\"\"",
+        "sql": "NULL AS [Error Message]",
+        "python": "df[\"Error Message\"] = pd.NA",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Error Message\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Date difference\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Date difference</span><span class=\"atlas-choice-description\">Count the days between a date field and the run date.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Error Message",
+          "value_mode": "Static value",
+          "static_value": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Error Message",
+          "source_alias": "Calculated Field",
+          "source_file": "Calculated Field",
+          "value_mode": "Static value",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "logic::1781549860377::a0aa577a4cf3",
+      "stepType": "join",
+      "english": "Join file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\".",
+      "autoNotes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (sensitive_churnover) when a match is found. Rows in file 2 (sensitive_churnover) will not be kept if the keys \"persno\" / \"persno\" do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (sensitive_churnover).",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sensitive_churnover\" on \"persno\".\n\nExcel:\n=XLOOKUP([@[persno]], sensitive_churnover[persno], sensitive_churnover, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [sensitive_churnover]\n  ON [sap.hi0256].[persno] = [sensitive_churnover].[persno]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"sensitive_churnover\"], how=\"left\", left_on=\"persno\", right_on=\"persno\")",
+      "formulas": {
+        "lead": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sensitive_churnover\" on \"persno\".",
+        "excel": "=XLOOKUP([@[persno]], sensitive_churnover[persno], sensitive_churnover, \"\")",
+        "sql": "FROM [sap.hi0256]\nLEFT JOIN [sensitive_churnover]\n  ON [sap.hi0256].[persno] = [sensitive_churnover].[persno]",
+        "python": "df = sources[\"sap.hi0256\"].merge(sources[\"sensitive_churnover\"], how=\"left\", left_on=\"persno\", right_on=\"persno\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"LEFT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">LEFT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"logic::1781549860377::a0aa577a4cf3\">Choose Join Type</button></div><p class=\"hint\">All rows from the left source, plus matching rows from the right source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-logic::1781549860377::a0aa577a4cf3\"><input type=\"hidden\" data-param=\"left_source\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"right_source\" value=\"sensitive_churnover\"><input type=\"hidden\" data-param=\"left_field\" value=\"persno\"><input type=\"hidden\" data-param=\"right_field\" value=\"persno\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;persno&quot;,&quot;right_field&quot;:&quot;persno&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-logic::1781549860377::a0aa577a4cf3\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"persno\"><input type=\"hidden\" data-join-key-right value=\"persno\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>HI0256_Maseke.persno</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sensitive_churnover\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>sensitive_churnover.persno</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join",
+        "params": {
+          "join_type": "LEFT JOIN",
+          "left_alias": "sap.hi0256",
+          "left_field": "persno",
+          "left_source": "HI0256_Maseke",
+          "right_alias": "sensitive_churnover",
+          "right_field": "persno",
+          "right_source": "sensitive_churnover"
+        }
+      }
+    },
+    {
+      "id": "logic::1781549904206::bd411c9cb2cc08",
+      "stepType": "if_then",
+      "english": "IF file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[start_date]]>\"run_date\")\n\nSQL Server:\nWHERE NOT ([start_date] > 'run_date')\n\nPython (pandas):\nmask = df[\"start_date\"] > \"run_date\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[start_date]]>\"run_date\")",
+        "sql": "WHERE NOT ([start_date] > 'run_date')",
+        "python": "mask = df[\"start_date\"] > \"run_date\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"full atlas-choice-field exclude-scope-choice\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Hide: Matching records only\"><span class=\"atlas-choice-heading\">Records to Hide</span><span class=\"atlas-choice-current\">Matching records only</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to hide\"><input type=\"hidden\" data-param=\"then_exclude_scope\" value=\"matching\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"matching\" tabindex=\"0\"><span class=\"atlas-choice-label\">Matching records only</span><span class=\"atlas-choice-description\">Hide only the records that match.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"key\" tabindex=\"-1\"><span class=\"atlas-choice-label\">All records for the same key</span><span class=\"atlas-choice-description\">Also hide every other record that shares the key value, such as all records for this employee.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "run_date",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"sensitive_churnover\",\"sourceAlias\":\"sensitive_churnover\",\"fieldName\":\"start_date\",\"operator\":\"is greater than\",\"valueMode\":\"values\",\"compareValue\":\"run_date\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sensitive_churnover",
+          "left_field": "start_date",
+          "left_source": "sensitive_churnover",
+          "operator": "is greater than",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781549947993::f2bf52a9a73a68",
+      "stepType": "if_then",
+      "english": "IF new column \"Days on Leave\" is greater than \"90\" THEN display text response \"Over 90 Days on Leave\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Days on Leave]]>90, IF([@[Error Message]]=\"\", \"Over 90 Days on Leave\", [@[Error Message]]&\"||\"&\"Over 90 Days on Leave\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Days on Leave] > 90 THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Over 90 Days on Leave') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Days on Leave\"] > 90\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Over 90 Days on Leave\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF([@[Days on Leave]]>90, IF([@[Error Message]]=\"\", \"Over 90 Days on Leave\", [@[Error Message]]&\"||\"&\"Over 90 Days on Leave\"), [@[Error Message]])",
+        "sql": "CASE WHEN [Days on Leave] > 90 THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Over 90 Days on Leave') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Days on Leave\"] > 90\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Over 90 Days on Leave\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Over 90 Days on Leave\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Over 90 Days on Leave&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "90",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Created Columns\",\"sourceAlias\":\"Created Columns\",\"fieldName\":\"Days on Leave\",\"operator\":\"is greater than\",\"valueMode\":\"values\",\"compareValue\":\"90\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "Created Columns",
+          "left_field": "Days on Leave",
+          "left_source": "Created Columns",
+          "operator": "is greater than",
+          "then_action": "",
+          "then_action_type": "display_text",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "Over 90 Days on Leave",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781549997714::16c5b9027c0cc",
+      "stepType": "if_then",
+      "english": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT(LEN(TRIM([@[Error Message]]))=0)\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n\nPython (pandas):\nmask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT(LEN(TRIM([@[Error Message]]))=0)",
+        "sql": "WHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)",
+        "python": "mask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"full atlas-choice-field exclude-scope-choice\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Hide: Matching records only\"><span class=\"atlas-choice-heading\">Records to Hide</span><span class=\"atlas-choice-current\">Matching records only</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to hide\"><input type=\"hidden\" data-param=\"then_exclude_scope\" value=\"matching\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"matching\" tabindex=\"0\"><span class=\"atlas-choice-label\">Matching records only</span><span class=\"atlas-choice-description\">Hide only the records that match.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"key\" tabindex=\"-1\"><span class=\"atlas-choice-label\">All records for the same key</span><span class=\"atlas-choice-description\">Also hide every other record that shares the key value, such as all records for this employee.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Created Columns\",\"sourceAlias\":\"Created Columns\",\"fieldName\":\"Error Message\",\"operator\":\"is blank\",\"valueMode\":\"blank\",\"compareValue\":\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "Created Columns",
+          "left_field": "Error Message",
+          "left_source": "Created Columns",
+          "operator": "is blank",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_2",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap.hi0256\" as \"sap.hi0256\":",
+      "developer": "Excel:\n=sap_hi0256\n\nSQL Server:\nSELECT * FROM [sap.hi0256] AS [sap.hi0256]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap.hi0256"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_3",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap.currency\" as \"sap.currency\":",
+      "developer": "Excel:\n=sap_currency\n\nSQL Server:\nSELECT * FROM [sap.currency] AS [sap.currency]\n\nPython (pandas):\ndf = sources[\"sap.currency\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap.currency"
+    },
+    {
+      "step": "3",
+      "stepId": "reference_source_4",
+      "branch": "Root",
+      "analyst": "Reference source file \"workday.headcount_data_position\" as \"workday.headcount_data_position\":",
+      "developer": "Excel:\n=workday_headcount_data_position\n\nSQL Server:\nSELECT * FROM [workday.headcount_data_position] AS [workday.headcount_data_position]\n\nPython (pandas):\ndf = sources[\"workday.headcount_data_position\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "workday.headcount_data_position"
+    },
+    {
+      "step": "4",
+      "stepId": "reference_source_5",
+      "branch": "Root",
+      "analyst": "Reference source file \"angej055.ent_sep\" as \"angej055.ent_sep\":",
+      "developer": "Excel:\n=angej055_ent_sep\n\nSQL Server:\nSELECT * FROM [angej055.ent_sep] AS [angej055.ent_sep]\n\nPython (pandas):\ndf = sources[\"angej055.ent_sep\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "angej055.ent_sep"
+    },
+    {
+      "step": "5",
+      "stepId": "reference::HI0256_Maseke",
+      "branch": "Root",
+      "analyst": "Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":",
+      "developer": "Excel:\n=sap_hi0256\n\nSQL Server:\nSELECT * FROM [HI0256_Maseke] AS [sap.hi0256]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "5.1",
+      "stepId": "logic::1781549608839::3aadf35eda6e08",
+      "branch": "THEN",
+      "analyst": "Format file \"sap.hi0256\" column \"persno\" as .",
+      "developer": "Excel:\n=TEXT([@[persno]], \"@\")\n\nSQL Server:\nCAST([persno] AS NVARCHAR(4000)) AS [persno]\n\nPython (pandas):\ndf[\"persno\"] = df[\"persno\"].astype(\"string\")",
+      "notes": "",
+      "level": 1,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "5.2",
+      "stepId": "logic::1781549644021::dcec86c27fa418",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[personnel_area]]<>\"\"\"2450\"\", \"\"3357\"\", \"\"3358\"\", \"\"3359\"\", \"\"3360\"\", \"\"3361\"\", \"\"3362\"\", \"\"3744\"\", \"\"3745\"\", \"\"3981\"\", \"\"3982\"\", \"\"3983\"\", \"\"3984\"\", \"\"4024\"\"\")\n\nSQL Server:\nWHERE NOT ([personnel_area] <> '\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"')\n\nPython (pandas):\nmask = df[\"personnel_area\"] != \"\\\"2450\\\", \\\"3357\\\", \\\"3358\\\", \\\"3359\\\", \\\"3360\\\", \\\"3361\\\", \\\"3362\\\", \\\"3744\\\", \\\"3745\\\", \\\"3981\\\", \\\"3982\\\", \\\"3983\\\", \\\"3984\\\", \\\"4024\\\"\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 1,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "5.3",
+      "stepId": "logic::1781549700152::831f19e0558e3",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[employment_status_number]]<>\"1\")\n\nSQL Server:\nWHERE NOT ([employment_status_number] <> '1')\n\nPython (pandas):\nmask = df[\"employment_status_number\"] != \"1\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 1,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "6",
+      "stepId": "reference::DCL Leave Start",
+      "branch": "Root",
+      "analyst": "Reference source file \"sensitive_churnover\" as \"sensitive_churnover\":",
+      "developer": "Excel:\n=sensitive_churnover\n\nSQL Server:\nSELECT * FROM [sensitive_churnover] AS [sensitive_churnover]\n\nPython (pandas):\ndf = sources[\"sensitive_churnover\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.1",
+      "stepId": "logic::1782142525278::518bcaa1cb05d",
+      "branch": "THEN",
+      "analyst": "Create new column \"Days on Leave\" using expression: REPORT DATE - start_date.",
+      "developer": "Excel:\n=REPORT DATE - start_date\n\nSQL Server:\nREPORT DATE - start_date AS [Days on Leave]\n\nPython (pandas):\ndf[\"Days on Leave\"] = REPORT DATE - start_date\n\nNote: The expression is free text and is copied as written. Review it before running.",
+      "notes": "",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.2",
+      "stepId": "logic::1782141267508::0703a410d08a48",
+      "branch": "THEN",
+      "analyst": "Format file \"sensitive_churnover\" column \"persno\" as .",
+      "developer": "Excel:\n=TEXT([@[persno]], \"@\")\n\nSQL Server:\nCAST([persno] AS NVARCHAR(4000)) AS [persno]\n\nPython (pandas):\ndf[\"persno\"] = df[\"persno\"].astype(\"string\")",
+      "notes": "",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.3",
+      "stepId": "logic::1782142202617::6a555f854cc63",
+      "branch": "THEN",
+      "analyst": "Format file \"sensitive_churnover\" column \"act_type\" as text.",
+      "developer": "Excel:\n=TEXT([@[act_type]], \"@\")\n\nSQL Server:\nCAST([act_type] AS NVARCHAR(4000)) AS [act_type]\n\nPython (pandas):\ndf[\"act_type\"] = df[\"act_type\"].astype(\"string\")",
+      "notes": "Remove leading/trailing spaces and replace spaces with underscore (_)",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.4",
+      "stepId": "logic::1782142306004::e1349fe902d81",
+      "branch": "THEN",
+      "analyst": "IF file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[act_type]]<>\"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\")\n\nSQL Server:\nWHERE NOT ([act_type] <> '''Start__LOA_with_Pay'', ''Start__LOA_without_P'', ''Start_LOA''')\n\nPython (pandas):\nmask = df[\"act_type\"] != \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.5",
+      "stepId": "logic::1782142371334::2703958bc2f128",
+      "branch": "THEN",
+      "analyst": "Sort records by file \"sensitive_churnover\" column \"start_date\" in Descending order.",
+      "developer": "Excel:\n=SORTBY(sensitive_churnover, sensitive_churnover[start_date], -1)\n\nSQL Server:\nORDER BY [start_date] DESC\n\nPython (pandas):\ndf = df.sort_values([\"start_date\"], ascending=[False], kind=\"stable\")",
+      "notes": "",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "6.6",
+      "stepId": "logic::1782142405300::8a89c2e95d202",
+      "branch": "THEN",
+      "analyst": "Identify rows where all values match across these columns: file \"sensitive_churnover\" column \"persno\", remove duplicates and keep the first record.",
+      "developer": "Excel:\n=COUNTIFS(INDEX(sensitive_churnover[persno], 1):[@[persno]], [@[persno]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [persno] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"persno\"], keep=\"first\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "notes": "",
+      "level": 1,
+      "source": "sensitive_churnover"
+    },
+    {
+      "step": "7",
+      "stepId": "logic::1781549860377::a0aa577a4cf3",
+      "branch": "Root",
+      "analyst": "Join file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\".",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sensitive_churnover\" on \"persno\".\n\nExcel:\n=XLOOKUP([@[persno]], sensitive_churnover[persno], sensitive_churnover, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [sensitive_churnover]\n  ON [sap.hi0256].[persno] = [sensitive_churnover].[persno]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"sensitive_churnover\"], how=\"left\", left_on=\"persno\", right_on=\"persno\")",
+      "notes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (sensitive_churnover) when a match is found. Rows in file 2 (sensitive_churnover) will not be kept if the keys (\"persno\" / \"persno\") do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (sensitive_churnover).",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "8",
+      "stepId": "calculated::Error Message",
+      "branch": "Root",
+      "analyst": "Create new blank column \"Error Message\".",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Error Message]\n\nPython (pandas):\ndf[\"Error Message\"] = pd.NA",
+      "notes": "",
+      "level": 0,
+      "source": "Calculated Field"
+    },
+    {
+      "step": "9",
+      "stepId": "logic::1781549904206::bd411c9cb2cc08",
+      "branch": "Root",
+      "analyst": "IF file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[start_date]]>\"run_date\")\n\nSQL Server:\nWHERE NOT ([start_date] > 'run_date')\n\nPython (pandas):\nmask = df[\"start_date\"] > \"run_date\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "10",
+      "stepId": "logic::1781549947993::f2bf52a9a73a68",
+      "branch": "Root",
+      "analyst": "IF new column \"Days on Leave\" is greater than \"90\" THEN display text response \"Over 90 Days on Leave\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF([@[Days on Leave]]>90, IF([@[Error Message]]=\"\", \"Over 90 Days on Leave\", [@[Error Message]]&\"||\"&\"Over 90 Days on Leave\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Days on Leave] > 90 THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Over 90 Days on Leave') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Days on Leave\"] > 90\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Over 90 Days on Leave\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "11",
+      "stepId": "logic::1781549997714::16c5b9027c0cc",
+      "branch": "Root",
+      "analyst": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+      "developer": "Excel:\n=NOT(LEN(TRIM([@[Error Message]]))=0)\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n\nPython (pandas):\nmask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    }
+  ],
+  "sqlScript": "-- DCL LOA 90 Day - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 20 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- Review:\n--   - Steps 5.1, 5.2, 5.3, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [sap.hi0256]\n--   - [sap.currency]\n--   - [workday.headcount_data_position]\n--   - [angej055.ent_sep]\n--   - [HI0256_Maseke]\n--   - [sensitive_churnover]\n\nWITH\n-- Step 1: Reference sap.hi0256\n-- Reference source file \"sap.hi0256\" as \"sap.hi0256\":\nstep_1 AS (\n  SELECT * FROM [sap.hi0256] AS [sap.hi0256]\n),\n\n-- Step 2: Reference sap.currency\n-- Reference source file \"sap.currency\" as \"sap.currency\":\nstep_2 AS (\n  SELECT * FROM [sap.currency] AS [sap.currency]\n),\n\n-- Step 3: Reference workday.headcount_data_position\n-- Reference source file \"workday.headcount_data_position\" as \"workday.headcount_data_position\":\nstep_3 AS (\n  SELECT * FROM [workday.headcount_data_position] AS [workday.headcount_data_position]\n),\n\n-- Step 4: Reference angej055.ent_sep\n-- Reference source file \"angej055.ent_sep\" as \"angej055.ent_sep\":\nstep_4 AS (\n  SELECT * FROM [angej055.ent_sep] AS [angej055.ent_sep]\n),\n\n-- Step 5: Reference HI0256_Maseke\n-- Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":\nstep_5 AS (\n  SELECT * FROM [HI0256_Maseke] AS [sap.hi0256]\n),\n\n-- Step 5.1 (THEN branch): Format Field\n-- Format file \"sap.hi0256\" column \"persno\" as .\nstep_5_1 AS (\n  SELECT CAST([persno] AS NVARCHAR(4000)) AS [persno],\n         [workday_employee_id],\n         [position_number],\n         [workday_position_id],\n         [start_date_it00],\n         [end_date_it00],\n         [action_type],\n         [action_type_text],\n         [action_reason_number],\n         [action_reason_text],\n         [employment_status_number],\n         [employment_status_text]\n  FROM step_5\n),\n\n-- Step 5.2 (THEN branch): IF / THEN\n-- IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_5_2 AS (\n  SELECT *\n  FROM step_5_1\n  WHERE NOT ([personnel_area] <> '\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"')\n),\n\n-- Step 5.3 (THEN branch): IF / THEN\n-- IF file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_5_3 AS (\n  SELECT *\n  FROM step_5_2\n  WHERE NOT ([employment_status_number] <> '1')\n),\n\n-- Step 6: Reference sensitive_churnover\n-- Reference source file \"sensitive_churnover\" as \"sensitive_churnover\":\nstep_6 AS (\n  SELECT * FROM [sensitive_churnover] AS [sensitive_churnover]\n),\n\n-- Step 6.1 (THEN branch): Create Column\n-- Create new column \"Days on Leave\" using expression: REPORT DATE - start_date.\n-- Note: The expression is free text and is copied as written. Review it before running.\nstep_6_1 AS (\n  SELECT REPORT DATE - start_date AS [Days on Leave]\n  FROM step_6\n),\n\n-- Step 6.2 (THEN branch): Format Field\n-- Format file \"sensitive_churnover\" column \"persno\" as .\nstep_6_2 AS (\n  SELECT *, CAST(CAST(NULL AS NVARCHAR(4000)) AS NVARCHAR(4000)) AS [persno]\n  FROM step_6_1\n),\n\n-- Step 6.3 (THEN branch): Format Field\n-- Format file \"sensitive_churnover\" column \"act_type\" as text.\nstep_6_3 AS (\n  SELECT *, CAST(CAST(NULL AS NVARCHAR(4000)) AS NVARCHAR(4000)) AS [act_type]\n  FROM step_6_2\n),\n\n-- Step 6.4 (THEN branch): IF / THEN\n-- IF file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_6_4 AS (\n  SELECT *\n  FROM step_6_3\n  WHERE NOT ([act_type] <> '''Start__LOA_with_Pay'', ''Start__LOA_without_P'', ''Start_LOA''')\n),\n\n-- Step 6.5 (THEN branch): Sort Records\n-- Sort records by file \"sensitive_churnover\" column \"start_date\" in Descending order.\n-- The sort order is applied in the final SELECT (and to later Remove Duplicates steps).\n\n-- Step 6.6 (THEN branch): Remove Duplicates\n-- Identify rows where all values match across these columns: file \"sensitive_churnover\" column \"persno\", remove duplicates and keep the first record.\nstep_6_6_ranked AS (\n  SELECT *, ROW_NUMBER() OVER (PARTITION BY [persno] ORDER BY [start_date] DESC) AS [Duplicate Rank]\n  FROM step_6_4\n),\n\nstep_6_6 AS (\n  SELECT [Days on Leave],\n         [persno],\n         [act_type]\n  FROM step_6_6_ranked\n  WHERE [Duplicate Rank] = 1\n),\n\n-- Step 7: Join\n-- Join file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\".\nstep_7 AS (\n  SELECT [sap.hi0256].*,\n         [sensitive_churnover].[Days on Leave] AS [Days on Leave_sensitive_churnover]\n  FROM step_6_6 AS [sap.hi0256]\n  LEFT JOIN [sensitive_churnover] AS [sensitive_churnover]\n    ON [sap.hi0256].[persno] = [sensitive_churnover].[persno]\n),\n\n-- Step 8: Create Column\n-- Create new blank column \"Error Message\".\nstep_8 AS (\n  SELECT *, NULL AS [Error Message]\n  FROM step_7\n),\n\n-- Step 9: IF / THEN\n-- IF file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_9 AS (\n  SELECT *\n  FROM step_8\n  WHERE NOT ([start_date] > 'run_date')\n),\n\n-- Step 10: IF / THEN\n-- IF new column \"Days on Leave\" is greater than \"90\" THEN display text response \"Over 90 Days on Leave\" in new column \"Error Message\".\nstep_10 AS (\n  SELECT [Days on Leave],\n         [persno],\n         [act_type],\n         [Days on Leave_sensitive_churnover],\n         CASE WHEN [Days on Leave] > 90 THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Over 90 Days on Leave') ELSE [Error Message] END AS [Error Message]\n  FROM step_9\n),\n\n-- Step 11: IF / THEN\n-- IF new column \"Error Message\" is blank/null THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_11 AS (\n  SELECT *\n  FROM step_10\n  WHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n)\n\nSELECT *\nFROM step_11\nORDER BY [start_date] DESC;\n",
+  "pythonScript": "# DCL LOA 90 Day - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 20 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# Review:\n#   - Steps 5.1, 5.2, 5.3, 6.1, 6.2, 6.3, 6.4, 6.5, 6.6 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"sap.hi0256\": \"\",\n    \"sap.currency\": \"\",\n    \"workday.headcount_data_position\": \"\",\n    \"angej055.ent_sep\": \"\",\n    \"sensitive_churnover\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference sap.hi0256\n    # Reference source file \"sap.hi0256\" as \"sap.hi0256\":\n    df = sources[\"sap.hi0256\"].copy()\n\n    # Step 2: Reference sap.currency\n    # Reference source file \"sap.currency\" as \"sap.currency\":\n    df = sources[\"sap.currency\"].copy()\n\n    # Step 3: Reference workday.headcount_data_position\n    # Reference source file \"workday.headcount_data_position\" as \"workday.headcount_data_position\":\n    df = sources[\"workday.headcount_data_position\"].copy()\n\n    # Step 4: Reference angej055.ent_sep\n    # Reference source file \"angej055.ent_sep\" as \"angej055.ent_sep\":\n    df = sources[\"angej055.ent_sep\"].copy()\n\n    # Step 5: Reference HI0256_Maseke\n    # Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":\n    df = sources[\"sap.hi0256\"].copy()\n\n    # Step 5.1 (THEN branch): Format Field\n    # Format file \"sap.hi0256\" column \"persno\" as .\n    df[\"persno\"] = df[\"persno\"].astype(\"string\")\n\n    # Step 5.2 (THEN branch): IF / THEN\n    # IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"personnel_area\"] != \"\\\"2450\\\", \\\"3357\\\", \\\"3358\\\", \\\"3359\\\", \\\"3360\\\", \\\"3361\\\", \\\"3362\\\", \\\"3744\\\", \\\"3745\\\", \\\"3981\\\", \\\"3982\\\", \\\"3983\\\", \\\"3984\\\", \\\"4024\\\"\"\n    df = df[~mask]\n\n    # Step 5.3 (THEN branch): IF / THEN\n    # IF file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"employment_status_number\"] != \"1\"\n    df = df[~mask]\n\n    # Step 6: Reference sensitive_churnover\n    # Reference source file \"sensitive_churnover\" as \"sensitive_churnover\":\n    df = sources[\"sensitive_churnover\"].copy()\n\n    # Step 6.1 (THEN branch): Create Column\n    # Create new column \"Days on Leave\" using expression: REPORT DATE - start_date.\n    # Note: The expression is free text and is copied as written. Review it before running.\n    df[\"Days on Leave\"] = REPORT DATE - start_date\n\n    # Step 6.2 (THEN branch): Format Field\n    # Format file \"sensitive_churnover\" column \"persno\" as .\n    df[\"persno\"] = df[\"persno\"].astype(\"string\")\n\n    # Step 6.3 (THEN branch): Format Field\n    # Format file \"sensitive_churnover\" column \"act_type\" as text.\n    df[\"act_type\"] = df[\"act_type\"].astype(\"string\")\n\n    # Step 6.4 (THEN branch): IF / THEN\n    # IF file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"act_type\"] != \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\"\n    df = df[~mask]\n\n    # Step 6.5 (THEN branch): Sort Records\n    # Sort records by file \"sensitive_churnover\" column \"start_date\" in Descending order.\n    df = df.sort_values([\"start_date\"], ascending=[False], kind=\"stable\")\n\n    # Step 6.6 (THEN branch): Remove Duplicates\n    # Identify rows where all values match across these columns: file \"sensitive_churnover\" column \"persno\", remove duplicates and keep the first record.\n    df = df.drop_duplicates(subset=[\"persno\"], keep=\"first\")\n\n    # Step 7: Join\n    # Join file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\".\n    df = df.merge(sources[\"sensitive_churnover\"], how=\"left\", left_on=\"persno\", right_on=\"persno\", suffixes=(\"\", \"_sensitive_churnover\"))\n\n    # Step 8: Create Column\n    # Create new blank column \"Error Message\".\n    df[\"Error Message\"] = pd.NA\n\n    # Step 9: IF / THEN\n    # IF file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"start_date\"] > \"run_date\"\n    df = df[~mask]\n\n    # Step 10: IF / THEN\n    # IF new column \"Days on Leave\" is greater than \"90\" THEN display text response \"Over 90 Days on Leave\" in new column \"Error Message\".\n    mask = df[\"Days on Leave\"] > 90\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Over 90 Days on Leave\"\n\n    # Step 11: IF / THEN\n    # IF new column \"Error Message\" is blank/null THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n    df = df[~mask]\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "A",
+      "title": "Core Comparison Logic - Expected Match and Mismatch Results",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF new column \"Days on Leave\" is greater than \"90\" THEN display text response \"Over 90 Days on Leave\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One DCL LOA 90 Day audit record is displayed with \"Error Message\" = \"Over 90 Days on Leave\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms new column \"Days on Leave\" is greater than \"90\".",
+          "comments": "",
+          "number": 1
+        }
+      ]
+    },
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL LOA 90 Day audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sap.hi0256\" column \"personnel_area\" is not equal to \"\"2450\", \"3357\", \"3358\", \"3359\", \"3360\", \"3361\", \"3362\", \"3744\", \"3745\", \"3981\", \"3982\", \"3983\", \"3984\", \"4024\"\".",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL LOA 90 Day audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sap.hi0256\" column \"employment_status_number\" is not equal to \"1\".",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL LOA 90 Day audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sensitive_churnover\" column \"act_type\" is not equal to \"'Start__LOA_with_Pay', 'Start__LOA_without_P', 'Start_LOA'\".",
+          "comments": "",
+          "number": 4
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL LOA 90 Day audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sensitive_churnover\" column \"start_date\" is greater than \"run_date\".",
+          "comments": "",
+          "number": 5
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"sap.hi0256\" column \"persno\" as .",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"sap.hi0256\" column \"persno\" displays in the designed format.",
+          "sourceDataExpectedOutcome": "The formatted file \"sap.hi0256\" column \"persno\" value matches the underlying source value.",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Days on Leave\" using expression: REPORT DATE - start_date.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Days on Leave\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Days on Leave\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 7
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"sensitive_churnover\" column \"persno\" as .",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"sensitive_churnover\" column \"persno\" displays in the designed format.",
+          "sourceDataExpectedOutcome": "The formatted file \"sensitive_churnover\" column \"persno\" value matches the underlying source value.",
+          "comments": "",
+          "number": 8
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"sensitive_churnover\" column \"act_type\" as text.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"sensitive_churnover\" column \"act_type\" displays in text format.",
+          "sourceDataExpectedOutcome": "The formatted file \"sensitive_churnover\" column \"act_type\" value matches the underlying source value.",
+          "comments": "Remove leading/trailing spaces and replace spaces with underscore (_)",
+          "number": 9
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"sap.hi0256\" column \"persno\" equals file \"sensitive_churnover\" column \"persno\"; joined values display on the DCL LOA 90 Day audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"sap.hi0256\" column \"persno\" and file \"sensitive_churnover\" column \"persno\" agree for each joined record.",
+          "comments": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (sensitive_churnover) when a match is found. Rows in file 2 (sensitive_churnover) will not be kept if the keys (\"persno\" / \"persno\") do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (sensitive_churnover).",
+          "number": 10
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new blank column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Error Message\" is added to the DCL LOA 90 Day audit record for later logic steps to populate.",
+          "sourceDataExpectedOutcome": "Column \"Error Message\" is present in the output.",
+          "comments": "",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "code": "E",
+      "title": "Output Suppression and Data Quality",
+      "rows": [
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Sort records by file \"sensitive_churnover\" column \"start_date\" in Descending order.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Audit records display in the sort order defined in this step.",
+          "sourceDataExpectedOutcome": "The displayed order agrees with the source values of the sort columns.",
+          "comments": "",
+          "number": 12
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Identify rows where all values match across these columns: file \"sensitive_churnover\" column \"persno\", remove duplicates and keep the first record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Duplicate records are removed, keep the first record.",
+          "sourceDataExpectedOutcome": "Source data contains the duplicate records, and any retained record follows the rule in this step.",
+          "comments": "",
+          "number": 13
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL LOA 90 Day audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms new column \"Error Message\" is blank/null.",
+          "comments": "",
+          "number": 14
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap.hi0256\" as \"sap.hi0256\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap.hi0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap.hi0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 15
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap.currency\" as \"sap.currency\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap.currency\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap.currency\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 16
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"workday.headcount_data_position\" as \"workday.headcount_data_position\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"workday.headcount_data_position\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"workday.headcount_data_position\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 17
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"angej055.ent_sep\" as \"angej055.ent_sep\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"angej055.ent_sep\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"angej055.ent_sep\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 18
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"HI0256_Maseke\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"HI0256_Maseke\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 19
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sensitive_churnover\" as \"sensitive_churnover\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL LOA 90 Day audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sensitive_churnover\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sensitive_churnover\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 20
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549608839::3aadf35eda6e08-param-field_name-field|steps|logic::1781549608839::3aadf35eda6e08||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549608839::3aadf35eda6e08-param-field_name-source|steps|logic::1781549608839::3aadf35eda6e08||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549644021::dcec86c27fa418-condition-condition::existing::0-field|steps|logic::1781549644021::dcec86c27fa418|condition::existing::0|field|condition-fieldName",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549644021::dcec86c27fa418-condition-condition::existing::0-source|steps|logic::1781549644021::dcec86c27fa418|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549700152::831f19e0558e3-condition-condition::existing::0-field|steps|logic::1781549700152::831f19e0558e3|condition::existing::0|field|condition-fieldName",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549700152::831f19e0558e3-condition-condition::existing::0-source|steps|logic::1781549700152::831f19e0558e3|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549904206::bd411c9cb2cc08-condition-condition::existing::0-field|steps|logic::1781549904206::bd411c9cb2cc08|condition::existing::0|field|condition-fieldName",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781549904206::bd411c9cb2cc08-condition-condition::existing::0-source|steps|logic::1781549904206::bd411c9cb2cc08|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782141267508::0703a410d08a48-param-field_name-field|steps|logic::1782141267508::0703a410d08a48||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782141267508::0703a410d08a48-param-field_name-source|steps|logic::1782141267508::0703a410d08a48||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142202617::6a555f854cc63-param-field_name-field|steps|logic::1782142202617::6a555f854cc63||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142202617::6a555f854cc63-param-field_name-source|steps|logic::1782142202617::6a555f854cc63||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142306004::e1349fe902d81-condition-condition::existing::0-field|steps|logic::1782142306004::e1349fe902d81|condition::existing::0|field|condition-fieldName",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142306004::e1349fe902d81-condition-condition::existing::0-source|steps|logic::1782142306004::e1349fe902d81|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142371334::2703958bc2f128-param-field_name-field|steps|logic::1782142371334::2703958bc2f128||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142371334::2703958bc2f128-param-field_name-source|steps|logic::1782142371334::2703958bc2f128||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142405300::8a89c2e95d202-param-field_name-field|steps|logic::1782142405300::8a89c2e95d202||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1782142405300::8a89c2e95d202-param-field_name-source|steps|logic::1782142405300::8a89c2e95d202||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.logic.structured-step-integrity|logic::1781549608839::3aadf35eda6e08-0|steps|logic::1781549608839::3aadf35eda6e08|||param:format_kind",
+      "severity": "critical",
+      "message": "Step setting is incomplete"
+    },
+    {
+      "key": "audit.logic.structured-step-integrity|logic::1782141267508::0703a410d08a48-0|steps|logic::1782141267508::0703a410d08a48|||param:format_kind",
+      "severity": "critical",
+      "message": "Step setting is incomplete"
+    },
+    {
+      "key": "audit.logic.structured-step-integrity|logic::1782142525278::518bcaa1cb05d-0|steps|logic::1782142525278::518bcaa1cb05d|||param:value_mode",
+      "severity": "warning",
+      "message": "Step setting is incomplete"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}
