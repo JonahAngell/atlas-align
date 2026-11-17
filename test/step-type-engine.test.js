@@ -530,7 +530,7 @@ test("definitions: cross-reference checks catch what the schema cannot", () => {
     '/fields/2/visibleWhen "ghost" is not a field of this step type',
     "/fields/6/enabledWhen needs exactly one of equals, notEquals, in, blank or notBlank",
     '/validation/0/require "absent" is not a field of this step type',
-    "/validation/1 a rule needs require or check",
+    "/validation/1 a rule needs require, check or builtIn",
     '/export/rules/0/when "ghost2" is not a field of this step type',
     '/english/bySubtype/other "other" is not a subtype',
     '/formulas/bySubtype/nope "nope" is not a subtype',

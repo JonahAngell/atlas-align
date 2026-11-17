@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadStepTypeScripts } from "./support/step-type-scripts.js";
 
 const engineSource = readFileSync(
   new URL("../js/22-audit-issue-engine.js", import.meta.url),
@@ -54,6 +55,8 @@ async function runtime(audit, extras = {}) {
      function hasSelectedAudit() { return state.auditSelected === true; }`,
     context,
   );
+  // Step type definitions turn the per-type checks on.
+  loadStepTypeScripts(context);
   vm.runInContext(engineSource, context);
   vm.runInContext(adapterSource, context);
   await context.ATLASAuditIssues.catalogReady;

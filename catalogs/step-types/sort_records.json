@@ -65,7 +65,11 @@
     "scriptRole": "sort",
     "qtest": {
       "section": "E",
-      "testType": "Data Validation"
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "Audit records display in the sort order defined in this step.",
+        "source": "The displayed order agrees with the source values of the sort columns."
+      }
     }
   },
   "textImport": {

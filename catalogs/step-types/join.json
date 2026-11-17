@@ -31,5 +31,10 @@
   },
   "textImport": {
     "fromEnglish": false
-  }
+  },
+  "validation": [
+    {
+      "builtIn": "join"
+    }
+  ]
 }

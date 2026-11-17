@@ -26,5 +26,13 @@
   },
   "textImport": {
     "fromEnglish": false
-  }
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "action"
+    }
+  ]
 }
