@@ -1,0 +1,1543 @@
+{
+  "entries": [
+    {
+      "id": "reference::HI0256_Maseke",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781116368123::0d90b3d873bd",
+      "number": "1.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781116422419::3b39f8ddc26e18",
+      "number": "1.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781116171459::27f7f8c4730a8",
+      "number": "1.3",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "reference::ZHRPAYR060",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781116531715::af78037735b52",
+      "number": "2.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "reference::Data Validation - Worker Visa & Passport Data",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781116565044::8f626e56736a28",
+      "number": "3.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781278836612::2becd5a1436678",
+      "number": "3.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781274088264::a341c8b4bbf82",
+      "number": "3.3",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781116629019::fab9655b8eb338",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781116709840::e724718439a",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "calculated::Error Message",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781116850653::cbdabf296cc7f8",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781117074339::9085f8220cefd",
+      "number": "7.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781116998265::cff69c1c6cf15",
+      "number": "7.1.1",
+      "level": 2,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781117074339::9085f8220cefd::else",
+      "number": "7.2",
+      "level": 1,
+      "branchLabel": "ELSE"
+    },
+    {
+      "id": "logic::1781118138741::b54be7bdd8af78",
+      "number": "7.2.1",
+      "level": 2,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781116850653::cbdabf296cc7f8::else",
+      "number": "8",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "logic::1781118220904::2361f53db14e28",
+      "number": "8.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781118585318::df2bf360ef06f",
+      "number": "8.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781118385424::d11a013cd10f7",
+      "number": "8.2.1",
+      "level": 2,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781279009541::3324b20216dd08",
+      "number": "8.2.2",
+      "level": 2,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "logic::1781279101794::fbad349f5f7d1",
+      "number": "9",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "reference::HI0256_Maseke",
+      "stepType": "reference_source",
+      "english": "Reference source file \"HI0256_Maseke\" as \"sap.hi0256\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=sap_hi0256\n\nSQL Server:\nSELECT * FROM [HI0256_Maseke] AS [sap.hi0256]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].copy()",
+      "formulas": {
+        "excel": "=sap_hi0256",
+        "sql": "SELECT * FROM [HI0256_Maseke] AS [sap.hi0256]",
+        "python": "df = sources[\"sap.hi0256\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>HI0256_Maseke</strong><small>HI0256_Maseke</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"sap.hi0256\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "HI0256_Maseke",
+          "source_alias": "sap.hi0256"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference HI0256_Maseke",
+        "params": {
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116368123::0d90b3d873bd",
+      "stepType": "format_field",
+      "english": "Format file \"sap.hi0256\" column \"persno\" as eight digits with leading zeroes.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[persno]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([persno] AS VARCHAR(50)), 8) AS [persno]\n\nPython (pandas):\ndf[\"persno\"] = df[\"persno\"].astype(\"string\").str.zfill(8)",
+      "formulas": {
+        "excel": "=TEXT([@[persno]], \"00000000\")",
+        "sql": "RIGHT(REPLICATE('0', 8) + CAST([persno] AS VARCHAR(50)), 8) AS [persno]",
+        "python": "df[\"persno\"] = df[\"persno\"].astype(\"string\").str.zfill(8)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sap.hi0256\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>HI0256_Maseke.persno</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "eight digits with leading zeroes"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "persno",
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke",
+          "format": "eight digits with leading zeroes"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116422419::3b39f8ddc26e18",
+      "stepType": "format_field",
+      "english": "Format file \"sap.hi0256\" column \"workday_employee_id\" as eight digits with leading zeroes.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[workday_employee_id]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([workday_employee_id] AS VARCHAR(50)), 8) AS [workday_employee_id]\n\nPython (pandas):\ndf[\"workday_employee_id\"] = df[\"workday_employee_id\"].astype(\"string\").str.zfill(8)",
+      "formulas": {
+        "excel": "=TEXT([@[workday_employee_id]], \"00000000\")",
+        "sql": "RIGHT(REPLICATE('0', 8) + CAST([workday_employee_id] AS VARCHAR(50)), 8) AS [workday_employee_id]",
+        "python": "df[\"workday_employee_id\"] = df[\"workday_employee_id\"].astype(\"string\").str.zfill(8)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sap.hi0256\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>workday_employee_id</strong><small>HI0256_Maseke.workday_employee_id</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "eight digits with leading zeroes"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "workday_employee_id",
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke",
+          "format": "eight digits with leading zeroes"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116171459::27f7f8c4730a8",
+      "stepType": "if_then",
+      "english": "IF file \"sap.hi0256\" column \"personnel_area\" is not equal to \"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\" AND file \"sap.hi0256\" column \"employee_group_number\" is equal to \"4\" AND file \"sap.hi0256\" column \"employment_status_text\" is not equal to \"ACTIVE\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT(AND([@[personnel_area]]<>\"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\", [@[employee_group_number]]=\"4\", [@[employment_status_text]]<>\"ACTIVE\"))\n\nSQL Server:\nWHERE NOT ([personnel_area] <> '2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024' AND [employee_group_number] = '4' AND [employment_status_text] <> 'ACTIVE')\n\nPython (pandas):\nmask = (df[\"personnel_area\"] != \"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\") & (df[\"employee_group_number\"] == \"4\") & (df[\"employment_status_text\"] != \"ACTIVE\")\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT(AND([@[personnel_area]]<>\"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\", [@[employee_group_number]]=\"4\", [@[employment_status_text]]<>\"ACTIVE\"))",
+        "sql": "WHERE NOT ([personnel_area] <> '2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024' AND [employee_group_number] = '4' AND [employment_status_text] <> 'ACTIVE')",
+        "python": "mask = (df[\"personnel_area\"] != \"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\") & (df[\"employee_group_number\"] == \"4\") & (df[\"employment_status_text\"] != \"ACTIVE\")\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"1\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"2\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"personnel_area\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"2540,3357,3358,3359,3360,3361,3362,3744,3745,3981,3982,3983,3984,4024\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"},{\"id\":\"condition::1781116271951::cd9afea7909318\",\"connector\":\"AND\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"employee_group_number\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"4\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"},{\"id\":\"condition::1781116291976::a5fa8a020d95a\",\"connector\":\"AND\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"employment_status_text\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"ACTIVE\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.hi0256",
+          "left_field": "personnel_area",
+          "left_source": "HI0256_Maseke",
+          "operator": "is not equal to",
+          "source_alias": "sap.hi0256",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_text": "",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "reference::ZHRPAYR060",
+      "stepType": "reference_source",
+      "english": "Reference source file \"ZHRPAYR060\" as \"sap.dclit210\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=sap_dclit210\n\nSQL Server:\nSELECT * FROM [ZHRPAYR060] AS [sap.dclit210]\n\nPython (pandas):\ndf = sources[\"sap.dclit210\"].copy()",
+      "formulas": {
+        "excel": "=sap_dclit210",
+        "sql": "SELECT * FROM [ZHRPAYR060] AS [sap.dclit210]",
+        "python": "df = sources[\"sap.dclit210\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>ZHRPAYR060</strong><small>ZHRPAYR060</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"sap.dclit210\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "ZHRPAYR060",
+          "source_alias": "sap.dclit210"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference ZHRPAYR060",
+        "params": {
+          "source_alias": "sap.dclit210",
+          "source_file": "ZHRPAYR060"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116531715::af78037735b52",
+      "stepType": "format_field",
+      "english": "Format file \"sap.dclit210\" column \"PersNo.\" as eight digits with leading zeroes.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[PersNo.]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([PersNo.] AS VARCHAR(50)), 8) AS [PersNo.]\n\nPython (pandas):\ndf[\"PersNo.\"] = df[\"PersNo.\"].astype(\"string\").str.zfill(8)",
+      "formulas": {
+        "excel": "=TEXT([@[PersNo.]], \"00000000\")",
+        "sql": "RIGHT(REPLICATE('0', 8) + CAST([PersNo.] AS VARCHAR(50)), 8) AS [PersNo.]",
+        "python": "df[\"PersNo.\"] = df[\"PersNo.\"].astype(\"string\").str.zfill(8)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"ZHRPAYR060\"><input type=\"hidden\" data-param=\"source_alias\" value=\"sap.dclit210\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"ZHRPAYR060\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>PersNo.</strong><small>ZHRPAYR060.PersNo.</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "eight digits with leading zeroes"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "PersNo.",
+          "source_alias": "sap.dclit210",
+          "source_file": "ZHRPAYR060",
+          "format": "eight digits with leading zeroes"
+        }
+      }
+    },
+    {
+      "id": "reference::Data Validation - Worker Visa & Passport Data",
+      "stepType": "reference_source",
+      "english": "Reference source file \"Data Validation - Worker Visa & Passport Data\" as \"wd.passport\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd_passport\n\nSQL Server:\nSELECT * FROM [Data Validation - Worker Visa & Passport Data] AS [wd.passport]\n\nPython (pandas):\ndf = sources[\"wd.passport\"].copy()",
+      "formulas": {
+        "excel": "=wd_passport",
+        "sql": "SELECT * FROM [Data Validation - Worker Visa & Passport Data] AS [wd.passport]",
+        "python": "df = sources[\"wd.passport\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Data Validation - Worker Visa &amp; Passport Data</strong><small>Data Validation - Worker Visa &amp; Passport Data</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd.passport\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "Data Validation - Worker Visa & Passport Data",
+          "source_alias": "wd.passport"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Data Validation - Worker Visa & Passport Data",
+        "params": {
+          "source_alias": "wd.passport",
+          "source_file": "Data Validation - Worker Visa & Passport Data"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116565044::8f626e56736a28",
+      "stepType": "format_field",
+      "english": "Format file \"wd.passport\" column \"Worker ID\" as eight digits with leading zeroes.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)",
+      "formulas": {
+        "excel": "=TEXT([@[Worker ID]], \"00000000\")",
+        "sql": "RIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"Data Validation - Worker Visa &amp; Passport Data\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd.passport\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"Data Validation - Worker Visa &amp; Passport Data\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>Data Validation - Worker Visa &amp; Passport Data.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "eight digits with leading zeroes"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "field_name": "Worker ID",
+          "source_alias": "wd.passport",
+          "source_file": "Data Validation - Worker Visa & Passport Data",
+          "format": "eight digits with leading zeroes"
+        }
+      }
+    },
+    {
+      "id": "logic::1781278836612::2becd5a1436678",
+      "stepType": "if_then",
+      "english": "IF file \"wd.passport\" column \"Passport Type\" is equal to \"blank/null,Country of Issue\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[Passport Type]]=\"blank/null,Country of Issue\")\n\nSQL Server:\nWHERE NOT ([Passport Type] = 'blank/null,Country of Issue')\n\nPython (pandas):\nmask = df[\"Passport Type\"] == \"blank/null,Country of Issue\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Passport Type]]=\"blank/null,Country of Issue\")",
+        "sql": "WHERE NOT ([Passport Type] = 'blank/null,Country of Issue')",
+        "python": "mask = df[\"Passport Type\"] == \"blank/null,Country of Issue\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "blank/null,Country of Issue",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Data Validation - Worker Visa & Passport Data\",\"sourceAlias\":\"wd.passport\",\"fieldName\":\"Passport Type\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"blank/null,Country of Issue\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "wd.passport",
+          "left_field": "Passport Type",
+          "left_source": "Data Validation - Worker Visa & Passport Data",
+          "operator": "is equal to",
+          "source_alias": "wd.passport",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": "",
+          "source_file": "Data Validation - Worker Visa & Passport Data"
+        }
+      }
+    },
+    {
+      "id": "logic::1781274088264::a341c8b4bbf82",
+      "stepType": "if_then",
+      "english": "IF file \"wd.passport\" column \"Passport Expiration Date\" is less than the run date THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT(the run date)\n\nSQL Server:\nWHERE NOT (the run date)\n\nPython (pandas):\nmask = the run date\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT(the run date)",
+        "sql": "WHERE NOT (the run date)",
+        "python": "mask = the run date\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Data Validation - Worker Visa & Passport Data\",\"sourceAlias\":\"wd.passport\",\"fieldName\":\"Passport Expiration Date\",\"operator\":\"is less than\",\"valueMode\":\"expression\",\"compareValue\":\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"the run date\"}]",
+          "left_alias": "wd.passport",
+          "left_field": "Passport Expiration Date",
+          "left_source": "Data Validation - Worker Visa & Passport Data",
+          "operator": "is less than",
+          "source_alias": "wd.passport",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": "",
+          "source_file": "Data Validation - Worker Visa & Passport Data"
+        }
+      }
+    },
+    {
+      "id": "calculated::Error Message",
+      "stepType": "create_column",
+      "english": "Create new blank column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Error Message]\n\nPython (pandas):\ndf[\"Error Message\"] = pd.NA",
+      "formulas": {
+        "excel": "=\"\"",
+        "sql": "NULL AS [Error Message]",
+        "python": "df[\"Error Message\"] = pd.NA",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Error Message\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Error Message",
+          "value_mode": "Static value",
+          "static_value": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Error Message",
+          "source_alias": "Calculated Field",
+          "source_file": "Calculated Field",
+          "value_mode": "Static value",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116629019::fab9655b8eb338",
+      "stepType": "join",
+      "english": "Join file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\".",
+      "autoNotes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (wd.passport) when a match is found. Rows in file 2 (wd.passport) will not be kept if the keys \"workday_employee_id\" / \"Worker ID\" do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (wd.passport).",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"workday_employee_id\" to \"wd.passport\" on \"Worker ID\".\n\nExcel:\n=XLOOKUP([@[workday_employee_id]], wd_passport[Worker ID], wd_passport, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [wd.passport]\n  ON [sap.hi0256].[workday_employee_id] = [wd.passport].[Worker ID]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"wd.passport\"], how=\"left\", left_on=\"workday_employee_id\", right_on=\"Worker ID\")",
+      "formulas": {
+        "lead": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"workday_employee_id\" to \"wd.passport\" on \"Worker ID\".",
+        "excel": "=XLOOKUP([@[workday_employee_id]], wd_passport[Worker ID], wd_passport, \"\")",
+        "sql": "FROM [sap.hi0256]\nLEFT JOIN [wd.passport]\n  ON [sap.hi0256].[workday_employee_id] = [wd.passport].[Worker ID]",
+        "python": "df = sources[\"sap.hi0256\"].merge(sources[\"wd.passport\"], how=\"left\", left_on=\"workday_employee_id\", right_on=\"Worker ID\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"LEFT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">LEFT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"logic::1781116629019::fab9655b8eb338\">Choose Join Type</button></div><p class=\"hint\">All rows from the left source, plus matching rows from the right source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-logic::1781116629019::fab9655b8eb338\"><input type=\"hidden\" data-param=\"left_source\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"right_source\" value=\"Data Validation - Worker Visa &amp; Passport Data\"><input type=\"hidden\" data-param=\"left_field\" value=\"workday_employee_id\"><input type=\"hidden\" data-param=\"right_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;workday_employee_id&quot;,&quot;right_field&quot;:&quot;Worker ID&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-logic::1781116629019::fab9655b8eb338\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"workday_employee_id\"><input type=\"hidden\" data-join-key-right value=\"Worker ID\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>workday_employee_id</strong><small>HI0256_Maseke.workday_employee_id</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"Data Validation - Worker Visa &amp; Passport Data\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>Data Validation - Worker Visa &amp; Passport Data.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join",
+        "params": {
+          "join_type": "LEFT JOIN",
+          "left_alias": "sap.hi0256",
+          "left_field": "workday_employee_id",
+          "left_source": "HI0256_Maseke",
+          "right_alias": "wd.passport",
+          "right_field": "Worker ID",
+          "right_source": "Data Validation - Worker Visa & Passport Data"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116709840::e724718439a",
+      "stepType": "join",
+      "english": "Join file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\".",
+      "autoNotes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (sap.dclit210) when a match is found. Rows in file 2 (sap.dclit210) will not be kept if the keys \"persno\" / \"PersNo.\" do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (sap.dclit210).",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sap.dclit210\" on \"PersNo.\".\n\nExcel:\n=XLOOKUP([@[persno]], sap_dclit210[PersNo.], sap_dclit210, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [sap.dclit210]\n  ON [sap.hi0256].[persno] = [sap.dclit210].[PersNo.]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"sap.dclit210\"], how=\"left\", left_on=\"persno\", right_on=\"PersNo.\")",
+      "formulas": {
+        "lead": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sap.dclit210\" on \"PersNo.\".",
+        "excel": "=XLOOKUP([@[persno]], sap_dclit210[PersNo.], sap_dclit210, \"\")",
+        "sql": "FROM [sap.hi0256]\nLEFT JOIN [sap.dclit210]\n  ON [sap.hi0256].[persno] = [sap.dclit210].[PersNo.]",
+        "python": "df = sources[\"sap.hi0256\"].merge(sources[\"sap.dclit210\"], how=\"left\", left_on=\"persno\", right_on=\"PersNo.\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"LEFT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">LEFT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"logic::1781116709840::e724718439a\">Choose Join Type</button></div><p class=\"hint\">All rows from the left source, plus matching rows from the right source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-logic::1781116709840::e724718439a\"><input type=\"hidden\" data-param=\"left_source\" value=\"HI0256_Maseke\"><input type=\"hidden\" data-param=\"right_source\" value=\"ZHRPAYR060\"><input type=\"hidden\" data-param=\"left_field\" value=\"persno\"><input type=\"hidden\" data-param=\"right_field\" value=\"PersNo.\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;persno&quot;,&quot;right_field&quot;:&quot;PersNo.&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-logic::1781116709840::e724718439a\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"persno\"><input type=\"hidden\" data-join-key-right value=\"PersNo.\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"HI0256_Maseke\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>persno</strong><small>HI0256_Maseke.persno</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"ZHRPAYR060\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>PersNo.</strong><small>ZHRPAYR060.PersNo.</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join",
+        "params": {
+          "join_type": "LEFT JOIN",
+          "left_alias": "sap.hi0256",
+          "left_field": "persno",
+          "left_source": "HI0256_Maseke",
+          "right_alias": "sap.dclit210",
+          "right_field": "PersNo.",
+          "right_source": "ZHRPAYR060"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116850653::cbdabf296cc7f8",
+      "stepType": "if_then",
+      "english": "IF file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\" THEN IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[nationality]]=\"US,Minor_OUTL._ISL\"\n\nSQL Server:\nCASE WHEN [nationality] = 'US,Minor_OUTL._ISL' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"nationality\"] == \"US,Minor_OUTL._ISL\"\n\nNote: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":",
+      "formulas": {
+        "excel": "=[@[nationality]]=\"US,Minor_OUTL._ISL\"",
+        "sql": "CASE WHEN [nationality] = 'US,Minor_OUTL._ISL' THEN 1 ELSE 0 END",
+        "python": "mask = df[\"nationality\"] == \"US,Minor_OUTL._ISL\"",
+        "notes": [
+          "Note: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":"
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": "IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "US,Minor_OUTL._ISL",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"nationality\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"US,Minor_OUTL._ISL\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "include_else_branch": "Yes",
+          "left_alias": "sap.hi0256",
+          "left_field": "nationality",
+          "left_source": "HI0256_Maseke",
+          "operator": "is equal to",
+          "then_action": "",
+          "then_action_type": "freeform",
+          "then_output_column": "Error Message",
+          "then_text": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781117074339::9085f8220cefd",
+      "stepType": "if_then",
+      "english": "IF file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\" THEN IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[personnel_area_text]]=\"CASTAWAY CAY\"\n\nSQL Server:\nCASE WHEN [personnel_area_text] = 'CASTAWAY CAY' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"personnel_area_text\"] == \"CASTAWAY CAY\"\n\nNote: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":",
+      "formulas": {
+        "excel": "=[@[personnel_area_text]]=\"CASTAWAY CAY\"",
+        "sql": "CASE WHEN [personnel_area_text] = 'CASTAWAY CAY' THEN 1 ELSE 0 END",
+        "python": "mask = df[\"personnel_area_text\"] == \"CASTAWAY CAY\"",
+        "notes": [
+          "Note: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":"
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": "IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "CASTAWAY CAY",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"HI0256_Maseke\",\"sourceAlias\":\"sap.hi0256\",\"fieldName\":\"personnel_area_text\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"CASTAWAY CAY\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "include_else_branch": "Yes",
+          "left_alias": "sap.hi0256",
+          "left_field": "personnel_area_text",
+          "left_source": "HI0256_Maseke",
+          "operator": "is equal to",
+          "source_alias": "sap.hi0256",
+          "then_action": "",
+          "then_action_type": "freeform",
+          "then_output_column": "Error Message",
+          "then_text": "",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116998265::cff69c1c6cf15",
+      "stepType": "if_then",
+      "english": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"Y\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'Y' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"Y\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF([@[Tax exemption indicator]]<>\"Y\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])",
+        "sql": "CASE WHEN [Tax exemption indicator] <> 'Y' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Tax exemption indicator\"] != \"Y\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Research Domestic Tax Exemption Indicator\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Research Domestic Tax Exemption Indicator&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Research Domestic Tax Exemption Indicator",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "Y",
+          "conditions_json": "[{\"id\":\"condition::1781117018965::c0aa99eb9bcc2\",\"connector\":\"IF\",\"sourceFile\":\"ZHRPAYR060\",\"sourceAlias\":\"sap.dclit210\",\"fieldName\":\"Tax exemption indicator\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"Y\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.dclit210",
+          "left_field": "Tax exemption indicator",
+          "left_source": "ZHRPAYR060",
+          "operator": "is not equal to",
+          "then_action": "",
+          "then_action_type": "display_text",
+          "then_output_column": "Error Message",
+          "then_text": "Research Domestic Tax Exemption Indicator"
+        }
+      }
+    },
+    {
+      "id": "logic::1781117074339::9085f8220cefd::else",
+      "stepType": "else",
+      "english": "ELSE:",
+      "autoNotes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "developer": "ELSE (Step 7.1)\n\nExcel:\n=NOT([@[personnel_area_text]]=\"CASTAWAY CAY\")\n\nSQL Server:\nCASE WHEN NOT ([personnel_area_text] = 'CASTAWAY CAY') THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = ~(df[\"personnel_area_text\"] == \"CASTAWAY CAY\")",
+      "formulas": {
+        "lead": "ELSE (Step 7.1)",
+        "excel": "=NOT([@[personnel_area_text]]=\"CASTAWAY CAY\")",
+        "sql": "CASE WHEN NOT ([personnel_area_text] = 'CASTAWAY CAY') THEN 1 ELSE 0 END",
+        "python": "mask = ~(df[\"personnel_area_text\"] == \"CASTAWAY CAY\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder else-action-builder\"><p class=\"hint\">Configure what happens when the IF conditions are not met.</p><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"ELSE Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">ELSE Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"ELSE action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "else",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "else",
+        "type": "if",
+        "title": "ELSE",
+        "params": {
+          "managed_else_branch": "Yes",
+          "parent_if_step_id": "logic::1781117074339::9085f8220cefd",
+          "source_alias": "sap.hi0256",
+          "source_file": "HI0256_Maseke"
+        }
+      }
+    },
+    {
+      "id": "logic::1781118138741::b54be7bdd8af78",
+      "stepType": "if_then",
+      "english": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"R,blank/null\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'R,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"R,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF([@[Tax exemption indicator]]<>\"R,blank/null\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])",
+        "sql": "CASE WHEN [Tax exemption indicator] <> 'R,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Tax exemption indicator\"] != \"R,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Research Domestic Tax Exemption Indicator\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Research Domestic Tax Exemption Indicator&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Research Domestic Tax Exemption Indicator",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "R,blank/null",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"ZHRPAYR060\",\"sourceAlias\":\"sap.dclit210\",\"fieldName\":\"Tax exemption indicator\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"R,blank/null\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.dclit210",
+          "left_field": "Tax exemption indicator",
+          "left_source": "ZHRPAYR060",
+          "operator": "is not equal to",
+          "then_action": "",
+          "then_action_type": "display_text",
+          "then_output_column": "Error Message",
+          "then_text": "Research Domestic Tax Exemption Indicator"
+        }
+      }
+    },
+    {
+      "id": "logic::1781116850653::cbdabf296cc7f8::else",
+      "stepType": "else",
+      "english": "ELSE:",
+      "autoNotes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "developer": "ELSE (Step 7)\n\nExcel:\n=NOT([@[nationality]]=\"US,Minor_OUTL._ISL\")\n\nSQL Server:\nCASE WHEN NOT ([nationality] = 'US,Minor_OUTL._ISL') THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = ~(df[\"nationality\"] == \"US,Minor_OUTL._ISL\")",
+      "formulas": {
+        "lead": "ELSE (Step 7)",
+        "excel": "=NOT([@[nationality]]=\"US,Minor_OUTL._ISL\")",
+        "sql": "CASE WHEN NOT ([nationality] = 'US,Minor_OUTL._ISL') THEN 1 ELSE 0 END",
+        "python": "mask = ~(df[\"nationality\"] == \"US,Minor_OUTL._ISL\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder else-action-builder\"><p class=\"hint\">Configure what happens when the IF conditions are not met.</p><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"ELSE Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">ELSE Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"ELSE action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "else",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "else",
+        "type": "if",
+        "title": "ELSE",
+        "params": {
+          "managed_else_branch": "Yes",
+          "parent_if_step_id": "logic::1781116850653::cbdabf296cc7f8"
+        }
+      }
+    },
+    {
+      "id": "logic::1781118220904::2361f53db14e28",
+      "stepType": "if_then",
+      "english": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\" THEN display text response \"Research International Tax Exemption Indicator\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"Y,blank/null\", IF([@[Error Message]]=\"\", \"Research International Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research International Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'Y,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research International Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"Y,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research International Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF([@[Tax exemption indicator]]<>\"Y,blank/null\", IF([@[Error Message]]=\"\", \"Research International Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research International Tax Exemption Indicator\"), [@[Error Message]])",
+        "sql": "CASE WHEN [Tax exemption indicator] <> 'Y,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research International Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Tax exemption indicator\"] != \"Y,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research International Tax Exemption Indicator\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Research International Tax Exemption Indicator\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Research International Tax Exemption Indicator&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Research International Tax Exemption Indicator",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "Y,blank/null",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"ZHRPAYR060\",\"sourceAlias\":\"sap.dclit210\",\"fieldName\":\"Tax exemption indicator\",\"operator\":\"is not equal to\",\"valueMode\":\"values\",\"compareValue\":\"Y,blank/null\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.dclit210",
+          "left_field": "Tax exemption indicator",
+          "left_source": "ZHRPAYR060",
+          "operator": "is not equal to",
+          "then_action": "",
+          "then_action_type": "display_text",
+          "then_output_column": "Error Message",
+          "then_text": "Research International Tax Exemption Indicator"
+        }
+      }
+    },
+    {
+      "id": "logic::1781118585318::df2bf360ef06f",
+      "stepType": "if_then",
+      "english": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null THEN IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:.",
+      "autoNotes": "",
+      "developer": "Excel:\n=LEN(TRIM([@[Tax exemption indicator]]))=0\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Tax exemption indicator])), '') IS NULL THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n\nNote: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:",
+      "formulas": {
+        "excel": "=LEN(TRIM([@[Tax exemption indicator]]))=0",
+        "sql": "CASE WHEN NULLIF(LTRIM(RTRIM([Tax exemption indicator])), '') IS NULL THEN 1 ELSE 0 END",
+        "python": "mask = df[\"Tax exemption indicator\"].fillna(\"\").astype(str).str.strip().eq(\"\")",
+        "notes": [
+          "Note: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:"
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": "IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"ZHRPAYR060\",\"sourceAlias\":\"sap.dclit210\",\"fieldName\":\"Tax exemption indicator\",\"operator\":\"is equal to\",\"valueMode\":\"blank\",\"compareValue\":\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "sap.dclit210",
+          "left_field": "Tax exemption indicator",
+          "left_source": "ZHRPAYR060",
+          "operator": "is equal to",
+          "then_action": "",
+          "then_action_type": "freeform",
+          "then_output_column": "Error Message",
+          "then_text": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781118385424::d11a013cd10f7",
+      "stepType": "if_then",
+      "english": "IF file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\" THEN Do Not Display all records for this employee.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Passport Type]]=\"AR Alien Resident Card\"\n\nSQL Server:\nCASE WHEN [Passport Type] = 'AR Alien Resident Card' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Passport Type\"] == \"AR Alien Resident Card\"\n\nNote: THEN action is free text and is not in the formulas: Do Not Display all records for this employee",
+      "formulas": {
+        "excel": "=[@[Passport Type]]=\"AR Alien Resident Card\"",
+        "sql": "CASE WHEN [Passport Type] = 'AR Alien Resident Card' THEN 1 ELSE 0 END",
+        "python": "mask = df[\"Passport Type\"] == \"AR Alien Resident Card\"",
+        "notes": [
+          "Note: THEN action is free text and is not in the formulas: Do Not Display all records for this employee"
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\">Do Not Display all records for this employee</textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "AR Alien Resident Card",
+          "conditions_json": "[{\"id\":\"condition::1781118417931::6459da5d0b9828\",\"connector\":\"IF\",\"sourceFile\":\"Data Validation - Worker Visa & Passport Data\",\"sourceAlias\":\"wd.passport\",\"fieldName\":\"Passport Type\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"AR Alien Resident Card\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "include_else_branch": "No",
+          "left_alias": "wd.passport",
+          "left_field": "Passport Type",
+          "left_source": "Data Validation - Worker Visa & Passport Data",
+          "operator": "is equal to",
+          "then_action": "Do Not Display all records for this employee",
+          "then_action_type": "freeform",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781279009541::3324b20216dd08",
+      "stepType": "if_then",
+      "english": "IF file \"wd.passport\" column \"Passport Type\" is blank/null THEN display text response \"No Passport Found\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Passport Type]]))=0, IF([@[Error Message]]=\"\", \"No Passport Found\", [@[Error Message]]&\"||\"&\"No Passport Found\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Passport Type])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'No Passport Found') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Passport Type\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"No Passport Found\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF(LEN(TRIM([@[Passport Type]]))=0, IF([@[Error Message]]=\"\", \"No Passport Found\", [@[Error Message]]&\"||\"&\"No Passport Found\"), [@[Error Message]])",
+        "sql": "CASE WHEN NULLIF(LTRIM(RTRIM([Passport Type])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'No Passport Found') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Passport Type\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"No Passport Found\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"No Passport Found\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;No Passport Found&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "No Passport Found",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Data Validation - Worker Visa & Passport Data\",\"sourceAlias\":\"wd.passport\",\"fieldName\":\"Passport Type\",\"operator\":\"is equal to\",\"valueMode\":\"blank\",\"compareValue\":\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "wd.passport",
+          "left_field": "Passport Type",
+          "left_source": "Data Validation - Worker Visa & Passport Data",
+          "operator": "is equal to",
+          "then_action": "",
+          "then_action_type": "display_text",
+          "then_output_column": "Error Message",
+          "then_target_column": "",
+          "then_text": "No Passport Found",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    },
+    {
+      "id": "logic::1781279101794::fbad349f5f7d1",
+      "stepType": "if_then",
+      "english": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT(LEN(TRIM([@[Error Message]]))=0)\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n\nPython (pandas):\nmask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT(LEN(TRIM([@[Error Message]]))=0)",
+        "sql": "WHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)",
+        "python": "mask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "compare_value": "",
+          "conditions_json": "[{\"id\":\"condition::existing::0\",\"connector\":\"IF\",\"sourceFile\":\"Created Columns\",\"sourceAlias\":\"Created Columns\",\"fieldName\":\"Error Message\",\"operator\":\"is equal to\",\"valueMode\":\"blank\",\"compareValue\":\"\",\"compareSourceFile\":\"\",\"compareSourceAlias\":\"\",\"compareFieldName\":\"\",\"expression\":\"\"}]",
+          "left_alias": "Created Columns",
+          "left_field": "Error Message",
+          "left_source": "Created Columns",
+          "operator": "is equal to",
+          "then_action": "",
+          "then_action_type": "do_not_display",
+          "then_output_column": "",
+          "then_target_column": "",
+          "then_text": "",
+          "then_value_field": "",
+          "then_value_source_alias": "",
+          "then_value_source_file": ""
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_2",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap.hi0256\" as \"sap.hi0256\":",
+      "developer": "Excel:\n=sap_hi0256\n\nSQL Server:\nSELECT * FROM [sap.hi0256] AS [sap.hi0256]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap.hi0256"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_3",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap.dclit210\" as \"sap.dclit210\":",
+      "developer": "Excel:\n=sap_dclit210\n\nSQL Server:\nSELECT * FROM [sap.dclit210] AS [sap.dclit210]\n\nPython (pandas):\ndf = sources[\"sap.dclit210\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap.dclit210"
+    },
+    {
+      "step": "3",
+      "stepId": "reference_source_4",
+      "branch": "Root",
+      "analyst": "Reference source file \"sap.q15dcl\" as \"sap.q15dcl\":",
+      "developer": "Excel:\n=sap_q15dcl\n\nSQL Server:\nSELECT * FROM [sap.q15dcl] AS [sap.q15dcl]\n\nPython (pandas):\ndf = sources[\"sap.q15dcl\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap.q15dcl"
+    },
+    {
+      "step": "4",
+      "stepId": "reference_source_5",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd.passport\" as \"wd.passport\":",
+      "developer": "Excel:\n=wd_passport\n\nSQL Server:\nSELECT * FROM [wd.passport] AS [wd.passport]\n\nPython (pandas):\ndf = sources[\"wd.passport\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd.passport"
+    },
+    {
+      "step": "5",
+      "stepId": "logic::1781116629019::fab9655b8eb338",
+      "branch": "Root",
+      "analyst": "Join file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\".",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"workday_employee_id\" to \"wd.passport\" on \"Worker ID\".\n\nExcel:\n=XLOOKUP([@[workday_employee_id]], wd_passport[Worker ID], wd_passport, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [wd.passport]\n  ON [sap.hi0256].[workday_employee_id] = [wd.passport].[Worker ID]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"wd.passport\"], how=\"left\", left_on=\"workday_employee_id\", right_on=\"Worker ID\")",
+      "notes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (wd.passport) when a match is found. Rows in file 2 (wd.passport) will not be kept if the keys \"workday_employee_id\" / \"Worker ID\" do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (wd.passport).",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "6",
+      "stepId": "logic::1781116709840::e724718439a",
+      "branch": "Root",
+      "analyst": "Join file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\".",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"sap.hi0256\" on \"persno\" to \"sap.dclit210\" on \"PersNo.\".\n\nExcel:\n=XLOOKUP([@[persno]], sap_dclit210[PersNo.], sap_dclit210, \"\")\n\nSQL Server:\nFROM [sap.hi0256]\nLEFT JOIN [sap.dclit210]\n  ON [sap.hi0256].[persno] = [sap.dclit210].[PersNo.]\n\nPython (pandas):\ndf = sources[\"sap.hi0256\"].merge(sources[\"sap.dclit210\"], how=\"left\", left_on=\"persno\", right_on=\"PersNo.\")",
+      "notes": "A LEFT JOIN keeps every record from file 1 (sap.hi0256) and adds matching details from file 2 (sap.dclit210) when a match is found. Rows in file 2 (sap.dclit210) will not be kept if the keys \"persno\" / \"PersNo.\" do not match. As a result, rows from file 1 (sap.hi0256) may contain NULL values if no match is found in file 2 (sap.dclit210).",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "7",
+      "stepId": "calculated::Error Message",
+      "branch": "Root",
+      "analyst": "Create new blank column \"Error Message\".",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Error Message]\n\nPython (pandas):\ndf[\"Error Message\"] = pd.NA",
+      "notes": "",
+      "level": 0,
+      "source": "Calculated Field"
+    },
+    {
+      "step": "8",
+      "stepId": "logic::1781116850653::cbdabf296cc7f8",
+      "branch": "Root",
+      "analyst": "IF file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\" THEN IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":.",
+      "developer": "Excel:\n=[@[nationality]]=\"US,Minor_OUTL._ISL\"\n\nSQL Server:\nCASE WHEN [nationality] = 'US,Minor_OUTL._ISL' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"nationality\"] == \"US,Minor_OUTL._ISL\"\n\nNote: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "8.1",
+      "stepId": "logic::1781117074339::9085f8220cefd",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\" THEN IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":.",
+      "developer": "Excel:\n=[@[personnel_area_text]]=\"CASTAWAY CAY\"\n\nSQL Server:\nCASE WHEN [personnel_area_text] = 'CASTAWAY CAY' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"personnel_area_text\"] == \"CASTAWAY CAY\"\n\nNote: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":",
+      "notes": "",
+      "level": 1,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "8.1.1",
+      "stepId": "logic::1781116998265::cff69c1c6cf15",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"Y\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'Y' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"Y\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 2,
+      "source": ""
+    },
+    {
+      "step": "8.2",
+      "stepId": "logic::1781117074339::9085f8220cefd::else",
+      "branch": "ELSE",
+      "analyst": "ELSE:",
+      "developer": "ELSE (Step 8.1)\n\nExcel:\n=NOT([@[personnel_area_text]]=\"CASTAWAY CAY\")\n\nSQL Server:\nCASE WHEN NOT ([personnel_area_text] = 'CASTAWAY CAY') THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = ~(df[\"personnel_area_text\"] == \"CASTAWAY CAY\")",
+      "notes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "level": 1,
+      "source": "HI0256_Maseke"
+    },
+    {
+      "step": "8.2.1",
+      "stepId": "logic::1781118138741::b54be7bdd8af78",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"R,blank/null\", IF([@[Error Message]]=\"\", \"Research Domestic Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research Domestic Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'R,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"R,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 2,
+      "source": ""
+    },
+    {
+      "step": "9",
+      "stepId": "logic::1781116850653::cbdabf296cc7f8::else",
+      "branch": "Root",
+      "analyst": "ELSE:",
+      "developer": "ELSE (Step 8)\n\nExcel:\n=NOT([@[nationality]]=\"US,Minor_OUTL._ISL\")\n\nSQL Server:\nCASE WHEN NOT ([nationality] = 'US,Minor_OUTL._ISL') THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = ~(df[\"nationality\"] == \"US,Minor_OUTL._ISL\")",
+      "notes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "9.1",
+      "stepId": "logic::1781118220904::2361f53db14e28",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\" THEN display text response \"Research International Tax Exemption Indicator\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF([@[Tax exemption indicator]]<>\"Y,blank/null\", IF([@[Error Message]]=\"\", \"Research International Tax Exemption Indicator\", [@[Error Message]]&\"||\"&\"Research International Tax Exemption Indicator\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Tax exemption indicator] <> 'Y,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research International Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"] != \"Y,blank/null\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research International Tax Exemption Indicator\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "9.2",
+      "stepId": "logic::1781118585318::df2bf360ef06f",
+      "branch": "THEN",
+      "analyst": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null THEN IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:.",
+      "developer": "Excel:\n=LEN(TRIM([@[Tax exemption indicator]]))=0\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Tax exemption indicator])), '') IS NULL THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Tax exemption indicator\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n\nNote: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:",
+      "notes": "",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "9.2.1",
+      "stepId": "logic::1781118385424::d11a013cd10f7",
+      "branch": "THEN",
+      "analyst": "IF file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\" THEN Do Not Display all records for this employee.",
+      "developer": "Excel:\n=[@[Passport Type]]=\"AR Alien Resident Card\"\n\nSQL Server:\nCASE WHEN [Passport Type] = 'AR Alien Resident Card' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Passport Type\"] == \"AR Alien Resident Card\"\n\nNote: THEN action is free text and is not in the formulas: Do Not Display all records for this employee",
+      "notes": "",
+      "level": 2,
+      "source": ""
+    },
+    {
+      "step": "9.2.2",
+      "stepId": "logic::1781279009541::3324b20216dd08",
+      "branch": "THEN",
+      "analyst": "IF file \"wd.passport\" column \"Passport Type\" is blank/null THEN display text response \"No Passport Found\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Passport Type]]))=0, IF([@[Error Message]]=\"\", \"No Passport Found\", [@[Error Message]]&\"||\"&\"No Passport Found\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Passport Type])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'No Passport Found') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Passport Type\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"No Passport Found\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 2,
+      "source": ""
+    },
+    {
+      "step": "10",
+      "stepId": "logic::1781279101794::fbad349f5f7d1",
+      "branch": "Root",
+      "analyst": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+      "developer": "Excel:\n=NOT(LEN(TRIM([@[Error Message]]))=0)\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n\nPython (pandas):\nmask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    }
+  ],
+  "sqlScript": "-- DCL IT210 - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 18 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- TODO: 6 steps could not be converted and are skipped below:\n--   - Step 8: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":\n--   - Step 8.1: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":\n--   - Step 8.2: The step only marks matching rows, so there is no change to make.\n--   - Step 9: The step only marks matching rows, so there is no change to make.\n--   - Step 9.2: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:\n--   - Step 9.2.1: THEN action is free text and is not in the formulas: Do Not Display all records for this employee\n--\n-- Review:\n--   - Steps 8.1, 8.1.1, 8.2, 8.2.1, 9.1, 9.2, 9.2.1, 9.2.2 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n--   - Step 8.1.1 overwrites [Error Message], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Error Message] is not selected twice.\n--   - Step 8.2.1 overwrites [Error Message], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Error Message] is not selected twice.\n--   - Step 9.1 overwrites [Error Message], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Error Message] is not selected twice.\n--   - Step 9.2.2 overwrites [Error Message], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Error Message] is not selected twice.\n--   - The audit does not list the columns of sap.hi0256, sap.dclit210, sap.q15dcl, wd.passport, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [sap.hi0256]\n--   - [sap.dclit210]\n--   - [sap.q15dcl]\n--   - [wd.passport]\n\nWITH\n-- Step 1: Reference sap.hi0256\n-- Reference source file \"sap.hi0256\" as \"sap.hi0256\":\nstep_1 AS (\n  SELECT * FROM [sap.hi0256] AS [sap.hi0256]\n),\n\n-- Step 2: Reference sap.dclit210\n-- Reference source file \"sap.dclit210\" as \"sap.dclit210\":\nstep_2 AS (\n  SELECT * FROM [sap.dclit210] AS [sap.dclit210]\n),\n\n-- Step 3: Reference sap.q15dcl\n-- Reference source file \"sap.q15dcl\" as \"sap.q15dcl\":\nstep_3 AS (\n  SELECT * FROM [sap.q15dcl] AS [sap.q15dcl]\n),\n\n-- Step 4: Reference wd.passport\n-- Reference source file \"wd.passport\" as \"wd.passport\":\nstep_4 AS (\n  SELECT * FROM [wd.passport] AS [wd.passport]\n),\n\n-- Step 5: Join\n-- Join file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\".\nstep_5 AS (\n  SELECT [sap.hi0256].*,\n         [wd.passport].*\n  FROM step_4 AS [sap.hi0256]\n  LEFT JOIN [wd.passport] AS [wd.passport]\n    ON [sap.hi0256].[workday_employee_id] = [wd.passport].[Worker ID]\n),\n\n-- Step 6: Join\n-- Join file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\".\nstep_6 AS (\n  SELECT [sap.hi0256].*,\n         [sap.dclit210].*\n  FROM step_5 AS [sap.hi0256]\n  LEFT JOIN [sap.dclit210] AS [sap.dclit210]\n    ON [sap.hi0256].[persno] = [sap.dclit210].[PersNo.]\n),\n\n-- Step 7: Create Column\n-- Create new blank column \"Error Message\".\nstep_7 AS (\n  SELECT *, NULL AS [Error Message]\n  FROM step_6\n),\n\n-- TODO (skipped) Step 8: IF / THEN\n-- IF file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\" THEN IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":.\n-- Reason: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":\n-- Developer Logic:\n-- CASE WHEN [nationality] = 'US,Minor_OUTL._ISL' THEN 1 ELSE 0 END\n\n-- TODO (skipped) Step 8.1 (THEN branch): IF / THEN\n-- IF file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\" THEN IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":.\n-- Reason: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":\n-- Developer Logic:\n-- CASE WHEN [personnel_area_text] = 'CASTAWAY CAY' THEN 1 ELSE 0 END\n\n-- Step 8.1.1 (THEN branch): IF / THEN\n-- IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".\nstep_8_1_1 AS (\n  SELECT *, CASE WHEN [Tax exemption indicator] <> 'Y' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n  FROM step_7\n),\n\n-- TODO (skipped) Step 8.2 (ELSE branch): ELSE\n-- ELSE:\n-- Reason: The step only marks matching rows, so there is no change to make.\n-- Developer Logic:\n-- CASE WHEN NOT ([personnel_area_text] = 'CASTAWAY CAY') THEN 1 ELSE 0 END\n\n-- Step 8.2.1 (THEN branch): IF / THEN\n-- IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".\nstep_8_2_1 AS (\n  SELECT *, CASE WHEN [Tax exemption indicator] <> 'R,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research Domestic Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n  FROM step_8_1_1\n),\n\n-- TODO (skipped) Step 9: ELSE\n-- ELSE:\n-- Reason: The step only marks matching rows, so there is no change to make.\n-- Developer Logic:\n-- CASE WHEN NOT ([nationality] = 'US,Minor_OUTL._ISL') THEN 1 ELSE 0 END\n\n-- Step 9.1 (THEN branch): IF / THEN\n-- IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\" THEN display text response \"Research International Tax Exemption Indicator\" in new column \"Error Message\".\nstep_9_1 AS (\n  SELECT *, CASE WHEN [Tax exemption indicator] <> 'Y,blank/null' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Research International Tax Exemption Indicator') ELSE [Error Message] END AS [Error Message]\n  FROM step_8_2_1\n),\n\n-- TODO (skipped) Step 9.2 (THEN branch): IF / THEN\n-- IF file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null THEN IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:.\n-- Reason: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:\n-- Developer Logic:\n-- CASE WHEN NULLIF(LTRIM(RTRIM([Tax exemption indicator])), '') IS NULL THEN 1 ELSE 0 END\n\n-- TODO (skipped) Step 9.2.1 (THEN branch): IF / THEN\n-- IF file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\" THEN Do Not Display all records for this employee.\n-- Reason: THEN action is free text and is not in the formulas: Do Not Display all records for this employee\n-- Developer Logic:\n-- CASE WHEN [Passport Type] = 'AR Alien Resident Card' THEN 1 ELSE 0 END\n\n-- Step 9.2.2 (THEN branch): IF / THEN\n-- IF file \"wd.passport\" column \"Passport Type\" is blank/null THEN display text response \"No Passport Found\" in new column \"Error Message\".\nstep_9_2_2 AS (\n  SELECT *, CASE WHEN NULLIF(LTRIM(RTRIM([Passport Type])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'No Passport Found') ELSE [Error Message] END AS [Error Message]\n  FROM step_9_1\n),\n\n-- Step 10: IF / THEN\n-- IF new column \"Error Message\" is blank/null THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_10 AS (\n  SELECT *\n  FROM step_9_2_2\n  WHERE NOT (NULLIF(LTRIM(RTRIM([Error Message])), '') IS NULL)\n)\n\nSELECT *\nFROM step_10;\n",
+  "pythonScript": "# DCL IT210 - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 18 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# TODO: 6 steps could not be converted and are skipped below:\n#   - Step 8: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":\n#   - Step 8.1: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":\n#   - Step 8.2: The step only marks matching rows, so there is no change to make.\n#   - Step 9: The step only marks matching rows, so there is no change to make.\n#   - Step 9.2: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:\n#   - Step 9.2.1: THEN action is free text and is not in the formulas: Do Not Display all records for this employee\n#\n# Review:\n#   - Steps 8.1, 8.1.1, 8.2, 8.2.1, 9.1, 9.2, 9.2.1, 9.2.2 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"sap.hi0256\": \"\",\n    \"sap.dclit210\": \"\",\n    \"sap.q15dcl\": \"\",\n    \"wd.passport\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference sap.hi0256\n    # Reference source file \"sap.hi0256\" as \"sap.hi0256\":\n    df = sources[\"sap.hi0256\"].copy()\n\n    # Step 2: Reference sap.dclit210\n    # Reference source file \"sap.dclit210\" as \"sap.dclit210\":\n    df = sources[\"sap.dclit210\"].copy()\n\n    # Step 3: Reference sap.q15dcl\n    # Reference source file \"sap.q15dcl\" as \"sap.q15dcl\":\n    df = sources[\"sap.q15dcl\"].copy()\n\n    # Step 4: Reference wd.passport\n    # Reference source file \"wd.passport\" as \"wd.passport\":\n    df = sources[\"wd.passport\"].copy()\n\n    # Step 5: Join\n    # Join file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\".\n    df = df.merge(sources[\"wd.passport\"], how=\"left\", left_on=\"workday_employee_id\", right_on=\"Worker ID\", suffixes=(\"\", \"_wd.passport\"))\n\n    # Step 6: Join\n    # Join file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\".\n    df = df.merge(sources[\"sap.dclit210\"], how=\"left\", left_on=\"persno\", right_on=\"PersNo.\", suffixes=(\"\", \"_sap.dclit210\"))\n\n    # Step 7: Create Column\n    # Create new blank column \"Error Message\".\n    df[\"Error Message\"] = pd.NA\n\n    # TODO (skipped) Step 8: IF / THEN\n    # IF file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\" THEN IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":.\n    # Reason: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":\n    # Developer Logic:\n    # mask = df[\"nationality\"] == \"US,Minor_OUTL._ISL\"\n\n    # TODO (skipped) Step 8.1 (THEN branch): IF / THEN\n    # IF file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\" THEN IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":.\n    # Reason: THEN action is free text and is not in the formulas: IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":\n    # Developer Logic:\n    # mask = df[\"personnel_area_text\"] == \"CASTAWAY CAY\"\n\n    # Step 8.1.1 (THEN branch): IF / THEN\n    # IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".\n    mask = df[\"Tax exemption indicator\"] != \"Y\"\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\n    # TODO (skipped) Step 8.2 (ELSE branch): ELSE\n    # ELSE:\n    # Reason: The step only marks matching rows, so there is no change to make.\n    # Developer Logic:\n    # mask = ~(df[\"personnel_area_text\"] == \"CASTAWAY CAY\")\n\n    # Step 8.2.1 (THEN branch): IF / THEN\n    # IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".\n    mask = df[\"Tax exemption indicator\"] != \"R,blank/null\"\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research Domestic Tax Exemption Indicator\"\n\n    # TODO (skipped) Step 9: ELSE\n    # ELSE:\n    # Reason: The step only marks matching rows, so there is no change to make.\n    # Developer Logic:\n    # mask = ~(df[\"nationality\"] == \"US,Minor_OUTL._ISL\")\n\n    # Step 9.1 (THEN branch): IF / THEN\n    # IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\" THEN display text response \"Research International Tax Exemption Indicator\" in new column \"Error Message\".\n    mask = df[\"Tax exemption indicator\"] != \"Y,blank/null\"\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Research International Tax Exemption Indicator\"\n\n    # TODO (skipped) Step 9.2 (THEN branch): IF / THEN\n    # IF file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null THEN IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:.\n    # Reason: THEN action is free text and is not in the formulas: IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:\n    # Developer Logic:\n    # mask = df[\"Tax exemption indicator\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n\n    # TODO (skipped) Step 9.2.1 (THEN branch): IF / THEN\n    # IF file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\" THEN Do Not Display all records for this employee.\n    # Reason: THEN action is free text and is not in the formulas: Do Not Display all records for this employee\n    # Developer Logic:\n    # mask = df[\"Passport Type\"] == \"AR Alien Resident Card\"\n\n    # Step 9.2.2 (THEN branch): IF / THEN\n    # IF file \"wd.passport\" column \"Passport Type\" is blank/null THEN display text response \"No Passport Found\" in new column \"Error Message\".\n    mask = df[\"Passport Type\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"No Passport Found\"\n\n    # Step 10: IF / THEN\n    # IF new column \"Error Message\" is blank/null THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Error Message\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n    df = df[~mask]\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "A",
+      "title": "Core Comparison Logic - Expected Match and Mismatch Results",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd.passport\" column \"Passport Type\" is blank/null THEN display text response \"No Passport Found\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One DCL IT210 audit record is displayed with \"Error Message\" = \"No Passport Found\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd.passport\" column \"Passport Type\" is blank/null.",
+          "comments": "",
+          "number": 1
+        }
+      ]
+    },
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\" THEN IF sap.hi0256 column \"nationality\" is equal to \"US\" or \"Minor_OUTL._ISL\":.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"sap.hi0256\" column \"nationality\" is equal to \"US,Minor_OUTL._ISL\".",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\" THEN IF sap.hi0256 column \"personnel_area_text\" is equal to \"CASTAWAY CAY\":.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"sap.hi0256\" column \"personnel_area_text\" is equal to \"CASTAWAY CAY\".",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "ELSE:",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that do not meet the ATLAS logic step 8.1 condition are evaluated by the nested ELSE steps.",
+          "sourceDataExpectedOutcome": "Source data confirms the ATLAS logic step 8.1 condition is not met.",
+          "comments": "",
+          "number": 4
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "ELSE:",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that do not meet the ATLAS logic step 8 condition are evaluated by the nested ELSE steps.",
+          "sourceDataExpectedOutcome": "Source data confirms the ATLAS logic step 8 condition is not met.",
+          "comments": "",
+          "number": 5
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null THEN IF sap.dclit210 column \"Tax exemption indicator\" is blank/null:.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"sap.dclit210\" column \"Tax exemption indicator\" is blank/null.",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\" THEN Do Not Display all records for this employee.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL IT210 audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd.passport\" column \"Passport Type\" is equal to \"AR Alien Resident Card\".",
+          "comments": "",
+          "number": 7
+        }
+      ]
+    },
+    {
+      "code": "C",
+      "title": "Research Error Classification",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One DCL IT210 audit record is displayed with \"Error Message\" = \"Research Domestic Tax Exemption Indicator\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y\".",
+          "comments": "",
+          "number": 8
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\" THEN display text response \"Research Domestic Tax Exemption Indicator\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One DCL IT210 audit record is displayed with \"Error Message\" = \"Research Domestic Tax Exemption Indicator\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"R,blank/null\".",
+          "comments": "",
+          "number": 9
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\" THEN display text response \"Research International Tax Exemption Indicator\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One DCL IT210 audit record is displayed with \"Error Message\" = \"Research International Tax Exemption Indicator\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"sap.dclit210\" column \"Tax exemption indicator\" is not equal to \"Y,blank/null\".",
+          "comments": "",
+          "number": 10
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"sap.hi0256\" column \"workday_employee_id\" equals file \"wd.passport\" column \"Worker ID\"; joined values display on the DCL IT210 audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"sap.hi0256\" column \"workday_employee_id\" and file \"wd.passport\" column \"Worker ID\" agree for each joined record.",
+          "comments": "",
+          "number": 11
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"sap.hi0256\" column \"persno\" equals file \"sap.dclit210\" column \"PersNo.\"; joined values display on the DCL IT210 audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"sap.hi0256\" column \"persno\" and file \"sap.dclit210\" column \"PersNo.\" agree for each joined record.",
+          "comments": "",
+          "number": 12
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new blank column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Error Message\" is added to the DCL IT210 audit record for later logic steps to populate.",
+          "sourceDataExpectedOutcome": "Column \"Error Message\" is present in the output.",
+          "comments": "",
+          "number": 13
+        }
+      ]
+    },
+    {
+      "code": "E",
+      "title": "Output Suppression and Data Quality",
+      "rows": [
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF new column \"Error Message\" is blank/null THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No DCL IT210 audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms new column \"Error Message\" is blank/null.",
+          "comments": "",
+          "number": 14
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap.hi0256\" as \"sap.hi0256\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap.hi0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap.hi0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 15
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap.dclit210\" as \"sap.dclit210\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap.dclit210\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap.dclit210\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 16
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"sap.q15dcl\" as \"sap.q15dcl\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"sap.q15dcl\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"sap.q15dcl\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 17
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd.passport\" as \"wd.passport\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the DCL IT210 audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd.passport\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd.passport\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 18
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.sources.reference-integrity|logic::1781116850653::cbdabf296cc7f8-condition-condition::existing::0-source|steps|logic::1781116850653::cbdabf296cc7f8|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781116998265::cff69c1c6cf15-condition-condition::1781117018965::c0aa99eb9bcc2-source|steps|logic::1781116998265::cff69c1c6cf15|condition::1781117018965::c0aa99eb9bcc2|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781117074339::9085f8220cefd-condition-condition::existing::0-source|steps|logic::1781117074339::9085f8220cefd|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781118138741::b54be7bdd8af78-condition-condition::existing::0-source|steps|logic::1781118138741::b54be7bdd8af78|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781118220904::2361f53db14e28-condition-condition::existing::0-source|steps|logic::1781118220904::2361f53db14e28|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781118385424::d11a013cd10f7-condition-condition::1781118417931::6459da5d0b9828-source|steps|logic::1781118385424::d11a013cd10f7|condition::1781118417931::6459da5d0b9828|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781118585318::df2bf360ef06f-condition-condition::existing::0-source|steps|logic::1781118585318::df2bf360ef06f|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|logic::1781279009541::3324b20216dd08-condition-condition::existing::0-source|steps|logic::1781279009541::3324b20216dd08|condition::existing::0|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

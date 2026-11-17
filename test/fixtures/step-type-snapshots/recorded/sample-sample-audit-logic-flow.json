@@ -1,0 +1,205 @@
+{
+  "entries": [
+    {
+      "id": "step_1",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "step_2",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1",
+      "stepType": "reference_source",
+      "english": "Reference source file \"Primary Source File\" as \"primary.source\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=primary_source\n\nSQL Server:\nSELECT * FROM [Primary Source File] AS [primary.source]\n\nPython (pandas):\ndf = sources[\"primary.source\"].copy()",
+      "formulas": {
+        "excel": "=primary_source",
+        "sql": "SELECT * FROM [Primary Source File] AS [primary.source]",
+        "python": "df = sources[\"primary.source\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Primary Source File</strong><small>Primary Source File</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"primary.source\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "Primary Source File",
+          "source_alias": "primary.source"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference primary source",
+        "params": {
+          "source_file": "Primary Source File",
+          "source_alias": "primary.source"
+        }
+      }
+    },
+    {
+      "id": "step_2",
+      "stepType": "if_then",
+      "english": "IF file \"primary.source\" column \"Status\" is equal to \"Open\" THEN display text response \"Review\" in new column \"Audit Result\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Status]]=\"Open\", IF([@[Audit Result]]=\"\", \"Review\", [@[Audit Result]]&\"||\"&\"Review\"), [@[Audit Result]])\n\nSQL Server:\nCASE WHEN [Status] = 'Open' THEN CONCAT_WS('||', NULLIF([Audit Result], ''), 'Review') ELSE [Audit Result] END AS [Audit Result]\n\nPython (pandas):\nmask = df[\"Status\"] == \"Open\"\ndf[\"Audit Result\"] = df.get(\"Audit Result\", \"\")\nexisting = df.loc[mask, \"Audit Result\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Audit Result\"] = existing.where(existing == \"\", existing + \"||\") + \"Review\"\n\nNote: \"Audit Result\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Audit Result\".",
+      "formulas": {
+        "excel": "=IF([@[Status]]=\"Open\", IF([@[Audit Result]]=\"\", \"Review\", [@[Audit Result]]&\"||\"&\"Review\"), [@[Audit Result]])",
+        "sql": "CASE WHEN [Status] = 'Open' THEN CONCAT_WS('||', NULLIF([Audit Result], ''), 'Review') ELSE [Audit Result] END AS [Audit Result]",
+        "python": "mask = df[\"Status\"] == \"Open\"\ndf[\"Audit Result\"] = df.get(\"Audit Result\", \"\")\nexisting = df.loc[mask, \"Audit Result\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Audit Result\"] = existing.where(existing == \"\", existing + \"||\") + \"Review\"",
+        "notes": [
+          "Note: \"Audit Result\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Audit Result\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Review\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Audit Result</strong><small>Audit Result</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Review&quot; in new column &quot;Audit Result&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Review",
+          "then_output_column": "Audit Result"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "Apply IF condition",
+        "params": {
+          "conditions_json": "[{\"id\":\"cond_1\",\"connector\":\"IF\",\"sourceFile\":\"Primary Source File\",\"sourceAlias\":\"primary.source\",\"fieldName\":\"Status\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"Open\"}]",
+          "then_action_type": "display_text",
+          "then_text": "Review",
+          "then_output_column": "Audit Result",
+          "source_file": "Primary Source File",
+          "field_name": "Status"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_1",
+      "branch": "Root",
+      "analyst": "Reference source file \"primary.source\" as \"primary.source\":",
+      "developer": "Excel:\n=primary_source\n\nSQL Server:\nSELECT * FROM [primary.source] AS [primary.source]\n\nPython (pandas):\ndf = sources[\"primary.source\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "primary.source"
+    },
+    {
+      "step": "2",
+      "stepId": "step_1",
+      "branch": "Root",
+      "analyst": "Reference source file \"Primary Source File\" as \"primary.source\":",
+      "developer": "Excel:\n=primary_source\n\nSQL Server:\nSELECT * FROM [Primary Source File] AS [primary.source]\n\nPython (pandas):\ndf = sources[\"primary.source\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "Primary Source File"
+    },
+    {
+      "step": "3",
+      "stepId": "step_2",
+      "branch": "Root",
+      "analyst": "IF file \"primary.source\" column \"Status\" is equal to \"Open\" THEN display text response \"Review\" in new column \"Audit Result\".",
+      "developer": "Excel:\n=IF([@[Status]]=\"Open\", IF([@[Audit Result]]=\"\", \"Review\", [@[Audit Result]]&\"||\"&\"Review\"), [@[Audit Result]])\n\nSQL Server:\nCASE WHEN [Status] = 'Open' THEN CONCAT_WS('||', NULLIF([Audit Result], ''), 'Review') ELSE [Audit Result] END AS [Audit Result]\n\nPython (pandas):\nmask = df[\"Status\"] == \"Open\"\ndf[\"Audit Result\"] = df.get(\"Audit Result\", \"\")\nexisting = df.loc[mask, \"Audit Result\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Audit Result\"] = existing.where(existing == \"\", existing + \"||\") + \"Review\"\n\nNote: \"Audit Result\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Audit Result\".",
+      "notes": "",
+      "level": 0,
+      "source": "Primary Source File"
+    }
+  ],
+  "sqlScript": "-- Sample Audit Logic Flow - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 3 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- Review:\n--   - The audit does not list the columns of primary.source, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [primary.source]\n--   - [Primary Source File]\n\nWITH\n-- Step 1: Reference primary.source\n-- Reference source file \"primary.source\" as \"primary.source\":\nstep_1 AS (\n  SELECT * FROM [primary.source] AS [primary.source]\n),\n\n-- Step 2: Reference primary source\n-- Reference source file \"Primary Source File\" as \"primary.source\":\nstep_2 AS (\n  SELECT * FROM [Primary Source File] AS [primary.source]\n),\n\n-- Step 3: Apply IF condition\n-- IF file \"primary.source\" column \"Status\" is equal to \"Open\" THEN display text response \"Review\" in new column \"Audit Result\".\nstep_3 AS (\n  SELECT *, CASE WHEN [Status] = 'Open' THEN CONCAT_WS('||', NULLIF(CAST(NULL AS NVARCHAR(4000)), ''), 'Review') ELSE CAST(NULL AS NVARCHAR(4000)) END AS [Audit Result]\n  FROM step_2\n)\n\nSELECT *\nFROM step_3;\n",
+  "pythonScript": "# Sample Audit Logic Flow - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 3 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"primary.source\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference primary.source\n    # Reference source file \"primary.source\" as \"primary.source\":\n    df = sources[\"primary.source\"].copy()\n\n    # Step 2: Reference primary source\n    # Reference source file \"Primary Source File\" as \"primary.source\":\n    df = sources[\"primary.source\"].copy()\n\n    # Step 3: Apply IF condition\n    # IF file \"primary.source\" column \"Status\" is equal to \"Open\" THEN display text response \"Review\" in new column \"Audit Result\".\n    mask = df[\"Status\"] == \"Open\"\n    df[\"Audit Result\"] = df.get(\"Audit Result\", \"\")\n    existing = df.loc[mask, \"Audit Result\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Audit Result\"] = existing.where(existing == \"\", existing + \"||\") + \"Review\"\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "A",
+      "title": "Core Comparison Logic - Expected Match and Mismatch Results",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"primary.source\" column \"Status\" is equal to \"Open\" THEN display text response \"Review\" in new column \"Audit Result\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Sample Audit Logic Flow audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One Sample Audit Logic Flow audit record is displayed with \"Audit Result\" = \"Review\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"primary.source\" column \"Status\" is equal to \"Open\".",
+          "comments": "",
+          "number": 1
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"primary.source\" as \"primary.source\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Sample Audit Logic Flow audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"primary.source\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"primary.source\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 2
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"Primary Source File\" as \"primary.source\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Sample Audit Logic Flow audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"Primary Source File\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"Primary Source File\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 3
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.sources.reference-integrity|step_2-param-field_name-field|steps|step_2||field|param:field_name",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|step_2-param-field_name-source|steps|step_2||source|param:source_file",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|step_2-condition-cond_1-field|steps|step_2|cond_1|field|condition-fieldName",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.sources.reference-integrity|step_2-condition-cond_1-source|steps|step_2|cond_1|source|condition-sourceFile",
+      "severity": "critical",
+      "message": "Source or field reference is invalid"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

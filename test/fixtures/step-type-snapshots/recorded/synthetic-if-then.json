@@ -1,0 +1,1130 @@
+{
+  "entries": [
+    {
+      "id": "ref-wd",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "disabled",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "values",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "blank-and-field",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "text-matches",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "groups",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "expression-compare",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "string-action",
+      "number": "8",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "freeform",
+      "number": "9",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "with-else",
+      "number": "10",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "with-else::else",
+      "number": "10.1",
+      "level": 1,
+      "branchLabel": "ELSE"
+    },
+    {
+      "id": "else-own-action",
+      "number": "11",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "else-own-action::else",
+      "number": "11.1",
+      "level": 1,
+      "branchLabel": "ELSE"
+    },
+    {
+      "id": "parent-gate",
+      "number": "12",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "child-column",
+      "number": "12.1",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "child-condition",
+      "number": "12.2",
+      "level": 1,
+      "branchLabel": "THEN"
+    },
+    {
+      "id": "inverse",
+      "number": "13",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "ref-wd",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd\" as \"wd\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "formulas": {
+        "excel": "=wd",
+        "sql": "SELECT * FROM [wd] AS [wd]",
+        "python": "df = sources[\"wd\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "values",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Status\" is equal to \"T\" or \"R\" THEN display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=OR([@[Status]]=\"T\", [@[Status]]=\"R\")\n\nSQL Server:\nWHERE [Status] IN ('T', 'R')\n\nPython (pandas):\nmask = df[\"Status\"].isin([\"T\", \"R\"])\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=OR([@[Status]]=\"T\", [@[Status]]=\"R\")",
+        "sql": "WHERE [Status] IN ('T', 'R')",
+        "python": "mask = df[\"Status\"].isin([\"T\", \"R\"])\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"do_not_display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Only matching records will be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Display - Keep only rows that match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display",
+          "then_action": "Display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Status\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"T\\nR\"}]",
+          "then_action_type": "display"
+        }
+      }
+    },
+    {
+      "id": "blank-and-field",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT(AND(LEN(TRIM([@[Plan]]))=0, [@[Manager]]<>[@[PERNR]]))\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Plan])), '') IS NULL AND [Manager] <> [PERNR])\n\nPython (pandas):\nmask = df[\"Plan\"].fillna(\"\").astype(str).str.strip().eq(\"\") & (df[\"Manager\"] != df[\"PERNR\"])\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT(AND(LEN(TRIM([@[Plan]]))=0, [@[Manager]]<>[@[PERNR]]))",
+        "sql": "WHERE NOT (NULLIF(LTRIM(RTRIM([Plan])), '') IS NULL AND [Manager] <> [PERNR])",
+        "python": "mask = df[\"Plan\"].fillna(\"\").astype(str).str.strip().eq(\"\") & (df[\"Manager\"] != df[\"PERNR\"])\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"1\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Plan\",\"operator\":\"is blank\",\"valueMode\":\"blank\",\"compareValue\":\"\"},{\"connector\":\"AND\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Manager\",\"operator\":\"is not equal to\",\"valueMode\":\"field\",\"compareValue\":\"\",\"compareFieldName\":\"PERNR\",\"compareSourceFile\":\"sap\",\"compareSourceAlias\":\"sap\"}]",
+          "then_action_type": "do_not_display"
+        }
+      }
+    },
+    {
+      "id": "text-matches",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\" THEN display text response \"Check code\" in new column \"Error Message\", appended with separator \"; \".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF(OR(ISNUMBER(SEARCH(\"50%_off~*\", [@[Note]])), AND(NOT(LEFT([@[Code]], 1)=\"A\"), NOT(LEFT([@[Code]], 1)=\"B\"), RIGHT([@[Code]], 1)=\"Z\")), IF([@[Error Message]]=\"\", \"Check code\", [@[Error Message]]&\"; \"&\"Check code\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Note] LIKE '%50[%][_]off*%' OR (([Code] NOT LIKE 'A%' AND [Code] NOT LIKE 'B%') AND [Code] LIKE '%Z') THEN CONCAT_WS('; ', NULLIF([Error Message], ''), 'Check code') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Note\"].fillna(\"\").astype(str).str.contains(\"50%_off*\", case=False, regex=False) | ((~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"a\")) & ~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"b\"))) & df[\"Code\"].fillna(\"\").astype(str).str.lower().str.endswith(\"z\"))\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"; \") + \"Check code\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF(OR(ISNUMBER(SEARCH(\"50%_off~*\", [@[Note]])), AND(NOT(LEFT([@[Code]], 1)=\"A\"), NOT(LEFT([@[Code]], 1)=\"B\"), RIGHT([@[Code]], 1)=\"Z\")), IF([@[Error Message]]=\"\", \"Check code\", [@[Error Message]]&\"; \"&\"Check code\"), [@[Error Message]])",
+        "sql": "CASE WHEN [Note] LIKE '%50[%][_]off*%' OR (([Code] NOT LIKE 'A%' AND [Code] NOT LIKE 'B%') AND [Code] LIKE '%Z') THEN CONCAT_WS('; ', NULLIF([Error Message], ''), 'Check code') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Note\"].fillna(\"\").astype(str).str.contains(\"50%_off*\", case=False, regex=False) | ((~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"a\")) & ~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"b\"))) & df[\"Code\"].fillna(\"\").astype(str).str.lower().str.endswith(\"z\"))\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"; \") + \"Check code\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"1\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"OR\"><span>OR</span></button></div></div><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"2\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"OR\"><span>OR</span></button></div></div></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"OR\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Check code\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"; \" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Check code&quot; in new column &quot;Error Message&quot;, appended with separator &quot;; &quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Note\",\"operator\":\"contains\",\"valueMode\":\"values\",\"compareValue\":\"50%_off*\"},{\"connector\":\"OR\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Code\",\"operator\":\"does not start with\",\"valueMode\":\"values\",\"compareValue\":\"A\\nB\"},{\"connector\":\"AND\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Code\",\"operator\":\"ends with\",\"valueMode\":\"values\",\"compareValue\":\"Z\"}]",
+          "then_action_type": "display_text",
+          "then_text": "Check code",
+          "then_output_column": "Error Message",
+          "then_text_separator": "; "
+        }
+      }
+    },
+    {
+      "id": "groups",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n  • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n  • file \"wd\" column \"E\" does not contain \"x\" THEN set \"Salary Check\" value to file \"wd\" column \"Salary\" value.",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF(OR(AND([@[A]]=\"1\", [@[B]]>40), AND([@[C]]=\"3\", OR([@[D]]<=4, NOT(ISNUMBER(SEARCH(\"x\", [@[E]])))))), [@[Salary]], \"\")\n\nSQL Server:\nCASE WHEN ([A] = '1' AND [B] > 40) OR ([C] = '3' AND ([D] <= 4 OR [E] NOT LIKE '%x%')) THEN [Salary] END AS [Salary Check]\n\nPython (pandas):\nmask = ((df[\"A\"] == \"1\") & (df[\"B\"] > 40)) | ((df[\"C\"] == \"3\") & ((df[\"D\"] <= 4) | ~(df[\"E\"].fillna(\"\").astype(str).str.contains(\"x\", case=False, regex=False))))\ndf.loc[mask, \"Salary Check\"] = df[\"Salary\"]",
+      "formulas": {
+        "excel": "=IF(OR(AND([@[A]]=\"1\", [@[B]]>40), AND([@[C]]=\"3\", OR([@[D]]<=4, NOT(ISNUMBER(SEARCH(\"x\", [@[E]])))))), [@[Salary]], \"\")",
+        "sql": "CASE WHEN ([A] = '1' AND [B] > 40) OR ([C] = '3' AND ([D] <= 4 OR [E] NOT LIKE '%x%')) THEN [Salary] END AS [Salary Check]",
+        "python": "mask = ((df[\"A\"] == \"1\") & (df[\"B\"] > 40)) | ((df[\"C\"] == \"3\") & ((df[\"D\"] <= 4) | ~(df[\"E\"].fillna(\"\").astype(str).str.contains(\"x\", case=False, regex=False))))\ndf.loc[mask, \"Salary Check\"] = df[\"Salary\"]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"1\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"2\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div><div class=\"condition-join\" data-condition-join data-list-id=\"\" data-join-position=\"3\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"OR\"><span>OR</span></button></div></div><div class=\"guided-condition-group\" role=\"group\" aria-label=\"Sub-conditions: 2 joined by OR\" data-condition-id=\"cond_00000000\" data-depth=\"1\"><div class=\"condition-group-header\" hidden><input type=\"hidden\" data-condition-field=\"connector\" value=\"AND\"><input type=\"hidden\" data-group-field=\"groupConnector\" value=\"OR\"></div><div class=\"condition-guided-stack condition-group-items\" data-condition-list data-group-id=\"cond_00000000\"><div class=\"condition-join\" data-condition-join data-list-id=\"cond_00000000\" data-join-position=\"1\"><div class=\"condition-join-toggle\" role=\"radiogroup\" aria-label=\"Join conditions with\"><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"false\" tabindex=\"-1\" data-join-value=\"AND\"><span>AND</span></button><button type=\"button\" class=\"condition-join-option\" role=\"radio\" aria-checked=\"true\" tabindex=\"0\" data-join-value=\"OR\"><span>OR</span></button></div></div></div></div></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Set Column Value from Field\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Set Column Value from Field</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"set_column_value\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"set_column_value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label>Target Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_target_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Salary Check</strong><small>Salary Check</small></span><span aria-hidden=\"true\">⌄</span></button></label><input type=\"hidden\" data-param=\"then_value_source_file\" value=\"wd\"><label>Value Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_value_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Salary</strong><small>wd.Salary</small></span><span aria-hidden=\"true\">⌄</span></button></label><label class=\"full\">Action Notes<textarea data-param=\"then_action\" placeholder=\"Optional notes for this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"A\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"1\"},{\"connector\":\"AND\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"B\",\"operator\":\"is greater than\",\"valueMode\":\"values\",\"compareValue\":\"040\"},{\"connector\":\"OR\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"C\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"3\"},{\"conditionType\":\"group\",\"connector\":\"AND\",\"groupConnector\":\"OR\",\"items\":[{\"connector\":\"AND\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"D\",\"operator\":\"is less than or equal to\",\"valueMode\":\"values\",\"compareValue\":\"4\"},{\"connector\":\"AND\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"E\",\"operator\":\"does not contain\",\"valueMode\":\"values\",\"compareValue\":\"x\"}]}]",
+          "then_action_type": "set_column_value",
+          "then_target_column": "Salary Check",
+          "then_value_source_file": "wd",
+          "then_value_field": "Salary"
+        }
+      }
+    },
+    {
+      "id": "expression-compare",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Pay\" is greater than [Hours] * 20 THEN set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number.",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([Hours] * 20, ROUND([@[Pay]] - [@[Hours]], 0), \"\")\n\nSQL Server:\nCASE WHEN [Hours] * 20 THEN ROUND([Pay] - [Hours], 0) END AS [Overpay]\n\nPython (pandas):\nmask = [Hours] * 20\ndf.loc[mask, \"Overpay\"] = np.sign(df[\"Pay\"] - df[\"Hours\"]) * np.floor(np.abs(df[\"Pay\"] - df[\"Hours\"]) + 0.5)",
+      "formulas": {
+        "excel": "=IF([Hours] * 20, ROUND([@[Pay]] - [@[Hours]], 0), \"\")",
+        "sql": "CASE WHEN [Hours] * 20 THEN ROUND([Pay] - [Hours], 0) END AS [Overpay]",
+        "python": "mask = [Hours] * 20\ndf.loc[mask, \"Overpay\"] = np.sign(df[\"Pay\"] - df[\"Hours\"]) * np.floor(np.abs(df[\"Pay\"] - df[\"Hours\"]) + 0.5)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Set Column to Calculated Value\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Set Column to Calculated Value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"set_column_calculation\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"set_column_calculation\" tabindex=\"0\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label>Target Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_target_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Overpay</strong><small>Overpay</small></span><span aria-hidden=\"true\">⌄</span></button></label><input type=\"hidden\" data-param=\"then_value_source_file\" value=\"wd\"><label>Numeric Value Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_value_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Pay</strong><small>wd.Pay</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"math-operations-editor\" data-math-editor data-math-param=\"then_math_json\" data-base-source=\"wd\"><input type=\"hidden\" data-param=\"then_math_json\" data-math-json value=\"[{&quot;id&quot;:&quot;math_00000000&quot;,&quot;operator&quot;:&quot;-&quot;,&quot;operandType&quot;:&quot;field&quot;,&quot;operand&quot;:&quot;&quot;,&quot;operandSourceFile&quot;:&quot;&quot;,&quot;operandSourceAlias&quot;:&quot;&quot;,&quot;operandFieldName&quot;:&quot;Hours&quot;}]\"><div class=\"math-operations-header\"><strong>Mathematical operations</strong><button type=\"button\" class=\"secondary small\" data-add-math-operation>Add Operation</button></div><p class=\"hint\">Operations are applied in listed order. Division by a field returns blank/NULL when its value is zero.</p><div class=\"math-operation-list\"><div class=\"math-operation-row\" data-math-row data-math-id=\"math_00000000\"><div class=\"atlas-choice-field math-operator-control\"><span class=\"atlas-choice-heading\">Operator</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Math operator\"><input type=\"hidden\" data-math-operator=\"\" value=\"-\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"+\" tabindex=\"-1\"><span class=\"atlas-choice-label\">+</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"-\" tabindex=\"0\"><span class=\"atlas-choice-label\">−</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"*\" tabindex=\"-1\"><span class=\"atlas-choice-label\">×</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"/\" tabindex=\"-1\"><span class=\"atlas-choice-label\">÷</span></button></div></div><div class=\"math-operand-mode\"><span class=\"math-control-label\">Operand type</span><label class=\"math-mode-switch\"><input type=\"checkbox\" role=\"switch\" data-math-operand-mode checked aria-label=\"Use a source field for this mathematical operand\"><span class=\"math-mode-switch-track\" aria-hidden=\"true\"></span><span data-math-mode-label>Source Field</span></label><input type=\"hidden\" data-math-operand-type value=\"field\"></div><div class=\"math-active-operand\"><label class=\"math-number-operand\" hidden>Value<input data-math-operand inputmode=\"decimal\" value=\"\" placeholder=\"e.g., -1.5\"></label><div class=\"math-field-operand\" ><span class=\"math-control-label\">Value</span><input type=\"hidden\" data-math-source value=\"\"><input type=\"hidden\" data-math-field value=\"Hours\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"math_operand_field\" data-picker-source=\"\" aria-label=\"Choose field operand\"><span class=\"visual-picker-trigger-copy\"><strong>Hours</strong></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small math-remove\" data-remove-math-operation>Remove</button></div></div></div><div class=\"math-rounding-grid\"><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Rounding</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Rounding\"><input type=\"hidden\" data-param=\"then_rounding_mode\" value=\"nearest\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"none\" tabindex=\"-1\"><span class=\"atlas-choice-label\">None</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"nearest\" tabindex=\"0\"><span class=\"atlas-choice-label\">Nearest</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"up\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Up</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"down\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Down</span></button></div></div><label>Decimal places<input data-param=\"then_rounding_decimal_places\" inputmode=\"numeric\" value=\"0\"></label></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": "set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Pay\",\"operator\":\"is greater than\",\"valueMode\":\"expression\",\"compareValue\":\"\",\"expression\":\"[Hours] * 20\"}]",
+          "then_action_type": "set_column_calculation",
+          "then_target_column": "Overpay",
+          "then_value_source_file": "wd",
+          "then_value_field": "Pay",
+          "then_math_json": "[{\"id\":\"math_00000000\",\"operator\":\"-\",\"operandType\":\"field\",\"operand\":\"\",\"operandSourceFile\":\"\",\"operandSourceAlias\":\"\",\"operandFieldName\":\"Hours\"}]",
+          "then_rounding_mode": "nearest",
+          "then_rounding_decimal_places": "0"
+        }
+      }
+    },
+    {
+      "id": "string-action",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Country\" is not blank/null THEN set \"Country Short\" value to the first 2 characters of file \"wd\" column \"Country\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Country]]))>0, LEFT([@[Country]], 2), \"\")\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Country])), '') IS NOT NULL THEN LEFT([Country], 2) END AS [Country Short]\n\nPython (pandas):\nmask = df[\"Country\"].fillna(\"\").astype(str).str.strip().ne(\"\")\ndf.loc[mask, \"Country Short\"] = df[\"Country\"].astype(\"string\").str[:2]",
+      "formulas": {
+        "excel": "=IF(LEN(TRIM([@[Country]]))>0, LEFT([@[Country]], 2), \"\")",
+        "sql": "CASE WHEN NULLIF(LTRIM(RTRIM([Country])), '') IS NOT NULL THEN LEFT([Country], 2) END AS [Country Short]",
+        "python": "mask = df[\"Country\"].fillna(\"\").astype(str).str.strip().ne(\"\")\ndf.loc[mask, \"Country Short\"] = df[\"Country\"].astype(\"string\").str[:2]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder string-transform-builder\"><h4> THEN Action </h4><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Set Column to String Transformation\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Set Column to String Transformation</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"set_column_string_transform\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"set_column_string_transform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label> Target Column <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_target_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Country Short</strong><small>Country Short</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Operation</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"String operation\"><input type=\"hidden\" data-param=\"then_string_operation\" value=\"first_characters\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"first_characters\" tabindex=\"0\"><span class=\"atlas-choice-label\">First characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"last_characters\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Last characters</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"character_count\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Character count</span></button></div></div><input type=\"hidden\" data-param=\"then_string_position\" value=\"first\"><input type=\"hidden\" data-param=\"then_string_source_file\" value=\"wd\"><label> Value Field <button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_string_source_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Country</strong><small>wd.Country</small></span><span aria-hidden=\"true\">⌄</span></button></label><label> Number of Characters <input type=\"number\" data-param=\"then_string_character_count\" inputmode=\"numeric\" pattern=\"[1-9][0-9]*\" min=\"1\" step=\"1\" value=\"2\"></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "set_column_string_transform",
+          "then_target_column": "Country Short",
+          "then_string_operation": "first_characters",
+          "then_string_position": "first",
+          "then_string_character_count": "2"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Country\",\"operator\":\"is not blank\",\"valueMode\":\"blank\",\"compareValue\":\"\"}]",
+          "then_action_type": "set_column_string_transform",
+          "then_target_column": "Country Short",
+          "then_string_operation": "first_characters",
+          "then_string_source_file": "wd",
+          "then_string_source_field": "Country",
+          "then_string_character_count": "2",
+          "then_string_position": "first",
+          "then_string_source_alias": "wd",
+          "result_data_type": "string"
+        }
+      }
+    },
+    {
+      "id": "freeform",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Region\" is equal to \"EMEA\" THEN Route to the EMEA review queue.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Region]]=\"EMEA\"\n\nSQL Server:\nCASE WHEN [Region] = 'EMEA' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Region\"] == \"EMEA\"\n\nNote: THEN action is free text and is not in the formulas: Route to the EMEA review queue",
+      "formulas": {
+        "excel": "=[@[Region]]=\"EMEA\"",
+        "sql": "CASE WHEN [Region] = 'EMEA' THEN 1 ELSE 0 END",
+        "python": "mask = df[\"Region\"] == \"EMEA\"",
+        "notes": [
+          "Note: THEN action is free text and is not in the formulas: Route to the EMEA review queue"
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\">Route to the EMEA review queue</textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": "Route to the EMEA review queue"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Region\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"EMEA\"}]",
+          "then_action_type": "freeform",
+          "then_action": "Route to the EMEA review queue"
+        }
+      }
+    },
+    {
+      "id": "with-else",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Plan\" is equal to \"Bonus\" THEN display text response \"Bonus plan\" in new column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF([@[Plan]]=\"Bonus\", IF([@[Error Message]]=\"\", \"Bonus plan\", [@[Error Message]]&\"||\"&\"Bonus plan\"), IF([@[Error Message]]=\"\", \"Other plan\", [@[Error Message]]&\"||\"&\"Other plan\"))\n\nSQL Server:\nCASE WHEN [Plan] = 'Bonus' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Bonus plan') ELSE CONCAT_WS('||', NULLIF([Error Message], ''), 'Other plan') END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Plan\"] == \"Bonus\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Bonus plan\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[~mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[~mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Other plan\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF([@[Plan]]=\"Bonus\", IF([@[Error Message]]=\"\", \"Bonus plan\", [@[Error Message]]&\"||\"&\"Bonus plan\"), IF([@[Error Message]]=\"\", \"Other plan\", [@[Error Message]]&\"||\"&\"Other plan\"))",
+        "sql": "CASE WHEN [Plan] = 'Bonus' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Bonus plan') ELSE CONCAT_WS('||', NULLIF([Error Message], ''), 'Other plan') END AS [Error Message]",
+        "python": "mask = df[\"Plan\"] == \"Bonus\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Bonus plan\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[~mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[~mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Other plan\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Bonus plan\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> THEN display text response &quot;Bonus plan&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Bonus plan",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Plan\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"Bonus\"}]",
+          "then_action_type": "display_text",
+          "then_text": "Bonus plan",
+          "then_output_column": "Error Message",
+          "include_else_branch": "Yes"
+        }
+      }
+    },
+    {
+      "id": "with-else::else",
+      "stepType": "else",
+      "english": "ELSE display text response \"Other plan\" in new column \"Error Message\".",
+      "autoNotes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "developer": "ELSE (Step 10): included in the Step 10 formulas.",
+      "formulas": {
+        "lead": "ELSE (Step 10): included in the Step 10 formulas."
+      },
+      "editorHtml": "<div class=\"guided-builder else-action-builder\"><p class=\"hint\">Configure what happens when the IF conditions are not met.</p><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"ELSE Action Type: Display Text Response in Column\"><span class=\"atlas-choice-heading\">ELSE Action Type</span><span class=\"atlas-choice-current\">Display Text Response in Column</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"ELSE action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Message<input data-param=\"then_text\" value=\"Other plan\" placeholder=\"e.g., Hourly Rate Mismatch\"><span class=\"hint\">Shown for each record that matches the conditions.</span></label><label class=\"full\">Write to Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"then_output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button><span class=\"hint\">The column where the message appears. Defaults to Error Message.</span></label><label class=\"full\">Separator<input data-param=\"then_text_separator\" value=\"||\" placeholder=\"||\" autocomplete=\"off\" spellcheck=\"false\"><span class=\"hint\">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ||.</span></label><div class=\"logic-editor-callout full display-text-preview\" aria-live=\"polite\"><strong>Preview:</strong> ELSE display text response &quot;Other plan&quot; in new column &quot;Error Message&quot;.</div><label class=\"full\">Notes (optional)<textarea data-param=\"then_action\" placeholder=\"Internal notes about this action\"></textarea></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "else",
+        "params": {
+          "then_action_type": "display_text",
+          "then_text": "Other plan",
+          "then_output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "else",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "managed_else_branch": "Yes",
+          "parent_if_step_id": "with-else",
+          "then_action_type": "display_text",
+          "then_text": "Other plan",
+          "then_output_column": "Error Message"
+        }
+      }
+    },
+    {
+      "id": "else-own-action",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Grade\" is equal to \"A\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Grade]]=\"A\"\n\nSQL Server:\nCASE WHEN [Grade] = 'A' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Grade\"] == \"A\"\n\nNote: The formulas mark rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Grade]]=\"A\"",
+        "sql": "CASE WHEN [Grade] = 'A' THEN 1 ELSE 0 END",
+        "python": "mask = df[\"Grade\"] == \"A\"",
+        "notes": [
+          "Note: The formulas mark rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Freeform Text\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Freeform Text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"freeform\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"freeform\" tabindex=\"0\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><label class=\"full\">Action<textarea data-param=\"then_action\" placeholder=\"e.g., display records in the audit\"></textarea></label></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "freeform",
+          "then_action": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Grade\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"A\"}]",
+          "then_action_type": "freeform",
+          "include_else_branch": "Yes"
+        }
+      }
+    },
+    {
+      "id": "else-own-action::else",
+      "stepType": "else",
+      "english": "ELSE do not display record.",
+      "autoNotes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "developer": "ELSE (Step 11)\n\nExcel:\n=[@[Grade]]=\"A\"\n\nSQL Server:\nWHERE [Grade] = 'A'\n\nPython (pandas):\nmask = df[\"Grade\"] == \"A\"\ndf = df[mask]\n\nNote: ELSE Do Not Display - Keep only rows that match the parent IF.",
+      "formulas": {
+        "lead": "ELSE (Step 11)",
+        "excel": "=[@[Grade]]=\"A\"",
+        "sql": "WHERE [Grade] = 'A'",
+        "python": "mask = df[\"Grade\"] == \"A\"\ndf = df[mask]",
+        "notes": [
+          "Note: ELSE Do Not Display - Keep only rows that match the parent IF."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder else-action-builder\"><p class=\"hint\">Configure what happens when the IF conditions are not met.</p><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"ELSE Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">ELSE Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"ELSE action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "else",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "else",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "parent_if_step_id": "else-own-action",
+          "then_action_type": "do_not_display"
+        }
+      }
+    },
+    {
+      "id": "parent-gate",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Active]]=\"Yes\"\n\nSQL Server:\nWHERE [Active] = 'Yes'\n\nPython (pandas):\nmask = df[\"Active\"] == \"Yes\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Active]]=\"Yes\"",
+        "sql": "WHERE [Active] = 'Yes'",
+        "python": "mask = df[\"Active\"] == \"Yes\"\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"do_not_display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Only matching records will be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Display - Keep only rows that match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "display",
+          "then_action": "Display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Active\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"Yes\"}]",
+          "then_action_type": "display"
+        }
+      }
+    },
+    {
+      "id": "child-condition",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Type\" is equal to \"FT\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[Type]]=\"FT\")\n\nSQL Server:\nWHERE NOT ([Type] = 'FT')\n\nPython (pandas):\nmask = df[\"Type\"] == \"FT\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Type]]=\"FT\")",
+        "sql": "WHERE NOT ([Type] = 'FT')",
+        "python": "mask = df[\"Type\"] == \"FT\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Type\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"FT\"}]",
+          "then_action_type": "do_not_display"
+        }
+      }
+    },
+    {
+      "id": "child-column",
+      "stepType": "create_column",
+      "english": "Create new column \"Checked\" and set value to \"Y\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"Y\"\n\nSQL Server:\n'Y' AS [Checked]\n\nPython (pandas):\ndf[\"Checked\"] = \"Y\"",
+      "formulas": {
+        "excel": "=\"Y\"",
+        "sql": "'Y' AS [Checked]",
+        "python": "df[\"Checked\"] = \"Y\"",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Checked\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"Y\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Checked",
+          "value_mode": "Static value",
+          "static_value": "Y"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Checked",
+          "value_mode": "Static value",
+          "static_value": "Y",
+          "expression_type": "custom_expression"
+        }
+      }
+    },
+    {
+      "id": "inverse",
+      "stepType": "if_then",
+      "english": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "ELSE (Step 12)\n\nExcel:\n=NOT([@[Active]]=\"Yes\")\n\nSQL Server:\nWHERE NOT ([Active] = 'Yes')\n\nPython (pandas):\nmask = df[\"Active\"] == \"Yes\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Active]]=\"Yes\")",
+        "sql": "WHERE NOT ([Active] = 'Yes')",
+        "python": "mask = df[\"Active\"] == \"Yes\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ],
+        "lead": "ELSE (Step 12)"
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "conditions_json": "[{\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Active\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"Yes\"}]",
+          "then_action_type": "do_not_display",
+          "inverse_else": "Yes",
+          "inverse_of_step_id": "parent-gate"
+        }
+      }
+    },
+    {
+      "id": "disabled",
+      "stepType": "create_column",
+      "english": "Create new blank column \"Hidden\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=\"\"\n\nSQL Server:\nNULL AS [Hidden]\n\nPython (pandas):\ndf[\"Hidden\"] = pd.NA",
+      "formulas": {
+        "excel": "=\"\"",
+        "sql": "NULL AS [Hidden]",
+        "python": "df[\"Hidden\"] = pd.NA",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Create Column</h4><label>New Column Name<input data-param=\"column_name\" value=\"Hidden\" placeholder=\"e.g., Error Message\"></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Column Value Type: Static value\"><span class=\"atlas-choice-heading\">Column Value Type</span><span class=\"atlas-choice-current\">Static value</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Column Value Type\"><input type=\"hidden\" data-param=\"value_mode\" value=\"Static value\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Static value\" tabindex=\"0\"><span class=\"atlas-choice-label\">Static value</span><span class=\"atlas-choice-description\">Write a fixed value into the new column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Source field value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Source field value</span><span class=\"atlas-choice-description\">Copy or calculate from a source field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"String transformation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">String transformation</span><span class=\"atlas-choice-description\">Take characters, a character count, or split parts from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Concatenate fields\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Concatenate fields</span><span class=\"atlas-choice-description\">Join two fields into one value.</span></button></div></div></div></div><label>Static Value<input data-param=\"static_value\" value=\"\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "create_column",
+        "params": {
+          "column_name": "Hidden",
+          "value_mode": "Static value",
+          "static_value": ""
+        }
+      },
+      "normalizedStep": {
+        "step_type": "create_column",
+        "type": "create",
+        "title": "Create Column",
+        "params": {
+          "column_name": "Hidden",
+          "value_mode": "Static value",
+          "expression_type": "custom_expression"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"WD_Workers\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [WD_Workers] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"SAP_HI0256\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [SAP_HI0256] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "3",
+      "stepId": "ref-wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "4",
+      "stepId": "values",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" is equal to \"T\" or \"R\" THEN display record.",
+      "developer": "Excel:\n=OR([@[Status]]=\"T\", [@[Status]]=\"R\")\n\nSQL Server:\nWHERE [Status] IN ('T', 'R')\n\nPython (pandas):\nmask = df[\"Status\"].isin([\"T\", \"R\"])\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "5",
+      "stepId": "blank-and-field",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\" THEN do not display record.",
+      "developer": "Excel:\n=NOT(AND(LEN(TRIM([@[Plan]]))=0, [@[Manager]]<>[@[PERNR]]))\n\nSQL Server:\nWHERE NOT (NULLIF(LTRIM(RTRIM([Plan])), '') IS NULL AND [Manager] <> [PERNR])\n\nPython (pandas):\nmask = df[\"Plan\"].fillna(\"\").astype(str).str.strip().eq(\"\") & (df[\"Manager\"] != df[\"PERNR\"])\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "6",
+      "stepId": "text-matches",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\" THEN display text response \"Check code\" in new column \"Error Message\", appended with separator \"; \".",
+      "developer": "Excel:\n=IF(OR(ISNUMBER(SEARCH(\"50%_off~*\", [@[Note]])), AND(NOT(LEFT([@[Code]], 1)=\"A\"), NOT(LEFT([@[Code]], 1)=\"B\"), RIGHT([@[Code]], 1)=\"Z\")), IF([@[Error Message]]=\"\", \"Check code\", [@[Error Message]]&\"; \"&\"Check code\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN [Note] LIKE '%50[%][_]off*%' OR (([Code] NOT LIKE 'A%' AND [Code] NOT LIKE 'B%') AND [Code] LIKE '%Z') THEN CONCAT_WS('; ', NULLIF([Error Message], ''), 'Check code') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Note\"].fillna(\"\").astype(str).str.contains(\"50%_off*\", case=False, regex=False) | ((~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"a\")) & ~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"b\"))) & df[\"Code\"].fillna(\"\").astype(str).str.lower().str.endswith(\"z\"))\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"; \") + \"Check code\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "7",
+      "stepId": "groups",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n  • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n  • file \"wd\" column \"E\" does not contain \"x\" THEN set \"Salary Check\" value to file \"wd\" column \"Salary\" value.",
+      "developer": "Excel:\n=IF(OR(AND([@[A]]=\"1\", [@[B]]>40), AND([@[C]]=\"3\", OR([@[D]]<=4, NOT(ISNUMBER(SEARCH(\"x\", [@[E]])))))), [@[Salary]], \"\")\n\nSQL Server:\nCASE WHEN ([A] = '1' AND [B] > 40) OR ([C] = '3' AND ([D] <= 4 OR [E] NOT LIKE '%x%')) THEN [Salary] END AS [Salary Check]\n\nPython (pandas):\nmask = ((df[\"A\"] == \"1\") & (df[\"B\"] > 40)) | ((df[\"C\"] == \"3\") & ((df[\"D\"] <= 4) | ~(df[\"E\"].fillna(\"\").astype(str).str.contains(\"x\", case=False, regex=False))))\ndf.loc[mask, \"Salary Check\"] = df[\"Salary\"]",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "8",
+      "stepId": "expression-compare",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Pay\" is greater than [Hours] * 20 THEN set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number.",
+      "developer": "Excel:\n=IF([Hours] * 20, ROUND([@[Pay]] - [@[Hours]], 0), \"\")\n\nSQL Server:\nCASE WHEN [Hours] * 20 THEN ROUND([Pay] - [Hours], 0) END AS [Overpay]\n\nPython (pandas):\nmask = [Hours] * 20\ndf.loc[mask, \"Overpay\"] = np.sign(df[\"Pay\"] - df[\"Hours\"]) * np.floor(np.abs(df[\"Pay\"] - df[\"Hours\"]) + 0.5)",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "9",
+      "stepId": "string-action",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Country\" is not blank/null THEN set \"Country Short\" value to the first 2 characters of file \"wd\" column \"Country\".",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Country]]))>0, LEFT([@[Country]], 2), \"\")\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Country])), '') IS NOT NULL THEN LEFT([Country], 2) END AS [Country Short]\n\nPython (pandas):\nmask = df[\"Country\"].fillna(\"\").astype(str).str.strip().ne(\"\")\ndf.loc[mask, \"Country Short\"] = df[\"Country\"].astype(\"string\").str[:2]",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "10",
+      "stepId": "freeform",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Region\" is equal to \"EMEA\" THEN Route to the EMEA review queue.",
+      "developer": "Excel:\n=[@[Region]]=\"EMEA\"\n\nSQL Server:\nCASE WHEN [Region] = 'EMEA' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Region\"] == \"EMEA\"\n\nNote: THEN action is free text and is not in the formulas: Route to the EMEA review queue",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "11",
+      "stepId": "with-else",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Plan\" is equal to \"Bonus\" THEN display text response \"Bonus plan\" in new column \"Error Message\".",
+      "developer": "Excel:\n=IF([@[Plan]]=\"Bonus\", IF([@[Error Message]]=\"\", \"Bonus plan\", [@[Error Message]]&\"||\"&\"Bonus plan\"), IF([@[Error Message]]=\"\", \"Other plan\", [@[Error Message]]&\"||\"&\"Other plan\"))\n\nSQL Server:\nCASE WHEN [Plan] = 'Bonus' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Bonus plan') ELSE CONCAT_WS('||', NULLIF([Error Message], ''), 'Other plan') END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Plan\"] == \"Bonus\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Bonus plan\"\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[~mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[~mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Other plan\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "11.1",
+      "stepId": "with-else::else",
+      "branch": "ELSE",
+      "analyst": "ELSE display text response \"Other plan\" in new column \"Error Message\".",
+      "developer": "ELSE (Step 12): included in the Step 12 formulas.",
+      "notes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "12",
+      "stepId": "else-own-action",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Grade\" is equal to \"A\":",
+      "developer": "Excel:\n=[@[Grade]]=\"A\"\n\nSQL Server:\nCASE WHEN [Grade] = 'A' THEN 1 ELSE 0 END\n\nPython (pandas):\nmask = df[\"Grade\"] == \"A\"\n\nNote: The formulas mark rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "12.1",
+      "stepId": "else-own-action::else",
+      "branch": "ELSE",
+      "analyst": "ELSE do not display record.",
+      "developer": "ELSE (Step 13)\n\nExcel:\n=[@[Grade]]=\"A\"\n\nSQL Server:\nWHERE [Grade] = 'A'\n\nPython (pandas):\nmask = df[\"Grade\"] == \"A\"\ndf = df[mask]\n\nNote: ELSE Do Not Display - Keep only rows that match the parent IF.",
+      "notes": "ELSE explains what should happen when the preceding IF condition is not met.",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "13",
+      "stepId": "parent-gate",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN display record.",
+      "developer": "Excel:\n=[@[Active]]=\"Yes\"\n\nSQL Server:\nWHERE [Active] = 'Yes'\n\nPython (pandas):\nmask = df[\"Active\"] == \"Yes\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "13.1",
+      "stepId": "child-column",
+      "branch": "THEN",
+      "analyst": "Create new column \"Checked\" and set value to \"Y\".",
+      "developer": "Excel:\n=\"Y\"\n\nSQL Server:\n'Y' AS [Checked]\n\nPython (pandas):\ndf[\"Checked\"] = \"Y\"",
+      "notes": "",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "13.2",
+      "stepId": "child-condition",
+      "branch": "THEN",
+      "analyst": "IF file \"wd\" column \"Type\" is equal to \"FT\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[Type]]=\"FT\")\n\nSQL Server:\nWHERE NOT ([Type] = 'FT')\n\nPython (pandas):\nmask = df[\"Type\"] == \"FT\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 1,
+      "source": ""
+    },
+    {
+      "step": "14",
+      "stepId": "inverse",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN do not display record.",
+      "developer": "ELSE (Step 14)\n\nExcel:\n=NOT([@[Active]]=\"Yes\")\n\nSQL Server:\nWHERE NOT ([Active] = 'Yes')\n\nPython (pandas):\nmask = df[\"Active\"] == \"Yes\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": ""
+    }
+  ],
+  "sqlScript": "-- IF THEN conditions and actions - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 18 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- TODO: 2 steps could not be converted and are skipped below:\n--   - Step 10: THEN action is free text and is not in the formulas: Route to the EMEA review queue\n--   - Step 12: The formulas mark rows that match this condition.\n--\n-- Review:\n--   - Steps 11.1, 12.1, 13.1, 13.2 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n--   - Step 11 overwrites [Error Message], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Error Message] is not selected twice.\n--   - The audit does not list the columns of wd, sap, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [WD_Workers]: wd\n--   - [SAP_HI0256]: sap\n--   - [wd]\n\nWITH\n-- Step 1: Reference wd\n-- Reference source file \"WD_Workers\" as \"wd\":\nstep_1 AS (\n  SELECT * FROM [WD_Workers] AS [wd]\n),\n\n-- Step 2: Reference sap\n-- Reference source file \"SAP_HI0256\" as \"sap\":\nstep_2 AS (\n  SELECT * FROM [SAP_HI0256] AS [sap]\n),\n\n-- Step 3: Reference Source\n-- Reference source file \"wd\" as \"wd\":\nstep_3 AS (\n  SELECT * FROM [wd] AS [wd]\n),\n\n-- Step 4: IF / THEN\n-- IF file \"wd\" column \"Status\" is equal to \"T\" or \"R\" THEN display record.\n-- Note: Display - Keep only rows that match this condition.\nstep_4 AS (\n  SELECT *\n  FROM step_3\n  WHERE [Status] IN ('T', 'R')\n),\n\n-- Step 5: IF / THEN\n-- IF file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_5 AS (\n  SELECT *\n  FROM step_4\n  WHERE NOT (NULLIF(LTRIM(RTRIM([Plan])), '') IS NULL AND [Manager] <> [PERNR])\n),\n\n-- Step 6: IF / THEN\n-- IF file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\" THEN display text response \"Check code\" in new column \"Error Message\", appended with separator \"; \".\nstep_6 AS (\n  SELECT *, CASE WHEN [Note] LIKE '%50[%][_]off*%' OR (([Code] NOT LIKE 'A%' AND [Code] NOT LIKE 'B%') AND [Code] LIKE '%Z') THEN CONCAT_WS('; ', NULLIF(CAST(NULL AS NVARCHAR(4000)), ''), 'Check code') ELSE CAST(NULL AS NVARCHAR(4000)) END AS [Error Message]\n  FROM step_5\n),\n\n-- Step 7: IF / THEN\n-- IF file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n--   • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n--   • file \"wd\" column \"E\" does not contain \"x\" THEN set \"Salary Check\" value to file \"wd\" column \"Salary\" value.\nstep_7 AS (\n  SELECT *, CASE WHEN ([A] = '1' AND [B] > 40) OR ([C] = '3' AND ([D] <= 4 OR [E] NOT LIKE '%x%')) THEN [Salary] END AS [Salary Check]\n  FROM step_6\n),\n\n-- Step 8: IF / THEN\n-- IF file \"wd\" column \"Pay\" is greater than [Hours] * 20 THEN set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number.\nstep_8 AS (\n  SELECT *, CASE WHEN [Hours] * 20 THEN ROUND([Pay] - [Hours], 0) END AS [Overpay]\n  FROM step_7\n),\n\n-- Step 9: IF / THEN\n-- IF file \"wd\" column \"Country\" is not blank/null THEN set \"Country Short\" value to the first 2 characters of file \"wd\" column \"Country\".\nstep_9 AS (\n  SELECT *, CASE WHEN NULLIF(LTRIM(RTRIM([Country])), '') IS NOT NULL THEN LEFT([Country], 2) END AS [Country Short]\n  FROM step_8\n),\n\n-- TODO (skipped) Step 10: IF / THEN\n-- IF file \"wd\" column \"Region\" is equal to \"EMEA\" THEN Route to the EMEA review queue.\n-- Reason: THEN action is free text and is not in the formulas: Route to the EMEA review queue\n-- Developer Logic:\n-- CASE WHEN [Region] = 'EMEA' THEN 1 ELSE 0 END\n\n-- Step 11: IF / THEN\n-- IF file \"wd\" column \"Plan\" is equal to \"Bonus\" THEN display text response \"Bonus plan\" in new column \"Error Message\".\nstep_11 AS (\n  SELECT *, CASE WHEN [Plan] = 'Bonus' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Bonus plan') ELSE CONCAT_WS('||', NULLIF([Error Message], ''), 'Other plan') END AS [Error Message]\n  FROM step_9\n),\n\n-- Step 11.1 (ELSE branch): Logic Step\n-- ELSE display text response \"Other plan\" in new column \"Error Message\".\n-- ELSE (Step 12): included in the Step 12 formulas.\n\n-- TODO (skipped) Step 12: IF / THEN\n-- IF file \"wd\" column \"Grade\" is equal to \"A\":\n-- Reason: The formulas mark rows that match this condition.\n-- Developer Logic:\n-- CASE WHEN [Grade] = 'A' THEN 1 ELSE 0 END\n\n-- Step 12.1 (ELSE branch): Logic Step\n-- ELSE do not display record.\n-- Note: ELSE Do Not Display - Keep only rows that match the parent IF.\nstep_12_1 AS (\n  SELECT *\n  FROM step_11\n  WHERE [Grade] = 'A'\n),\n\n-- Step 13: IF / THEN\n-- IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN display record.\n-- Note: Display - Keep only rows that match this condition.\nstep_13 AS (\n  SELECT *\n  FROM step_12_1\n  WHERE [Active] = 'Yes'\n),\n\n-- Step 13.1 (THEN branch): Create Column\n-- Create new column \"Checked\" and set value to \"Y\".\nstep_13_1 AS (\n  SELECT *, 'Y' AS [Checked]\n  FROM step_13\n),\n\n-- Step 13.2 (THEN branch): IF / THEN\n-- IF file \"wd\" column \"Type\" is equal to \"FT\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_13_2 AS (\n  SELECT *\n  FROM step_13_1\n  WHERE NOT ([Type] = 'FT')\n),\n\n-- Step 14: IF / THEN\n-- IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_14 AS (\n  SELECT *\n  FROM step_13_2\n  WHERE NOT ([Active] = 'Yes')\n)\n\nSELECT *\nFROM step_14;\n",
+  "pythonScript": "# IF THEN conditions and actions - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 18 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# TODO: 2 steps could not be converted and are skipped below:\n#   - Step 10: THEN action is free text and is not in the formulas: Route to the EMEA review queue\n#   - Step 12: The formulas mark rows that match this condition.\n#\n# Review:\n#   - Steps 11.1, 12.1, 13.1, 13.2 are nested under another step. Their code runs on every row; add the parent step's condition if they should only apply to the parent's matching rows.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd\": \"\",\n    \"sap\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd\n    # Reference source file \"WD_Workers\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 2: Reference sap\n    # Reference source file \"SAP_HI0256\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 3: Reference Source\n    # Reference source file \"wd\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 4: IF / THEN\n    # IF file \"wd\" column \"Status\" is equal to \"T\" or \"R\" THEN display record.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Status\"].isin([\"T\", \"R\"])\n    df = df[mask]\n\n    # Step 5: IF / THEN\n    # IF file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Plan\"].fillna(\"\").astype(str).str.strip().eq(\"\") & (df[\"Manager\"] != df[\"PERNR\"])\n    df = df[~mask]\n\n    # Step 6: IF / THEN\n    # IF file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\" THEN display text response \"Check code\" in new column \"Error Message\", appended with separator \"; \".\n    mask = df[\"Note\"].fillna(\"\").astype(str).str.contains(\"50%_off*\", case=False, regex=False) | ((~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"a\")) & ~(df[\"Code\"].fillna(\"\").astype(str).str.lower().str.startswith(\"b\"))) & df[\"Code\"].fillna(\"\").astype(str).str.lower().str.endswith(\"z\"))\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"; \") + \"Check code\"\n\n    # Step 7: IF / THEN\n    # IF file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n    #   • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n    #   • file \"wd\" column \"E\" does not contain \"x\" THEN set \"Salary Check\" value to file \"wd\" column \"Salary\" value.\n    mask = ((df[\"A\"] == \"1\") & (df[\"B\"] > 40)) | ((df[\"C\"] == \"3\") & ((df[\"D\"] <= 4) | ~(df[\"E\"].fillna(\"\").astype(str).str.contains(\"x\", case=False, regex=False))))\n    df.loc[mask, \"Salary Check\"] = df[\"Salary\"]\n\n    # Step 8: IF / THEN\n    # IF file \"wd\" column \"Pay\" is greater than [Hours] * 20 THEN set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number.\n    mask = [Hours] * 20\n    df.loc[mask, \"Overpay\"] = np.sign(df[\"Pay\"] - df[\"Hours\"]) * np.floor(np.abs(df[\"Pay\"] - df[\"Hours\"]) + 0.5)\n\n    # Step 9: IF / THEN\n    # IF file \"wd\" column \"Country\" is not blank/null THEN set \"Country Short\" value to the first 2 characters of file \"wd\" column \"Country\".\n    mask = df[\"Country\"].fillna(\"\").astype(str).str.strip().ne(\"\")\n    df.loc[mask, \"Country Short\"] = df[\"Country\"].astype(\"string\").str[:2]\n\n    # TODO (skipped) Step 10: IF / THEN\n    # IF file \"wd\" column \"Region\" is equal to \"EMEA\" THEN Route to the EMEA review queue.\n    # Reason: THEN action is free text and is not in the formulas: Route to the EMEA review queue\n    # Developer Logic:\n    # mask = df[\"Region\"] == \"EMEA\"\n\n    # Step 11: IF / THEN\n    # IF file \"wd\" column \"Plan\" is equal to \"Bonus\" THEN display text response \"Bonus plan\" in new column \"Error Message\".\n    mask = df[\"Plan\"] == \"Bonus\"\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Bonus plan\"\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[~mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[~mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Other plan\"\n\n    # Step 11.1 (ELSE branch): Logic Step\n    # ELSE display text response \"Other plan\" in new column \"Error Message\".\n    # ELSE (Step 12): included in the Step 12 formulas.\n\n    # TODO (skipped) Step 12: IF / THEN\n    # IF file \"wd\" column \"Grade\" is equal to \"A\":\n    # Reason: The formulas mark rows that match this condition.\n    # Developer Logic:\n    # mask = df[\"Grade\"] == \"A\"\n\n    # Step 12.1 (ELSE branch): Logic Step\n    # ELSE do not display record.\n    # Note: ELSE Do Not Display - Keep only rows that match the parent IF.\n    mask = df[\"Grade\"] == \"A\"\n    df = df[mask]\n\n    # Step 13: IF / THEN\n    # IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN display record.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Active\"] == \"Yes\"\n    df = df[mask]\n\n    # Step 13.1 (THEN branch): Create Column\n    # Create new column \"Checked\" and set value to \"Y\".\n    df[\"Checked\"] = \"Y\"\n\n    # Step 13.2 (THEN branch): IF / THEN\n    # IF file \"wd\" column \"Type\" is equal to \"FT\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Type\"] == \"FT\"\n    df = df[~mask]\n\n    # Step 14: IF / THEN\n    # IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Active\"] == \"Yes\"\n    df = df[~mask]\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "A",
+      "title": "Core Comparison Logic - Expected Match and Mismatch Results",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\" THEN display text response \"Check code\" in new column \"Error Message\", appended with separator \"; \".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One IF THEN conditions and actions audit record is displayed with \"Error Message\" = \"Check code\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd\" column \"Note\" contains \"50%_off*\" OR file \"wd\" column \"Code\" does not start with \"A\" or \"B\" AND file \"wd\" column \"Code\" ends with \"Z\".",
+          "comments": "",
+          "number": 1
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Plan\" is equal to \"Bonus\" THEN display text response \"Bonus plan\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One IF THEN conditions and actions audit record is displayed with \"Error Message\" = \"Bonus plan\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd\" column \"Plan\" is equal to \"Bonus\".",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "ELSE display text response \"Other plan\" in new column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One IF THEN conditions and actions audit record is displayed with \"Error Message\" = \"Other plan\" for records that do not meet the ATLAS logic step 11 condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the ATLAS logic step 11 condition is not met.",
+          "comments": "",
+          "number": 3
+        }
+      ]
+    },
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" is equal to \"T\" or \"R\" THEN display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"wd\" column \"Status\" is equal to \"T\" or \"R\".",
+          "comments": "",
+          "number": 4
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No IF THEN conditions and actions audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd\" column \"Plan\" is blank/null AND file \"wd\" column \"Manager\" is not equal to file \"sap\" column \"PERNR\".",
+          "comments": "",
+          "number": 5
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Grade\" is equal to \"A\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"wd\" column \"Grade\" is equal to \"A\".",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "ELSE do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No IF THEN conditions and actions audit record is displayed for records that do not meet the ATLAS logic step 12 condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the ATLAS logic step 12 condition is not met.",
+          "comments": "",
+          "number": 7
+        },
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Only records that meet this condition are evaluated by the nested logic steps.",
+          "sourceDataExpectedOutcome": "Source data confirms which records meet file \"wd\" column \"Active\" is equal to \"Yes\".",
+          "comments": "",
+          "number": 8
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Type\" is equal to \"FT\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No IF THEN conditions and actions audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd\" column \"Type\" is equal to \"FT\".",
+          "comments": "",
+          "number": 9
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Active\" is equal to \"Yes\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No IF THEN conditions and actions audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd\" column \"Active\" is equal to \"Yes\".",
+          "comments": "",
+          "number": 10
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n  • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n  • file \"wd\" column \"E\" does not contain \"x\" THEN set \"Salary Check\" value to file \"wd\" column \"Salary\" value.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Salary Check\" displays the \"Salary\" value for records that meet this condition.",
+          "sourceDataExpectedOutcome": "The displayed \"Salary Check\" value reconciles to the source values where file \"wd\" column \"A\" is equal to \"1\" AND file \"wd\" column \"B\" is greater than \"040\" OR file \"wd\" column \"C\" is equal to \"3\" AND:\n  • file \"wd\" column \"D\" is less than or equal to \"4\" OR\n  • file \"wd\" column \"E\" does not contain \"x\".",
+          "comments": "",
+          "number": 11
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Pay\" is greater than [Hours] * 20 THEN set \"Overpay\" value to file \"wd\" column \"Pay\" minus file \"wd\" column \"Hours\", then round to the nearest whole number.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Overpay\" displays the value calculated in this step for records that meet this condition.",
+          "sourceDataExpectedOutcome": "The displayed \"Overpay\" value reconciles to the source values where file \"wd\" column \"Pay\" is greater than [Hours] * 20.",
+          "comments": "",
+          "number": 12
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Country\" is not blank/null THEN set \"Country Short\" value to the first 2 characters of file \"wd\" column \"Country\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Country Short\" displays the value calculated in this step for records that meet this condition.",
+          "sourceDataExpectedOutcome": "The displayed \"Country Short\" value reconciles to the source values where file \"wd\" column \"Country\" is not blank/null.",
+          "comments": "",
+          "number": 13
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Create new column \"Checked\" and set value to \"Y\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"Checked\" is created and populated as defined in this step.",
+          "sourceDataExpectedOutcome": "Values in column \"Checked\" reconcile to the source fields and rule in this step.",
+          "comments": "",
+          "number": 14
+        }
+      ]
+    },
+    {
+      "code": "F",
+      "title": "Legacy Workflow / ATLAS Design Decisions",
+      "rows": [
+        {
+          "testType": "Design Validation",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Region\" is equal to \"EMEA\" THEN Route to the EMEA review queue.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "ATLAS behavior matches the approved design: Route to the EMEA review queue",
+          "sourceDataExpectedOutcome": "Source data supports the designed outcome for this step.",
+          "comments": "",
+          "number": 15
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"WD_Workers\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"WD_Workers\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"WD_Workers\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 16
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"SAP_HI0256\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"SAP_HI0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"SAP_HI0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 17
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the IF THEN conditions and actions audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 18
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.logic.math-integrity|expression-compare-0-0|steps|expression-compare|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.math-integrity|expression-compare-0-1|steps|expression-compare|||param:then_value_field",
+      "severity": "critical",
+      "message": "Calculation is incomplete"
+    },
+    {
+      "key": "audit.logic.field-relationship-invalid|blank-and-field-1-wd-sap|steps|blank-and-field||condition|condition-compareSourceFile",
+      "severity": "critical",
+      "message": "Compared fields have no JOIN relationship"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}
