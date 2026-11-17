@@ -723,13 +723,6 @@ function renderLogicRuleCard(entry) {
   </div>`;
 }
 
-const atlasPreviousRenderGuidedBuilder = renderGuidedBuilder;
-renderGuidedBuilder = function renderGuidedBuilderSelectedSourcesOnly(step) {
-  normalizeCatalogStep(step);
-  const html = atlasPreviousRenderGuidedBuilder(step);
-  return `<div class="selected-source-only-builder">${html}</div>`;
-};
-
 function atlasResetRuleMenuPosition(panel) {
   if (!panel) return;
   delete panel.dataset.positioned;

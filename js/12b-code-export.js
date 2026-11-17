@@ -135,6 +135,9 @@ const ATLAS_CODE_ROLE_KINDS = Object.freeze({
   dedupe: "remove_duplicates",
   filter: "filter_rows",
   column: "create_column",
+  condition: "if_then",
+  else: "else",
+  flag: "flag_records",
   none: "none",
 });
 

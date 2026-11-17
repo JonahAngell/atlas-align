@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "if_then",
+  "version": 1,
+  "label": "IF / THEN",
+  "category": "logic",
+  "order": 30,
+  "description": "Add conditional IF / THEN logic.",
+  "status": "active",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": ["if", "compare"]
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "if_then",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "condition"
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

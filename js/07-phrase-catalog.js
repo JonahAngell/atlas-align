@@ -980,120 +980,139 @@ function atlasDuplicateKeepClause(action = "") {
  */
 function analystLogic(step) {
   normalizeCatalogStep(step);
-  const definedEnglish = globalThis.ATLASStepTypeRuntime?.english?.(step);
-  if (definedEnglish != null) return definedEnglish;
+  const english = globalThis.ATLASStepTypeRuntime?.english?.(step);
+  if (english != null) return english;
+  return `[Missing phrase path: analyst_logic.${step.step_type || "unknown"}]`;
+}
+
+/** Create Column sentence (the create_column behavior block). */
+function atlasCreateColumnSentence(step) {
   const params = step.params || {};
-  const stepType = step.step_type;
-  if (stepType === "create_column") {
-    const columnName = params.column_name || step.field || "";
-    if (
-      (params.value_mode === "Static value" || !params.value_mode) &&
-      !String(params.static_value || "").trim()
-    ) {
-      return renderCatalogPhrase("analyst_logic.create_column.blank", {
-        column_name: quotePhraseValue(columnName),
-      });
-    }
-    const tableColumn = tableColumnPlain(
-      params.source_file,
-      params.source_alias,
-      params.field_name,
-    );
-    return renderCatalogPhrase(createColumnPhrasePath(params), {
+  const special =
+    atlasCreateColumnStringSentence(step) ??
+    atlasCreateColumnMathSentence(step);
+  if (special != null) return special;
+  const columnName = params.column_name || step.field || "";
+  if (
+    (params.value_mode === "Static value" || !params.value_mode) &&
+    !String(params.static_value || "").trim()
+  ) {
+    return renderCatalogPhrase("analyst_logic.create_column.blank", {
       column_name: quotePhraseValue(columnName),
-      static_value: quotePhraseValue(params.static_value || ""),
-      table_column: tableColumn,
-      expression: params.expression || "",
-      character_count: params.character_count || "",
-      first_column: tableColumnPlain(
-        params.concat_source_1 || params.source_file,
-        sourceAliasFor(params.concat_source_1 || params.source_file),
-        params.concat_field_1,
-      ),
-      second_column: tableColumnPlain(
-        params.concat_source_2 || params.source_file,
-        sourceAliasFor(params.concat_source_2 || params.source_file),
-        params.concat_field_2,
-      ),
     });
   }
-  if (stepType === "if_then") {
-    const group = ensureIfThenPrefix(conditionGroupPlain(step));
-    const action = thenActionPlain(step);
-    const phrase = action
-      ? renderCatalogPhrase(
-          "analyst_logic.if_then.condition_group_with_action",
-          { condition_group: group, then_action: action },
-        )
-      : renderCatalogPhrase(
-          "analyst_logic.if_then.condition_group_without_action",
-          { condition_group: group },
-        );
-    return ensureIfThenPrefix(phrase);
-  }
-  if (stepType === "else") return elseActionPlain(step);
-  if (stepType === "join") {
-    if (phraseIsUnionJoinType(params.join_type))
-      return renderCatalogPhrase("analyst_logic.union_sources.default", {
-        left_source: quotePhraseValue(
-          params.left_source || params.union_left_source || "",
-        ),
-        right_source: quotePhraseValue(
-          params.right_source || params.union_right_source || "",
-        ),
-        output_source: quotePhraseValue(
-          params.output_source || step.source || "",
-        ),
-      });
-    const joinColumns = {
-      left_column: tableColumnPlain(
-        params.left_source,
-        params.left_alias,
-        params.left_field,
-      ),
-      right_column: tableColumnPlain(
-        params.right_source,
-        params.right_alias,
-        params.right_field,
-      ),
-    };
-    const extraKeyPairs = atlasJoinKeyPairsForText(params).slice(1);
-    if (extraKeyPairs.length)
-      return renderCatalogPhrase("analyst_logic.join.multi", {
-        ...joinColumns,
-        additional_keys: extraKeyPairs
-          .map(
-            (pair) =>
-              `${tableColumnPlain(params.left_source, params.left_alias, pair.left_field) || phrasePlaceholder("left_key", "[left key]")} with ${tableColumnPlain(params.right_source, params.right_alias, pair.right_field) || phrasePlaceholder("right_key", "[right key]")}`,
-          )
-          .join(", and "),
-      });
-    return renderCatalogPhrase("analyst_logic.join.default", joinColumns);
-  }
-  if (stepType === "union_sources")
+  const tableColumn = tableColumnPlain(
+    params.source_file,
+    params.source_alias,
+    params.field_name,
+  );
+  return renderCatalogPhrase(createColumnPhrasePath(params), {
+    column_name: quotePhraseValue(columnName),
+    static_value: quotePhraseValue(params.static_value || ""),
+    table_column: tableColumn,
+    expression: params.expression || "",
+    character_count: params.character_count || "",
+    first_column: tableColumnPlain(
+      params.concat_source_1 || params.source_file,
+      sourceAliasFor(params.concat_source_1 || params.source_file),
+      params.concat_field_1,
+    ),
+    second_column: tableColumnPlain(
+      params.concat_source_2 || params.source_file,
+      sourceAliasFor(params.concat_source_2 || params.source_file),
+      params.concat_field_2,
+    ),
+  });
+}
+
+/** IF / THEN sentence (the if_then behavior block). */
+function atlasIfThenSentence(step) {
+  const group = ensureIfThenPrefix(conditionGroupPlain(step));
+  const action = thenActionPlain(step);
+  const phrase = action
+    ? renderCatalogPhrase("analyst_logic.if_then.condition_group_with_action", {
+        condition_group: group,
+        then_action: action,
+      })
+    : renderCatalogPhrase(
+        "analyst_logic.if_then.condition_group_without_action",
+        { condition_group: group },
+      );
+  return ensureIfThenPrefix(phrase);
+}
+
+/** Join or Union sentence (the join behavior block). */
+function atlasJoinSentence(step) {
+  const params = step.params || {};
+  if (phraseIsUnionJoinType(params.join_type))
     return renderCatalogPhrase("analyst_logic.union_sources.default", {
-      left_source: quotePhraseValue(params.union_left_source || ""),
-      right_source: quotePhraseValue(params.union_right_source || ""),
+      left_source: quotePhraseValue(
+        params.left_source || params.union_left_source || "",
+      ),
+      right_source: quotePhraseValue(
+        params.right_source || params.union_right_source || "",
+      ),
       output_source: quotePhraseValue(
         params.output_source || step.source || "",
       ),
     });
-  if (stepType === "filter_rows")
-    return renderCatalogPhrase("analyst_logic.filter_rows.default", {
-      table_column: tableColumnPlain(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
-      ),
-      operator: params.operator || "is equal to",
-      compare_value: params.compare_value
-        ? ` ${formattedValueList(params.compare_value)}`
-        : "",
-      filter_action: params.filter_action || "Keep matching rows",
+  const joinColumns = {
+    left_column: tableColumnPlain(
+      params.left_source,
+      params.left_alias,
+      params.left_field,
+    ),
+    right_column: tableColumnPlain(
+      params.right_source,
+      params.right_alias,
+      params.right_field,
+    ),
+  };
+  const extraKeyPairs = atlasJoinKeyPairsForText(params).slice(1);
+  if (extraKeyPairs.length)
+    return renderCatalogPhrase("analyst_logic.join.multi", {
+      ...joinColumns,
+      additional_keys: extraKeyPairs
+        .map(
+          (pair) =>
+            `${tableColumnPlain(params.left_source, params.left_alias, pair.left_field) || phrasePlaceholder("left_key", "[left key]")} with ${tableColumnPlain(params.right_source, params.right_alias, pair.right_field) || phrasePlaceholder("right_key", "[right key]")}`,
+        )
+        .join(", and "),
     });
-  if (stepType === "flag_records")
-    return `${renderCatalogPhrase("analyst_logic.flag_records.condition", { table_column: tableColumnPlain(params.source_file, params.source_alias, params.field_name), operator: params.operator || "is equal to", compare_value: params.compare_value ? ` ${formattedValueList(params.compare_value)}` : "" })} ${params.flag_action === "do_not_display" ? renderCatalogPhrase("analyst_logic.flag_records.do_not_display", {}) : renderCatalogPhrase("analyst_logic.flag_records.display_text", { message: quotePhraseValue(params.message || ""), output_column: quotePhraseValue(params.output_column || phrasePlaceholder("error_message_column", "Error Message")) })}`;
-  return `[Missing phrase path: analyst_logic.${stepType || "unknown"}]`;
+  return renderCatalogPhrase("analyst_logic.join.default", joinColumns);
+}
+
+/** Saved Union Sources sentence (the union_sources behavior block). */
+function atlasUnionSourcesSentence(step) {
+  const params = step.params || {};
+  return renderCatalogPhrase("analyst_logic.union_sources.default", {
+    left_source: quotePhraseValue(params.union_left_source || ""),
+    right_source: quotePhraseValue(params.union_right_source || ""),
+    output_source: quotePhraseValue(params.output_source || step.source || ""),
+  });
+}
+
+/** Filter Rows sentence (the filter_rows behavior block). */
+function atlasFilterRowsSentence(step) {
+  const params = step.params || {};
+  return renderCatalogPhrase("analyst_logic.filter_rows.default", {
+    table_column: tableColumnPlain(
+      params.source_file,
+      params.source_alias,
+      params.field_name,
+    ),
+    operator: params.operator || "is equal to",
+    compare_value: params.compare_value
+      ? ` ${formattedValueList(params.compare_value)}`
+      : "",
+    filter_action: params.filter_action || "Keep matching rows",
+  });
+}
+
+/** Flag Records sentence (the flag_records behavior block). */
+function atlasFlagRecordsSentence(step) {
+  const params = step.params || {};
+  return `${renderCatalogPhrase("analyst_logic.flag_records.condition", { table_column: tableColumnPlain(params.source_file, params.source_alias, params.field_name), operator: params.operator || "is equal to", compare_value: params.compare_value ? ` ${formattedValueList(params.compare_value)}` : "" })} ${params.flag_action === "do_not_display" ? renderCatalogPhrase("analyst_logic.flag_records.do_not_display", {}) : renderCatalogPhrase("analyst_logic.flag_records.display_text", { message: quotePhraseValue(params.message || ""), output_column: quotePhraseValue(params.output_column || phrasePlaceholder("error_message_column", "Error Message")) })}`;
 }
 
 /**
@@ -1103,58 +1122,60 @@ function analystLogic(step) {
  */
 function noteText(step, index) {
   normalizeCatalogStep(step);
-  const params = step.params || {};
   if (step.notes) return step.notes;
-  const definedNotes = globalThis.ATLASStepTypeRuntime?.autoNotes?.(step);
-  if (definedNotes != null) return definedNotes;
-  if (step.step_type === "join") {
-    if (phraseIsUnionJoinType(params.join_type))
-      return renderCatalogPhrase("notes.union", {
-        left_source:
-          params.left_source ||
-          params.union_left_source ||
-          phrasePlaceholder("file_1", "[file 1]"),
-        right_source:
-          params.right_source ||
-          params.union_right_source ||
-          phrasePlaceholder("file_2", "[file 2]"),
-        output_source:
-          params.output_source ||
-          phrasePlaceholder("combined_file", "[combined file]"),
-      });
-    return renderCatalogPhrase(`notes.join.${params.join_type || "DEFAULT"}`, {
-      left_alias:
-        params.left_alias ||
-        params.left_source ||
-        phrasePlaceholder("file_1", "[file 1]"),
-      right_alias:
-        params.right_alias ||
-        params.right_source ||
-        phrasePlaceholder("file_2", "[file 2]"),
-      keys: (atlasJoinKeyPairsForText(params).length
-        ? atlasJoinKeyPairsForText(params)
-        : [{ left_field: "", right_field: "" }]
-      )
-        .map(
-          (pair) =>
-            `${quotePhraseValue(pair.left_field || phrasePlaceholder("file_1_key", "[file 1 key]"))} / ${quotePhraseValue(pair.right_field || phrasePlaceholder("file_2_key", "[file 2 key]"))}`,
-        )
-        .join(", "),
-    });
-  }
-  if (step.step_type === "union_sources")
+  return globalThis.ATLASStepTypeRuntime?.autoNotes?.(step) ?? "";
+}
+
+/** Join or Union notes (the join behavior block). */
+function atlasJoinNotes(step) {
+  const params = step.params || {};
+  if (phraseIsUnionJoinType(params.join_type))
     return renderCatalogPhrase("notes.union", {
       left_source:
-        params.union_left_source || phrasePlaceholder("file_1", "[file 1]"),
+        params.left_source ||
+        params.union_left_source ||
+        phrasePlaceholder("file_1", "[file 1]"),
       right_source:
-        params.union_right_source || phrasePlaceholder("file_2", "[file 2]"),
+        params.right_source ||
+        params.union_right_source ||
+        phrasePlaceholder("file_2", "[file 2]"),
       output_source:
         params.output_source ||
         phrasePlaceholder("combined_file", "[combined file]"),
     });
-  if (step.step_type === "else")
-    return renderCatalogPhrase("notes.else.default", {});
-  return ``;
+  return renderCatalogPhrase(`notes.join.${params.join_type || "DEFAULT"}`, {
+    left_alias:
+      params.left_alias ||
+      params.left_source ||
+      phrasePlaceholder("file_1", "[file 1]"),
+    right_alias:
+      params.right_alias ||
+      params.right_source ||
+      phrasePlaceholder("file_2", "[file 2]"),
+    keys: (atlasJoinKeyPairsForText(params).length
+      ? atlasJoinKeyPairsForText(params)
+      : [{ left_field: "", right_field: "" }]
+    )
+      .map(
+        (pair) =>
+          `${quotePhraseValue(pair.left_field || phrasePlaceholder("file_1_key", "[file 1 key]"))} / ${quotePhraseValue(pair.right_field || phrasePlaceholder("file_2_key", "[file 2 key]"))}`,
+      )
+      .join(", "),
+  });
+}
+
+/** Saved Union Sources notes (the union_sources behavior block). */
+function atlasUnionSourcesNotes(step) {
+  const params = step.params || {};
+  return renderCatalogPhrase("notes.union", {
+    left_source:
+      params.union_left_source || phrasePlaceholder("file_1", "[file 1]"),
+    right_source:
+      params.union_right_source || phrasePlaceholder("file_2", "[file 2]"),
+    output_source:
+      params.output_source ||
+      phrasePlaceholder("combined_file", "[combined file]"),
+  });
 }
 
 // ATLAS-MATH-OPERATIONS-UPDATE:BEGIN
@@ -1208,9 +1229,8 @@ thenActionPlain = function thenActionPlainWithMath(step) {
   );
 };
 
-const atlasAnalystLogicBeforeMathUpdate = analystLogic;
-analystLogic = function analystLogicWithStructuredMath(step) {
-  normalizeCatalogStep(step);
+/** Create Column sentence for a calculated source field, else null. */
+function atlasCreateColumnMathSentence(step) {
   const p = step.params || {};
   if (
     step.step_type === "create_column" &&
@@ -1235,8 +1255,8 @@ analystLogic = function analystLogicWithStructuredMath(step) {
       },
     );
   }
-  return atlasAnalystLogicBeforeMathUpdate(step);
-};
+  return null;
+}
 // ATLAS-MATH-OPERATIONS-UPDATE:END
 
 // ATLAS-STRING-TRANSFORM-UPDATE:BEGIN
@@ -1323,17 +1343,13 @@ elseActionPlain = function elseActionPlainWithStringTransform(step) {
     });
   return atlasElseActionPlainBeforeStringTransform(step);
 };
-const atlasAnalystLogicBeforeStringTransform = analystLogic;
-analystLogic = function analystLogicWithStringTransform(step) {
-  normalizeCatalogStep?.(step);
-  if (
-    step?.step_type === "create_column" &&
-    step.params?.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE
-  )
-    return atlasStringTransformAnalystPhrase(
-      atlasStringTransformConfig(step.params),
-      "create_column",
-    );
-  return atlasAnalystLogicBeforeStringTransform(step);
-};
+/** Create Column sentence for a string transformation, else null. */
+function atlasCreateColumnStringSentence(step) {
+  if (step.params?.value_mode !== ATLAS_STRING_TRANSFORM_VALUE_MODE)
+    return null;
+  return atlasStringTransformAnalystPhrase(
+    atlasStringTransformConfig(step.params),
+    "create_column",
+  );
+}
 // ATLAS-STRING-TRANSFORM-UPDATE:END
