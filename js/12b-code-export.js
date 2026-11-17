@@ -126,41 +126,22 @@ function atlasCodeEntries() {
   });
 }
 
-/** Built-in step type that stands for each definition script role. */
-const ATLAS_CODE_ROLE_KINDS = Object.freeze({
-  source: "reference_source",
-  join: "join",
-  union: "union_sources",
-  sort: "sort_records",
-  dedupe: "remove_duplicates",
-  filter: "filter_rows",
-  column: "create_column",
-  condition: "if_then",
-  else: "else",
-  flag: "flag_records",
-  none: "none",
-});
-
 /**
- * The step type the script builders place a step as: the built-in type for a
- * definition's script role, or the step's own type.
+ * How the script builders place a step: the script role from its step type
+ * definition (`export.scriptRole`), or "none" when no definition claims it.
  */
-function atlasCodeStepKind(step) {
-  const role = globalThis.ATLASStepTypeRuntime?.scriptRole?.(step);
-  return (role && ATLAS_CODE_ROLE_KINDS[role]) || step?.step_type;
+function atlasCodeStepRole(step) {
+  return globalThis.ATLASStepTypeRuntime?.scriptRole?.(step) || "none";
 }
 
 /** Steps that start a new data set instead of changing the current one. */
 function atlasCodeStartsData(entry) {
-  const type = atlasCodeStepKind(entry.step);
-  return (
-    type === "reference_source" || type === "join" || type === "union_sources"
-  );
+  return ["source", "join", "union"].includes(atlasCodeStepRole(entry.step));
 }
 
 function atlasCodeIsUnion(step) {
   return (
-    atlasCodeStepKind(step) === "union_sources" ||
+    atlasCodeStepRole(step) === "union" ||
     String(step?.params?.join_type || "").toUpperCase() === "UNION"
   );
 }
@@ -344,11 +325,11 @@ function atlasCodeFreeformReason(entry) {
 /** The step's code for one dialect, or the reason it cannot be converted. */
 function atlasCodeClassify(entry, dialect, placeholders) {
   const formulas = entry.formulas;
-  const type = atlasCodeStepKind(entry.step);
+  const role = atlasCodeStepRole(entry.step);
   const code = String(formulas?.[dialect] || "").trim();
   if (!formulas) return { gap: "This step type has no code equivalent." };
   if (!code) {
-    if (type === "else" && formulas.lead) return { note: formulas.lead };
+    if (role === "else" && formulas.lead) return { note: formulas.lead };
     return {
       gap: formulas.lead
         ? `${formulas.lead} The step has no code of its own.`
@@ -361,11 +342,7 @@ function atlasCodeClassify(entry, dialect, placeholders) {
       gap: `Missing ${missing.length === 1 ? "value" : "values"}: ${missing.join(", ")}.`,
       code,
     };
-  const isCondition =
-    type === "if_then" ||
-    type === "else" ||
-    type === "filter_rows" ||
-    type === "flag_records";
+  const isCondition = ["condition", "else", "filter", "flag"].includes(role);
   if (isCondition) {
     const sql = String(formulas.sql || "");
     const acts = sql.startsWith("WHERE ") || /\bAS \[/.test(sql);
@@ -615,11 +592,11 @@ function buildAuditSqlScript() {
     }
     if (result.gap) return skip(result.gap, result.code);
     const sql = result.code;
-    const type = atlasCodeStepKind(entry.step);
+    const role = atlasCodeStepRole(entry.step);
     const notes = atlasCodeNotes(entry.formulas);
     const withNotes = [heading, ...notes].join("\n");
 
-    if (type === "reference_source") {
+    if (role === "source") {
       const alias = atlasDevSourceAlias(
         entry.step.params?.source_file || entry.step.source || "",
         entry.step.params?.source_alias,
@@ -650,7 +627,7 @@ function buildAuditSqlScript() {
       );
       return;
     }
-    if (type === "join") {
+    if (role === "join") {
       if (!join(entry, sql, withNotes))
         skip("The join could not be placed in the script.", sql);
       return;
@@ -660,14 +637,14 @@ function buildAuditSqlScript() {
         "No source is selected for the audit, so there is no data to start from.",
         sql,
       );
-    if (type === "sort_records") {
+    if (role === "sort") {
       data.order = unqualify(sql.replace(/^ORDER BY /, ""));
       ctes.push({
         comment: `${withNotes}\nThe sort order is applied in the final SELECT (and to later Remove Duplicates steps).`,
       });
       return;
     }
-    if (type === "remove_duplicates") {
+    if (role === "dedupe") {
       if (!dedupe(entry, sql, withNotes))
         skip("The duplicate check could not be placed in the script.", sql);
       return;
@@ -826,9 +803,9 @@ function buildAuditPythonScript() {
       );
       return;
     }
-    const type = atlasCodeStepKind(entry.step);
+    const role = atlasCodeStepRole(entry.step);
     const params = entry.step.params || {};
-    if (type === "join" && !atlasCodeIsUnion(entry.step)) {
+    if (role === "join" && !atlasCodeIsUnion(entry.step)) {
       const left = atlasDevSourceAlias(params.left_source, params.left_alias);
       const right = atlasDevSourceAlias(
         params.right_source,
@@ -860,7 +837,7 @@ function buildAuditPythonScript() {
             params.left_alias || params.union_left_alias,
           ),
         );
-    } else if (type === "reference_source") {
+    } else if (role === "source") {
       columns.startFrom(
         atlasDevSourceAlias(
           params.source_file || entry.step.source || "",

@@ -100,7 +100,11 @@
     "scriptRole": "column",
     "qtest": {
       "section": "D",
-      "testType": "Data Validation"
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "{{tableColumn param.source_file param.source_alias param.field_name}} displays in {{default param.format \"the designed\"}} format.",
+        "source": "The formatted {{tableColumn param.source_file param.source_alias param.field_name}} value matches the underlying source value."
+      }
     }
   },
   "textImport": {

@@ -27,5 +27,30 @@
   },
   "textImport": {
     "fromEnglish": false
-  }
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "fieldRelationships"
+    },
+    {
+      "builtIn": "action"
+    },
+    {
+      "builtIn": "thenMath",
+      "when": {
+        "param": "then_action_type",
+        "equals": "set_column_calculation"
+      }
+    },
+    {
+      "builtIn": "thenStringTransform",
+      "when": {
+        "param": "then_action_type",
+        "equals": "set_column_string_transform"
+      }
+    }
+  ]
 }

@@ -22,6 +22,7 @@
  *   splitDelimiter value / splitPart value       Split Field options
  *   sortKeys params                              Sort Records fields
  *   duplicateKeys params legacy=true             Remove Duplicates columns
+ *   duplicateKeepClause action                   "keeping the first record"
  *   firstKeyTable keys source alias              Excel table of the first key
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
@@ -30,8 +31,9 @@
  *
  * Behavior blocks (a definition's `block`) supply whole parts of a type from
  * the app's own code: normalize(step, index) on the real step, editor(step)
- * markup, english(step), notes(step), formulas(step) and
- * createdColumns(step). The types that came with ATLAS Align use them:
+ * markup, english(step), notes(step), formulas(step), createdColumns(step),
+ * qtestAction(step) (the THEN outcome qTest tests) and
+ * qtestOutcomes(step, { record }) (the two expected outcomes). The types that came with ATLAS Align use them:
  *   create_column   all value modes, math and string transformations
  *   if_then         condition tree and THEN actions
  *   else            ELSE actions (legacy)
@@ -311,6 +313,10 @@
     splitPart(args) {
       return splitPart(args[0]);
     },
+    /** "keeping the first record" and the other duplicate keep clauses. */
+    duplicateKeepClause(args) {
+      return text(app("atlasDuplicateKeepClause")?.(args[0]) ?? "");
+    },
     sortKeys(args) {
       return sortKeys(args[0]);
     },
@@ -364,11 +370,12 @@
       : html;
   };
 
-  const legacyCondition = (sentence) => ({
+  const legacyCondition = (sentence, qtestAction) => ({
     normalize: call("atlasCopyStepSourceParams"),
     editor: framed("atlasLegacyConditionEditorHtml"),
     english: call(sentence),
     formulas: call("atlasDevLegacyCondition"),
+    qtestAction: call(qtestAction),
   });
 
   const blocks = Object.freeze({
@@ -385,12 +392,14 @@
       english: call("atlasCreateColumnSentence"),
       formulas: call("atlasDevCreateColumn"),
       createdColumns: call("atlasCreateColumnOutputNames"),
+      qtestOutcomes: call("atlasQtestCreateColumnOutcomes"),
     },
     if_then: {
       normalize: call("atlasNormalizeIfThenStep"),
       editor: call("atlasRenderIfThenTabbedBuilder"),
       english: call("atlasIfThenSentence"),
       formulas: call("atlasDevIfThen"),
+      qtestAction: call("atlasQtestThenAction"),
     },
     else: {
       normalize: call("atlasCopyStepSourceParams"),
@@ -398,6 +407,7 @@
       english: call("elseActionPlain"),
       notes: () => app("renderCatalogPhrase")?.("notes.else.default", {}),
       formulas: call("atlasDevElse"),
+      qtestAction: call("atlasQtestThenAction"),
     },
     join: {
       normalize: call("atlasNormalizeJoinStep"),
@@ -405,14 +415,23 @@
       english: call("atlasJoinSentence"),
       notes: call("atlasJoinNotes"),
       formulas: call("atlasDevJoin"),
+      qtestOutcomes: call("atlasQtestJoinOutcomes"),
     },
     union_sources: {
       english: call("atlasUnionSourcesSentence"),
       notes: call("atlasUnionSourcesNotes"),
       formulas: (step) => app("atlasDevUnion")?.(step.params || {}),
+      qtestOutcomes: (step) =>
+        app("qtestUnionOutcomes")?.(step.params || {}, step),
     },
-    filter_rows: legacyCondition("atlasFilterRowsSentence"),
-    flag_records: legacyCondition("atlasFlagRecordsSentence"),
+    filter_rows: legacyCondition(
+      "atlasFilterRowsSentence",
+      "atlasQtestFilterAction",
+    ),
+    flag_records: legacyCondition(
+      "atlasFlagRecordsSentence",
+      "atlasQtestFlagAction",
+    ),
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({
