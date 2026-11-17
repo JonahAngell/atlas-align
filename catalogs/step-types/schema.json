@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "atlas-align/step-type-definition",
+  "title": "ATLAS Align step type definition",
+  "description": "One step type: its backend name, editor fields, English, automatic notes, Excel/SQL/Python formulas, export roles, validation and tests. Read by js/step-types/01-schema.js, which supports only the keywords used here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "version",
+    "label",
+    "status",
+    "fields",
+    "english",
+    "formulas",
+    "export"
+  ],
+  "properties": {
+    "$comment": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "id": { "$ref": "#/$defs/identifier" },
+    "version": { "type": "integer", "minimum": 1 },
+    "label": { "$ref": "#/$defs/label" },
+    "description": { "type": "string", "maxLength": 500 },
+    "category": { "$ref": "#/$defs/identifier" },
+    "order": { "type": "integer", "minimum": 0, "maximum": 10000 },
+    "status": { "enum": ["active", "legacy"] },
+    "legacyType": { "$ref": "#/$defs/identifier" },
+    "aliases": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "step_type": { "$ref": "#/$defs/identifierList" },
+        "type": { "$ref": "#/$defs/identifierList" }
+      }
+    },
+    "migrations": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/migration" }
+    },
+    "subtypes": {
+      "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/subtypes" }],
+      "description": "null or a subtype list"
+    },
+    "fields": { "$ref": "#/$defs/fieldList" },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assigns": { "$ref": "#/$defs/template" },
+        "creates": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/template" }
+        }
+      }
+    },
+    "english": { "$ref": "#/$defs/templateSet" },
+    "formulas": { "$ref": "#/$defs/formulas" },
+    "autoNotes": {
+      "anyOf": [{ "type": "null" }, { "$ref": "#/$defs/templateSet" }],
+      "description": "null or a template set"
+    },
+    "export": { "$ref": "#/$defs/export" },
+    "validation": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/validationRule" }
+    },
+    "textImport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fromEnglish": { "type": "boolean" },
+        "handler": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "maxItems": 200,
+      "items": { "$ref": "#/$defs/testCase" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "identifierList": {
+      "type": "array",
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "paramName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+    },
+    "stepField": {
+      "enum": ["source", "field", "title", "notes", "type", "step_type"]
+    },
+    "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "template": { "type": "string", "maxLength": 20000 },
+    "scalar": { "type": ["string", "number", "boolean", "null"] },
+    "templateSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "default": { "$ref": "#/$defs/template" },
+        "bySubtype": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/template" }
+        }
+      }
+    },
+    "formulaTriple": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "excel": { "$ref": "#/$defs/template" },
+        "sql": { "$ref": "#/$defs/template" },
+        "python": { "$ref": "#/$defs/template" }
+      }
+    },
+    "formulas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["shape"],
+      "properties": {
+        "shape": {
+          "enum": ["expression", "assignment", "filter", "frame", "none"]
+        },
+        "target": { "$ref": "#/$defs/template" },
+        "lead": { "$ref": "#/$defs/template" },
+        "default": { "$ref": "#/$defs/formulaTriple" },
+        "bySubtype": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/formulaTriple" }
+        },
+        "fallback": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "notes": {
+              "type": "array",
+              "maxItems": 20,
+              "items": { "type": "string", "minLength": 1, "maxLength": 200 }
+            }
+          }
+        }
+      }
+    },
+    "condition": {
+      "description": "a condition: {param|stepField, equals|notEquals|in|blank|notBlank} or {all|any: [...]} or {not: condition}",
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "param": { "$ref": "#/$defs/paramName" },
+        "stepField": { "$ref": "#/$defs/stepField" },
+        "equals": { "$ref": "#/$defs/scalar" },
+        "notEquals": { "$ref": "#/$defs/scalar" },
+        "in": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": { "$ref": "#/$defs/scalar" }
+        },
+        "blank": { "const": true },
+        "notBlank": { "const": true },
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/condition" }
+        },
+        "any": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": { "$ref": "#/$defs/condition" }
+        },
+        "not": { "$ref": "#/$defs/condition" }
+      }
+    },
+    "choiceOption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "label"],
+      "properties": {
+        "value": { "type": "string", "maxLength": 200 },
+        "label": { "$ref": "#/$defs/label" },
+        "description": { "type": "string", "maxLength": 500 },
+        "fields": { "$ref": "#/$defs/fieldList" },
+        "export": { "$ref": "#/$defs/exportOverride" }
+      }
+    },
+    "subtypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["param", "options"],
+      "properties": {
+        "param": { "$ref": "#/$defs/paramName" },
+        "label": { "$ref": "#/$defs/label" },
+        "control": { "enum": ["cards", "chips", "segment", "list"] },
+        "default": { "type": "string", "maxLength": 200 },
+        "hidden": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": { "type": "string", "maxLength": 200 }
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": { "$ref": "#/$defs/choiceOption" }
+        }
+      }
+    },
+    "fieldList": {
+      "type": "array",
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/field" }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["param", "control"],
+      "properties": {
+        "param": { "$ref": "#/$defs/paramName" },
+        "control": {
+          "enum": [
+            "source_picker",
+            "field_picker",
+            "choice",
+            "text",
+            "textarea",
+            "whole_number",
+            "toggle",
+            "hidden",
+            "hint",
+            "block"
+          ]
+        },
+        "label": { "$ref": "#/$defs/label" },
+        "placeholder": { "type": "string", "maxLength": 200 },
+        "help": { "type": "string", "maxLength": 1000 },
+        "required": { "type": "boolean" },
+        "default": { "$ref": "#/$defs/scalar" },
+        "visibleWhen": { "$ref": "#/$defs/condition" },
+        "enabledWhen": { "$ref": "#/$defs/condition" },
+        "sourceParam": { "$ref": "#/$defs/paramName" },
+        "group": { "$ref": "#/$defs/identifier" },
+        "display": { "enum": ["cards", "chips", "segment", "list"] },
+        "options": {
+          "type": "array",
+          "maxItems": 200,
+          "items": { "$ref": "#/$defs/choiceOption" }
+        },
+        "optionsFrom": { "type": "string", "maxLength": 200 },
+        "block": { "$ref": "#/$defs/identifier" },
+        "blockOptions": { "type": "object" },
+        "min": { "type": "integer" },
+        "max": { "type": "integer" }
+      }
+    },
+    "scriptRole": {
+      "enum": [
+        "source",
+        "join",
+        "union",
+        "column",
+        "filter",
+        "sort",
+        "dedupe",
+        "none"
+      ]
+    },
+    "qtest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "section": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "testType": { "type": "string", "minLength": 1, "maxLength": 120 }
+      }
+    },
+    "exportOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scriptRole": { "$ref": "#/$defs/scriptRole" },
+        "qtest": { "$ref": "#/$defs/qtest" }
+      }
+    },
+    "export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scriptRole"],
+      "properties": {
+        "scriptRole": { "$ref": "#/$defs/scriptRole" },
+        "qtest": { "$ref": "#/$defs/qtest" },
+        "rules": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when"],
+            "properties": {
+              "when": { "$ref": "#/$defs/condition" },
+              "scriptRole": { "$ref": "#/$defs/scriptRole" },
+              "qtest": { "$ref": "#/$defs/qtest" }
+            }
+          }
+        }
+      }
+    },
+    "validationRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity", "message"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "when": {
+          "anyOf": [{ "const": "always" }, { "$ref": "#/$defs/condition" }],
+          "description": "\"always\" or a condition"
+        },
+        "require": { "$ref": "#/$defs/paramName" },
+        "check": { "$ref": "#/$defs/condition" },
+        "severity": { "enum": ["warning", "critical"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    },
+    "valueSource": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "pattern": "^(param|step)\\.[A-Za-z][A-Za-z0-9_]*$"
+      }
+    },
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op"],
+      "properties": {
+        "op": {
+          "enum": [
+            "setStepType",
+            "default",
+            "set",
+            "rename",
+            "remove",
+            "mapValue",
+            "handler"
+          ]
+        },
+        "when": { "$ref": "#/$defs/condition" },
+        "to": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "from": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+        },
+        "param": { "$ref": "#/$defs/paramName" },
+        "value": {},
+        "valueFrom": { "$ref": "#/$defs/valueSource" },
+        "template": { "$ref": "#/$defs/template" },
+        "map": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/scalar" }
+        },
+        "name": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "testCase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "params", "expect"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "params": { "type": "object" },
+        "step": { "type": "object" },
+        "parent": { "type": "object" },
+        "expect": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "english": { "type": "string" },
+            "autoNotes": { "type": "string" },
+            "excel": { "type": "string" },
+            "sql": { "type": "string" },
+            "python": { "type": "string" },
+            "issues": { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}
