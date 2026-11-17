@@ -1024,6 +1024,10 @@ export async function getAuditWorkflowSummary(pool, { auditId, user }) {
     workingFromPublicationId: a.working_from_publication_id
       ? Number(a.working_from_publication_id)
       : null,
+    // Decision B: a locked audit renders with its publication's versions.
+    stepTypeVersions: a.published_locked
+      ? a.current_publication_step_type_versions || {}
+      : null,
     capabilities,
   };
 }

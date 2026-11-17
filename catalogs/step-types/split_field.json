@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "split_field",
-  "version": 1,
+  "version": 2,
   "label": "Split Field",
   "category": "transform",
   "order": 55,

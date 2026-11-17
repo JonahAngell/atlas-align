@@ -6,6 +6,7 @@ const historyView = {
   revisionId: null,
   publicationId: null,
   publicationVersion: null,
+  stepTypeVersions: null,
   document: null,
   metadata: null,
   returnPage: "overview",
@@ -241,6 +242,8 @@ async function atlasHistorySelectRevision(id) {
   historyView.revisionId = Number(id);
   historyView.publicationId = null;
   historyView.publicationVersion = null;
+  historyView.stepTypeVersions = null;
+  window.atlasApplyStepTypePins?.();
   historyView.document = atlasHistoryClone(r.document);
   historyView.metadata = {
     number: r.number,
@@ -270,6 +273,9 @@ async function atlasHistorySelectPublication(version) {
     p.version_number || p.versionNumber || version,
   );
   historyView.revisionId = null;
+  historyView.stepTypeVersions =
+    p.step_type_versions || p.stepTypeVersions || {};
+  window.atlasApplyStepTypePins?.();
   historyView.document = atlasHistoryClone(p.snapshot);
   historyView.metadata = {
     versionNumber: historyView.publicationVersion,
@@ -348,7 +354,9 @@ function atlasHistoryReturnToCurrent() {
   historyView.kind = null;
   historyView.revisionId = null;
   historyView.publicationId = null;
+  historyView.stepTypeVersions = null;
   historyView.document = null;
+  window.atlasApplyStepTypePins?.();
   showSection(historyView.returnPage || "overview");
 }
 async function atlasHistoryCompareCurrent() {

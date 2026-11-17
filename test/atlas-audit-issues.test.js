@@ -875,6 +875,7 @@ test("every configured fix action has one registered implementation", () => {
     "addSource",
     "editAuditName",
     "editAuditPurpose",
+    "reloadStepTypes",
     "repairIssue",
     "repairSourceReplacement",
     "replaceCustomSource",

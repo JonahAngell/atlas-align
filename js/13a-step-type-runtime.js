@@ -40,7 +40,10 @@
  *
  * Definitions come from js/step-types/definitions.generated.js (written by
  * `npm run step-types:manifest` from catalogs/step-types/), so the registry is
- * ready as soon as this file runs. load() can replace it from the server.
+ * ready as soon as this file runs. On a served page loadFromServer() then
+ * adds the definitions published in Postgres (GET /api/step-types), keeping
+ * the bundle as the fallback. usePinnedVersions() renders a publication with
+ * the definition versions it was published with (decision B).
  */
 (function initializeStepTypeRuntime(global) {
   "use strict";
@@ -53,6 +56,8 @@
 
   let registry = null;
   let readyPromise = null;
+  let pinnedVersions = null;
+  let revision = 0;
   const listeners = [];
 
   const engine = () => global.ATLASStepTypes || null;
@@ -82,6 +87,7 @@
   // ---------------------------------------------------------------------------
 
   function notify() {
+    revision += 1;
     listeners.forEach((listener) => {
       try {
         listener(registry);
@@ -177,9 +183,95 @@
     }
   }
 
+  /**
+   * The version a pinned publication renders `definition`'s type with, or
+   * the definition itself when nothing is pinned or the pin is not loaded.
+   */
+  function pinned(definition) {
+    const version = definition ? pinnedVersions?.[definition.id] : undefined;
+    if (version === undefined || version === definition.version)
+      return definition;
+    return registry.get(definition.id, version) || definition;
+  }
+
+  /**
+   * Loads the published definitions from GET /api/step-types into a registry
+   * that also holds the bundled repository definitions, so a type the
+   * database lacks still works. The database copy wins for the same id and
+   * version. When the request fails the current registry is kept, so the
+   * registry is never empty because the server was unavailable.
+   */
+  function loadFromServer(options = {}) {
+    const fetchImpl = options.fetch || global.fetch;
+    const bundle = options.bundle || engine()?.bundled;
+    const create = engine()?.registry?.createRegistry;
+    if (!fetchImpl || !create || !bundle?.schema) return Promise.resolve(null);
+    readyPromise = Promise.resolve()
+      .then(() =>
+        fetchImpl(options.url || "/api/step-types", {
+          credentials: "same-origin",
+          headers: { Accept: "application/json" },
+        }),
+      )
+      .then((response) => {
+        if (!response.ok)
+          throw new Error(`/api/step-types returned HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((payload) => {
+        const served = Array.isArray(payload?.definitions)
+          ? payload.definitions
+          : [];
+        const bundled = Array.isArray(bundle.definitions)
+          ? bundle.definitions
+          : [];
+        const latestVersions = {};
+        bundled.forEach((definition) => {
+          if (
+            Number.isInteger(definition?.version) &&
+            !(latestVersions[definition.id] >= definition.version)
+          )
+            latestVersions[definition.id] = definition.version;
+        });
+        Object.entries(payload?.latest || {}).forEach(([id, version]) => {
+          if (Number.isInteger(Number(version)))
+            latestVersions[id] = Number(version);
+        });
+        const loaded = create({
+          ...registryOptions(),
+          schema: bundle.schema,
+          latestVersions,
+        });
+        served.forEach((row) =>
+          loaded.add(row?.definition ?? row, { origin: "database" }),
+        );
+        bundled.forEach((definition) =>
+          loaded.add(definition, { origin: "repository" }),
+        );
+        if (!loaded.size)
+          throw new Error("/api/step-types returned no usable definitions");
+        const rejected = loaded.rejected();
+        if (rejected.length)
+          global.console?.warn?.(
+            `${rejected.length} step type definition(s) were not loaded. Fix them in the builder and publish again.`,
+            rejected,
+          );
+        useRegistry(loaded);
+        return loaded;
+      })
+      .catch((error) => {
+        global.console?.warn?.(
+          "Published step type definitions could not be loaded, so the definitions ATLAS Align was deployed with are used. Reload the page to try again.",
+          error,
+        );
+        return registry;
+      });
+    return readyPromise;
+  }
+
   function definitionById(id) {
     if (!registry || isBlank(id)) return null;
-    return registry.resolve(String(id)) || null;
+    return pinned(registry.resolve(String(id))) || null;
   }
 
   /**
@@ -195,11 +287,35 @@
   function definitionFor(step) {
     if (!registry || !step) return null;
     return (
-      registry.resolve(
-        isBlank(step.step_type) ? undefined : String(step.step_type),
-        isBlank(step.type) ? undefined : String(step.type),
+      pinned(
+        registry.resolve(
+          isBlank(step.step_type) ? undefined : String(step.step_type),
+          isBlank(step.type) ? undefined : String(step.type),
+        ),
       ) || null
     );
+  }
+
+  /**
+   * Decision B: a published or locked audit renders with the definition
+   * versions recorded on its publication ({type_id: version}). Pass null to
+   * return to the latest versions, which editable audits use. Types the
+   * publication does not name use their latest version.
+   */
+  function usePinnedVersions(versions) {
+    const next =
+      versions && typeof versions === "object" && Object.keys(versions).length
+        ? Object.freeze(
+            Object.fromEntries(
+              Object.entries(versions)
+                .map(([id, version]) => [id, Number(version)])
+                .filter(([, version]) => Number.isInteger(version)),
+            ),
+          )
+        : null;
+    if (JSON.stringify(next) === JSON.stringify(pinnedVersions)) return;
+    pinnedVersions = next;
+    notify();
   }
 
   // ---------------------------------------------------------------------------
@@ -1071,8 +1187,12 @@
     HANDLER_NAMES: Object.freeze(Object.keys(HANDLERS)),
     load,
     loadBundled,
+    loadFromServer,
     ready: () => readyPromise || Promise.resolve(registry),
     useRegistry,
+    usePinnedVersions,
+    pinnedVersions: () => pinnedVersions,
+    revision: () => revision,
     registry: () => registry,
     onChange,
     definitionById,
@@ -1096,13 +1216,14 @@
   });
   global.ATLASStepTypeRuntime = api;
 
-  // The bundled repository definitions make the registry ready at once.
+  // The bundled repository definitions make the registry ready at once, and
+  // a served page then swaps in the published definitions from the server.
   // Without a bundle, pages fetch catalogs/step-types/. Node tests that load
-  // only some scripts have no engine and skip both.
-  if (
-    engine()?.registry &&
-    !loadBundled() &&
-    typeof global.fetch === "function"
-  )
-    load();
+  // only some scripts have no engine and skip all of this.
+  const served = /^https?:$/.test(String(global.location?.protocol || ""));
+  if (engine()?.registry) {
+    if (loadBundled()) {
+      if (served && typeof global.fetch === "function") loadFromServer();
+    } else if (typeof global.fetch === "function") load();
+  }
 })(typeof window !== "undefined" ? window : globalThis);

@@ -37,7 +37,11 @@
 
   /**
    * Options: schema (required), helpers, blocks, handlers, importHandlers
-   * (names used to check definitions), supportedSchemaVersions.
+   * (names used to check definitions), supportedSchemaVersions, and
+   * latestVersions ({id: version}, from the server): the version each type
+   * uses when none is asked for. Without it the highest version is used. A
+   * type held only for pinned publications (not in latestVersions) still
+   * resolves but is left out of list().
    */
   function createRegistry(options = {}) {
     if (!options.schema)
@@ -46,6 +50,10 @@
     const byId = new Map(); // id -> Map(version -> definition)
     const aliasOwner = new Map(); // "step_type:x" / "type:x" -> id
     const rejected = [];
+    const latestVersions =
+      options.latestVersions && typeof options.latestVersions === "object"
+        ? { ...options.latestVersions }
+        : null;
 
     const reject = (definition, origin, errors) => {
       rejected.push({
@@ -135,7 +143,12 @@
       const versions = byId.get(id);
       if (!versions) return null;
       if (version !== undefined) return versions.get(Number(version)) || null;
-      return versions.get(Math.max(...versions.keys())) || null;
+      const latest = latestVersions?.[id];
+      return (
+        (latest !== undefined && versions.get(Number(latest))) ||
+        versions.get(Math.max(...versions.keys())) ||
+        null
+      );
     }
 
     function versions(id) {
@@ -165,6 +178,7 @@
     /** Latest versions, ordered for the step type picker. */
     function list({ includeLegacy = false } = {}) {
       return [...byId.keys()]
+        .filter((id) => !latestVersions || latestVersions[id] !== undefined)
         .map((id) => get(id))
         .filter((definition) => includeLegacy || definition.status !== "legacy")
         .sort(

@@ -58,7 +58,8 @@
 │   │   ├── 20261013120000_create_atlas_custom_sources.sql
 │   │   ├── 20261026120000_cascade_audit_id_updates.sql
 │   │   ├── 20261028120000_add_manual_audit_lock_publications.sql
-│   │   └── 20261116120000_create_atlas_audit_runs.sql
+│   │   ├── 20261116120000_create_atlas_audit_runs.sql
+│   │   └── 20261117120000_create_atlas_step_type_definitions.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
@@ -387,6 +388,11 @@
 │   │   ├── create-stage-table.sql
 │   │   ├── insert-stage-batch.sql
 │   │   └── truncate-field-library.sql
+│   ├── step-type-repository
+│   │   ├── get-definition-version.sql
+│   │   ├── insert-definition.sql
+│   │   ├── list-step-types.sql
+│   │   └── record-event.sql
 │   ├── user-impersonation
 │   │   ├── create-impersonation-session.sql
 │   │   ├── invalidate-impersonation-token.sql
@@ -401,6 +407,7 @@
 │   │   ├── preview-routes.js
 │   │   ├── review-routes.js
 │   │   ├── source-library-routes.js
+│   │   ├── step-type-routes.js
 │   │   └── workflow-routes.js
 │   ├── 00-global-variables.js
 │   ├── audit-authorization.js
@@ -426,6 +433,8 @@
 │   ├── source-library-authorization.js
 │   ├── source-library.js
 │   ├── sql.js
+│   ├── step-type-engine.js
+│   ├── step-type-repository.js
 │   ├── studioshare-client.js
 │   ├── studioshare-role-refresh.js
 │   ├── user-impersonation.js
@@ -537,6 +546,8 @@
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
 │   ├── step-type-engine.test.js
+│   ├── step-type-publishing.test.js
+│   ├── step-type-repository.test.js
 │   ├── step-type-runtime.test.js
 │   ├── step-type-snapshots.test.js
 │   ├── string-transform-split.test.js
