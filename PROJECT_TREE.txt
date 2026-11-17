@@ -91,11 +91,20 @@
 │   ├── file-utility
 │   │   └── executable-steps.json
 │   ├── step-types
+│   │   ├── create_column.json
+│   │   ├── else.json
+│   │   ├── filter_rows.json
+│   │   ├── flag_records.json
+│   │   ├── format_field.json
+│   │   ├── if_then.json
+│   │   ├── join.json
 │   │   ├── manifest.json
 │   │   ├── reference_source.json
 │   │   ├── remove_duplicates.json
 │   │   ├── schema.json
-│   │   └── sort_records.json
+│   │   ├── sort_records.json
+│   │   ├── split_field.json
+│   │   └── union_sources.json
 │   ├── audit-issue-rules.json
 │   ├── logic_phrase_catalog.json
 │   ├── source-fields.json

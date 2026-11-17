@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "format_field",
+  "version": 1,
+  "label": "Format Field",
+  "category": "transform",
+  "order": 50,
+  "description": "Format values in a selected field.",
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "format_field",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

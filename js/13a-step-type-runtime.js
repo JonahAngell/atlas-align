@@ -28,6 +28,12 @@
  * placeholder key fallback, plus the helpers, migration handlers and editor
  * blocks of js/13-step-type-library.js.
  *
+ * A definition that names a behavior `block` gets each part the block has
+ * (normalize, editor, english, notes, formulas, createdColumns) from that
+ * block, which calls the app's own code; its templates cover the rest. The
+ * types that came with ATLAS Align use these blocks so their output does not
+ * change.
+ *
  * Definitions come from js/step-types/definitions.generated.js (written by
  * `npm run step-types:manifest` from catalogs/step-types/), so the registry is
  * ready as soon as this file runs. load() can replace it from the server.
@@ -170,6 +176,15 @@
   function definitionById(id) {
     if (!registry || isBlank(id)) return null;
     return registry.resolve(String(id)) || null;
+  }
+
+  /**
+   * A part (normalize, editor, english, notes, formulas, createdColumns) of
+   * the definition's behavior block, or null when the block has no such part.
+   */
+  function blockPart(definition, part) {
+    const fn = definition?.block ? BLOCKS[definition.block]?.[part] : null;
+    return typeof fn === "function" ? fn : null;
   }
 
   /** The definition a step belongs to, or null for built-in code. */
@@ -412,6 +427,9 @@
           step.params[field.param] =
             field.default === null ? "" : String(field.default);
       });
+    // A behavior block finishes on the real step, so rewrites that keep state
+    // on the step itself (condition mirrors, created fields) still happen.
+    blockPart(current, "normalize")?.(step, index);
     if (!step.id) step.id = app("uid")?.("step") || `step_${Date.now()}`;
     step.sortOrder = Number.isFinite(Number(step.sortOrder))
       ? step.sortOrder
@@ -430,6 +448,8 @@
   function english(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
+    const fromBlock = blockPart(definition, "english");
+    if (fromBlock) return text(fromBlock(step));
     const { definitions } = engine();
     const template = definitions.template(
       definition,
@@ -447,6 +467,8 @@
   /** Automatic notes, or null to keep the built-in notes. */
   function autoNotes(step) {
     const definition = definitionFor(step);
+    const fromBlock = blockPart(definition, "notes");
+    if (fromBlock) return text(fromBlock(step));
     if (!definition?.autoNotes) return null;
     const { definitions } = engine();
     const template = definitions.template(
@@ -492,6 +514,8 @@
   function formulas(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
+    const fromBlock = blockPart(definition, "formulas");
+    if (fromBlock) return fromBlock(step) || null;
     const { definitions } = engine();
     const set = definition.formulas || { shape: "none" };
     const subtype = definitions.subtypeOf(definition, step);
@@ -535,6 +559,8 @@
   function createdColumns(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
+    const fromBlock = blockPart(definition, "createdColumns");
+    if (fromBlock) return [...new Set((fromBlock(step) || []).filter(Boolean))];
     const names = (definition.outputs?.creates || []).map((template) => {
       try {
         return text(render(template, step, definition, "plain")).trim();
@@ -885,6 +911,12 @@
   function renderEditor(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
+    const fromBlock = blockPart(definition, "editor");
+    if (fromBlock) {
+      const html = fromBlock(step);
+      if (typeof html === "string") return html;
+      return `<p class="hint">The "${escapeHtml(definition.block)}" editor block is not available in this version of ATLAS Align. Update ATLAS Align or pick another block in the step type builder.</p>`;
+    }
     const { definitions } = engine();
     const subtype = definitions.subtypeOf(definition, step);
     const parts = [];
@@ -907,7 +939,7 @@
       .fields(definition, subtype)
       .forEach((field) => parts.push(fieldHtml(field, step, definition)));
     // The same markup as the built-in editors, so the look does not change.
-    return `<div class="guided-builder"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div>`;
+    return `<div class="selected-source-only-builder"><div class="guided-builder"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div></div>`;
   }
 
   // ---------------------------------------------------------------------------

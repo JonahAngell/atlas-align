@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "else",
+  "version": 1,
+  "label": "ELSE",
+  "category": "logic",
+  "description": "What happens when the IF conditions are not met.",
+  "status": "legacy",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "else",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "else"
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

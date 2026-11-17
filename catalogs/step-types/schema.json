@@ -45,6 +45,10 @@
       "description": "null or a subtype list"
     },
     "fields": { "$ref": "#/$defs/fieldList" },
+    "block": {
+      "$ref": "#/$defs/identifier",
+      "description": "A behavior block from js/13-step-type-library.js. It supplies the editor, English, notes, formulas, created columns and normalization it has; the definition supplies the rest."
+    },
     "outputs": {
       "type": "object",
       "additionalProperties": false,
@@ -293,6 +297,9 @@
         "filter",
         "sort",
         "dedupe",
+        "condition",
+        "else",
+        "flag",
         "none"
       ]
     },

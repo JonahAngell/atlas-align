@@ -242,7 +242,7 @@ test("split field reads in analyst and developer logic", () => {
     params: { source_file: "PA", field_name: "Code", ...params },
   });
   assert.match(
-    ctx.analystLogic(
+    ctx.atlasSplitFieldSentence(
       step({
         split_by: "width",
         split_mode: "part",
@@ -254,7 +254,7 @@ test("split field reads in analyst and developer logic", () => {
     /pieces of 3 characters and display part 2 in column/,
   );
   assert.match(
-    ctx.analystLogic(
+    ctx.atlasSplitFieldSentence(
       step({
         split_by: "delimiter",
         split_mode: "explode",
@@ -298,7 +298,7 @@ test("date difference keeps its settings and reads in both logics", () => {
   assert.deepEqual(plain(ctx.atlasCreateColumnStructuredProblems(params)), []);
   const step = { id: "c1", step_type: "create_column", params };
   assert.match(
-    ctx.analystLogic(step),
+    ctx.atlasCreateColumnSentence(step),
     /days from .*Hire Date.* to the run date/,
   );
   assert.match(
@@ -330,7 +330,10 @@ test("concatenate separator reads in analyst and developer logic", () => {
       concat_separator: " ",
     },
   };
-  assert.match(ctx.analystLogic(step), /with a space between them/);
+  assert.match(
+    ctx.atlasCreateColumnSentence(step),
+    /with a space between them/,
+  );
   assert.match(ctx.atlasDevCreateColumn(step).sql, /CONCAT\(.*, ' ', .*\)/);
 });
 

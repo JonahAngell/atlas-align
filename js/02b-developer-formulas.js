@@ -1755,29 +1755,9 @@ function atlasDeveloperFormulas(step) {
       ? { ...atlasDevIfThen(step), lead }
       : { lead };
   }
-  const defined = globalThis.ATLASStepTypeRuntime?.formulas?.(step);
-  if (defined) return defined;
-  switch (step.step_type) {
-    case "if_then":
-      return atlasDevIfThen(step);
-    case "else":
-      return atlasDevElse(step);
-    case "create_column":
-      return atlasDevCreateColumn(step);
-    case "format_field":
-      return atlasDevFormatField(step);
-    case "split_field":
-      return atlasDevSplitField(step);
-    case "join":
-      return atlasDevJoin(step);
-    case "union_sources":
-      return atlasDevUnion(params);
-    case "filter_rows":
-    case "flag_records":
-      return atlasDevLegacyCondition(step);
-    default:
-      return null;
-  }
+  // Every step type is a definition; its behavior block or its templates
+  // build the formulas.
+  return globalThis.ATLASStepTypeRuntime?.formulas?.(step) || null;
 }
 
 /** Formats a formula set as labeled Excel, SQL Server, and Python sections. */

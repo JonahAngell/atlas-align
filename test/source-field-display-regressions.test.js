@@ -73,19 +73,17 @@ function load(files, extra = {}, setup = "") {
     const context = baseContext(extra);
     for (const name of stubs)
       if (!(name in context)) context[name] = () => undefined;
-    // The step type scripts install on window; in a browser that is the
-    // global object, which the app's own scripts read them from.
-    for (const name of [
-      "ATLASStepTypes",
-      "ATLASStepTypeLibrary",
-      "ATLASStepTypeRuntime",
-    ])
-      Object.defineProperty(context.window, name, {
-        get: () => context[name],
-        set: (value) => {
-          context[name] = value;
-        },
-      });
+    // In a browser window is the global object: the step type scripts install
+    // on it and the step type library calls app functions through it.
+    const windowStub = context.window;
+    context.window = new Proxy(windowStub, {
+      get: (target, name) => (name in target ? target[name] : context[name]),
+      set: (target, name, value) => {
+        if (name in target) target[name] = value;
+        else context[name] = value;
+        return true;
+      },
+    });
     vm.createContext(context);
     try {
       for (const file of files)
