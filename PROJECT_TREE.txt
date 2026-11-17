@@ -1259,6 +1259,7 @@
 │   ├── 10-field-picker.js
 │   ├── 11-repo-library.js
 │   ├── 12-export-foundation.js
+│   ├── 12b-code-export.js
 │   ├── 13-catalog-field-browser.js
 │   ├── 14-catalog-driven-builder.js
 │   ├── 15a-audit-library-ui.js
@@ -1590,6 +1591,7 @@
 │   ├── audit-workflow-routes.test.js
 │   ├── authorization-role-matrix.test.js
 │   ├── boot-loader.test.js
+│   ├── code-export.test.js
 │   ├── complete-statements-preview.test.js
 │   ├── custom-source.test.js
 │   ├── deep-links.test.js

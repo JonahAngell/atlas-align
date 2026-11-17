@@ -14,7 +14,13 @@ const index = read("index.html");
  * audit, lock state, edit access, and save result for the scenario.
  */
 function exportContext(options = {}) {
-  const calls = { saves: 0, loads: 0, refreshes: 0, downloads: [], statuses: [] };
+  const calls = {
+    saves: 0,
+    loads: 0,
+    refreshes: 0,
+    downloads: [],
+    statuses: [],
+  };
   const audit = options.audit || {
     id: "audit-1",
     name: "Management Chain (NAA)",
@@ -113,7 +119,10 @@ test("Export page replaces the publication and Save / Export panels", () => {
     /atlasPublicationForm/,
   ])
     assert.doesNotMatch(page, removed);
-  assert.match(index, /data-section="export"[\s\S]*?<span class="navtext">Export<\/span>/);
+  assert.match(
+    index,
+    /data-section="export"[\s\S]*?<span class="navtext">Export<\/span>/,
+  );
   assert.match(index, /29-export-dashboard\.js/);
   assert.doesNotMatch(index, /tutorial-save-export/);
 });
@@ -125,7 +134,10 @@ test("registry offers JSON, Excel, Qtest, and HTML, keeping CSV and Markdown hid
     "window.ATLASExportFormats.visible().map((format) => format.id)",
     context,
   );
-  assert.deepEqual([...visible], ["json", "excel", "qtest", "html"]);
+  assert.deepEqual(
+    [...visible],
+    ["json", "excel", "qtest", "html", "sql", "python"],
+  );
   assert.deepEqual(
     [...formats].filter((format) => format.hidden).map((format) => format.id),
     ["csv", "markdown"],
@@ -179,7 +191,10 @@ test("file names keep the typed name but drop unsafe characters and a repeated e
     context,
   );
   assert.equal(
-    vm.runInContext('atlasExportFileName(window.ATLASExportFormats.get("json"))', context),
+    vm.runInContext(
+      'atlasExportFileName(window.ATLASExportFormats.get("json"))',
+      context,
+    ),
     "Custom name.json",
   );
 });
@@ -187,7 +202,10 @@ test("file names keep the typed name but drop unsafe characters and a repeated e
 test("an unlocked audit is saved before it is downloaded, and JSON keeps disabled steps", async () => {
   const { context, calls } = exportContext();
   assert.equal(
-    await vm.runInContext('window.ATLASExportFormats.run("json", "download")', context),
+    await vm.runInContext(
+      'window.ATLASExportFormats.run("json", "download")',
+      context,
+    ),
     true,
   );
   assert.equal(calls.saves, 1);
@@ -204,7 +222,10 @@ test("an unlocked audit is saved before it is downloaded, and JSON keeps disable
 test("a failed save stops the export", async () => {
   const { context, calls } = exportContext({ saveResult: false });
   assert.equal(
-    await vm.runInContext('window.ATLASExportFormats.run("excel", "download")', context),
+    await vm.runInContext(
+      'window.ATLASExportFormats.run("excel", "download")',
+      context,
+    ),
     false,
   );
   assert.equal(calls.downloads.length, 0);
@@ -214,20 +235,29 @@ test("a failed save stops the export", async () => {
 
 test("a locked audit is never saved and reloads a newer locked revision", async () => {
   const current = exportContext({ locked: true });
-  await vm.runInContext('window.ATLASExportFormats.run("html", "download")', current.context);
+  await vm.runInContext(
+    'window.ATLASExportFormats.run("html", "download")',
+    current.context,
+  );
   assert.equal(current.calls.saves, 0);
   assert.equal(current.calls.loads, 0);
   assert.equal(current.calls.downloads.length, 1);
 
   const stale = exportContext({ locked: true, lockedRevisionId: 9 });
-  await vm.runInContext('window.ATLASExportFormats.run("html", "download")', stale.context);
+  await vm.runInContext(
+    'window.ATLASExportFormats.run("html", "download")',
+    stale.context,
+  );
   assert.equal(stale.calls.saves, 0);
   assert.equal(stale.calls.loads, 1);
 });
 
 test("read-only users export without attempting a save", async () => {
   const { context, calls } = exportContext({ canEdit: false });
-  await vm.runInContext('window.ATLASExportFormats.run("qtest", "download")', context);
+  await vm.runInContext(
+    'window.ATLASExportFormats.run("qtest", "download")',
+    context,
+  );
   assert.equal(calls.saves, 0);
   assert.equal(calls.downloads.length, 1);
   assert.deepEqual(calls.statuses.at(-1), [
@@ -239,13 +269,24 @@ test("read-only users export without attempting a save", async () => {
 test("copying HTML writes the document text to the clipboard", async () => {
   const { context, calls } = exportContext();
   const written = [];
-  context.navigator.clipboard = { writeText: async (text) => written.push(text) };
-  await vm.runInContext('window.ATLASExportFormats.run("html", "copy")', context);
+  context.navigator.clipboard = {
+    writeText: async (text) => written.push(text),
+  };
+  await vm.runInContext(
+    'window.ATLASExportFormats.run("html", "copy")',
+    context,
+  );
   assert.deepEqual(written, ["<!doctype html><h1>Audit</h1>"]);
   assert.equal(calls.downloads.length, 0);
-  assert.deepEqual(calls.statuses.at(-1), ["HTML copied to the clipboard.", "ok"]);
+  assert.deepEqual(calls.statuses.at(-1), [
+    "HTML copied to the clipboard.",
+    "ok",
+  ]);
   assert.equal(
-    await vm.runInContext('window.ATLASExportFormats.run("json", "copy")', context),
+    await vm.runInContext(
+      'window.ATLASExportFormats.run("json", "copy")',
+      context,
+    ),
     false,
     "formats without a copy action ignore copy requests",
   );
