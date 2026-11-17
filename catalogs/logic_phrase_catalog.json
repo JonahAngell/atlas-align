@@ -78,7 +78,8 @@
       "display": "Note: Display - Keep only rows that match this condition.",
       "do_not_display": "Note: Do Not Display - Keep only rows that do not match this condition.",
       "else_display": "Note: ELSE Display - Keep only rows that do not match the parent IF.",
-      "else_do_not_display": "Note: ELSE Do Not Display - Keep only rows that match the parent IF."
+      "else_do_not_display": "Note: ELSE Do Not Display - Keep only rows that match the parent IF.",
+      "do_not_display_key": "Note: Do Not Display by key - Drop every row whose {key_column} value appears on a matching row."
     },
     "notes": {
       "freeform_action": "Note: THEN action is free text and is not in the formulas: {action}",
@@ -88,6 +89,9 @@
       "unknown_format": "Note: Format \"{format}\" is not a standard option. Check the formulas before running.",
       "missing_delimiter": "Note: Split On is empty. Add the delimiter before running.",
       "append_message_excel": "Note: {column} keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into {column}.",
+      "missing_width": "Note: The split width is empty. Add the width before running.",
+      "run_date": "Note: RunDate (@RunDate, run_date) stands for the date the audit is run.",
+      "split_explode": "Note: Each part becomes its own row. Excel has no single formula for this; use Power Query's Split Column into Rows.",
       "split_numbered_columns": "Note: The number of parts can vary, so the columns are numbered {pattern}, and so on. Excel spills one part into each column to the right. SQL Server returns one row per part with its ordinal; pivot the rows to get one column per part.",
       "split_sql_version": "Note: The SQL uses STRING_SPLIT with an ordinal, which needs SQL Server 2022 or later and a single-character delimiter.",
       "keep_true_rows": "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
@@ -117,7 +121,13 @@
       "default": "Format {table_column} as {format}{format_suffix}."
     },
     "split_field": {
-      "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}."
+      "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}.",
+      "delimiter_part": "Split {table_column} on {delimiter} and display part {split_part} in column {output_column}.",
+      "delimiter_last": "Split {table_column} on {delimiter} and display the last part in column {output_column}.",
+      "width_part": "Split {table_column} into pieces of {width} characters and display part {split_part} in column {output_column}.",
+      "width_last": "Split {table_column} into pieces of {width} characters and display the last part in column {output_column}.",
+      "delimiter_explode": "Split {table_column} on {delimiter} and make one record for each part.",
+      "width_explode": "Split {table_column} into pieces of {width} characters and make one record for each part."
     },
     "sort_records": {
       "default": "Sort records by {table_column} in {sort_direction} order.",
@@ -138,6 +148,9 @@
       "source_field": "Create new column {column_name} using {table_column}.",
       "expression": "Create new column {column_name} using expression: {expression}.",
       "concatenate_fields": "Create new column {column_name} by concatenating {first_column} and {second_column}.",
+      "concatenate_fields_separator": "Create new column {column_name} by concatenating {first_column} and {second_column} with {separator} between them.",
+      "date_difference_since": "Create new column {column_name} with the number of days from {date_column} to the run date.",
+      "date_difference_until": "Create new column {column_name} with the number of days from the run date to {date_column}.",
       "concatenate_expression": "Create new column {column_name} by combining: {expression}.",
       "first_characters": "Create new column {column_name} using the first {character_count} characters of {table_column}.",
       "character_count": "Create new column {column_name} using the character count of {table_column}.",
@@ -200,6 +213,7 @@
       "then_set_column_value": "set {target_column} value to {value_column} value",
       "then_display": "display record",
       "then_do_not_display": "do not display record",
+      "then_do_not_display_key": "do not display any record with the same {key_column} value",
       "then_freeform": "{action}",
       "then_display_text_line": "THEN display text response {message} in new column {output_column}{separator_clause}.",
       "then_set_column_value_line": "THEN set {target_column} value to {value_column} value.",
@@ -216,6 +230,7 @@
       "set_column_value": "ELSE set {target_column} value to {value_column} value.",
       "display": "ELSE display record.",
       "do_not_display": "ELSE do not display record.",
+      "do_not_display_key": "ELSE do not display any record with the same {key_column} value.",
       "freeform": "ELSE {action}.",
       "string_transform": "ELSE {phrase}."
     },
@@ -362,7 +377,8 @@
         "Source field value",
         "Expression / calculation",
         "String transformation",
-        "Concatenate fields"
+        "Concatenate fields",
+        "Date difference"
       ],
       "error_output_actions": ["Display text response", "Do not display record"]
     },

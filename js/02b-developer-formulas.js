@@ -1003,6 +1003,45 @@ function atlasDevFilterFormulas(condition, keepMatches) {
   };
 }
 
+/**
+ * Keep-rows formulas for "Do not display all records for this key": drop
+ * every row whose key value appears on a row that matches the condition.
+ * Returns null when the action hides matching records only.
+ * @param {Record<string, any>} params - Step params.
+ * @param {Record<string, any>} condition - Condition in each dialect.
+ */
+function atlasDevGroupExcludeFormulas(params, condition) {
+  if (params.then_exclude_scope !== "key") return null;
+  let stored = {};
+  try {
+    stored = JSON.parse(params.then_exclude_key_fields_json || "[]")[0] || {};
+  } catch {
+    stored = {};
+  }
+  const key = atlasDevFieldSpec(
+    params.then_exclude_key_source_file || stored.sourceFile,
+    params.then_exclude_key_source_alias || stored.sourceAlias,
+    params.then_exclude_key_field || stored.fieldName,
+  );
+  if (!key.fieldName) return null;
+  const excelKey = atlasDevField(key, "excel");
+  const sqlKey = atlasDevField(key, "sql");
+  const pyKey = atlasDevField(key, "python");
+  const excelColumn = excelKey.replace("[@[", "[[");
+  return {
+    // Excel needs the row-level match in a helper column before it can count
+    // matches per key.
+    excel: `Matches: =${condition.excel}\nKeep: =COUNTIFS(${excelColumn}, ${excelKey}, [[Matches]], TRUE)=0`,
+    sql: `WHERE ${sqlKey} NOT IN (SELECT ${sqlKey} WHERE ${condition.sql})`,
+    python: `mask = ${condition.python}\nexcluded_keys = ${pyKey}[mask].unique()\ndf = df[~${pyKey}.isin(excluded_keys)]`,
+    notes: [
+      atlasDevPhrase("developer_logic.display_notes.do_not_display_key", {
+        key_column: key.fieldName,
+      }),
+    ],
+  };
+}
+
 function atlasDevIfThen(step) {
   const params = step.params || {};
   const conditions =
@@ -1011,6 +1050,11 @@ function atlasDevIfThen(step) {
     atlasDevConditionTree(conditions, dialect),
   );
   const action = params.then_action_type || "freeform";
+  const groupExclude =
+    action === "do_not_display"
+      ? atlasDevGroupExcludeFormulas(params, condition)
+      : null;
+  if (groupExclude) return groupExclude;
   if (action === "display" || action === "do_not_display")
     return {
       ...atlasDevFilterFormulas(condition, action === "display"),
@@ -1195,15 +1239,44 @@ function atlasDevCreateColumn(step) {
       params.concat_source_alias_2,
       params.concat_field_2,
     );
+    const separator = String(params.concat_separator ?? "");
     return {
       ...atlasDevAssignment(target, (dialect) => {
         const a = atlasDevField(first, dialect);
         const b = atlasDevField(second, dialect);
-        if (dialect === "excel") return `${a}&${b}`;
-        if (dialect === "sql") return `CONCAT(${a}, ${b})`;
-        return `${atlasDevPyText(a)} + ${atlasDevPyText(b)}`;
+        const sep = separator ? atlasDevString(separator, dialect) : "";
+        if (dialect === "excel") return sep ? `${a}&${sep}&${b}` : `${a}&${b}`;
+        if (dialect === "sql")
+          return sep ? `CONCAT(${a}, ${sep}, ${b})` : `CONCAT(${a}, ${b})`;
+        return sep
+          ? `${atlasDevPyText(a)} + ${sep} + ${atlasDevPyText(b)}`
+          : `${atlasDevPyText(a)} + ${atlasDevPyText(b)}`;
       }),
       notes: [],
+    };
+  }
+  if (mode === "Date difference") {
+    const date = atlasDevFieldSpec(
+      params.date_diff_source_file || params.source_file,
+      params.date_diff_source_alias,
+      params.date_diff_field,
+    );
+    const sinceDate = params.date_diff_direction !== "field_minus_parameter";
+    return {
+      ...atlasDevAssignment(target, (dialect) => {
+        const ref = atlasDevField(date, dialect);
+        if (dialect === "excel")
+          return sinceDate ? `RunDate-${ref}` : `${ref}-RunDate`;
+        if (dialect === "sql")
+          return sinceDate
+            ? `DATEDIFF(day, ${ref}, @RunDate)`
+            : `DATEDIFF(day, @RunDate, ${ref})`;
+        const py = `pd.to_datetime(${ref}, errors="coerce")`;
+        return sinceDate
+          ? `(run_date - ${py}).dt.days`
+          : `(${py} - run_date).dt.days`;
+      }),
+      notes: [atlasDevPhrase("developer_logic.notes.run_date")],
     };
   }
   if (mode === "Expression / calculation") {
@@ -1336,6 +1409,77 @@ function atlasDevSplitPart(value) {
   return word ? ATLAS_DEV_ORDINAL_WORDS[word] : 1;
 }
 
+/**
+ * Formulas for a fixed-width split, or a split that makes one row per part.
+ * @param {Record<string, any>} field - Field spec being split.
+ * @param {ReturnType<typeof atlasSplitFieldConfig>} c - Split settings.
+ */
+function atlasDevStructuredSplit(field, c) {
+  const notes = [];
+  const width = Number(c.width) || 0;
+  if (c.by === "width" && !width)
+    notes.push(atlasDevPhrase("developer_logic.notes.missing_width"));
+  if (c.by === "delimiter" && !c.delimiter)
+    notes.push(atlasDevPhrase("developer_logic.notes.missing_delimiter"));
+  const w = width || atlasDevPlaceholder("width", "[width]");
+  const d = (dialect) =>
+    atlasDevString(
+      c.delimiter || atlasDevPlaceholder("delimiter", "[delimiter]"),
+      dialect,
+    );
+  if (c.mode === "explode") {
+    notes.push(atlasDevPhrase("developer_logic.notes.split_explode"));
+    const name = field.fieldName || atlasDevPlaceholder("field", "[field]");
+    const sqlRef = atlasDevField(field, "sql");
+    const pyRef = atlasDevField(field, "python");
+    const pyCol = atlasDevPyString(name);
+    return {
+      excel:
+        c.by === "width"
+          ? `=MID(${atlasDevField(field, "excel")}, SEQUENCE(ROUNDUP(LEN(${atlasDevField(field, "excel")})/${w}, 0), 1, 1, ${w}), ${w})`
+          : `=TEXTSPLIT(${atlasDevField(field, "excel")}, , ${d("excel")})`,
+      sql:
+        c.by === "width"
+          ? `CROSS APPLY GENERATE_SERIES(1, LEN(${sqlRef}), ${w}) AS piece
+SELECT SUBSTRING(${sqlRef}, piece.value, ${w}) AS ${atlasDevSqlName(name)}`
+          : `CROSS APPLY STRING_SPLIT(${sqlRef}, ${d("sql")}) AS piece
+SELECT TRIM(piece.value) AS ${atlasDevSqlName(name)}`,
+      python:
+        c.by === "width"
+          ? `df[${pyCol}] = ${atlasDevPyText(pyRef)}.map(lambda x: [x[i:i + ${w}] for i in range(0, len(x), ${w})] or [""])
+df = df.explode(${pyCol})`
+          : `df[${pyCol}] = ${atlasDevPyText(pyRef)}.str.split(${d("python")}, regex=False)
+df = df.explode(${pyCol})
+df[${pyCol}] = df[${pyCol}].str.strip()`,
+      notes,
+    };
+  }
+  const part = c.part === "last" ? "last" : Number(c.part) || 1;
+  const target =
+    c.outputColumn || atlasDevPlaceholder("output_column", "[output column]");
+  const formulas = atlasDevAssignment(target, (dialect) => {
+    const ref = atlasDevField(field, dialect);
+    const start =
+      part === "last"
+        ? null
+        : typeof w === "number"
+          ? (part - 1) * w + 1
+          : `${part - 1}*${w}+1`;
+    if (dialect === "excel")
+      return part === "last"
+        ? `RIGHT(${ref}, MOD(LEN(${ref})-1, ${w})+1)`
+        : `MID(${ref}, ${start}, ${w})`;
+    if (dialect === "sql")
+      return part === "last"
+        ? `RIGHT(${ref}, (LEN(${ref})-1) % ${w} + 1)`
+        : `SUBSTRING(${ref}, ${start}, ${w})`;
+    return part === "last"
+      ? `${atlasDevPyText(ref)}.map(lambda x: x[((len(x) - 1) // ${w}) * ${w}:])`
+      : `${atlasDevPyText(ref)}.str.slice(${typeof start === "number" ? start - 1 : `${part - 1}*${w}`}, ${typeof start === "number" ? start - 1 + w : `${part}*${w}`})`;
+  });
+  return { ...formulas, notes };
+}
+
 function atlasDevSplitField(step) {
   const params = step.params || {};
   const field = atlasDevFieldSpec(
@@ -1343,7 +1487,19 @@ function atlasDevSplitField(step) {
     params.source_alias,
     params.field_name,
   );
-  const delimiter = atlasDevSplitDelimiter(params.split_on);
+  const structured =
+    typeof atlasSplitFieldConfig === "function" &&
+    (params.split_by || params.split_mode)
+      ? atlasSplitFieldConfig(params)
+      : null;
+  if (
+    structured &&
+    (structured.by === "width" || structured.mode === "explode")
+  )
+    return atlasDevStructuredSplit(field, structured);
+  const delimiter = structured
+    ? structured.delimiter
+    : atlasDevSplitDelimiter(params.split_on);
   const part = atlasDevSplitPart(params.split_part);
   const target =
     params.output_column ||

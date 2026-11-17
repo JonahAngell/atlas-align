@@ -830,10 +830,38 @@ function thenActionPlain(step) {
   if (actionType === "display")
     return renderCatalogPhrase("analyst_logic.if_then.then_display", {});
   if (actionType === "do_not_display")
-    return renderCatalogPhrase("analyst_logic.if_then.then_do_not_display", {});
+    return excludeKeyColumnPlain(params)
+      ? renderCatalogPhrase("analyst_logic.if_then.then_do_not_display_key", {
+          key_column: excludeKeyColumnPlain(params),
+        })
+      : renderCatalogPhrase("analyst_logic.if_then.then_do_not_display", {});
   return renderCatalogPhrase("analyst_logic.if_then.then_freeform", {
     action: params.then_action || step.action || "",
   });
+}
+
+/**
+ * Names the key column of a "Do not display all records for this key"
+ * action, or "" when the action hides matching records only.
+ * @param {Record<string, any>} params - Step params.
+ */
+function excludeKeyColumnPlain(params = {}) {
+  if (params.then_exclude_scope !== "key") return "";
+  let key = {};
+  try {
+    key = JSON.parse(params.then_exclude_key_fields_json || "[]")[0] || {};
+  } catch {
+    key = {};
+  }
+  const fieldName = params.then_exclude_key_field || key.fieldName || "";
+  if (!fieldName) return "";
+  return tableColumnPlain(
+    params.then_exclude_key_source_file || key.sourceFile || params.source_file,
+    params.then_exclude_key_source_alias ||
+      key.sourceAlias ||
+      params.source_alias,
+    fieldName,
+  );
 }
 
 /**
@@ -860,12 +888,44 @@ function elseActionPlain(step) {
   if (actionType === "display")
     return renderCatalogPhrase("analyst_logic.else.display", {});
   if (actionType === "do_not_display")
-    return renderCatalogPhrase("analyst_logic.else.do_not_display", {});
+    return excludeKeyColumnPlain(params)
+      ? renderCatalogPhrase("analyst_logic.else.do_not_display_key", {
+          key_column: excludeKeyColumnPlain(params),
+        })
+      : renderCatalogPhrase("analyst_logic.else.do_not_display", {});
   if (params.then_action)
     return renderCatalogPhrase("analyst_logic.else.freeform", {
       action: params.then_action,
     });
   return renderCatalogPhrase("analyst_logic.else.default", {});
+}
+
+/**
+ * Names a separator for analyst text. Spaces and tabs are named in words,
+ * since a quoted space would read as nothing.
+ * @param {any} value - Separator text.
+ */
+function separatorPlain(value) {
+  const text = String(value ?? "");
+  if (/^ +$/.test(text))
+    return text.length === 1 ? "a space" : `${text.length} spaces`;
+  if (text === "\t") return "a tab";
+  return quotePhraseValue(text);
+}
+
+/**
+ * Names a split delimiter for analyst text, e.g. "the comma" or "\" - \"".
+ * @param {{delimiterChoice: string, customDelimiter: string}} split - Config.
+ */
+function atlasSplitDelimiterPlain(split) {
+  if (split.delimiterChoice === "custom")
+    return quotePhraseValue(split.customDelimiter);
+  const known = (
+    typeof ATLAS_STRING_SPLIT_DELIMITERS !== "undefined"
+      ? ATLAS_STRING_SPLIT_DELIMITERS
+      : []
+  ).find(([word]) => word === split.delimiterChoice);
+  return known ? `the ${known[2].toLowerCase()}` : "[delimiter]";
 }
 
 /**
@@ -878,7 +938,13 @@ function createColumnPhrasePath(params) {
   if (params.value_mode === "Source field value")
     return "analyst_logic.create_column.source_field";
   if (params.value_mode === "Concatenate fields")
-    return "analyst_logic.create_column.concatenate_fields";
+    return String(params.concat_separator ?? "") !== ""
+      ? "analyst_logic.create_column.concatenate_fields_separator"
+      : "analyst_logic.create_column.concatenate_fields";
+  if (params.value_mode === "Date difference")
+    return params.date_diff_direction === "field_minus_parameter"
+      ? "analyst_logic.create_column.date_difference_until"
+      : "analyst_logic.create_column.date_difference_since";
   if (params.expression_type === "first_characters")
     return "analyst_logic.create_column.first_characters";
   if (params.expression_type === "character_count")
@@ -1065,6 +1131,12 @@ function analystLogic(step) {
         sourceAliasFor(params.concat_source_2 || params.source_file),
         params.concat_field_2,
       ),
+      separator: separatorPlain(params.concat_separator),
+      date_column: tableColumnPlain(
+        params.date_diff_source_file,
+        params.date_diff_source_alias,
+        params.date_diff_field || "",
+      ),
     });
   }
   if (stepType === "if_then") {
@@ -1138,6 +1210,30 @@ function analystLogic(step) {
       format: params.format || "",
       format_suffix: "",
     });
+  if (
+    stepType === "split_field" &&
+    typeof atlasSplitFieldConfig === "function"
+  ) {
+    const split = atlasSplitFieldConfig(params);
+    const by = split.by === "width" ? "width" : "delimiter";
+    const kind =
+      split.mode === "explode"
+        ? "explode"
+        : split.part === "last"
+          ? "last"
+          : "part";
+    return renderCatalogPhrase(`analyst_logic.split_field.${by}_${kind}`, {
+      table_column: tableColumnPlain(
+        params.source_file,
+        params.source_alias,
+        params.field_name,
+      ),
+      delimiter: atlasSplitDelimiterPlain(split),
+      width: split.width || "[width]",
+      split_part: split.part,
+      output_column: quotePhraseValue(split.outputColumn),
+    });
+  }
   if (stepType === "split_field")
     return renderCatalogPhrase("analyst_logic.split_field.default", {
       table_column: tableColumnPlain(

@@ -82,6 +82,7 @@
     ["then_value_field", "then_value_source_file"],
     ["string_source_field", "string_source_file"],
     ["then_string_source_field", "then_string_source_file"],
+    ["then_exclude_key_field", "then_exclude_key_source_file"],
   ];
   const VALUELESS_OPERATORS = new Set([
     "is blank/null",
@@ -660,6 +661,13 @@
               params.string_source_field,
               "string_source_field",
               "string_source_file",
+            );
+          else if (mode === "Date difference")
+            pushOperand(
+              params.date_diff_source_file,
+              params.date_diff_field,
+              "date_diff_field",
+              "date_diff_source_file",
             );
           else if (
             mode === "Expression / calculation" ||
@@ -1622,6 +1630,130 @@
                   },
                 },
               );
+            },
+          ),
+        );
+      });
+    },
+    structuredStepIntegrity(context) {
+      return context.audit.steps.flatMap((step) => {
+        const p = step.params;
+        const problems = [];
+        const add = (param, message, fix = {}) =>
+          problems.push({ param, message, fix });
+        const fieldFix = (sourceParam, title) => ({ sourceParam, title });
+        const delimiterChoices = array(
+          global.ATLAS_STRING_SPLIT_DELIMITERS ||
+            (typeof ATLAS_STRING_SPLIT_DELIMITERS !== "undefined"
+              ? ATLAS_STRING_SPLIT_DELIMITERS
+              : []),
+        ).map(([value, , label]) => ({ value, label }));
+        if (
+          step.type === "split_field" &&
+          typeof global.atlasSplitFieldProblems === "function"
+        ) {
+          const fieldParam = {
+            "Choose the field.": "field_name",
+            "Choose a delimiter.": "split_delimiter",
+            "Type the custom delimiter.": "split_custom_delimiter",
+            "Choose the output column.": "output_column",
+          };
+          array(global.atlasSplitFieldProblems(p)).forEach((message) => {
+            const param =
+              fieldParam[message] ||
+              (/width/.test(message)
+                ? "split_width"
+                : /delimiter/.test(message)
+                  ? "split_custom_delimiter"
+                  : "split_part");
+            const fix =
+              param === "field_name"
+                ? fieldFix("source_file", "Choose field to split")
+                : param === "split_delimiter"
+                  ? {
+                      title: "Choose delimiter",
+                      label: "Delimiter",
+                      choices: delimiterChoices,
+                    }
+                  : param === "output_column"
+                    ? { title: "Name output column", label: "Output column" }
+                    : param === "split_width"
+                      ? { title: "Set width", label: "Width (characters)" }
+                      : param === "split_part"
+                        ? {
+                            title: "Choose part",
+                            label: "Part (1, 2 … or last)",
+                          }
+                        : { title: "Set delimiter", label: "Custom delimiter" };
+            add(param, `Split field: ${message}`, fix);
+          });
+        }
+        if (
+          step.type === "create_column" &&
+          typeof global.atlasCreateColumnStructuredProblems === "function"
+        )
+          array(global.atlasCreateColumnStructuredProblems(p)).forEach(
+            (message) => {
+              const param = /date field/.test(message)
+                ? "date_diff_field"
+                : /separator/.test(message)
+                  ? "concat_separator"
+                  : "value_mode";
+              add(
+                param,
+                `Create column: ${message}`,
+                param === "date_diff_field"
+                  ? fieldFix("date_diff_source_file", "Choose date field")
+                  : param === "concat_separator"
+                    ? { title: "Shorten separator", label: "Separator" }
+                    : {
+                        title: "Choose value type",
+                        label: "Value type",
+                        choices: [
+                          "Static value",
+                          "Source field value",
+                          "String transformation",
+                          "Concatenate fields",
+                          "Date difference",
+                        ],
+                      },
+              );
+            },
+          );
+        if (
+          (step.type === "if_then" || step.type === "else") &&
+          p.then_action_type === "do_not_display" &&
+          p.then_exclude_scope === "key" &&
+          blank(p.then_exclude_key_field)
+        )
+          add(
+            "then_exclude_key_field",
+            "Do Not Display: choose the key field whose records are hidden.",
+            fieldFix("then_exclude_key_source_file", "Choose key field"),
+          );
+        return problems.map((problem, index) =>
+          issue(
+            `${step.id}-${index}`,
+            {
+              page: "steps",
+              stepId: step.id,
+              control: `param:${problem.param}`,
+            },
+            {
+              // A written expression still runs through the older compiler's
+              // expression parser, so it is a warning rather than a blocker.
+              ...(problem.param === "value_mode"
+                ? { severity: "warning" }
+                : {}),
+              summary: problem.message,
+              control: `param:${problem.param}`,
+              fixKind: "composite",
+              actionData: {
+                repair: "step-param",
+                param: problem.param,
+                stepId: step.id,
+                ...problem.fix,
+              },
             },
           ),
         );
@@ -2784,6 +2916,7 @@
         "clear-created-ref",
         "move-after-creator",
         "logic-reference",
+        "step-param",
       ].includes(repair)
     )
       return "That logic step is no longer on the audit.";
@@ -2915,6 +3048,47 @@
           showFixError(fix, error);
           return false;
         }
+        commitAudit("Audit issue updated.");
+      });
+      return true;
+    }
+    if (repair === "step-param") {
+      const choices = array(data.choices);
+      const isField = Boolean(data.sourceParam);
+      const current = step ? string(step.params?.[data.param]) : "";
+      const body = isField
+        ? `${selectMarkup("source", "Source", sourceChoices(), step ? string(step.params?.[data.sourceParam] || step.params?.source_file) : "")}${selectMarkup("field", "Field", [], current)}`
+        : choices.length
+          ? selectMarkup("choice", data.label || "Value", choices, current)
+          : `<label>${safeText(data.label || "Value")}<input data-fix-text value="${safeText(current)}"></label>`;
+      const fix = openFixShell(
+        entry,
+        trigger,
+        data.title || "Edit step setting",
+        `${body}${actionRow("Save")}`,
+      );
+      bindFixSave(fix, () => {
+        if (!step) {
+          showFixError(fix, "That logic step is no longer on the audit.");
+          return false;
+        }
+        const read = (name) =>
+          string(
+            fix.root.querySelector(`[data-fix-field="${name}"]`)?.value,
+          ).trim();
+        const value = isField
+          ? read("field")
+          : choices.length
+            ? read("choice")
+            : string(fix.root.querySelector("[data-fix-text]")?.value);
+        if (!string(value).trim()) {
+          showFixError(fix, "Enter a value before saving.");
+          return false;
+        }
+        const params = ensureParams(step);
+        params[data.param] = value;
+        if (isField) params[data.sourceParam] = read("source");
+        global.normalizeCatalogStep?.(step);
         commitAudit("Audit issue updated.");
       });
       return true;
