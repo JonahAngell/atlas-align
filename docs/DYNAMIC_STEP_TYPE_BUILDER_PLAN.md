@@ -1,8 +1,8 @@
 # Dynamic Step Type Builder: Plan
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
-issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002) and Phase 3 (issue
-#5003) are in review. Later phases have not started.
+issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002), Phase 3 (issue
+#5003) and Phase 4 (issue #5004) are in review. Later phases have not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -30,6 +30,22 @@ expected outcomes and script assembly in `js/12` and `js/12b` (phase 5).
 `format_field` and `split_field` gained structured editors on `main` while
 this work was in progress, so they stay on their built-in code here and
 become definitions with behavior blocks in phase 4.
+
+Phase 4 note: every type that came with ATLAS Align is now a definition. The
+seven complex ones (`create_column`, `if_then`, `join`, and the legacy
+`else`, `union_sources`, `filter_rows` and `flag_records`) name a behavior
+block with the schema's new top-level `block` key, and so do `format_field`
+and `split_field`, whose structured editors from `main` became the
+`format_field` and `split_field` blocks. A block in
+`js/13-step-type-library.js` supplies the parts it has (normalize, editor,
+English, notes, formulas, created columns) from today's functions; the
+definition supplies the rest. A new definition can reuse a block, for example
+a second type built on the `join` block. The wrapper chains for
+`renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`,
+`renderCreateModeInputs` and `renderConditionRow` are replaced by named
+functions, and the built-in picker list, legacy type map, qTest table and
+import titles are gone. New script roles `condition`, `else` and `flag` were
+added; the engine version is 1.2.0. Snapshots are identical.
 
 ## Goal
 

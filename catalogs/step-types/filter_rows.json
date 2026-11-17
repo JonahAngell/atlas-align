@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "filter_rows",
+  "version": 1,
+  "label": "Filter Rows",
+  "category": "logic",
+  "description": "Keep or exclude matching rows.",
+  "status": "legacy",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": ["transform"]
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "filter_rows",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "filter"
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

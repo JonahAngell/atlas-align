@@ -91,16 +91,12 @@ test("new IF action preserves explicitly stored values", () => {
 test("Create Column normalization keeps stored legacy names but leaves a new name blank", () => {
   const fn = loadFunction(
     "../js/14-catalog-driven-builder.js",
-    "normalizeCatalogStep",
+    "atlasNormalizeCreateColumnStep",
     {
-      LEGACY_TYPE_MAP: {},
-      STEP_TYPE_OPTIONS: [["create_column", "Create Column"]],
-      legacyTypeFromStepType: () => "create",
+      atlasCopyStepSourceParams: () => {},
       state: {
         audit: { sources: [], fields: [{ name: "First Source Field" }] },
       },
-      sourceAliasFor: () => "",
-      uid: () => "step_test",
     },
   );
   const fresh = { step_type: "create_column", params: {}, field: "" };

@@ -21,7 +21,6 @@ function loadJoinEditor() {
   const sandbox = {
     calls,
     esc: (value) => String(value ?? ""),
-    renderGuidedBuilder: () => "previous-builder",
     normalizeCatalogStep: (step) => step,
     sourceInputFromOptions(options) {
       calls.push(["source", options]);
@@ -58,8 +57,8 @@ function loadJoinEditor() {
 }
 
 test("Join steps render editable controls instead of calling removed picker helpers", () => {
-  const { renderGuidedBuilder, calls } = loadJoinEditor();
-  const html = renderGuidedBuilder({
+  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
+  const html = atlasJoinEditorHtml({
     id: "step-join",
     step_type: "join",
     params: {
@@ -106,8 +105,8 @@ test("Join steps render editable controls instead of calling removed picker help
 });
 
 test("Join steps render one key pair row per saved join key", () => {
-  const { renderGuidedBuilder, calls } = loadJoinEditor();
-  const html = renderGuidedBuilder({
+  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
+  const html = atlasJoinEditorHtml({
     id: "step-join",
     step_type: "join",
     params: {
@@ -193,8 +192,8 @@ test("join key helpers mirror the first pair and keep older single-key audits", 
 });
 
 test("Union steps render source pickers through the current source helper", () => {
-  const { renderGuidedBuilder, calls } = loadJoinEditor();
-  const html = renderGuidedBuilder({
+  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
+  const html = atlasJoinEditorHtml({
     id: "step-union",
     step_type: "join",
     params: {
@@ -210,14 +209,6 @@ test("Union steps render source pickers through the current source helper", () =
   assert.match(html, /SOURCE:right_source/);
   assert.match(html, /SOURCE:output_source/);
   assert.equal(calls.filter(([kind]) => kind === "field").length, 0);
-});
-
-test("non-join steps still use the previous guided builder", () => {
-  const { renderGuidedBuilder } = loadJoinEditor();
-  assert.equal(
-    renderGuidedBuilder({ id: "step-if", step_type: "if_then", params: {} }),
-    "previous-builder",
-  );
 });
 
 function loadJoinPicker() {

@@ -6,26 +6,14 @@
 const ATLAS_IMPORT_UNRECOGNIZED =
   'This text could not be read as a Logic Builder step. Use a sentence the builder already writes, such as: If file "sap.hi0256" column "Nationality" is equal to text values "US" or "Minor Outl. Isl." THEN do not display. Reference source, Create new column, Join, UNION, Format, Split, Sort records, Remove duplicate records, and filter sentences are also supported.';
 
-const ATLAS_IMPORT_TITLES = {
-  create_column: "Create Column",
-  if_then: "IF / THEN",
-  else: "ELSE",
-  join: "Join / Union Sources",
-  format_field: "Format Field",
-  split_field: "Split Field",
-  filter_rows: "Filter Rows",
-  flag_records: "Flag Records",
-};
-const ATLAS_BUILT_IN_IMPORT_TITLES = Object.freeze({ ...ATLAS_IMPORT_TITLES });
-
-// Import titles follow the step type registry: built-ins plus every definition.
+// Import titles are the step type definitions' labels, legacy ones included.
+const ATLAS_IMPORT_TITLES = {};
 globalThis.ATLASStepTypeRuntime?.onChange?.(() => {
   Object.keys(ATLAS_IMPORT_TITLES).forEach((key) => {
     delete ATLAS_IMPORT_TITLES[key];
   });
   Object.assign(
     ATLAS_IMPORT_TITLES,
-    ATLAS_BUILT_IN_IMPORT_TITLES,
     globalThis.ATLASStepTypeRuntime.importTitles(),
   );
 });

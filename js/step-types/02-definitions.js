@@ -300,6 +300,13 @@
       });
     }
 
+    if (
+      definition.block &&
+      options.blocks &&
+      !options.blocks.includes(definition.block)
+    )
+      add("/block", `unknown block "${definition.block}"`);
+
     const params = new Set(subtypes ? [subtypes.param] : []);
     const checkFields = (list, path) => {
       const seen = new Set();
@@ -409,13 +416,16 @@
       if (!subtypeValues.has(key))
         add(`/formulas/bySubtype/${key}`, `"${key}" is not a subtype`);
     });
-    if (!definition.english.default && subtypeValues.size) {
+    // A behavior block writes its own English, so its definition may leave
+    // the template blank.
+    const needsEnglish = !definition.block;
+    if (needsEnglish && !definition.english.default && subtypeValues.size) {
       subtypeValues.forEach((value) => {
         if (definition.english.bySubtype?.[value] === undefined)
           add("/english", `no English for subtype "${value}" and no default`);
       });
     }
-    if (!definition.english.default && !subtypeValues.size)
+    if (needsEnglish && !definition.english.default && !subtypeValues.size)
       add("/english/default", "is required");
 
     (definition.migrations || []).forEach((migration, index) => {
