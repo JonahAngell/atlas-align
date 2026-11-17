@@ -92,7 +92,10 @@
 │   │   └── executable-steps.json
 │   ├── step-types
 │   │   ├── manifest.json
-│   │   └── schema.json
+│   │   ├── reference_source.json
+│   │   ├── remove_duplicates.json
+│   │   ├── schema.json
+│   │   └── sort_records.json
 │   ├── audit-issue-rules.json
 │   ├── logic_phrase_catalog.json
 │   ├── source-fields.json
@@ -141,6 +144,7 @@
 │   │   ├── 02-definitions.js
 │   │   ├── 03-migrations.js
 │   │   ├── 04-registry.js
+│   │   ├── definitions.generated.js
 │   │   └── engine-manifest.json
 │   ├── 00-config-utils.js
 │   ├── 00-exceljs-loader.js
@@ -162,6 +166,7 @@
 │   ├── 12-export-foundation.js
 │   ├── 12b-code-export.js
 │   ├── 13-catalog-field-browser.js
+│   ├── 13-step-type-library.js
 │   ├── 13a-step-type-runtime.js
 │   ├── 14-catalog-driven-builder.js
 │   ├── 15a-audit-library-ui.js
@@ -442,7 +447,8 @@
 │   │   └── file-utility-compile-verdicts.json
 │   ├── support
 │   │   ├── step-type-corpus.js
-│   │   └── step-type-harness.js
+│   │   ├── step-type-harness.js
+│   │   └── step-type-scripts.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js

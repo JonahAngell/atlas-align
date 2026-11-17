@@ -1185,7 +1185,11 @@ test("engine manifest lists existing files that index.html loads in the same ord
   const loaded = [
     ...read("index.html").matchAll(/src="\.\/(js\/step-types\/[^"]+\.js)"/g),
   ].map((match) => match[1]);
-  assert.deepEqual(loaded, engineManifest.scripts);
+  // The bundled repository definitions load right after the engine.
+  assert.deepEqual(loaded, [
+    ...engineManifest.scripts,
+    "js/step-types/definitions.generated.js",
+  ]);
   const all = [
     ...read("index.html").matchAll(/src="\.\/(js\/[^"]+\.js)"/g),
   ].map((match) => match[1]);

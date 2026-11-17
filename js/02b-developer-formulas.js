@@ -1604,108 +1604,6 @@ function atlasDevSplitField(step) {
   return { ...formulas, notes };
 }
 
-function atlasDevSortRecords(step) {
-  const params = step.params || {};
-  const fields = (
-    typeof atlasSortFieldsFromParams === "function"
-      ? atlasSortFieldsFromParams(params)
-      : []
-  ).filter((item) => item.fieldName);
-  if (!fields.length)
-    fields.push({
-      sourceFile: params.source_file,
-      sourceAlias: params.source_alias,
-      fieldName: params.field_name,
-      direction: params.sort_direction,
-    });
-  const table = atlasDevExcelTable(
-    atlasDevSourceAlias(
-      fields[0].sourceFile || params.source_file,
-      fields[0].sourceAlias || params.source_alias,
-    ),
-  );
-  const descending = (item) => item.direction === "Descending";
-  return {
-    excel: `=SORTBY(${table}, ${fields
-      .map(
-        (item) =>
-          `${table}[${atlasDevExcelColumnName(item.fieldName || atlasDevPlaceholder("field", "[field]"))}], ${descending(item) ? -1 : 1}`,
-      )
-      .join(", ")})`,
-    sql: `ORDER BY ${fields
-      .map(
-        (item) =>
-          `${atlasDevField(item, "sql")} ${descending(item) ? "DESC" : "ASC"}`,
-      )
-      .join(", ")}`,
-    python: `df = df.sort_values([${fields
-      .map((item) => atlasDevPyString(item.fieldName))
-      .join(", ")}], ascending=[${fields
-      .map((item) => (descending(item) ? "False" : "True"))
-      .join(", ")}], kind="stable")`,
-    notes: [],
-  };
-}
-
-function atlasDevRemoveDuplicates(step) {
-  const params = step.params || {};
-  const fields =
-    typeof atlasDuplicateFieldsFromParams === "function"
-      ? atlasDuplicateFieldsFromParams(params)
-      : [];
-  if (!fields.length)
-    fields.push(
-      atlasDevFieldSpec(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
-      ),
-    );
-  const action = params.duplicate_action || "Keep first record";
-  const alias = atlasDevSourceAlias(
-    fields[0].sourceFile || params.source_file,
-    fields[0].sourceAlias || params.source_alias,
-  );
-  const column = (item) =>
-    atlasDevExcelTableColumn(
-      alias,
-      item.fieldName || atlasDevPlaceholder("field", "[field]"),
-    );
-  const row = (item) => atlasDevField(item, "excel");
-  const criteria = fields
-    .map((item) => {
-      if (action === "Keep last record")
-        return `${row(item)}:INDEX(${column(item)}, ROWS(${column(item)})), ${row(item)}`;
-      if (action === "Drop all duplicated records")
-        return `${column(item)}, ${row(item)}`;
-      return `INDEX(${column(item)}, 1):${row(item)}, ${row(item)}`;
-    })
-    .join(", ");
-  const partition = fields.map((item) => atlasDevField(item, "sql")).join(", ");
-  const rank = `ROW_NUMBER() OVER (PARTITION BY ${partition} ORDER BY (SELECT NULL)) AS [Duplicate Rank]`;
-  const count = `COUNT(*) OVER (PARTITION BY ${partition}) AS [Duplicate Count]`;
-  const sql =
-    action === "Drop all duplicated records"
-      ? `${count} -- keep rows where [Duplicate Count] = 1`
-      : action === "Keep last record"
-        ? `${rank}, ${count} -- keep rows where [Duplicate Rank] = [Duplicate Count]`
-        : `${rank} -- keep rows where [Duplicate Rank] = 1`;
-  const keep =
-    action === "Drop all duplicated records"
-      ? "False"
-      : action === "Keep last record"
-        ? '"last"'
-        : '"first"';
-  return {
-    excel: `=COUNTIFS(${criteria})=1`,
-    sql,
-    python: `df = df.drop_duplicates(subset=[${fields
-      .map((item) => atlasDevPyString(item.fieldName))
-      .join(", ")}], keep=${keep})`,
-    notes: [atlasDevPhrase("developer_logic.notes.keep_true_rows")],
-  };
-}
-
 function atlasDevJoinTypeName(joinType) {
   const normalized = String(joinType || "INNER JOIN").toUpperCase();
   return ATLAS_DEV_PANDAS_JOIN[normalized] ? normalized : "INNER JOIN";
@@ -1810,20 +1708,6 @@ function atlasDevJoin(step) {
   };
 }
 
-function atlasDevReferenceSource(step) {
-  const params = step.params || {};
-  const sourceFile = params.source_file || step.source || "";
-  const alias =
-    atlasDevSourceAlias(sourceFile, params.source_alias) ||
-    atlasDevPlaceholder("source", "[source]");
-  return {
-    excel: `=${atlasDevExcelTable(alias)}`,
-    sql: `SELECT * FROM ${atlasDevSqlSource(sourceFile || alias)}${sourceFile ? ` AS ${atlasDevSqlName(alias)}` : ""}`,
-    python: `df = ${atlasDevPySource(alias)}.copy()`,
-    notes: [],
-  };
-}
-
 /** Legacy Filter Rows / Flag Records steps reuse the IF formulas. */
 function atlasDevLegacyCondition(step) {
   const params = step.params || {};
@@ -1880,20 +1764,14 @@ function atlasDeveloperFormulas(step) {
       return atlasDevElse(step);
     case "create_column":
       return atlasDevCreateColumn(step);
-    case "join":
-      return atlasDevJoin(step);
-    case "union_sources":
-      return atlasDevUnion(params);
-    case "reference_source":
-      return atlasDevReferenceSource(step);
     case "format_field":
       return atlasDevFormatField(step);
     case "split_field":
       return atlasDevSplitField(step);
-    case "sort_records":
-      return atlasDevSortRecords(step);
-    case "remove_duplicates":
-      return atlasDevRemoveDuplicates(step);
+    case "join":
+      return atlasDevJoin(step);
+    case "union_sources":
+      return atlasDevUnion(params);
     case "filter_rows":
     case "flag_records":
       return atlasDevLegacyCondition(step);

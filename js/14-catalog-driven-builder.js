@@ -8,47 +8,53 @@
 // -----------------------------------------------------------------------------
 // Step type catalog
 // -----------------------------------------------------------------------------
-const STEP_TYPE_OPTIONS = [
-  ["reference_source", "Reference Source"],
-  ["create_column", "Create Column"],
-  ["if_then", "IF / THEN"],
-  ["join", "Join / Union Sources"],
-  ["format_field", "Format Field"],
-  ["split_field", "Split Field"],
-  ["sort_records", "Sort Records"],
-  ["remove_duplicates", "Remove Duplicates"],
+// Built-in picker entries as [value, label, order]. The registry's
+// definitions are placed among them by their own order.
+const ATLAS_BUILT_IN_STEP_TYPE_OPTIONS = [
+  ["create_column", "Create Column", 20],
+  ["if_then", "IF / THEN", 30],
+  ["join", "Join / Union Sources", 40],
+  ["format_field", "Format Field", 50],
+  ["split_field", "Split Field", 55],
 ];
+// [value, label] for every type the picker offers.
+const STEP_TYPE_OPTIONS = ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map(
+  ([value, label]) => [value, label],
+);
 const LEGACY_TYPE_MAP = {
-  source: "reference_source",
   create: "create_column",
   if: "if_then",
   compare: "if_then",
   join: "join",
   transform: "filter_rows",
 };
-// Built-in picker entries; STEP_TYPE_OPTIONS adds the registry's types to them.
-const ATLAS_BUILT_IN_STEP_TYPE_OPTIONS = STEP_TYPE_OPTIONS.map((option) => [
-  ...option,
-]);
 
 /** Rebuilds STEP_TYPE_OPTIONS in place from the built-ins and the registry. */
 function atlasSyncStepTypeOptions() {
   const runtime = globalThis.ATLASStepTypeRuntime;
   const merged = runtime
     ? runtime.mergeTypeOptions(ATLAS_BUILT_IN_STEP_TYPE_OPTIONS)
-    : ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map((option) => [...option]);
+    : ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map(([value, label]) => [value, label]);
   STEP_TYPE_OPTIONS.splice(0, STEP_TYPE_OPTIONS.length, ...merged);
 }
+// onChange calls the listener once at once; the bundled definitions are
+// usually ready then, during boot, when there is nothing to draw again.
+let atlasStepTypeListenerAdded = false;
 globalThis.ATLASStepTypeRuntime?.onChange?.((registry) => {
   atlasSyncStepTypeOptions();
   // Steps drawn before the definitions arrived are drawn again.
-  if (registry && typeof atlasRequestStructuralStepRender === "function")
+  if (
+    atlasStepTypeListenerAdded &&
+    registry &&
+    typeof atlasRequestStructuralStepRender === "function"
+  )
     try {
       atlasRequestStructuralStepRender();
     } catch (_error) {
       /* The page may not be ready to draw yet. */
     }
 });
+atlasStepTypeListenerAdded = true;
 
 /**
  * Returns true when a Join Type value is Union.
@@ -69,7 +75,6 @@ function legacyTypeFromStepType(stepType) {
   const definition =
     globalThis.ATLASStepTypeRuntime?.definitionById?.(stepType);
   if (definition) return definition.legacyType || "transform";
-  if (stepType === "reference_source") return "source";
   if (stepType === "create_column") return "create";
   if (stepType === "join") return "join";
   if (
@@ -123,15 +128,6 @@ function normalizeCatalogStep(step, index = 0) {
     step.step_type !== "create_column"
   )
     step.params.field_name = step.field;
-  if (step.step_type === "reference_source") {
-    step.params.source_file =
-      step.params.source_file ||
-      step.source ||
-      state.audit.sources[0]?.name ||
-      "";
-    step.params.source_alias =
-      step.params.source_alias || sourceAliasFor(step.params.source_file);
-  }
   if (step.step_type === "create_column") {
     step.params.column_name = step.params.column_name || step.field || "";
     step.params.value_mode = step.params.value_mode || "Static value";
@@ -177,15 +173,6 @@ function normalizeCatalogStep(step, index = 0) {
   // A new Format field step has no format until the author chooses one.
   if (step.step_type === "format_field")
     step.params.format = step.params.format || "";
-  if (step.step_type === "sort_records") {
-    step.params.sort_direction = step.params.sort_direction || "Ascending";
-    atlasSyncSortFieldParams(step.params);
-  }
-  if (step.step_type === "remove_duplicates") {
-    step.params.duplicate_action =
-      step.params.duplicate_action || "Keep first record";
-    atlasSyncDuplicateFieldParams(step.params);
-  }
   step.id = step.id || uid("step");
   step.sortOrder = Number.isFinite(Number(step.sortOrder))
     ? step.sortOrder
@@ -670,14 +657,6 @@ function renderGuidedBuilder(step) {
   const definedEditor = globalThis.ATLASStepTypeRuntime?.renderEditor?.(step);
   if (definedEditor != null) return definedEditor;
   const p = step.params || {};
-  if (step.step_type === "reference_source")
-    return `<div class="guided-builder"><h4>Reference Source</h4><label>Source File${sourceInputFromOptions(
-      {
-        name: "source_file",
-        value: p.source_file,
-        placeholder: "Select source file",
-      },
-    )}</label><label>Source Alias<input data-param="source_alias" value="${esc(p.source_alias || sourceAliasFor(p.source_file || ""))}"></label></div>`;
   if (step.step_type === "create_column") {
     const valueModes = catalogArrayFromOptions({
       path: "app_config.logic_options.create_value_modes",
@@ -829,42 +808,6 @@ function renderGuidedBuilder(step) {
   }
   if (step.step_type === "format_field") return atlasFormatFieldEditorHtml(p);
   if (step.step_type === "split_field") return atlasSplitFieldEditorHtml(p);
-  if (step.step_type === "sort_records")
-    return `<div class="guided-builder"><h4>Sort Records</h4>${atlasSortFieldsEditorHtml(p)}</div>`;
-  if (step.step_type === "remove_duplicates")
-    return `<div class="guided-builder"><h4>Remove Duplicates</h4>${atlasDuplicateFieldsEditorHtml(p)}<div class="atlas-choice-field">${atlasChoiceControl(
-      {
-        options: atlasDescribedChoices(
-          catalogArrayFromOptions({
-            path: "app_config.logic_options.duplicate_actions",
-            fallback: [
-              "Keep first record",
-              "Drop all duplicated records",
-              "Keep last record",
-            ],
-          }).map((value) => [
-            value,
-            {
-              "Keep first record": "Keep first",
-              "Drop all duplicated records": "Keep none",
-              "Keep last record": "Keep last",
-            }[value] || value,
-          ]),
-          {
-            "Keep first record": "Keep the earliest matching record.",
-            "Drop all duplicated records":
-              "Remove every record that has a duplicate.",
-            "Keep last record": "Keep the latest matching record.",
-          },
-        ),
-        selected: p.duplicate_action,
-        variant: "cards",
-        label: "Records to keep",
-        heading: "Records to Keep",
-        popover: "list",
-        attributes: 'data-param="duplicate_action"',
-      },
-    )}</div></div>`;
   if (step.step_type === "filter_rows" || step.step_type === "flag_records")
     return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
       {

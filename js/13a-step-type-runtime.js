@@ -23,22 +23,23 @@
  * are rendered by the engine's own interpreter; nothing here runs definition
  * text as code or inserts it as markup without escaping.
  *
- * Template helpers (all formats): field source name, column name, quote value,
- * number value, alias source, source source, placeholder key fallback.
+ * Template helpers (all formats): field source name alias=x, column name,
+ * quote value, number value, alias source [alias], source source,
+ * placeholder key fallback, plus the helpers, migration handlers and editor
+ * blocks of js/13-step-type-library.js.
+ *
+ * Definitions come from js/step-types/definitions.generated.js (written by
+ * `npm run step-types:manifest` from catalogs/step-types/), so the registry is
+ * ready as soon as this file runs. load() can replace it from the server.
  */
 (function initializeStepTypeRuntime(global) {
   "use strict";
 
-  const HELPER_NAMES = Object.freeze([
-    "field",
-    "column",
-    "quote",
-    "number",
-    "alias",
-    "source",
-    "placeholder",
-  ]);
   const DIALECTS = ["excel", "sql", "python"];
+
+  const library = global.ATLASStepTypeLibrary || {};
+  const HANDLERS = Object.freeze({ ...(library.handlers || {}) });
+  const BLOCKS = Object.freeze({ ...(library.blocks || {}) });
 
   let registry = null;
   let readyPromise = null;
@@ -105,7 +106,7 @@
   function load(options = {}) {
     const loader = engine()?.registry?.loadFromRepository;
     if (!loader) return Promise.resolve(null);
-    readyPromise = loader({ helpers: [...HELPER_NAMES], ...options })
+    readyPromise = loader({ ...registryOptions(), ...options })
       .then((loaded) => {
         useRegistry(loaded);
         const rejected = loaded.rejected?.() || [];
@@ -124,6 +125,46 @@
         return null;
       });
     return readyPromise;
+  }
+
+  /** Names the registry checks definitions against. */
+  function registryOptions() {
+    return {
+      helpers: [...HELPER_NAMES],
+      blocks: Object.keys(BLOCKS),
+      handlers: Object.keys(HANDLERS),
+    };
+  }
+
+  /**
+   * Builds the registry from the bundled repository definitions. Returns null
+   * when the bundle or the engine is missing.
+   */
+  function loadBundled(bundle = engine()?.bundled) {
+    const create = engine()?.registry?.createRegistry;
+    if (!create || !bundle?.schema || !Array.isArray(bundle.definitions))
+      return null;
+    try {
+      const loaded = create({ ...registryOptions(), schema: bundle.schema });
+      bundle.definitions.forEach((definition) =>
+        loaded.add(definition, { origin: "repository" }),
+      );
+      const rejected = loaded.rejected();
+      if (rejected.length)
+        global.console?.warn?.(
+          `${rejected.length} step type definition(s) were not loaded. Fix them in the builder and publish again.`,
+          rejected,
+        );
+      useRegistry(loaded);
+      readyPromise = Promise.resolve(loaded);
+      return loaded;
+    } catch (error) {
+      global.console?.warn?.(
+        "Step type definitions could not be loaded, so the built-in step types are used. Reload the page to try again.",
+        error,
+      );
+      return null;
+    }
   }
 
   function definitionById(id) {
@@ -161,9 +202,11 @@
     return appString ? appString(value) : JSON.stringify(text(value));
   }
 
-  function aliasFor(source) {
+  function aliasFor(source, alias = "") {
     const appAlias = app("atlasDevSourceAlias");
-    return appAlias ? appAlias(text(source), "") : text(source).trim();
+    return appAlias
+      ? appAlias(text(source), text(alias))
+      : text(alias).trim() || text(source).trim();
   }
 
   function quoted(value, format) {
@@ -179,21 +222,22 @@
 
   const TEMPLATE_HELPERS = Object.freeze({
     /** A source column: file "wd" column "Name" / [@[Name]] / [Name] / df["Name"]. */
-    field(args, _hash, { format }) {
+    field(args, hash, { format }) {
       const [source, name] = args;
       const fieldName = text(name).trim();
+      const sourceAlias = text(hash.alias).trim();
       if (format === "english") {
         if (!fieldName) return placeholder("field", "[field]");
         const plain = app("tableColumnPlain");
         return plain
-          ? plain(text(source), "", fieldName)
+          ? plain(text(source), sourceAlias, fieldName)
           : `column "${fieldName}"`;
       }
       if (DIALECTS.includes(format)) {
         const devField = app("atlasDevField");
         if (devField)
           return devField(
-            { sourceFile: text(source).trim(), sourceAlias: "", fieldName },
+            { sourceFile: text(source).trim(), sourceAlias, fieldName },
             format,
           );
         return fieldName
@@ -230,9 +274,9 @@
       const value = Number(raw);
       return raw && Number.isFinite(value) ? String(value) : raw;
     },
-    /** The alias of a source file. */
+    /** The alias of a source file: the given alias, else the audit's. */
     alias(args) {
-      return aliasFor(args[0]);
+      return aliasFor(args[0], args[1]);
     },
     /** A whole source table: "wd" / wd / [wd] / sources["wd"]. */
     source(args, _hash, { format }) {
@@ -260,7 +304,9 @@
     placeholder(args) {
       return placeholder(text(args[0]), text(args[1] ?? `[${text(args[0])}]`));
     },
+    ...(library.helpers || {}),
   });
+  const HELPER_NAMES = Object.freeze(Object.keys(TEMPLATE_HELPERS));
 
   function stepNumberFor(step) {
     const number = app("atlasDevStepNumber");
@@ -350,6 +396,7 @@
     const definitions = engine().definitions;
     const result = migrateStep(step, registry, {
       helpers: TEMPLATE_HELPERS,
+      handlers: HANDLERS,
     });
     const current = result.definition || definition;
     step.step_type = current.id;
@@ -369,7 +416,10 @@
     step.sortOrder = Number.isFinite(Number(step.sortOrder))
       ? step.sortOrder
       : index + 1;
-    if (!step.title) step.title = current.label;
+    // Legacy types are not in the step type picker, so they keep the generic
+    // title built-in steps get.
+    if (!step.title)
+      step.title = current.status === "legacy" ? "Logic Step" : current.label;
     return true;
   }
 
@@ -412,20 +462,27 @@
     }
   }
 
-  function wrapFormula(shape, dialect, expression, target) {
-    if (!expression) return "";
+  /** Drops one pair of parentheses around a whole expression. */
+  function unwrap(expression) {
+    const appUnwrap = app("atlasDevUnwrap");
+    return appUnwrap ? appUnwrap(expression) : expression;
+  }
+
+  function wrapFormula(shape, dialect, rendered, target) {
+    if (!rendered) return "";
     if (shape === "assignment") {
+      const expression = unwrap(rendered);
       const column = target || placeholder("column_name", "[column name]");
       if (dialect === "excel") return `=${expression}`;
       if (dialect === "sql") return `${expression} AS ${sqlName(column)}`;
       return `df[${pyString(column)}] = ${expression}`;
     }
     if (shape === "filter") {
-      if (dialect === "excel") return `=${expression}`;
-      if (dialect === "sql") return `WHERE ${expression}`;
-      return `mask = ${expression}\ndf = df[mask]`;
+      if (dialect === "excel") return `=${rendered}`;
+      if (dialect === "sql") return `WHERE ${rendered}`;
+      return `mask = ${rendered}\ndf = df[mask]`;
     }
-    return expression;
+    return rendered;
   }
 
   /**
@@ -439,6 +496,7 @@
     const set = definition.formulas || { shape: "none" };
     const subtype = definitions.subtypeOf(definition, step);
     const result = {};
+    let notes = [];
     try {
       const lead = render(set.lead, step, definition, "english");
       if (lead) result.lead = lead;
@@ -455,6 +513,11 @@
           if (code) result[dialect] = code;
         });
       }
+      notes = (set.notes || [])
+        .map((template) =>
+          text(render(template, step, definition, "english")).trim(),
+        )
+        .filter(Boolean);
     } catch (error) {
       return {
         lead: renderFailure(definition, "Developer Logic", error),
@@ -462,7 +525,9 @@
       };
     }
     const complete = DIALECTS.every((dialect) => result[dialect]);
-    result.notes = complete ? [] : [...(set.fallback?.notes || [])];
+    result.notes = complete
+      ? notes
+      : [...notes, ...(set.fallback?.notes || [])];
     return result;
   }
 
@@ -515,14 +580,19 @@
   }
 
   /**
-   * Merges built-in [value, label] pairs with the registry. A definition
-   * with a built-in id takes its label and position; built-ins keep the
-   * orders 10, 20, 30... so definitions can be placed between them.
+   * Merges built-in [value, label, order] entries with the registry. A
+   * definition with a built-in id takes its label and position. A built-in
+   * without an order gets 10, 20, 30... by position.
    */
   function mergeTypeOptions(builtIns = []) {
     const merged = new Map();
-    builtIns.forEach(([value, label], index) =>
-      merged.set(value, { value, label, order: (index + 1) * 10, index }),
+    builtIns.forEach(([value, label, order], index) =>
+      merged.set(value, {
+        value,
+        label,
+        order: Number.isFinite(order) ? order : (index + 1) * 10,
+        index,
+      }),
     );
     typeOptions().forEach((option, index) =>
       merged.set(option.id, {
@@ -694,7 +764,16 @@
       : "";
   }
 
-  function choiceHtml({ param, label, options, selected, display, disabled }) {
+  function choiceHtml({
+    param,
+    label,
+    heading,
+    popover,
+    options,
+    selected,
+    display,
+    disabled,
+  }) {
     const choice = app("atlasChoiceControl");
     const attributes = `data-param="${escapeHtml(param)}"${disabled ? " disabled" : ""}`;
     if (choice)
@@ -704,6 +783,8 @@
         variant: display || "segment",
         label,
         attributes,
+        ...(heading ? { heading } : {}),
+        ...(popover ? { popover } : {}),
       })}</div>`;
     return `<label>${escapeHtml(label)}<select ${attributes}>${options
       .map(
@@ -713,11 +794,29 @@
       .join("")}</select></label>`;
   }
 
-  function fieldHtml(field, step, matches) {
+  /** The parameter's value, or the field's valueTemplate while it is blank. */
+  function shownValue(field, step, definition) {
+    const value = text(step.params?.[field.param]);
+    if (value || !field.valueTemplate) return value;
+    try {
+      return text(render(field.valueTemplate, step, definition, "plain"));
+    } catch (_error) {
+      return value;
+    }
+  }
+
+  function blockHtml(field, step) {
+    const html = BLOCKS[field.block]?.editor?.(step, field);
+    if (typeof html === "string") return html;
+    return `<p class="hint">The "${escapeHtml(field.block || "")}" editor block is not available in this version of ATLAS Align. Update ATLAS Align or remove the block in the step type builder.</p>`;
+  }
+
+  function fieldHtml(field, step, definition) {
+    const { matches } = engine().definitions;
     const params = step.params || {};
     if (field.visibleWhen && !matches(field.visibleWhen, step)) return "";
     const disabled = field.enabledWhen && !matches(field.enabledWhen, step);
-    const value = text(params[field.param]);
+    const value = shownValue(field, step, definition);
     const label = labelText(field);
     const required = field.required ? ' aria-required="true"' : "";
     const off = disabled ? " disabled" : "";
@@ -755,6 +854,8 @@
         return `${choiceHtml({
           param: field.param,
           label,
+          heading: field.heading,
+          popover: field.popover,
           options: field.options || [],
           selected: value || text(field.default),
           display: field.display,
@@ -774,7 +875,7 @@
       case "hint":
         return `<p class="hint">${escapeHtml(field.help || field.label || "")}</p>`;
       case "block":
-        return `<p class="hint">The "${escapeHtml(field.block || "")}" editor block is not available in this version of ATLAS Align. Update ATLAS Align or remove the block in the step type builder.</p>`;
+        return blockHtml(field, step);
       default:
         return `<label>${escapeHtml(label)}<input ${bind} value="${escapeHtml(value)}"${placeholderText}${required}${off}>${helpHtml(field)}</label>`;
     }
@@ -804,10 +905,9 @@
       );
     definitions
       .fields(definition, subtype)
-      .forEach((field) =>
-        parts.push(fieldHtml(field, step, definitions.matches)),
-      );
-    return `<div class="guided-builder step-type-builder" data-step-type-id="${escapeHtml(definition.id)}"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div>`;
+      .forEach((field) => parts.push(fieldHtml(field, step, definition)));
+    // The same markup as the built-in editors, so the look does not change.
+    return `<div class="guided-builder"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div>`;
   }
 
   // ---------------------------------------------------------------------------
@@ -871,7 +971,10 @@
   const api = Object.freeze({
     HELPER_NAMES,
     TEMPLATE_HELPERS,
+    BLOCK_NAMES: Object.freeze(Object.keys(BLOCKS)),
+    HANDLER_NAMES: Object.freeze(Object.keys(HANDLERS)),
     load,
+    loadBundled,
     ready: () => readyPromise || Promise.resolve(registry),
     useRegistry,
     registry: () => registry,
@@ -894,7 +997,13 @@
   });
   global.ATLASStepTypeRuntime = api;
 
-  // Pages load the repository definitions as soon as the engine is present.
-  // Node tests that load only some scripts have no engine and skip this.
-  if (engine()?.registry && typeof global.fetch === "function") load();
+  // The bundled repository definitions make the registry ready at once.
+  // Without a bundle, pages fetch catalogs/step-types/. Node tests that load
+  // only some scripts have no engine and skip both.
+  if (
+    engine()?.registry &&
+    !loadBundled() &&
+    typeof global.fetch === "function"
+  )
+    load();
 })(typeof window !== "undefined" ? window : globalThis);

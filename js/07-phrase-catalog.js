@@ -1053,43 +1053,6 @@ function atlasMathOperationPhrase(operator, index, operand, sourceField) {
   });
 }
 
-/** Joins phrases with "and" ("A and B", "A, B, and C"). */
-function atlasJoinReadableAndList(items = []) {
-  const filtered = items.filter(Boolean);
-  if (!filtered.length) return "";
-  if (filtered.length === 1) return filtered[0];
-  if (filtered.length === 2) return `${filtered[0]} and ${filtered[1]}`;
-  return `${filtered.slice(0, -1).join(", ")}, and ${filtered.at(-1)}`;
-}
-
-/**
- * Lists the Remove Duplicates columns, naming each file only once in a row:
- * file "X" column "A" and column "B".
- * @param {any} params - Step params.
- */
-function atlasDuplicateColumnListPhrase(params = {}) {
-  const fields =
-    typeof atlasDuplicateFieldsFromParams === "function"
-      ? atlasDuplicateFieldsFromParams(params)
-      : [];
-  let previousSource = null;
-  const phrases = fields.map((item) => {
-    const sameSource =
-      previousSource !== null && previousSource === item.sourceFile;
-    previousSource = item.sourceFile;
-    return tableColumnPlain(
-      item.sourceFile,
-      item.sourceAlias,
-      item.fieldName,
-      sameSource,
-    );
-  });
-  return (
-    atlasJoinReadableAndList(phrases) ||
-    phrasePlaceholder("duplicate_columns", "[selected columns]")
-  );
-}
-
 /** Maps a stored duplicate_action to its sentence ending. */
 function atlasDuplicateKeepClause(action = "") {
   const stored = String(action || "").trim() || "Keep first record";
@@ -1115,21 +1078,6 @@ function analystLogic(step) {
   if (definedEnglish != null) return definedEnglish;
   const params = step.params || {};
   const stepType = step.step_type;
-  if (stepType === "reference_source") {
-    const sourceFile = params.source_file || step.source || "";
-    // Always name the alias, even when it matches the file name, so every
-    // Reference step reads the same way on every screen.
-    const alias =
-      params.source_alias || sourceAliasFor(sourceFile) || sourceFile;
-    return alias
-      ? renderCatalogPhrase("analyst_logic.reference_source.with_alias", {
-          source_file: quotePhraseValue(sourceFile),
-          source_alias: quotePhraseValue(alias),
-        })
-      : renderCatalogPhrase("analyst_logic.reference_source.without_alias", {
-          source_file: quotePhraseValue(sourceFile),
-        });
-  }
   if (stepType === "create_column") {
     const columnName = params.column_name || step.field || "";
     if (
@@ -1274,48 +1222,6 @@ function analystLogic(step) {
       split_on: quotePhraseValue(params.split_on || ""),
       split_part: params.split_part || "",
       output_column: quotePhraseValue(params.output_column || ""),
-    });
-  if (stepType === "sort_records") {
-    const fields = (
-      typeof atlasSortFieldsFromParams === "function"
-        ? atlasSortFieldsFromParams(params)
-        : []
-    ).filter((item) => item.fieldName);
-    const first = fields[0] || {
-      sourceFile: params.source_file,
-      sourceAlias: params.source_alias,
-      fieldName: params.field_name,
-      direction: params.sort_direction,
-    };
-    const phrase = renderCatalogPhrase("analyst_logic.sort_records.default", {
-      table_column: tableColumnPlain(
-        first.sourceFile,
-        first.sourceAlias,
-        first.fieldName,
-      ),
-      sort_direction: first.direction || "Ascending",
-    });
-    if (fields.length < 2) return phrase;
-    let previousSource = first.sourceFile;
-    const thenClauses = fields.slice(1).map((item) => {
-      const sameSource = previousSource === item.sourceFile;
-      previousSource = item.sourceFile;
-      return renderCatalogPhrase("analyst_logic.sort_records.then_clause", {
-        table_column: tableColumnPlain(
-          item.sourceFile,
-          item.sourceAlias,
-          item.fieldName,
-          sameSource,
-        ),
-        sort_direction: item.direction,
-      });
-    });
-    return `${phrase.replace(/\.$/, "")}${thenClauses.join("")}.`;
-  }
-  if (stepType === "remove_duplicates")
-    return renderCatalogPhrase("analyst_logic.remove_duplicates.default", {
-      column_list: atlasDuplicateColumnListPhrase(params),
-      keep_clause: atlasDuplicateKeepClause(params.duplicate_action),
     });
   if (stepType === "filter_rows")
     return renderCatalogPhrase("analyst_logic.filter_rows.default", {

@@ -990,23 +990,30 @@ function atlasInitializeNewIfThenAction(
   return step;
 }
 function atlasNewRuleTypeOptions() {
-  const selectableTypes = [
-    ["create_column", "Create Column"],
-    ["if_then", "If/Then"],
-    ["join", "Join/Union Sources"],
-    ["format_field", "Format Field"],
-    ["split_field", "Split Field"],
-    ["sort_records", "Sort Records"],
-    ["remove_duplicates", "Remove Duplicates"],
-  ];
-  const builtIn = selectableTypes.filter(([value]) =>
+  // Built-in rule types with the menu's own labels, placed among the
+  // registry's definitions by order. Source steps are added by importing a
+  // source, so they are not offered here.
+  const builtIn = [
+    ["create_column", "Create Column", 20],
+    ["if_then", "If/Then", 30],
+    ["join", "Join/Union Sources", 40],
+    ["format_field", "Format Field", 50],
+    ["split_field", "Split Field", 55],
+  ].filter(([value]) =>
     (STEP_TYPE_OPTIONS || []).some(([catalogValue]) => catalogValue === value),
   );
-  // Definitions from the step type registry follow the built-in rule types.
-  const defined = (globalThis.ATLASStepTypeRuntime?.typeOptions?.() || [])
-    .filter((option) => !builtIn.some(([value]) => value === option.id))
-    .map((option) => [option.id, option.label]);
-  return [...builtIn, ...defined];
+  const runtime = globalThis.ATLASStepTypeRuntime;
+  if (!runtime?.mergeTypeOptions) return builtIn.map(([v, l]) => [v, l]);
+  return runtime
+    .mergeTypeOptions(builtIn)
+    .filter(
+      ([value]) =>
+        runtime.definitionById?.(value)?.export?.scriptRole !== "source",
+    )
+    .map(([value, label]) => [
+      value,
+      builtIn.find(([id]) => id === value)?.[1] || label,
+    ]);
 }
 function atlasDefaultSourceForNewRule() {
   return (
@@ -1104,8 +1111,6 @@ function atlasRuleTypeDescription(stepType) {
     join: "Combine sources with Join or Union logic.",
     format_field: "Format values in a selected field.",
     split_field: "Split a field into a derived output.",
-    sort_records: "Sort records by one or more fields.",
-    remove_duplicates: "Remove records whose selected columns all match.",
     filter_rows: "Keep or exclude matching rows.",
     flag_records: "Flag matching records or hide them.",
   };
