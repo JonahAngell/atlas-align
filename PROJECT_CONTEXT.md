@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.3.7
+**Current Version:** v3.3.8
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
@@ -76,7 +76,7 @@ Failure throws and prevents normal bootstrap. Synchronous loading is required by
 Browser modules are ordinary scripts, not ES modules. Their order in `index.html` is an active dependency contract:
 
 1. Partial loading, configuration, the step type engine (`js/step-types/`), and shared state are established first.
-2. Base hierarchy, rendering, capture, persistence, tutorials, catalogs, imports, pickers, repositories, and export helpers follow.
+2. Base hierarchy, rendering, capture, persistence, tutorials, catalogs, imports, pickers, repositories, and export helpers follow. `js/13a-step-type-runtime.js` loads before `js/14-catalog-driven-builder.js` so the picker list and import titles can follow the registry.
 3. The ordered `15a` through `15h` UI layers specialize or replace earlier global functions.
 4. Page shell, identity, database, history, workflow, review, Inbox, Display Fields, and Audit Issues modules load later.
 5. `js/30-deep-links.js` loads just before bootstrap so `showSection` and `init()` can call into it.
@@ -770,6 +770,7 @@ Security rules are consolidated here and referenced from functional areas.
 - **Rollout/version:** feature-flag, rollout, validation-matrix, version-sync, and Git-hook tests.
 - **Step type snapshots:** `test/step-type-snapshots.test.js` loads every `index.html` script into a Node `vm` (through `test/support/step-type-harness.js`) and compares each step's English, automatic notes, Developer Logic, guided-editor markup, text-import result, and normalized parameters, plus each audit's Requirements Preview, SQL and Python scripts, qTest sections, and Audit Issues, with the recorded files in `test/fixtures/step-type-snapshots/recorded/`. The corpus is every sample audit with steps plus `test/fixtures/step-type-snapshots/synthetic-audits.js`. This is the guard for the Dynamic Step Type Builder refactor (`docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md`). When an output change is intended, run `npm run snapshots:record` and review the diff.
 - **Step type engine:** `test/step-type-engine.test.js` loads the `js/step-types/` files listed in `engine-manifest.json` into a Node `vm` and covers the template language, schema and definition checks, migrations and the registry. It also checks that `index.html` loads the engine in manifest order and that `catalogs/step-types/manifest.json` matches the definition files.
+- **Step type runtime:** `test/step-type-runtime.test.js` loads the whole app through the snapshot harness, registers sample definitions with `ATLASStepTypeRuntime.useRegistry()`, and checks that they reach every output while built-in outputs stay identical.
 
 Many tests are static or contract-oriented. They do not by themselves prove live PostgreSQL concurrency, browser accessibility, cross-browser layout, production StudioShare identity, or Inbox delivery.
 
@@ -838,7 +839,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/00-html-partials-loader.js` — Synchronously inserts the ordered HTML partials before later scripts cache the DOM.
 - `js/00-config-utils.js` — Shared helpers and the authoritative `ATLAS_APP_VERSION`.
 - `js/00-exceljs-loader.js` — Loads ExcelJS the first time a workbook feature needs it.
-- `js/step-types/` — The step type engine for the Dynamic Step Type Builder (`docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md`). Self-contained: no DOM, app state or code execution, so the Step Type Builder repository can copy it. `engine-manifest.json` lists the files in load order, the engine version and the supported definition schema versions. Each file adds one namespace to `window.ATLASStepTypes`. Nothing in the app reads it yet.
+- `js/step-types/` — The step type engine for the Dynamic Step Type Builder (`docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md`). Self-contained: no DOM, app state or code execution, so the Step Type Builder repository can copy it. `engine-manifest.json` lists the files in load order, the engine version and the supported definition schema versions. Each file adds one namespace to `window.ATLASStepTypes`. The app reads it only through `js/13a-step-type-runtime.js`.
   - `js/step-types/00-templates.js` — `templates`: the template language parser, renderer, `check()` and `references()`. Templates are parsed, never run, and lookups read own properties only.
   - `js/step-types/01-schema.js` — `schema`: a JSON Schema validator for the subset of keywords `catalogs/step-types/schema.json` uses; any other keyword is refused.
   - `js/step-types/02-definitions.js` — `definitions`: definition checks beyond the schema (cross-references, conditions, migrations, templates), condition matching, and the subtype accessors for templates, formulas, fields and export roles.
@@ -860,6 +861,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/15k-audit-import-sources.js` — Reviews the sources an audit JSON import names: create a custom source, map onto a library source, or keep as written.
 - `js/29-export-dashboard.js` — Export format registry and the Export page dashboard.
 - `js/13-catalog-field-browser.js` — Searchable source and field browser.
+- `js/13a-step-type-runtime.js` — `window.ATLASStepTypeRuntime`: loads the step type registry from `catalogs/step-types/` and answers every step type owner (normalization, English, automatic notes, Developer Logic, script role, qTest, created columns, editor, text import, validation, the picker and import titles). Each call returns null when no definition claims the step, so the built-in code runs. Template helpers: `field`, `column`, `quote`, `number`, `alias`, `source`, `placeholder`.
 - `js/14-catalog-driven-builder.js` — Catalog-driven normalization and base rendering for each logic step type.
 - `js/15a-audit-library-ui.js` — Visual UI base for picker, condition, and rule rendering. Must stay before `15b` through `15h`.
 - `js/15b-source-library-ui.js` — Audit and source browser presentation and selected-source actions.
@@ -1224,6 +1226,7 @@ Statements for `src/user-impersonation.js`.
 - `test/source-library-authorization.test.js` — Source-library admin role checks.
 - `test/startup-recovery.test.js` — Startup recovery does not select a pseudo audit.
 - `test/step-type-snapshots.test.js` — Recorded step type outputs stay identical across every audit in the snapshot corpus.
+- `test/step-type-runtime.test.js` — Step type runtime: an empty registry changes nothing; sample registered types reach English, notes, Developer Logic, the editor, the picker, text import, SQL and Python scripts, qTest and Audit Issues; aliases and migrations run on load; built-in snapshots are unchanged with types registered.
 - `test/step-type-engine.test.js` — Step type engine: every template feature and syntax error, schema errors, definition checks, conditions, accessors, registry versioning and alias conflicts, repository loading, migrations, and the engine and definition manifests.
 - `test/user-impersonation.test.js` — Impersonation flag, token hash, and effective user.
 - `test/user-profile-persistence.test.js` — User profile upsert and search.
