@@ -192,6 +192,30 @@ test("Package 2D.2 constrains audit scoped relationships and one thread per obje
   );
   assert.match(discussionMigration, /FOREIGN KEY \(thread_id, audit_id\)/);
 });
+const runsMigration = readFileSync(
+  resolve(
+    here,
+    "../.launch/migrations/20261116120000_create_atlas_audit_runs.sql",
+  ),
+  "utf8",
+);
+const runsUp = runsMigration.slice(0, runsMigration.indexOf("-- migrate:down"));
+test("File Utility run history is one additive, audit scoped table", () => {
+  assert.match(runsUp, /CREATE TABLE IF NOT EXISTS atlas_audit_runs\b/);
+  assert.match(runsUp, /FOREIGN KEY \(revision_id, audit_id\)/);
+  assert.match(runsUp, /FOREIGN KEY \(publication_id, audit_id\)/);
+  assert.match(
+    runsUp,
+    /status IN \('running', 'succeeded', 'failed', 'blocked'\)/,
+  );
+  assert.match(runsUp, /CHECK \(is_draft OR publication_id IS NOT NULL\)/);
+  assert.doesNotMatch(
+    runsUp,
+    /\b(ALTER TABLE|UPDATE atlas_\w+|INSERT INTO|DELETE FROM)\b/i,
+  );
+  assert.doesNotMatch(runsUp, /\bBEGIN\b|\bCOMMIT\b/i);
+  assert.match(runsMigration, /DROP TABLE IF EXISTS atlas_audit_runs/);
+});
 test("rejects a prototype replacement header", () => {
   const headers = [...FIELD_LIBRARY_COLUMNS];
   headers[0] = "__proto__";
