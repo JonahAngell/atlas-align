@@ -1001,7 +1001,23 @@ function atlasWorkflowMutationControls() {
     ),
   ].filter((element) => !atlasWorkflowAllowedAction(element));
 }
+/**
+ * Decision B: published and locked audits render with the step type
+ * definition versions recorded on their publication; editable audits use the
+ * latest versions. A publication open in Audit History takes precedence.
+ */
+function atlasApplyStepTypePins() {
+  const history = typeof historyView === "object" ? historyView : null;
+  const pins =
+    history?.active && history.kind === "publication"
+      ? history.stepTypeVersions
+      : atlasAuditIsPublishedLocked()
+        ? atlasWorkflowSummary.stepTypeVersions
+        : null;
+  window.ATLASStepTypeRuntime?.usePinnedVersions?.(pins || null);
+}
 function atlasApplyPublishedLock() {
+  atlasApplyStepTypePins();
   const locked = atlasAuditIsWorkflowLocked();
   const reviewerMode = Boolean(window.ATLASAuditReview?.isActive?.());
   const pendingApproval =

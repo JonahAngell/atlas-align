@@ -2,8 +2,8 @@
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
 issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002), Phase 3 (issue
-#5003), Phase 4 (issue #5004) and Phase 5 (issue #5005) are in review. Later
-phases have not started.
+#5003), Phase 4 (issue #5004), Phase 5 (issue #5005) and Phase 6 (issue
+#5006) are in review. Later phases have not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -52,9 +52,31 @@ or a block's `qtestOutcomes`, and the THEN outcome it tests from a block's
 (`conditions`, `fieldRelationships`, `action`, `join`, `createdColumns`,
 `sourceMath`, `thenMath`, `stringTransform`, `thenStringTransform`), with
 `when` for a subtype. `js/23` no longer names step types for its checks, so a
-new type built on the `join` block gets the join checks. Engine version 1.3.0.
+new type built on the `join` block gets the join checks. Engine version 1.3.0 (1.4.0 after Phase 6).
 Snapshots are identical. Still named in code: the issue repair menu that adds
 an IF / THEN, Join or Create Column step, and the issue sort order.
+
+Phase 6 note: definitions live in Postgres. Migration
+`20261117120000_create_atlas_step_type_definitions.sql` adds
+`atlas_step_type_definitions` (a trigger refuses any change to a row except
+its status and `updated_*`), `atlas_step_type_events`, and
+`atlas_audit_publications.step_type_versions`. At startup the server checks
+`catalogs/step-types/` with the engine itself (`src/step-type-engine.js` runs
+the engine scripts in a `vm`), then `src/step-type-repository.js` inserts the
+versions the database lacks as published, skips identical ones, and logs and
+rejects a file whose content differs from the stored version. A file changed
+without rebuilding the manifest is rejected too. `GET /api/step-types` returns
+the latest published version of each type, the versions publications are
+pinned to, and a `latest` map. The browser starts on the bundled definitions
+and then loads the API into a registry that still holds the bundle, so a
+failed or empty response never leaves it empty. The registry takes
+`latestVersions`, so a retired newer version kept for a pin is not offered
+(engine version 1.4.0). Decision B: the three publication inserts record the
+latest published versions; a locked audit's workflow summary and a
+publication opened in Audit History pass them to
+`ATLASStepTypeRuntime.usePinnedVersions()`. Definitions the engine cannot
+read (a newer `schemaVersion`, a conflict) appear to ATLAS admins as the
+Audit Issue `audit.logic.step-type-definitions-unavailable`.
 
 ## Goal
 

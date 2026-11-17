@@ -1166,6 +1166,50 @@
       });
       return issues;
     },
+    /**
+     * Step type definitions this ATLAS Align could not load, for admins: a
+     * newer schema version, a broken definition or a version conflict.
+     * Steps of those types keep rendering with the versions that did load.
+     */
+    stepTypeDefinitionsUnavailable() {
+      const appState = typeof state === "object" ? state : global.state;
+      if (!appState?.currentUser?.access?.canCreate) return [];
+      const rejected =
+        global.ATLASStepTypeRuntime?.registry?.()?.rejected?.() || [];
+      const seen = new Set();
+      return rejected.flatMap((entry) => {
+        const key = `${string(entry.id) || "unknown"}@${entry.version ?? "?"}`;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        const errors = array(entry.errors);
+        const newer = errors.some(
+          (error) => error?.code === "unsupported_schema_version",
+        );
+        const name = string(entry.id) || "A step type";
+        const version =
+          entry.version == null ? "" : ` version ${entry.version}`;
+        const summary = newer
+          ? `${name}${version} needs a newer ATLAS Align, so it was not loaded.`
+          : `${name}${version} could not be loaded.`;
+        return [
+          issue(
+            key,
+            { page: "steps" },
+            {
+              severity: newer ? "warning" : "critical",
+              summary,
+              detail: [
+                summary,
+                ...errors.map((error) =>
+                  `${string(error?.path)} ${string(error?.message)}`.trim(),
+                ),
+                "Steps of this type use the versions that did load. Fix the definition in the Step Type Builder and publish a new version.",
+              ].join(" "),
+            },
+          ),
+        ];
+      });
+    },
     /** Validation rules and required fields from step type definitions. */
     stepTypeRules(context) {
       const runtime = global.ATLASStepTypeRuntime;
@@ -2783,6 +2827,28 @@
       });
       return true;
     },
+    reloadStepTypes(entry, trigger) {
+      const fix = openFixShell(
+        entry,
+        trigger,
+        "Load step types again",
+        `<p>Load the published step type definitions from the server again. A definition that needs a newer ATLAS Align loads after ATLAS Align is updated.</p>${actionRow("Load again")}`,
+      );
+      bindFixSave(fix, async () => {
+        const runtime = global.ATLASStepTypeRuntime;
+        if (!runtime?.loadFromServer) {
+          showFixError(
+            fix,
+            "Step type definitions cannot be loaded on this page.",
+          );
+          return false;
+        }
+        await runtime.loadFromServer();
+        invalidate();
+        scheduleIssueRender();
+      });
+      return true;
+    },
     repairIssue(entry, trigger) {
       return openRepairDialog(entry, trigger);
     },
@@ -3813,6 +3879,8 @@
     const renderIdentity = `${string(renderDocument?.id)}:${string(window.ATLASAuditReview?.context?.()?.submittedRevisionId)}`;
     return JSON.stringify({
       renderIdentity,
+      stepTypes: global.ATLASStepTypeRuntime?.revision?.() ?? 0,
+      stepTypeAdmin: Boolean(state?.currentUser?.access?.canCreate),
       catalogError: catalogError ? string(catalogError.message) : "",
       catalogReady: Boolean(catalog),
       audit: renderDocument,

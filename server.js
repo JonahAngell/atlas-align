@@ -132,6 +132,11 @@ import { createFieldLibraryRouter } from "./src/routes/field-library-routes.js";
 import { createPreviewRouter } from "./src/routes/preview-routes.js";
 import { createWorkflowRouter } from "./src/routes/workflow-routes.js";
 import { createReviewRouter } from "./src/routes/review-routes.js";
+import { createStepTypeRouter } from "./src/routes/step-type-routes.js";
+import {
+  importRepositoryStepTypes,
+  listStepTypes,
+} from "./src/step-type-repository.js";
 import {
   apiRateLimits,
   securityHeaders,
@@ -680,7 +685,24 @@ function workflowError(res, error) {
     currentPublicationId: error.currentPublicationId,
   });
 }
+// Repository step type definitions are imported into Postgres at startup.
+// The server starts without waiting; GET /api/step-types waits for the
+// import, and a failed import leaves the browser on its bundled definitions.
+const stepTypeImport = importRepositoryStepTypes(pool).catch((error) => {
+  console.error(
+    JSON.stringify({
+      level: "error",
+      event: "step_type_import_failed",
+      message: error.message,
+    }),
+  );
+});
+
 const routeContext = {
+  listStepTypes: async (db) => {
+    await stepTypeImport;
+    return listStepTypes(db);
+  },
   pool,
   requireCurrentUser,
   requireAuditCapability,
@@ -790,6 +812,7 @@ app.use(createFieldLibraryRouter(routeContext));
 app.use(createPreviewRouter(routeContext));
 app.use(createWorkflowRouter(routeContext));
 app.use(createReviewRouter(routeContext));
+app.use(createStepTypeRouter(routeContext));
 
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {
