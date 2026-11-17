@@ -67,14 +67,32 @@
     return `${string(item.sourceKey || item.sourceFile || item.source).trim()}::${string(item.rawFieldName || item.fieldName || item.name).trim()}`;
   }
 
-  // Only these step types carry condition rows. Other types can still hold a
-  // stale `conditions` array left over from a step type change.
-  const CONDITION_STEP_TYPES = new Set([
-    "if_then",
-    "else",
-    "filter_rows",
-    "flag_records",
-  ]);
+  // A step type turns on the checks below with `builtIn` validation rules in
+  // its definition (catalogs/step-types/): "conditions" (condition rows),
+  // "fieldRelationships", "action", "join", "createdColumns", "sourceMath",
+  // "thenMath", "stringTransform" and "thenStringTransform". A step no
+  // definition claims gets none of them.
+  function definitionStep(step) {
+    const item = object(step);
+    return {
+      step_type: string(item.step_type || item.type).trim(),
+      params: object(item.params),
+    };
+  }
+
+  function hasCheck(step, name) {
+    const checks = global.ATLASStepTypeRuntime?.builtInChecks?.(
+      definitionStep(step),
+    );
+    return Array.isArray(checks) && checks.includes(name);
+  }
+
+  /** The script role of a step's definition: "source", "join" and so on. */
+  function stepRole(step) {
+    return (
+      global.ATLASStepTypeRuntime?.scriptRole?.(definitionStep(step)) || "none"
+    );
+  }
   // Step params that hold a field, paired with the param holding its source.
   // Mirrors the logic builder field picker.
   const FIELD_SOURCE_PARAMS = [
@@ -100,8 +118,10 @@
   }
 
   function conditionTree(step) {
+    // Only step types with condition rows read them. Other types can still
+    // hold a stale `conditions` array left over from a step type change.
     const type = string(object(step).step_type || object(step).type).trim();
-    if (type && !CONDITION_STEP_TYPES.has(type)) return [];
+    if (type && !hasCheck(step, "conditions")) return [];
     if (typeof global.parseStepConditions === "function") {
       try {
         return array(global.parseStepConditions(step));
@@ -145,8 +165,7 @@
   }
 
   function stepNeedsAction(step) {
-    const type = string(step.step_type || step.type).trim();
-    return ["if_then", "else", "flag_records", "filter_rows"].includes(type);
+    return hasCheck(step, "action");
   }
 
   function descendantHasAction(step, stepsByParent, visited = new Set()) {
@@ -344,7 +363,7 @@
       const joinType = string(params.join_type).trim().toUpperCase();
       if (
         !step.enabled ||
-        step.type !== "join" ||
+        !hasCheck(step, "join") ||
         !supportedRelationshipJoinTypes.has(joinType) ||
         blank(params.left_source) ||
         blank(params.right_source) ||
@@ -570,12 +589,12 @@
       const createdColumnsByName = new Map();
       context.audit.steps.forEach((item) => {
         if (!stepsById.has(item.id)) stepsById.set(item.id, item);
-        if (item.type !== "create_column") return;
+        if (!hasCheck(item, "createdColumns")) return;
         const createdNames =
           typeof global.atlasCreatedColumnNames === "function"
             ? array(
                 global.atlasCreatedColumnNames({
-                  step_type: "create_column",
+                  step_type: item.type,
                   params: item.params || {},
                   field: item.field,
                 }),
@@ -633,7 +652,7 @@
             sourceParam,
           });
         };
-        if (step.type === "create_column") {
+        if (hasCheck(step, "createdColumns")) {
           const mode = string(params.value_mode).trim();
           if (mode === "Source field value")
             pushOperand(
@@ -795,7 +814,7 @@
               seen.add(current.id);
               const parent = stepsById.get(current.parentId);
               if (!parent) break;
-              if (parent.type === "reference_source") {
+              if (stepRole(parent) === "source") {
                 [parent.params?.source_file, parent.source]
                   .map((value) => string(value).trim())
                   .filter(Boolean)
@@ -1223,7 +1242,7 @@
     },
     joinIntegrity(context) {
       return context.audit.steps.flatMap((step) => {
-        if (step.type !== "join") return [];
+        if (!hasCheck(step, "join")) return [];
         const p = step.params;
         const joinIssue = (suffix, param, fixKind, values = {}) =>
           issue(
@@ -1322,7 +1341,7 @@
     createdFieldIntegrity(context) {
       const creators = new Map(
         context.audit.steps
-          .filter((step) => step.type === "create_column")
+          .filter((step) => hasCheck(step, "createdColumns"))
           .map((step) => [step.id, step]),
       );
       const positions = new Map(
@@ -1405,7 +1424,7 @@
       const names = new Map();
       const issues = [];
       context.audit.steps
-        .filter((step) => step.type === "create_column")
+        .filter((step) => hasCheck(step, "createdColumns"))
         .forEach((step) => {
           const splitNames =
             step.params.string_operation === "split" &&
@@ -1413,7 +1432,7 @@
             typeof global.atlasCreatedColumnNames === "function"
               ? array(
                   global.atlasCreatedColumnNames({
-                    step_type: "create_column",
+                    step_type: step.type,
                     params: step.params,
                     field: step.field,
                   }),
@@ -1545,18 +1564,12 @@
       context.audit.steps.forEach((step) => {
         const p = step.params;
         const groups = [];
-        if (
-          step.type === "create_column" &&
-          p.value_mode === "Source field value"
-        )
+        if (hasCheck(step, "sourceMath"))
           groups.push({
             value: p.source_math_json || [],
             param: "source_math_json",
           });
-        if (
-          step.type === "if_then" &&
-          p.then_action_type === "set_column_calculation"
-        )
+        if (hasCheck(step, "thenMath"))
           groups.push({
             value: p.then_math_json || [],
             param: "then_math_json",
@@ -1624,16 +1637,8 @@
       return context.audit.steps.flatMap((step) => {
         const p = step.params;
         const groups = [];
-        if (
-          step.type === "create_column" &&
-          p.value_mode === "String transformation"
-        )
-          groups.push([p, ""]);
-        if (
-          step.type === "if_then" &&
-          p.then_action_type === "set_column_string_transform"
-        )
-          groups.push([p, "then_"]);
+        if (hasCheck(step, "stringTransform")) groups.push([p, ""]);
+        if (hasCheck(step, "thenStringTransform")) groups.push([p, "then_"]);
         return groups.flatMap(([value, prefix], groupIndex) =>
           array(global.atlasValidateStringTransform(value, prefix)).map(
             (problem, index) => {
@@ -1991,7 +1996,7 @@
         return false;
       };
       return context.audit.steps.flatMap((step) => {
-        if (!step.enabled || step.type !== "if_then") return [];
+        if (!step.enabled || !hasCheck(step, "fieldRelationships")) return [];
         return step.conditions.flatMap((condition) => {
           if (
             condition.__parseError ||

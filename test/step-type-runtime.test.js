@@ -391,6 +391,122 @@ test("behavior blocks build the types that came with ATLAS Align", async () => {
   assert.equal(context.__lookup.params.join_type, "INNER JOIN");
   assert.equal(context.__lookup.title, "Lookup Join");
   assert.match(run(context, "analystLogic(__lookup)"), /^Join /);
+  // It also gets the join's Audit Issues check and qTest outcomes.
+  assert.deepEqual(
+    run(context, "ATLASStepTypeRuntime.builtInChecks(__lookup)"),
+    ["join"],
+  );
+  assert.match(
+    run(
+      context,
+      "ATLASStepTypeRuntime.qtestOutcomes(__lookup, { record: 'r' })[0]",
+    ),
+    /^Records are matched where .*; joined values display on the r\.$/,
+  );
+});
+
+test("exports and Audit Issues checks come from the definitions", async () => {
+  const context = await loadApp();
+  const call = (expression, step) => {
+    context.__step = step;
+    return run(context, `ATLASStepTypeRuntime.${expression}`);
+  };
+
+  // Script roles place every type in the SQL and Python scripts.
+  context.__roles = [
+    "reference_source",
+    "join",
+    "create_column",
+    "if_then",
+    "else",
+    "filter_rows",
+    "flag_records",
+    "sort_records",
+    "remove_duplicates",
+  ];
+  assert.deepEqual(
+    run(
+      context,
+      "__roles.map((step_type) => atlasCodeStepRole({ step_type, params: {} }))",
+    ),
+    [
+      "source",
+      "join",
+      "column",
+      "condition",
+      "else",
+      "filter",
+      "flag",
+      "sort",
+      "dedupe",
+    ],
+  );
+  assert.equal(
+    run(context, "atlasCodeStepRole({ step_type: 'mystery' })"),
+    "none",
+  );
+
+  // Template outcomes; the placement keeps only section and test type.
+  const format = {
+    step_type: "format_field",
+    params: { source_file: "wd", field_name: "Pernr", format: "" },
+  };
+  assert.deepEqual(call("qtestOutcomes(__step)", format), [
+    'file "wd" column "Pernr" displays in the designed format.',
+    'The formatted file "wd" column "Pernr" value matches the underlying source value.',
+  ]);
+  assert.deepEqual(call("qtest(__step)", format), {
+    section: "D",
+    testType: "Data Validation",
+  });
+  assert.match(
+    call("qtestOutcomes(__step)[0]", {
+      step_type: "remove_duplicates",
+      params: { duplicate_action: "Keep last record" },
+    }),
+    /^Duplicate records are removed, .*last record\.$/,
+  );
+
+  // Behavior blocks read the THEN action qTest tests.
+  assert.deepEqual(
+    call("qtestAction(__step)", {
+      step_type: "flag_records",
+      params: { flag_action: "do_not_display" },
+    }),
+    { kind: "do_not_display" },
+  );
+  assert.deepEqual(
+    call("qtestAction(__step)", {
+      step_type: "if_then",
+      params: { then_action_type: "set_column_value", then_target_column: "X" },
+    }),
+    {
+      kind: "set_column",
+      targetColumn: "X",
+      valueField: "",
+      calculated: false,
+    },
+  );
+  assert.equal(call("qtestAction(__step)", format), null);
+
+  // builtIn rules turn on the Audit Issues checks, some only for a subtype.
+  assert.deepEqual(
+    call("builtInChecks(__step)", {
+      step_type: "if_then",
+      params: { then_action_type: "set_column_calculation" },
+    }),
+    ["conditions", "fieldRelationships", "action", "thenMath"],
+  );
+  assert.deepEqual(
+    call("builtInChecks(__step)", {
+      step_type: "create_column",
+      params: { value_mode: "String transformation" },
+    }),
+    ["createdColumns", "stringTransform"],
+  );
+  assert.deepEqual(call("builtInChecks(__step)", format), []);
+  assert.equal(call("builtInChecks(__step)", { step_type: "mystery" }), null);
+  assert.equal(call("qtestOutcomes(__step)", { step_type: "mystery" }), null);
 });
 
 test("library blocks and handlers build the list editors", async () => {

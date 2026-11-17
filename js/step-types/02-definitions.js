@@ -223,6 +223,20 @@
     (definition.subtypes?.options || []).forEach((option, index) =>
       addFields(`/subtypes/options/${index}/fields`, option.fields),
     );
+    const addOutcomes = (path, qtest) => {
+      add(`${path}/outcomes/atlas`, qtest?.outcomes?.atlas);
+      add(`${path}/outcomes/source`, qtest?.outcomes?.source);
+    };
+    addOutcomes("/export/qtest", definition.export?.qtest);
+    (definition.export?.rules || []).forEach((rule, index) =>
+      addOutcomes(`/export/rules/${index}/qtest`, rule.qtest),
+    );
+    (definition.subtypes?.options || []).forEach((option, index) =>
+      addOutcomes(
+        `/subtypes/options/${index}/export/qtest`,
+        option.export?.qtest,
+      ),
+    );
     add("/outputs/assigns", definition.outputs?.assigns);
     (definition.outputs?.creates || []).forEach((value, index) =>
       add(`/outputs/creates/${index}`, value),
@@ -373,8 +387,9 @@
     ];
     const checkConditionParams = (condition, path) => {
       conditionProblems(condition, path, errors);
+      // A behavior block owns params the definition does not list.
       conditionParams(condition).forEach((param) => {
-        if (!params.has(param))
+        if (!params.has(param) && !definition.block)
           add(path, `"${param}" is not a field of this step type`);
       });
     };
@@ -391,8 +406,10 @@
     });
     (definition.validation || []).forEach((rule, index) => {
       const path = `/validation/${index}`;
-      if (!rule.require && !rule.check)
-        add(path, "a rule needs require or check");
+      if (!rule.require && !rule.check && !rule.builtIn)
+        add(path, "a rule needs require, check or builtIn");
+      if (rule.builtIn && (rule.require || rule.check))
+        add(path, "a builtIn rule takes no require or check");
       if (rule.require && !params.has(rule.require))
         add(
           `${path}/require`,

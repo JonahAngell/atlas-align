@@ -71,7 +71,11 @@
     "scriptRole": "source",
     "qtest": {
       "section": "G",
-      "testType": "Integration"
+      "testType": "Integration",
+      "outcomes": {
+        "atlas": "The audit run loads source file {{quote (default param.source_file step.source)}} with current data.",
+        "source": "Source file {{quote (default param.source_file step.source)}} is available, current, and contains the expected columns."
+      }
     }
   },
   "textImport": {

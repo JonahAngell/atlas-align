@@ -94,7 +94,11 @@
     "scriptRole": "dedupe",
     "qtest": {
       "section": "E",
-      "testType": "Data Validation"
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "Duplicate records are removed, {{duplicateKeepClause param.duplicate_action}}.",
+        "source": "Source data contains the duplicate records, and any retained record follows the rule in this step."
+      }
     }
   },
   "textImport": {

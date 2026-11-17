@@ -31,5 +31,24 @@
   },
   "textImport": {
     "fromEnglish": false
-  }
+  },
+  "validation": [
+    {
+      "builtIn": "createdColumns"
+    },
+    {
+      "builtIn": "sourceMath",
+      "when": {
+        "param": "value_mode",
+        "equals": "Source field value"
+      }
+    },
+    {
+      "builtIn": "stringTransform",
+      "when": {
+        "param": "value_mode",
+        "equals": "String transformation"
+      }
+    }
+  ]
 }

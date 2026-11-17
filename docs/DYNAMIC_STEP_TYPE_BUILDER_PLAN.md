@@ -2,7 +2,8 @@
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
 issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002), Phase 3 (issue
-#5003) and Phase 4 (issue #5004) are in review. Later phases have not started.
+#5003), Phase 4 (issue #5004) and Phase 5 (issue #5005) are in review. Later
+phases have not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -46,6 +47,20 @@ a second type built on the `join` block. The wrapper chains for
 functions, and the built-in picker list, legacy type map, qTest table and
 import titles are gone. New script roles `condition`, `else` and `flag` were
 added; the engine version is 1.2.0. Snapshots are identical.
+
+Phase 5 note: the exports and Audit Issues read the definitions. The SQL and
+Python script builders (`js/12b`) switch on `export.scriptRole` directly. The
+qTest export (`js/12`) takes its placement from `export.qtest`, its expected
+outcomes from the new `export.qtest.outcomes` templates (`atlas` and `source`)
+or a block's `qtestOutcomes`, and the THEN outcome it tests from a block's
+`qtestAction`; the per-type `switch` is gone. Validation rules gained
+`builtIn`, which turns on one of the existing Audit Issues checks
+(`conditions`, `fieldRelationships`, `action`, `join`, `createdColumns`,
+`sourceMath`, `thenMath`, `stringTransform`, `thenStringTransform`), with
+`when` for a subtype. `js/23` no longer names step types for its checks, so a
+new type built on the `join` block gets the join checks. Engine version 1.3.0.
+Snapshots are identical. Still named in code: the issue repair menu that adds
+an IF / THEN, Join or Create Column step, and the issue sort order.
 
 ## Goal
 
