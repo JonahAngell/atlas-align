@@ -357,6 +357,8 @@ function qtestConditionUsesOutputColumn(step, outputColumns) {
  * @param {Set<string>} outputColumns - Lowercased produced column names.
  */
 function qtestSectionForStep(step, action, outputColumns) {
+  const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
+  if (defined?.section) return defined.section;
   switch (step.step_type) {
     case "reference_source":
       return "G";
@@ -385,6 +387,8 @@ function qtestSectionForStep(step, action, outputColumns) {
  * @param {any} action - Resolved step action from qtestStepAction.
  */
 function qtestTestTypeForStep(step, action) {
+  const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
+  if (defined?.testType) return defined.testType;
   switch (step.step_type) {
     case "reference_source":
     case "join":

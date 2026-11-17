@@ -1652,6 +1652,8 @@ function atlasDeveloperFormulas(step) {
       ? { ...atlasDevIfThen(step), lead }
       : { lead };
   }
+  const defined = globalThis.ATLASStepTypeRuntime?.formulas?.(step);
+  if (defined) return defined;
   switch (step.step_type) {
     case "if_then":
       return atlasDevIfThen(step);
