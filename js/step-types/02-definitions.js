@@ -136,10 +136,21 @@
     );
   }
 
-  /** english/autoNotes template for a subtype, falling back to `default`. */
-  function template(definition, section, subtype = "") {
+  /** The first variant whose `when` holds for the step, or null. */
+  function variantFor(list, step) {
+    if (!Array.isArray(list) || !step) return null;
+    return list.find((variant) => matches(variant.when, step)) || null;
+  }
+
+  /**
+   * english/autoNotes template: the first matching variant when a step is
+   * given, else the subtype's, falling back to `default`.
+   */
+  function template(definition, section, subtype = "", step = null) {
     const set = definition?.[section];
     if (!set) return null;
+    const variant = variantFor(set.variants, step);
+    if (variant) return variant.template;
     const specific = own(set.bySubtype || {}, subtype);
     if (specific !== undefined) return specific;
     return set.default ?? null;
@@ -156,6 +167,30 @@
       if (value !== undefined) result[dialect] = value;
     });
     return result;
+  }
+
+  /**
+   * The formula set for a step: the definition's formulas with the first
+   * matching variant's shape, target, formulas and notes laid over them.
+   */
+  function formulaSet(definition, step = null) {
+    const set = definition?.formulas || { shape: "none" };
+    const variant = variantFor(set.variants, step);
+    if (!variant) return set;
+    const { when: _when, ...override } = variant;
+    const dialects = {};
+    ["excel", "sql", "python"].forEach((dialect) => {
+      if (override[dialect] !== undefined)
+        dialects[dialect] = override[dialect];
+      delete override[dialect];
+    });
+    return {
+      ...set,
+      ...override,
+      variant: true,
+      default: dialects,
+      bySubtype: {},
+    };
   }
 
   /** Base fields followed by the selected subtype's own fields. */
@@ -198,6 +233,9 @@
       Object.entries(set.bySubtype || {}).forEach(([key, value]) =>
         add(`${path}/bySubtype/${key}`, value),
       );
+      (set.variants || []).forEach((variant, index) =>
+        add(`${path}/variants/${index}/template`, variant.template),
+      );
     };
     const addTriple = (path, triple) =>
       Object.entries(triple || {}).forEach(([key, value]) =>
@@ -215,10 +253,23 @@
     (formulaSet.notes || []).forEach((value, index) =>
       add(`/formulas/notes/${index}`, value),
     );
-    const addFields = (path, list) =>
-      (list || []).forEach((field, index) =>
-        add(`${path}/${index}/valueTemplate`, field.valueTemplate),
+    (formulaSet.variants || []).forEach((variant, index) => {
+      const path = `/formulas/variants/${index}`;
+      add(`${path}/target`, variant.target);
+      addTriple(path, {
+        excel: variant.excel,
+        sql: variant.sql,
+        python: variant.python,
+      });
+      (variant.notes || []).forEach((value, noteIndex) =>
+        add(`${path}/notes/${noteIndex}`, value),
       );
+    });
+    const addFields = (path, list) =>
+      (list || []).forEach((field, index) => {
+        add(`${path}/${index}/valueTemplate`, field.valueTemplate);
+        add(`${path}/${index}/message`, field.message);
+      });
     addFields("/fields", definition.fields);
     (definition.subtypes?.options || []).forEach((option, index) =>
       addFields(`/subtypes/options/${index}/fields`, option.fields),
@@ -248,6 +299,54 @@
   }
 
   // ---------------------------------------------------------------------------
+  // The control palette (catalogs/step-types/controls.json).
+  // ---------------------------------------------------------------------------
+
+  /** Field keys every control reads; the palette's commonProperties. */
+  const ALWAYS_ALLOWED = Object.freeze(["param", "control"]);
+
+  /**
+   * What a field sets that its control does not read, and features or
+   * option keys the palette does not list for that control. Empty when no
+   * palette is given.
+   */
+  function paletteProblems(field, path, palette) {
+    if (!palette || !Array.isArray(palette.controls)) return [];
+    const control = palette.controls.find(
+      (item) => item.name === field.control,
+    );
+    if (!control) return [`"${field.control}" is not in the control palette`];
+    const problems = [];
+    const allowed = new Set([
+      ...ALWAYS_ALLOWED,
+      ...(palette.commonProperties || []).map((item) => item.name),
+      ...(control.properties || []),
+      ...(control.features?.length ? ["features"] : []),
+    ]);
+    Object.keys(field).forEach((key) => {
+      if (!allowed.has(key))
+        problems.push(`the ${control.name} control does not read "${key}"`);
+    });
+    const features = new Set((control.features || []).map((item) => item.name));
+    Object.keys(field.features || {}).forEach((name) => {
+      if (!features.has(name))
+        problems.push(`the ${control.name} control has no feature "${name}"`);
+    });
+    if (control.optionProperties) {
+      const optionKeys = new Set(control.optionProperties);
+      (field.options || []).forEach((option, index) =>
+        Object.keys(option).forEach((key) => {
+          if (!optionKeys.has(key))
+            problems.push(
+              `options/${index} sets "${key}", which a choice option does not read`,
+            );
+        }),
+      );
+    }
+    return problems;
+  }
+
+  // ---------------------------------------------------------------------------
   // Validation: JSON Schema first, then cross-references and templates.
   // ---------------------------------------------------------------------------
 
@@ -255,7 +354,9 @@
    * Returns { ok, errors: [{ path, message, code }] }.
    * Options: schema (required), helpers (names the caller supplies),
    * blocks (known block names), handlers (known migration handler names),
-   * supportedSchemaVersions.
+   * controls (field controls the caller renders), palette (the control
+   * palette, which limits each field to its control's properties and
+   * features), supportedSchemaVersions.
    */
   function validate(definition, options = {}) {
     const errors = [];
@@ -332,6 +433,14 @@
           );
         seen.add(field.param);
         params.add(field.param);
+        if (options.controls && !options.controls.includes(field.control))
+          add(
+            `${path}/${index}/control`,
+            `the "${field.control}" control is not available in this version of ATLAS Align`,
+          );
+        paletteProblems(field, `${path}/${index}`, options.palette).forEach(
+          (message) => add(`${path}/${index}`, message),
+        );
         if (field.control === "block") {
           if (!field.block)
             add(`${path}/${index}/block`, "a block field needs a block name");
@@ -394,6 +503,13 @@
       });
     };
     fieldEntries.forEach(([field, path]) => {
+      (field.options || []).forEach((option, index) => {
+        if (option.visibleWhen)
+          checkConditionParams(
+            option.visibleWhen,
+            `${path}/options/${index}/visibleWhen`,
+          );
+      });
       if (field.sourceParam && !params.has(field.sourceParam))
         add(
           `${path}/sourceParam`,
@@ -422,6 +538,14 @@
     (definition.export.rules || []).forEach((rule, index) =>
       checkConditionParams(rule.when, `/export/rules/${index}/when`),
     );
+    ["english", "autoNotes", "formulas"].forEach((section) =>
+      (definition[section]?.variants || []).forEach((variant, index) =>
+        checkConditionParams(
+          variant.when,
+          `/${section}/variants/${index}/when`,
+        ),
+      ),
+    );
 
     ["english", "autoNotes"].forEach((section) =>
       Object.keys(definition[section]?.bySubtype || {}).forEach((key) => {
@@ -435,7 +559,8 @@
     });
     // A behavior block writes its own English, so its definition may leave
     // the template blank.
-    const needsEnglish = !definition.block;
+    const needsEnglish =
+      !definition.block && !definition.english.variants?.length;
     if (needsEnglish && !definition.english.default && subtypeValues.size) {
       subtypeValues.forEach((value) => {
         if (definition.english.bySubtype?.[value] === undefined)
@@ -526,6 +651,9 @@
     subtypeOption,
     template,
     formulas,
+    formulaSet,
+    variantFor,
+    paletteProblems,
     fields,
     exportFor,
     templates,

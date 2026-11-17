@@ -53,6 +53,27 @@
   const library = global.ATLASStepTypeLibrary || {};
   const HANDLERS = Object.freeze({ ...(library.handlers || {}) });
   const BLOCKS = Object.freeze({ ...(library.blocks || {}) });
+  /**
+   * The field controls renderEditor draws, from the control palette
+   * (catalogs/step-types/controls.json). A definition that names any other
+   * control is rejected, so a palette control marked "planned" cannot be
+   * used until this list has it.
+   */
+  const FIELD_CONTROLS = Object.freeze([
+    "source_picker",
+    "field_picker",
+    "choice",
+    "text",
+    "textarea",
+    "whole_number",
+    "toggle",
+    "hidden",
+    "hint",
+    "callout",
+    "block",
+    "sort_keys",
+    "duplicate_keys",
+  ]);
 
   let registry = null;
   let readyPromise = null;
@@ -69,6 +90,14 @@
   function app(name) {
     const fn = global[name];
     return typeof fn === "function" ? fn : null;
+  }
+
+  /** Escapes text placed between tags, where quotes need no escaping. */
+  function escapeText(value) {
+    return text(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
   }
 
   function escapeHtml(value) {
@@ -145,10 +174,13 @@
 
   /** Names the registry checks definitions against. */
   function registryOptions() {
+    const palette = engine()?.bundled?.controls;
     return {
       helpers: [...HELPER_NAMES],
       blocks: Object.keys(BLOCKS),
       handlers: Object.keys(HANDLERS),
+      controls: [...FIELD_CONTROLS],
+      ...(palette ? { palette } : {}),
     };
   }
 
@@ -492,12 +524,12 @@
     };
   }
 
-  function render(template, step, definition, format) {
+  function render(template, step, definition, format, escapes = {}) {
     if (typeof template !== "string") return null;
     return engine().templates.render(
       template,
       templateData(step, definition, format),
-      { helpers: TEMPLATE_HELPERS, format },
+      { helpers: TEMPLATE_HELPERS, format, ...escapes },
     );
   }
 
@@ -580,6 +612,7 @@
       definition,
       "english",
       definitions.subtypeOf(definition, step),
+      step,
     );
     if (template == null) return "";
     try {
@@ -600,6 +633,7 @@
       definition,
       "autoNotes",
       definitions.subtypeOf(definition, step),
+      step,
     );
     if (template == null) return null;
     try {
@@ -642,7 +676,7 @@
     const fromBlock = blockPart(definition, "formulas");
     if (fromBlock) return fromBlock(step) || null;
     const { definitions } = engine();
-    const set = definition.formulas || { shape: "none" };
+    const set = definitions.formulaSet(definition, step);
     const subtype = definitions.subtypeOf(definition, step);
     const result = {};
     let notes = [];
@@ -653,7 +687,9 @@
         const target = text(
           render(set.target, step, definition, "plain"),
         ).trim();
-        const triple = definitions.formulas(definition, subtype);
+        const triple = set.variant
+          ? set.default
+          : definitions.formulas(definition, subtype);
         DIALECTS.forEach((dialect) => {
           const expression = text(
             render(triple[dialect], step, definition, dialect),
@@ -948,10 +984,52 @@
     return field.label || field.param;
   }
 
+  /** "atlas-split-part-hint" for split_part: ids a field's markup uses. */
+  function fieldId(field, suffix) {
+    return `atlas-${text(field.param).replace(/_/g, "-")}-${suffix}`;
+  }
+
+  /** The help text's id: the field's helpId, else atlas-<param>-hint. */
+  function helpId(field) {
+    return field.helpId || fieldId(field, "hint");
+  }
+
   function helpHtml(field) {
     return field.help
-      ? `<small class="hint">${escapeHtml(field.help)}</small>`
+      ? `<small id="${escapeHtml(helpId(field))}" class="hint">${escapeText(field.help)}</small>`
       : "";
+  }
+
+  /** aria-describedby for a field with help, so readers hear the hint. */
+  function describedBy(field) {
+    return field.help ? ` aria-describedby="${escapeHtml(helpId(field))}"` : "";
+  }
+
+  /**
+   * A placeholder attribute. One that shows double quotes, such as
+   * e.g., " - ", is written in single quotes so it reads as typed.
+   */
+  function placeholderAttribute(value) {
+    const shown = text(value);
+    if (!shown) return "";
+    return shown.includes('"') && !shown.includes("'")
+      ? ` placeholder='${escapeText(shown)}'`
+      : ` placeholder="${escapeHtml(shown)}"`;
+  }
+
+  /**
+   * The options a new step can choose: hidden options and options whose
+   * visibleWhen does not hold are left out, except the saved value, so a
+   * saved step still shows what it uses.
+   */
+  function shownOptions(options, step, selected) {
+    const { matches } = engine().definitions;
+    return (options || []).filter(
+      (option) =>
+        option.value === selected ||
+        (!option.hidden &&
+          (!option.visibleWhen || matches(option.visibleWhen, step))),
+    );
   }
 
   function choiceHtml({
@@ -963,20 +1041,43 @@
     selected,
     display,
     disabled,
+    layout,
   }) {
     const choice = app("atlasChoiceControl");
     const attributes = `data-param="${escapeHtml(param)}"${disabled ? " disabled" : ""}`;
+    // A heading without a popover sits above the control, as a label would.
+    const above = heading && !popover;
     if (choice)
-      return `<div class="atlas-choice-field">${choice({
+      return `<div class="atlas-choice-field${layout === "full" ? " full" : ""}">${
+        above
+          ? `<span class="atlas-choice-heading">${escapeHtml(heading)}</span>`
+          : ""
+      }${choice({
         options: optionTriples(options),
         selected,
         variant: display || "segment",
         label,
         attributes,
-        ...(heading ? { heading } : {}),
+        ...(heading && !above ? { heading } : {}),
         ...(popover ? { popover } : {}),
       })}</div>`;
-    return `<label>${escapeHtml(label)}<select ${attributes}>${options
+    return selectHtml({ param, label, options, selected, disabled });
+  }
+
+  function selectHtml({
+    param,
+    label,
+    options,
+    selected,
+    disabled,
+    required,
+    placeholder: prompt,
+  }) {
+    const first =
+      prompt != null && prompt !== ""
+        ? `<option value="">${escapeHtml(prompt)}</option>`
+        : "";
+    return `<label>${escapeHtml(label)}<select data-param="${escapeHtml(param)}"${required ? " required" : ""}${disabled ? " disabled" : ""}>${first}${options
       .map(
         (option) =>
           `<option value="${escapeHtml(option.value)}"${option.value === selected ? " selected" : ""}>${escapeHtml(option.label)}</option>`,
@@ -995,10 +1096,10 @@
     }
   }
 
-  function blockHtml(field, step) {
-    const html = BLOCKS[field.block]?.editor?.(step, field);
+  function blockHtml(name, field, step) {
+    const html = BLOCKS[name]?.editor?.(step, field);
     if (typeof html === "string") return html;
-    return `<p class="hint">The "${escapeHtml(field.block || "")}" editor block is not available in this version of ATLAS Align. Update ATLAS Align or remove the block in the step type builder.</p>`;
+    return `<p class="hint">The "${escapeHtml(name || "")}" editor block is not available in this version of ATLAS Align. Update ATLAS Align or remove the block in the step type builder.</p>`;
   }
 
   function fieldHtml(field, step, definition) {
@@ -1008,12 +1109,11 @@
     const disabled = field.enabledWhen && !matches(field.enabledWhen, step);
     const value = shownValue(field, step, definition);
     const label = labelText(field);
-    const required = field.required ? ' aria-required="true"' : "";
+    const required = field.required ? " required" : "";
     const off = disabled ? " disabled" : "";
     const bind = `data-param="${escapeHtml(field.param)}"`;
-    const placeholderText = field.placeholder
-      ? ` placeholder="${escapeHtml(field.placeholder)}"`
-      : "";
+    const placeholderText = placeholderAttribute(field.placeholder);
+    const full = field.layout === "full" ? " full" : "";
     switch (field.control) {
       case "source_picker": {
         const picker = app("sourceInputFromOptions");
@@ -1040,35 +1140,117 @@
           : `<input ${bind} value="${escapeHtml(value)}"${placeholderText}${required}${off}>`;
         return `<label>${escapeHtml(label)}${input}${helpHtml(field)}</label>`;
       }
-      case "choice":
+      case "choice": {
+        const selected = value || text(field.default);
+        const options = shownOptions(field.options, step, selected);
+        if (field.display === "select")
+          return `${selectHtml({
+            param: field.param,
+            label,
+            options,
+            selected,
+            disabled,
+            required: field.required,
+            placeholder: field.placeholder,
+          })}${helpHtml(field)}`;
         return `${choiceHtml({
           param: field.param,
           label,
           heading: field.heading,
           popover: field.popover,
-          options: field.options || [],
-          selected: value || text(field.default),
+          options,
+          selected,
           display: field.display,
           disabled,
+          layout: field.layout,
         })}${helpHtml(field)}`;
+      }
       case "textarea":
-        return `<label>${escapeHtml(label)}<textarea ${bind}${placeholderText}${required}${off}>${escapeHtml(value)}</textarea>${helpHtml(field)}</label>`;
+        return `<label${full ? ' class="full"' : ""}>${escapeHtml(label)}<textarea ${bind}${placeholderText}${required}${describedBy(field)}${off}>${escapeHtml(value)}</textarea>${helpHtml(field)}</label>`;
       case "whole_number": {
         const min = Number.isInteger(field.min) ? ` min="${field.min}"` : "";
         const max = Number.isInteger(field.max) ? ` max="${field.max}"` : "";
-        return `<label>${escapeHtml(label)}<input type="number" inputmode="numeric" step="1"${min}${max} ${bind} value="${escapeHtml(value)}"${placeholderText}${required}${off}>${helpHtml(field)}</label>`;
+        return `<label>${escapeHtml(label)}<input type="number" ${bind} inputmode="numeric"${min}${max} step="1" value="${escapeHtml(value)}"${placeholderText}${required}${describedBy(field)}${off}>${helpHtml(field)}</label>`;
       }
       case "toggle":
-        return `<label class="step-type-toggle"><input type="checkbox" ${bind}${value === "Yes" ? " checked" : ""}${off}> ${escapeHtml(label)}${helpHtml(field)}</label>`;
+        return `<label class="step-type-toggle"><input type="checkbox" ${bind}${value === "Yes" ? " checked" : ""}${describedBy(field)}${off}> ${escapeHtml(label)}${helpHtml(field)}</label>`;
       case "hidden":
         return `<input type="hidden" ${bind} value="${escapeHtml(value)}">`;
       case "hint":
-        return `<p class="hint">${escapeHtml(field.help || field.label || "")}</p>`;
+        return `<p class="hint${full}">${escapeText(field.help || field.label || "")}</p>`;
+      case "callout": {
+        // The template's own text is escaped as text and each value fully,
+        // so a value cannot add markup.
+        let message = "";
+        try {
+          message = text(
+            render(field.message, step, definition, "plain", {
+              escapeText,
+              escapeValue: escapeHtml,
+            }),
+          );
+        } catch (error) {
+          message = escapeText(renderFailure(definition, "callout", error));
+        }
+        return message.trim()
+          ? `<div class="logic-editor-callout${full}" role="note">${message}</div>`
+          : "";
+      }
       case "block":
-        return blockHtml(field, step);
-      default:
-        return `<label>${escapeHtml(label)}<input ${bind} value="${escapeHtml(value)}"${placeholderText}${required}${off}>${helpHtml(field)}</label>`;
+        return blockHtml(field.block, field, step);
+      case "sort_keys":
+      case "duplicate_keys":
+        return blockHtml(field.control, field, step);
+      default: {
+        const suggestions = Array.isArray(field.suggestions)
+          ? field.suggestions
+          : [];
+        const listId = fieldId(field, "options");
+        const maxLength = Number.isInteger(field.maxLength)
+          ? ` maxlength="${field.maxLength}"`
+          : "";
+        const list = suggestions.length ? ` list="${escapeHtml(listId)}"` : "";
+        const datalist = suggestions.length
+          ? `<datalist id="${escapeHtml(listId)}">${suggestions
+              .map((item) => `<option value="${escapeHtml(item)}"></option>`)
+              .join("")}</datalist>`
+          : "";
+        return `<label>${escapeHtml(label)}<input ${bind} value="${escapeHtml(value)}"${maxLength}${list}${placeholderText}${required}${describedBy(field)}${off}>${datalist}${helpHtml(field)}</label>`;
+      }
     }
+  }
+
+  /**
+   * Parameters whose change shows, hides or enables part of a field-based
+   * editor: the subtype and every param a visibleWhen or enabledWhen reads.
+   * The editor redraws when one of them changes.
+   */
+  function rerenderParams() {
+    if (!registry) return [];
+    const found = new Set();
+    const collect = (condition) => {
+      if (!condition || typeof condition !== "object") return;
+      if (condition.param !== undefined) found.add(String(condition.param));
+      (condition.all || []).forEach(collect);
+      (condition.any || []).forEach(collect);
+      collect(condition.not);
+    };
+    registry.list({ includeLegacy: true }).forEach((definition) => {
+      if (definition.block) return;
+      if (definition.subtypes?.param) found.add(definition.subtypes.param);
+      const lists = [
+        definition.fields || [],
+        ...(definition.subtypes?.options || []).map(
+          (option) => option.fields || [],
+        ),
+      ];
+      lists.flat().forEach((field) => {
+        collect(field.visibleWhen);
+        collect(field.enabledWhen);
+        (field.options || []).forEach((option) => collect(option.visibleWhen));
+      });
+    });
+    return [...found].sort();
   }
 
   /** The editor form for a step, or null for built-in editors. */
@@ -1143,7 +1325,7 @@
     const issues = [];
     const subtype = definitions.subtypeOf(definition, step);
     definitions.fields(definition, subtype).forEach((field) => {
-      if (!field.required) return;
+      if (!field.required || field.requiredIssue === false) return;
       if (field.visibleWhen && !definitions.matches(field.visibleWhen, step))
         return;
       if (isBlank(params[field.param]))
@@ -1189,6 +1371,7 @@
     HELPER_NAMES,
     TEMPLATE_HELPERS,
     BLOCK_NAMES: Object.freeze(Object.keys(BLOCKS)),
+    FIELD_CONTROLS,
     HANDLER_NAMES: Object.freeze(Object.keys(HANDLERS)),
     load,
     loadBundled,
@@ -1217,6 +1400,7 @@
     importTitles,
     parseText,
     renderEditor,
+    rerenderParams,
     validate,
   });
   global.ATLASStepTypeRuntime = api;

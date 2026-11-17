@@ -1,0 +1,373 @@
+{
+  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only.",
+  "paletteVersion": 1,
+  "commonProperties": [
+    {
+      "name": "param",
+      "type": "paramName",
+      "description": "The step parameter the control reads and writes. Never renamed once steps use it."
+    },
+    {
+      "name": "control",
+      "type": "controlName",
+      "description": "This control's name."
+    },
+    {
+      "name": "label",
+      "type": "label",
+      "description": "Visible label."
+    },
+    {
+      "name": "help",
+      "type": "text",
+      "description": "Hint shown under the control and linked to it with aria-describedby."
+    },
+    {
+      "name": "helpId",
+      "type": "identifier",
+      "description": "Id of the help text, for markup that names it. Defaults to atlas-<param>-hint."
+    },
+    {
+      "name": "required",
+      "type": "boolean",
+      "description": "Marks the control required and reports a blank value as an Audit Issue."
+    },
+    {
+      "name": "requiredIssue",
+      "type": "boolean",
+      "description": "false keeps the required mark but leaves the Audit Issue to the type's own checks."
+    },
+    {
+      "name": "default",
+      "type": "scalar",
+      "description": "Value written to a new or blank step."
+    },
+    {
+      "name": "visibleWhen",
+      "type": "condition",
+      "description": "Shows the control only when the condition holds. The editor redraws when a parameter the condition reads changes."
+    },
+    {
+      "name": "enabledWhen",
+      "type": "condition",
+      "description": "Disables the control unless the condition holds."
+    },
+    {
+      "name": "layout",
+      "type": "enum",
+      "values": ["full"],
+      "description": "full spans the whole editor row."
+    },
+    {
+      "name": "group",
+      "type": "identifier",
+      "description": "Groups related fields in the builder."
+    }
+  ],
+  "controls": [
+    {
+      "name": "source_picker",
+      "label": "Source picker",
+      "category": "input",
+      "status": "available",
+      "description": "Chooses one of the audit's source files.",
+      "properties": ["placeholder"],
+      "features": []
+    },
+    {
+      "name": "field_picker",
+      "label": "Field picker",
+      "category": "input",
+      "status": "available",
+      "description": "Chooses a field of a source, or any field and created column when no source is linked.",
+      "properties": ["placeholder", "sourceParam", "valueTemplate"],
+      "features": []
+    },
+    {
+      "name": "choice",
+      "label": "Choice",
+      "category": "choice",
+      "status": "available",
+      "description": "One value from a fixed list, as cards, chips, a segmented control or a select. Each option can be hidden for new steps; a saved step that uses a hidden option still shows it.",
+      "properties": [
+        "options",
+        "optionsFrom",
+        "display",
+        "heading",
+        "popover",
+        "placeholder"
+      ],
+      "features": [],
+      "optionProperties": [
+        "value",
+        "label",
+        "description",
+        "hidden",
+        "visibleWhen"
+      ]
+    },
+    {
+      "name": "text",
+      "label": "Text",
+      "category": "input",
+      "status": "available",
+      "description": "One line of text, with optional suggestions.",
+      "properties": [
+        "placeholder",
+        "valueTemplate",
+        "maxLength",
+        "suggestions"
+      ],
+      "features": []
+    },
+    {
+      "name": "textarea",
+      "label": "Long text",
+      "category": "input",
+      "status": "available",
+      "description": "Several lines of text.",
+      "properties": ["placeholder", "valueTemplate"],
+      "features": []
+    },
+    {
+      "name": "whole_number",
+      "label": "Whole number",
+      "category": "input",
+      "status": "available",
+      "description": "A whole number between optional limits.",
+      "properties": ["placeholder", "min", "max"],
+      "features": []
+    },
+    {
+      "name": "toggle",
+      "label": "Toggle",
+      "category": "input",
+      "status": "available",
+      "description": "Yes or No.",
+      "properties": [],
+      "features": []
+    },
+    {
+      "name": "hidden",
+      "label": "Hidden value",
+      "category": "layout",
+      "status": "available",
+      "description": "Keeps a parameter on the step without showing it.",
+      "properties": ["valueTemplate"],
+      "features": []
+    },
+    {
+      "name": "hint",
+      "label": "Hint",
+      "category": "layout",
+      "status": "available",
+      "description": "A line of help text. Writes no parameter; param only names it.",
+      "properties": [],
+      "features": []
+    },
+    {
+      "name": "callout",
+      "label": "Callout",
+      "category": "layout",
+      "status": "available",
+      "description": "A highlighted note built from a template, usually shown with visibleWhen. Writes no parameter; param only names it.",
+      "properties": ["message"],
+      "features": []
+    },
+    {
+      "name": "block",
+      "label": "Editor block",
+      "category": "composite",
+      "status": "available",
+      "description": "An editor named from the step type library (sort_keys, duplicate_keys). Kept for definitions written before these became controls.",
+      "properties": ["block", "blockOptions"],
+      "features": []
+    },
+    {
+      "name": "sort_keys",
+      "label": "Sort fields",
+      "category": "composite",
+      "status": "available",
+      "description": "A list of sort fields, each with a direction. Stores sort_fields_json and mirrors the first field to source_file, field_name and sort_direction.",
+      "params": [
+        "sort_fields_json",
+        "source_file",
+        "source_alias",
+        "field_name",
+        "sort_direction"
+      ],
+      "properties": [],
+      "features": []
+    },
+    {
+      "name": "duplicate_keys",
+      "label": "Duplicate key fields",
+      "category": "composite",
+      "status": "available",
+      "description": "A list of fields that together identify a duplicate. Stores duplicate_fields_json and mirrors the first field to source_file and field_name.",
+      "params": [
+        "duplicate_fields_json",
+        "source_file",
+        "source_alias",
+        "field_name"
+      ],
+      "properties": [],
+      "features": []
+    },
+    {
+      "name": "condition_group",
+      "label": "Conditions",
+      "category": "composite",
+      "status": "planned",
+      "description": "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json.",
+      "params": ["conditions_json"],
+      "properties": [],
+      "features": [
+        {
+          "name": "nesting",
+          "label": "Nested groups",
+          "description": "AND / OR groups inside the condition list."
+        },
+        {
+          "name": "fieldCompare",
+          "label": "Compare with a field",
+          "description": "Compare with another field, including one from a second source."
+        },
+        {
+          "name": "valueList",
+          "label": "Value lists",
+          "description": "Compare with several values at once."
+        },
+        {
+          "name": "runParameters",
+          "label": "Run parameters",
+          "description": "Compare with a run parameter such as the run date."
+        },
+        {
+          "name": "math",
+          "label": "Calculated values",
+          "description": "Compare with a calculation."
+        },
+        {
+          "name": "firstAvailable",
+          "label": "First available value",
+          "description": "Use the first field that has a value."
+        },
+        {
+          "name": "groupChecks",
+          "label": "Group checks",
+          "description": "Checks across the records of a group."
+        }
+      ]
+    },
+    {
+      "name": "action",
+      "label": "Action",
+      "category": "composite",
+      "status": "planned",
+      "description": "What a THEN or ELSE branch does. Stores then_action_type and the parameters of the chosen action.",
+      "params": ["then_action_type"],
+      "properties": ["branch"],
+      "features": [
+        {
+          "name": "display",
+          "label": "Display",
+          "description": "Display the records."
+        },
+        {
+          "name": "do_not_display",
+          "label": "Do not display",
+          "description": "Leave the records out."
+        },
+        {
+          "name": "display_text",
+          "label": "Display text",
+          "description": "Write a text response in a column."
+        },
+        {
+          "name": "set_column_value",
+          "label": "Set value from a field",
+          "description": "Copy a field into a column."
+        },
+        {
+          "name": "set_column_calculation",
+          "label": "Calculation",
+          "description": "Write a calculation into a column."
+        },
+        {
+          "name": "set_column_string_transform",
+          "label": "String transformation",
+          "description": "Write part of a text value into a column."
+        },
+        {
+          "name": "freeform",
+          "label": "Freeform text",
+          "description": "Describe the action in words."
+        }
+      ]
+    },
+    {
+      "name": "math",
+      "label": "Calculation",
+      "category": "composite",
+      "status": "planned",
+      "description": "A structured calculation of fields and numbers with optional rounding. Stores the expression as JSON in its param.",
+      "params": [],
+      "properties": [],
+      "features": [
+        {
+          "name": "rounding",
+          "label": "Rounding",
+          "description": "Round the result to a number of places."
+        }
+      ]
+    },
+    {
+      "name": "string_transform",
+      "label": "String transformation",
+      "category": "composite",
+      "status": "planned",
+      "description": "Part of a text value: first or last characters, character count, or a split into columns.",
+      "params": [],
+      "properties": ["prefix"],
+      "features": [
+        {
+          "name": "first_characters",
+          "label": "First characters",
+          "description": "Keep the first N characters."
+        },
+        {
+          "name": "last_characters",
+          "label": "Last characters",
+          "description": "Keep the last N characters."
+        },
+        {
+          "name": "character_count",
+          "label": "Character count",
+          "description": "Count the characters."
+        },
+        {
+          "name": "split",
+          "label": "Split into columns",
+          "description": "Split on a delimiter into several columns."
+        }
+      ]
+    },
+    {
+      "name": "join_keys",
+      "label": "Join keys",
+      "category": "composite",
+      "status": "planned",
+      "description": "Pairs of fields that match records of two sources. Stores join_keys_json and mirrors the first pair to left_field and right_field.",
+      "params": ["join_keys_json", "left_field", "right_field"],
+      "properties": [],
+      "features": [
+        {
+          "name": "multipleKeys",
+          "label": "Several key pairs",
+          "description": "Match on more than one pair of fields."
+        }
+      ]
+    }
+  ]
+}

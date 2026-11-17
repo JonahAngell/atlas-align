@@ -94,6 +94,7 @@
 │   ├── file-utility
 │   │   └── executable-steps.json
 │   ├── step-types
+│   │   ├── controls.json
 │   │   ├── create_column.json
 │   │   ├── else.json
 │   │   ├── filter_rows.json
@@ -551,6 +552,7 @@
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
 │   ├── step-type-engine.test.js
+│   ├── step-type-field-controls.test.js
 │   ├── step-type-preview-scripts.test.js
 │   ├── step-type-publishing.test.js
 │   ├── step-type-repository.test.js

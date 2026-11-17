@@ -121,6 +121,20 @@
         "bySubtype": {
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/template" }
+        },
+        "variants": {
+          "description": "Templates chosen by a condition on the step's parameters. The first variant whose `when` holds wins over bySubtype and default.",
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "template"],
+            "properties": {
+              "when": { "$ref": "#/$defs/condition" },
+              "template": { "$ref": "#/$defs/template" }
+            }
+          }
         }
       }
     },
@@ -153,6 +167,31 @@
           "type": "array",
           "maxItems": 20,
           "items": { "$ref": "#/$defs/template" }
+        },
+        "variants": {
+          "description": "Formulas chosen by a condition on the step's parameters. The first variant whose `when` holds replaces the shape, target, formulas and notes it sets.",
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when"],
+            "properties": {
+              "when": { "$ref": "#/$defs/condition" },
+              "shape": {
+                "enum": ["expression", "assignment", "filter", "frame", "none"]
+              },
+              "target": { "$ref": "#/$defs/template" },
+              "excel": { "$ref": "#/$defs/template" },
+              "sql": { "$ref": "#/$defs/template" },
+              "python": { "$ref": "#/$defs/template" },
+              "notes": {
+                "type": "array",
+                "maxItems": 20,
+                "items": { "$ref": "#/$defs/template" }
+              }
+            }
+          }
         },
         "fallback": {
           "type": "object",
@@ -208,6 +247,11 @@
         "value": { "type": "string", "maxLength": 200 },
         "label": { "$ref": "#/$defs/label" },
         "description": { "type": "string", "maxLength": 500 },
+        "hidden": {
+          "type": "boolean",
+          "description": "Hidden for new steps. A step that already uses the option still shows it."
+        },
+        "visibleWhen": { "$ref": "#/$defs/condition" },
         "fields": { "$ref": "#/$defs/fieldList" },
         "export": { "$ref": "#/$defs/exportOverride" }
       }
@@ -257,13 +301,31 @@
             "toggle",
             "hidden",
             "hint",
-            "block"
-          ]
+            "callout",
+            "block",
+            "sort_keys",
+            "duplicate_keys",
+            "condition_group",
+            "action",
+            "math",
+            "string_transform",
+            "join_keys"
+          ],
+          "description": "A control from catalogs/step-types/controls.json."
         },
         "label": { "$ref": "#/$defs/label" },
         "placeholder": { "type": "string", "maxLength": 200 },
         "help": { "type": "string", "maxLength": 1000 },
+        "helpId": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,79}$",
+          "description": "Id of the help text. Defaults to atlas-<param>-hint."
+        },
         "required": { "type": "boolean" },
+        "requiredIssue": {
+          "type": "boolean",
+          "description": "false keeps the required mark but leaves the Audit Issue to the type's own checks."
+        },
         "default": { "$ref": "#/$defs/scalar" },
         "valueTemplate": {
           "description": "The value the editor shows while the parameter is blank.",
@@ -273,7 +335,8 @@
         "enabledWhen": { "$ref": "#/$defs/condition" },
         "sourceParam": { "$ref": "#/$defs/paramName" },
         "group": { "$ref": "#/$defs/identifier" },
-        "display": { "enum": ["cards", "chips", "segment", "list"] },
+        "layout": { "enum": ["full"] },
+        "display": { "enum": ["cards", "chips", "segment", "list", "select"] },
         "heading": { "$ref": "#/$defs/label" },
         "popover": { "enum": ["list", "pills", "grid"] },
         "options": {
@@ -285,7 +348,22 @@
         "block": { "$ref": "#/$defs/identifier" },
         "blockOptions": { "type": "object" },
         "min": { "type": "integer" },
-        "max": { "type": "integer" }
+        "max": { "type": "integer" },
+        "maxLength": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "suggestions": {
+          "type": "array",
+          "maxItems": 50,
+          "items": { "type": "string", "maxLength": 200 }
+        },
+        "message": {
+          "description": "A callout's text, as an English template.",
+          "$ref": "#/$defs/template"
+        },
+        "features": {
+          "description": "Switches a control's features on or off (catalogs/step-types/controls.json). Off hides the feature for new steps only.",
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        }
       }
     },
     "scriptRole": {

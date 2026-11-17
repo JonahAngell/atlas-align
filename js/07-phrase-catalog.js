@@ -911,23 +911,6 @@ function elseActionPlain(step) {
  * "a number with 2 decimal places". Steps without format_kind read as before.
  * @param {Record<string, any>} params - Step params.
  */
-function formatFieldPlain(params = {}) {
-  if (typeof atlasFormatFieldConfig !== "function" || !params.format_kind)
-    return params.format || "";
-  const c = atlasFormatFieldConfig(params);
-  if (c.kind === "trim") return "text with leading and trailing spaces removed";
-  if (c.kind === "upper") return "upper case";
-  if (c.kind === "lower") return "lower case";
-  if (c.kind === "number")
-    return c.decimals === ""
-      ? "number"
-      : `a number with ${c.decimals} decimal place${c.decimals === "1" ? "" : "s"}`;
-  if (c.kind === "date") return `date ${c.dateOutput || "[date format]"}`;
-  if (c.kind === "zeroPad")
-    return `${c.width || "[width]"} digits with leading zeros`;
-  return c.kind;
-}
-
 /**
  * Names a separator for analyst text. Spaces and tabs are named in words,
  * since a quoted space would read as nothing.
@@ -1193,51 +1176,7 @@ function atlasUnionSourcesSentence(step) {
 }
 
 /** Format Field sentence (the format_field behavior block). */
-function atlasFormatFieldSentence(step) {
-  const params = step.params || {};
-  return renderCatalogPhrase("analyst_logic.format_field.default", {
-    table_column: tableColumnPlain(
-      params.source_file,
-      params.source_alias,
-      params.field_name,
-    ),
-    format: formatFieldPlain(params),
-    format_suffix: "",
-  });
-}
-
 /** Split Field sentence (the split_field behavior block). */
-function atlasSplitFieldSentence(step) {
-  const params = step.params || {};
-  const tableColumn = tableColumnPlain(
-    params.source_file,
-    params.source_alias,
-    params.field_name,
-  );
-  if (typeof atlasSplitFieldConfig !== "function")
-    return renderCatalogPhrase("analyst_logic.split_field.default", {
-      table_column: tableColumn,
-      split_on: quotePhraseValue(params.split_on || ""),
-      split_part: params.split_part || "",
-      output_column: quotePhraseValue(params.output_column || ""),
-    });
-  const split = atlasSplitFieldConfig(params);
-  const by = split.by === "width" ? "width" : "delimiter";
-  const kind =
-    split.mode === "explode"
-      ? "explode"
-      : split.part === "last"
-        ? "last"
-        : "part";
-  return renderCatalogPhrase(`analyst_logic.split_field.${by}_${kind}`, {
-    table_column: tableColumn,
-    delimiter: atlasSplitDelimiterPlain(split),
-    width: split.width || "[width]",
-    split_part: split.part,
-    output_column: quotePhraseValue(split.outputColumn),
-  });
-}
-
 /** Filter Rows sentence (the filter_rows behavior block). */
 function atlasFilterRowsSentence(step) {
   const params = step.params || {};

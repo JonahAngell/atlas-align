@@ -19,7 +19,10 @@
  *   {{! comment }}  {{~ trims whitespace before, ~}} trims whitespace after
  *   \{{                             a literal "{{"
  *
- * Output is plain text. Callers that show it in HTML escape it there.
+ * Output is plain text. Callers that show it in HTML escape it there, or
+ * pass escapeText and escapeValue to render(): the first is applied to the
+ * template's own text, the second to every {{value}}, so a value's quotes
+ * can be escaped while the template's are not.
  *
  * Classic-script usage:
  *   ATLASStepTypes.templates.render("Sort by {{param.field}}.", data, { helpers })
@@ -607,6 +610,10 @@
     const tree = typeof template === "string" ? parse(template) : template;
     const helpers = { ...BUILTIN_HELPERS, ...(options.helpers || {}) };
     const budget = { output: 0, iterations: 0 };
+    const escapeText =
+      typeof options.escapeText === "function" ? options.escapeText : null;
+    const escapeValue =
+      typeof options.escapeValue === "function" ? options.escapeValue : null;
     const context = {
       data,
       format: options.format || "",
@@ -695,10 +702,12 @@
 
     function walk(children, frames, parts) {
       for (const node of children) {
-        if (node.type === "text") emit(parts, node.value);
-        else if (node.type === "output")
-          emit(parts, toText(evaluate(node.value, frames)));
-        else if (node.type === "if") {
+        if (node.type === "text")
+          emit(parts, escapeText ? escapeText(node.value) : node.value);
+        else if (node.type === "output") {
+          const value = toText(evaluate(node.value, frames));
+          emit(parts, escapeValue ? toText(escapeValue(value)) : value);
+        } else if (node.type === "if") {
           const branch = node.branches.find((item, index) => {
             const passed = truthy(evaluate(item.test, frames));
             return index === 0 && node.negate ? !passed : passed;
