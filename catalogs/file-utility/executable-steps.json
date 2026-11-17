@@ -1,0 +1,78 @@
+{
+  "contractVersion": 1,
+  "compilerVersion": "1.0.0",
+  "engineVersion": "3.1.0",
+  "description": "What File Utility can run from an ATLAS Align audit. Kept identical in the ATLAS Align and File Utility repos; a test in each repo checks its copy. 'supported' compiles as is, 'partial' compiles only in the cases named in 'when', anything not listed is a blocker.",
+  "stepTypes": {
+    "reference_source": {"status": "supported"},
+    "create_column": {"status": "partial", "when": "valueModes below; free-text expressions are blockers"},
+    "if_then": {"status": "supported"},
+    "else": {"status": "supported"},
+    "join": {"status": "supported", "when": "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL OUTER JOIN, UNION; not inside an IF branch"},
+    "union_sources": {"status": "supported", "when": "two different sources; not inside an IF branch"},
+    "format_field": {"status": "partial", "when": "formats below"},
+    "split_field": {"status": "partial", "when": "a delimiter is set; not inside an IF branch when it adds rows"},
+    "sort_records": {"status": "supported", "when": "not inside an IF branch"},
+    "remove_duplicates": {"status": "supported", "when": "not inside an IF branch"},
+    "filter_rows": {"status": "supported"},
+    "flag_records": {"status": "supported"}
+  },
+  "operators": {
+    "is equal to": "equals",
+    "equals": "equals",
+    "=": "equals",
+    "is not equal to": "notEquals",
+    "not equal to": "notEquals",
+    "<>": "notEquals",
+    "contains": "contains",
+    "does not contain": "notContains",
+    "starts with": "startsWith",
+    "does not start with": "notStartsWith",
+    "ends with": "endsWith",
+    "does not end with": "notEndsWith",
+    "is greater than": "gt",
+    "is greater than or equal to": "gte",
+    "is less than": "lt",
+    "is less than or equal to": "lte",
+    "is blank": "blank",
+    "is blank/null": "blank",
+    "is null": "blank",
+    "is not blank": "notBlank",
+    "is not blank/null": "notBlank",
+    "is not null": "notBlank"
+  },
+  "blockedOperators": ["matches expression", "does not match expression"],
+  "valueModes": {
+    "values": {"status": "supported", "when": "one value per line; a 'blank/null' line means 'or blank'"},
+    "blank": {"status": "supported"},
+    "field": {"status": "supported", "when": "optionally with compareMathJson arithmetic"},
+    "expression": {"status": "partial", "when": "only a run-date token: Today, run date, the run date, report date, run_date"}
+  },
+  "thenActions": {
+    "display_text": {"status": "supported"},
+    "set_column_value": {"status": "supported"},
+    "set_column_calculation": {"status": "supported"},
+    "set_column_string_transform": {"status": "partial", "when": "first_characters, last_characters, character_count"},
+    "do_not_display": {"status": "supported"},
+    "display": {"status": "supported"},
+    "freeform": {"status": "partial", "when": "a container for child steps, or the exact text 'DISPLAY \"text\" in column \"name\"' or 'Do Not Display'; other text is a blocker"}
+  },
+  "createColumnModes": {
+    "Static value": {"status": "supported"},
+    "Source field value": {"status": "supported", "when": "with source_math_json and rounding"},
+    "Concatenate fields": {"status": "supported"},
+    "String transformation": {"status": "partial", "when": "first_characters, last_characters, character_count, split with a known column count"},
+    "Expression / calculation": {"status": "partial", "when": "expression_type first_characters or character_count, or '<run date> - <field>' / '<field> - <run date>'"},
+    "Expression": {"status": "partial", "when": "'<run date> - <field>' / '<field> - <run date>'"}
+  },
+  "formats": {
+    "text": "text",
+    "number": "number",
+    "mm/dd/yyyy": "date MM/DD/YYYY",
+    "<n> digits with leading zeros": "zeroPad"
+  },
+  "rounding": {"none": "none", "nearest": "halfUp", "up": "up", "down": "down"},
+  "duplicateActions": {"Keep first record": "first", "Keep last record": "last", "Drop all duplicated records": "none"},
+  "runParameterTokens": ["today", "run date", "the run date", "report date", "run_date", "the report date"],
+  "pseudoSources": ["Calculated Field", "Created Columns", "Created Column"]
+}
