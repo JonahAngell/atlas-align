@@ -2724,3 +2724,33 @@ test("the issue engine reads the Source Library from its lexical global", () => 
   );
   assert.doesNotMatch(adapterSource, /array\(global\.repoLibraryState/);
 });
+
+test("Do Not Display by key without a key field is a critical issue", async () => {
+  const audit = completeAudit();
+  Object.assign(audit.steps[0].params, {
+    then_action_type: "do_not_display",
+    then_exclude_scope: "key",
+    then_exclude_key_field: "",
+  });
+  const context = await runtime(audit);
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.ruleId === "audit.logic.structured-step-integrity",
+  );
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].severity, "critical");
+  assert.equal(issues[0].target.control, "param:then_exclude_key_field");
+  assert.equal(issues[0].actionData.repair, "step-param");
+  assert.equal(
+    issues[0].actionData.sourceParam,
+    "then_exclude_key_source_file",
+  );
+
+  audit.steps[0].params.then_exclude_key_field = "Personnel Number";
+  const fixed = await runtime(audit);
+  assert.equal(
+    fixed.ATLASAuditIssues.current().issues.filter(
+      (entry) => entry.ruleId === "audit.logic.structured-step-integrity",
+    ).length,
+    0,
+  );
+});

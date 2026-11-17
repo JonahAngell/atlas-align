@@ -14,6 +14,7 @@ const STEP_TYPE_OPTIONS = [
   ["if_then", "IF / THEN"],
   ["join", "Join / Union Sources"],
   ["format_field", "Format Field"],
+  ["split_field", "Split Field"],
   ["sort_records", "Sort Records"],
   ["remove_duplicates", "Remove Duplicates"],
 ];
@@ -660,15 +661,22 @@ function renderGuidedBuilder(step) {
         "Source field value",
         ATLAS_STRING_TRANSFORM_VALUE_MODE,
         "Concatenate fields",
+        ATLAS_DATE_DIFFERENCE_VALUE_MODE,
       ],
     }).filter(
       (value) =>
         value !== "Expression / calculation" &&
         value !== "Expression/Calculation",
     );
+    // A legacy written expression keeps its own (legacy) choice so the
+    // picker does not claim another type; new steps can't choose it.
+    const writtenExpression = atlasCreateColumnIsWrittenExpression(p);
+    if (writtenExpression)
+      valueModes.push([p.value_mode, "Written expression (legacy)"]);
     const selectedValueMode =
-      p.value_mode === "Expression / calculation" ||
-      p.value_mode === "Expression/Calculation"
+      !writtenExpression &&
+      (p.value_mode === "Expression / calculation" ||
+        p.value_mode === "Expression/Calculation")
         ? ""
         : p.value_mode;
     const namedSplit =
@@ -686,6 +694,14 @@ function renderGuidedBuilder(step) {
           [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
             "Take characters, a character count, or split parts from a field.",
           "Concatenate fields": "Join two fields into one value.",
+          [ATLAS_DATE_DIFFERENCE_VALUE_MODE]:
+            "Count the days between a date field and the run date.",
+          ...(writtenExpression
+            ? {
+                [p.value_mode]:
+                  "Written in words (legacy). Choose a structured type.",
+              }
+            : {}),
         }),
         selected: selectedValueMode,
         variant: "cards",
@@ -814,22 +830,7 @@ function renderGuidedBuilder(step) {
       popover: "list",
       attributes: 'data-param="format"',
     })}</div></div>`;
-  if (step.step_type === "split_field")
-    return `<div class="guided-builder"><h4>Split Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select field",
-        sourceFile: p.source_file,
-      },
-    )}</label><label>Split On<input data-param="split_on" value="${esc(p.split_on || "")}"></label><label>Display Part<input data-param="split_part" value="${esc(p.split_part || "")}" placeholder="e.g., first value"></label><label>Output Column${fieldInputFromOptions(
-      {
-        name: "output_column",
-        value: p.output_column,
-        placeholder: "Select field",
-        sourceFile: "",
-      },
-    )}</label></div>`;
+  if (step.step_type === "split_field") return atlasSplitFieldEditorHtml(p);
   if (step.step_type === "sort_records")
     return `<div class="guided-builder"><h4>Sort Records</h4>${atlasSortFieldsEditorHtml(p)}</div>`;
   if (step.step_type === "remove_duplicates")
@@ -2277,3 +2278,390 @@ function atlasStringSplitControls(p, c) {
     ${names}`;
 }
 // ATLAS-STRING-TRANSFORM-UPDATE:END
+
+// ATLAS-STRUCTURED-STEP-EDITORS:START
+/* Structured settings for Split field and Create column. New settings are
+ * stored next to the older ones, which are kept as mirrors the current
+ * compiler can read. A setting the older compiler cannot run leaves its mirror
+ * blank, so that compiler blocks the step instead of running it wrongly. */
+
+const ATLAS_DATE_DIFFERENCE_VALUE_MODE = "Date difference";
+const ATLAS_SPLIT_BY = ["delimiter", "width"];
+const ATLAS_SPLIT_MODES = ["part", "explode"];
+const ATLAS_SPLIT_MAX_DELIMITER = 20;
+const ATLAS_SPLIT_MAX_WIDTH = 10000;
+const ATLAS_SPLIT_MAX_PART = 1000;
+const ATLAS_CONCAT_MAX_SEPARATOR = 20;
+const ATLAS_SPLIT_ORDINALS = {
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+  fifth: 5,
+  sixth: 6,
+  seventh: 7,
+  eighth: 8,
+  ninth: 9,
+  tenth: 10,
+};
+
+/**
+ * Reads a written split part ("first value", "2", "last") as "last" or a
+ * 1-based position, the way the compiler reads split_part.
+ * @param {any} value - Stored split_part.
+ * @returns {string} "last", a whole number as text, or "" when blank.
+ */
+function atlasSplitPartValue(value) {
+  const text = String(value ?? "")
+    .trim()
+    .toLowerCase();
+  if (!text) return "";
+  if (/\blast\b/.test(text)) return "last";
+  const digits = text.match(/\d+/);
+  if (digits) return String(Math.max(1, Number(digits[0])));
+  const word = Object.keys(ATLAS_SPLIT_ORDINALS).find((key) =>
+    new RegExp(`\\b${key}\\b`).test(text),
+  );
+  return word ? String(ATLAS_SPLIT_ORDINALS[word]) : text;
+}
+
+/**
+ * Maps a legacy split_on value to a delimiter choice.
+ * @param {any} splitOn - Legacy split_on text, such as "comma" or "-".
+ * @returns {{choice: string, custom: string}}
+ */
+function atlasSplitDelimiterFromLegacy(splitOn) {
+  const raw = String(splitOn ?? "");
+  if (!raw) return { choice: "", custom: "" };
+  const word = raw.trim().toLowerCase();
+  const aliases = { dash: "hyphen", dot: "period", "forward slash": "slash" };
+  const byWord = ATLAS_STRING_SPLIT_DELIMITERS.find(
+    ([key]) => key === (aliases[word] || word),
+  );
+  if (byWord) return { choice: byWord[0], custom: "" };
+  const byChar = ATLAS_STRING_SPLIT_DELIMITERS.find(([, char]) => char === raw);
+  if (byChar) return { choice: byChar[0], custom: "" };
+  return { choice: "custom", custom: raw };
+}
+
+/**
+ * Structured Split field settings, read from new params or legacy split_on.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasSplitFieldConfig(p = {}) {
+  const legacy = !p.split_by && !p.split_mode;
+  const by = ATLAS_SPLIT_BY.includes(p.split_by) ? p.split_by : "delimiter";
+  const mode = ATLAS_SPLIT_MODES.includes(p.split_mode) ? p.split_mode : "part";
+  const fromLegacy = legacy ? atlasSplitDelimiterFromLegacy(p.split_on) : null;
+  const delimiterChoice = String(
+    fromLegacy ? fromLegacy.choice : p.split_delimiter || "",
+  );
+  const customDelimiter = String(
+    fromLegacy ? fromLegacy.custom : (p.split_custom_delimiter ?? ""),
+  );
+  const delimiter =
+    delimiterChoice === "custom"
+      ? customDelimiter
+      : atlasStringSplitDelimiter(delimiterChoice);
+  return {
+    by,
+    mode,
+    delimiterChoice,
+    customDelimiter,
+    delimiter,
+    width: String(p.split_width ?? "").trim(),
+    part: mode === "part" ? atlasSplitPartValue(p.split_part) || "1" : "",
+    outputColumn: String(p.output_column ?? "").trim(),
+  };
+}
+
+/**
+ * Lists what a Split field step still needs before it can run.
+ * @param {Record<string, any>} p - Step params.
+ * @returns {string[]} Plain-language problems; empty when complete.
+ */
+function atlasSplitFieldProblems(p = {}) {
+  const c = atlasSplitFieldConfig(p);
+  const problems = [];
+  if (!String(p.field_name || "").trim()) problems.push("Choose the field.");
+  if (c.by === "delimiter") {
+    if (!c.delimiterChoice) problems.push("Choose a delimiter.");
+    else if (!c.delimiter) problems.push("Type the custom delimiter.");
+    else if (c.delimiter.length > ATLAS_SPLIT_MAX_DELIMITER)
+      problems.push(
+        `Use a delimiter of ${ATLAS_SPLIT_MAX_DELIMITER} characters or fewer.`,
+      );
+  } else {
+    const width = Number(c.width);
+    if (!/^\d+$/.test(c.width) || width < 1 || width > ATLAS_SPLIT_MAX_WIDTH)
+      problems.push(
+        `Enter a width from 1 to ${ATLAS_SPLIT_MAX_WIDTH} characters.`,
+      );
+  }
+  if (c.mode === "part") {
+    if (
+      c.part !== "last" &&
+      !(/^\d+$/.test(c.part) && Number(c.part) <= ATLAS_SPLIT_MAX_PART)
+    )
+      problems.push(
+        `Choose the part to keep: a number from 1 to ${ATLAS_SPLIT_MAX_PART}, or last.`,
+      );
+    if (!c.outputColumn) problems.push("Choose the output column.");
+  }
+  return problems;
+}
+
+/**
+ * Writes the structured Split field settings and their split_on mirror.
+ * split_on keeps the delimiter only for a delimiter split that keeps one part,
+ * the one case the current compiler runs; otherwise it is blank so that
+ * compiler blocks the step.
+ * @param {Record<string, any>} params - Step params, changed in place.
+ */
+function atlasNormalizeSplitFieldParams(params) {
+  if (!params) return params;
+  const c = atlasSplitFieldConfig(params);
+  params.split_by = c.by;
+  params.split_mode = c.mode;
+  params.split_delimiter = c.by === "delimiter" ? c.delimiterChoice : "";
+  params.split_custom_delimiter =
+    c.by === "delimiter" && c.delimiterChoice === "custom"
+      ? c.customDelimiter
+      : "";
+  params.split_width = c.by === "width" ? c.width : "";
+  params.split_part = c.part;
+  if (c.mode === "explode") params.output_column = "";
+  params.split_on =
+    c.by === "delimiter" && c.mode === "part"
+      ? c.delimiterChoice === "custom"
+        ? c.customDelimiter
+        : c.delimiterChoice
+      : "";
+  return params;
+}
+
+/**
+ * Renders the Split field editor.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasSplitFieldEditorHtml(p = {}) {
+  const c = atlasSplitFieldConfig(p);
+  const delimiterOptions = [
+    ["", "Choose delimiter"],
+    ...ATLAS_STRING_SPLIT_DELIMITERS.map(([value, , label]) => [value, label]),
+    ["custom", "Custom…"],
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${esc(value)}"${value === c.delimiterChoice ? " selected" : ""}>${esc(label)}</option>`,
+    )
+    .join("");
+  const splitOn =
+    c.by === "delimiter"
+      ? `<label>Delimiter<select data-param="split_delimiter" required>${delimiterOptions}</select></label>${
+          c.delimiterChoice === "custom"
+            ? `<label>Custom delimiter<input data-param="split_custom_delimiter" value="${esc(c.customDelimiter)}" maxlength="${ATLAS_SPLIT_MAX_DELIMITER}" placeholder='e.g., " - "' aria-describedby="atlas-split-field-custom-hint"><small id="atlas-split-field-custom-hint" class="hint">Spaces count. Matched exactly, not as a pattern.</small></label>`
+            : ""
+        }`
+      : `<label>Width (characters)<input type="number" data-param="split_width" inputmode="numeric" min="1" max="${ATLAS_SPLIT_MAX_WIDTH}" step="1" value="${esc(c.width)}" placeholder="e.g., 4" required></label>`;
+  const result =
+    c.mode === "part"
+      ? `<label>Part to Keep<input data-param="split_part" value="${esc(c.part)}" list="atlas-split-part-options" placeholder="1, 2, 3 … or last" aria-describedby="atlas-split-part-hint"><datalist id="atlas-split-part-options"><option value="1"></option><option value="2"></option><option value="3"></option><option value="last"></option></datalist><small id="atlas-split-part-hint" class="hint">A position counted from 1, or "last". Values with fewer parts give a blank.</small></label><label>Output Column${fieldInputFromOptions(
+          {
+            name: "output_column",
+            value: c.outputColumn,
+            placeholder: "Select or create column",
+            sourceFile: "",
+          },
+        )}</label>`
+      : `<p class="hint full">Each part becomes its own record, replacing the field's value. The other columns are copied to every new record. Blank parts are dropped.</p>`;
+  return `<div class="guided-builder"><h4>Split Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
+    {
+      name: "field_name",
+      value: p.field_name,
+      placeholder: "Select field",
+      sourceFile: p.source_file,
+    },
+  )}</label><div class="atlas-choice-field"><span class="atlas-choice-heading">Split By</span>${atlasChoiceControl(
+    {
+      options: [
+        ["delimiter", "Delimiter"],
+        ["width", "Fixed width"],
+      ],
+      selected: c.by,
+      variant: "segment",
+      label: "Split by",
+      attributes: 'data-param="split_by"',
+    },
+  )}</div>${splitOn}<div class="atlas-choice-field full">${atlasChoiceControl({
+    options: [
+      ["part", "Keep one part", "Write one part to an output column."],
+      ["explode", "One record per part", "Turn each part into its own record."],
+    ],
+    selected: c.mode,
+    variant: "cards",
+    label: "Result",
+    heading: "Result",
+    popover: "list",
+    attributes: 'data-param="split_mode"',
+  })}</div>${result}</div>`;
+}
+
+/**
+ * Date difference settings for a Create column step.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasDateDifferenceConfig(p = {}) {
+  return {
+    sourceFile: String(p.date_diff_source_file || "").trim(),
+    sourceAlias: String(p.date_diff_source_alias || "").trim(),
+    fieldName: String(p.date_diff_field || "").trim(),
+    parameter: "runDate",
+    direction:
+      p.date_diff_direction === "field_minus_parameter"
+        ? "field_minus_parameter"
+        : "parameter_minus_field",
+    unit: "days",
+  };
+}
+
+/**
+ * True for a legacy "Expression / calculation" column whose value is written
+ * text (a custom expression) rather than a structured kind.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasCreateColumnIsWrittenExpression(p = {}) {
+  return (
+    (p.value_mode === "Expression / calculation" ||
+      p.value_mode === "Expression/Calculation") &&
+    !["first_characters", "character_count"].includes(p.expression_type)
+  );
+}
+
+/**
+ * Lists what a Create column step's structured value still needs.
+ * @param {Record<string, any>} p - Step params.
+ * @returns {string[]} Plain-language problems; empty when complete.
+ */
+function atlasCreateColumnStructuredProblems(p = {}) {
+  const problems = [];
+  if (p.value_mode === ATLAS_DATE_DIFFERENCE_VALUE_MODE) {
+    if (!atlasDateDifferenceConfig(p).fieldName)
+      problems.push("Choose the date field.");
+  }
+  if (
+    p.value_mode === "Concatenate fields" &&
+    String(p.concat_separator ?? "").length > ATLAS_CONCAT_MAX_SEPARATOR
+  )
+    problems.push(
+      `Use a separator of ${ATLAS_CONCAT_MAX_SEPARATOR} characters or fewer.`,
+    );
+  if (atlasCreateColumnIsWrittenExpression(p))
+    problems.push(
+      "This column is written as an expression. Choose a structured value type.",
+    );
+  return problems;
+}
+
+/**
+ * Keeps Create column structured settings tidy. Date difference settings are
+ * kept only in that mode, with the source alias filled in. A written
+ * expression is copied into column_description, which is never run.
+ * @param {Record<string, any>} params - Step params, changed in place.
+ */
+function atlasNormalizeCreateColumnStructuredParams(params) {
+  if (!params) return params;
+  const dateKeys = [
+    "date_diff_source_file",
+    "date_diff_source_alias",
+    "date_diff_field",
+    "date_diff_parameter",
+    "date_diff_direction",
+    "date_diff_unit",
+  ];
+  if (params.value_mode === ATLAS_DATE_DIFFERENCE_VALUE_MODE) {
+    const c = atlasDateDifferenceConfig(params);
+    params.date_diff_source_file = c.sourceFile;
+    params.date_diff_source_alias = c.sourceFile
+      ? sourceAliasFor(c.sourceFile) || c.sourceAlias
+      : "";
+    params.date_diff_field = c.fieldName;
+    params.date_diff_parameter = c.parameter;
+    params.date_diff_direction = c.direction;
+    params.date_diff_unit = c.unit;
+  } else dateKeys.forEach((key) => delete params[key]);
+  if (params.value_mode !== "Concatenate fields")
+    delete params.concat_separator;
+  const written = String(params.expression || "").trim();
+  if (
+    !String(params.column_description || "").trim() &&
+    written &&
+    atlasCreateColumnIsWrittenExpression(params)
+  )
+    params.column_description = written;
+  return params;
+}
+
+const atlasNormalizeCatalogStepBeforeStructuredEditors = normalizeCatalogStep;
+normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
+  step,
+  index = 0,
+) {
+  const normalized = atlasNormalizeCatalogStepBeforeStructuredEditors(
+    step,
+    index,
+  );
+  const target = normalized || step;
+  if (target?.step_type === "split_field")
+    atlasNormalizeSplitFieldParams(target.params);
+  if (target?.step_type === "create_column")
+    atlasNormalizeCreateColumnStructuredParams(target.params);
+  return normalized;
+};
+
+/** Optional description of the column, shown when one is stored. */
+function atlasColumnDescriptionHtml(p, { force = false } = {}) {
+  const text = String(p.column_description || "");
+  if (!force && !text.trim()) return "";
+  const hint = force
+    ? "For readers only. It is not run as a formula."
+    : "For readers only. The column's value comes from the settings above.";
+  return `<label class="full">Description (not run)<textarea data-param="column_description" placeholder="What this column is for" aria-describedby="atlas-column-description-hint">${esc(text)}</textarea><small id="atlas-column-description-hint" class="hint">${hint}</small></label>`;
+}
+
+const atlasRenderCreateModeInputsBeforeStructuredEditors =
+  renderCreateModeInputs;
+renderCreateModeInputs = function renderCreateModeInputsStructured(p) {
+  if (atlasCreateColumnIsWrittenExpression(p))
+    return `<div class="logic-editor-callout full" role="note">This column is written as an expression. Choose a value type above, such as String transformation or ${ATLAS_DATE_DIFFERENCE_VALUE_MODE}, so it runs the same way every time. The written text is kept below as the description.</div><input type="hidden" data-param="expression" value="${esc(p.expression || "")}">${atlasColumnDescriptionHtml(
+      { column_description: p.column_description || p.expression || "" },
+      { force: true },
+    )}`;
+  if (p.value_mode === ATLAS_DATE_DIFFERENCE_VALUE_MODE) {
+    const c = atlasDateDifferenceConfig(p);
+    return `<input type="hidden" data-param="date_diff_source_file" value="${esc(c.sourceFile)}"><input type="hidden" data-param="date_diff_parameter" value="runDate"><input type="hidden" data-param="date_diff_unit" value="days"><label>Date Field${fieldInputFromOptions(
+      {
+        name: "date_diff_field",
+        value: c.fieldName,
+        placeholder: "Select date field",
+        sourceFile: c.sourceFile,
+      },
+    )}</label><label>Compared With<input value="Run date" readonly aria-describedby="atlas-date-diff-hint"><small id="atlas-date-diff-hint" class="hint">The date the audit is run.</small></label><div class="atlas-choice-field full"><span class="atlas-choice-heading">Result (days)</span>${atlasChoiceControl(
+      {
+        options: [
+          ["parameter_minus_field", "Run date minus field"],
+          ["field_minus_parameter", "Field minus run date"],
+        ],
+        selected: c.direction,
+        variant: "segment",
+        label: "Result in days",
+        attributes: 'data-param="date_diff_direction"',
+      },
+    )}<small class="hint">Run date minus field counts days since the date, for example days since hire. Field minus run date counts days until it.</small></div>${atlasColumnDescriptionHtml(p)}`;
+  }
+  const base = atlasRenderCreateModeInputsBeforeStructuredEditors(p);
+  if (p.value_mode === "Concatenate fields")
+    return `${base}<label>Separator<input data-param="concat_separator" value="${esc(p.concat_separator ?? "")}" maxlength="${ATLAS_CONCAT_MAX_SEPARATOR}" placeholder='e.g., " - " (blank joins directly)' aria-describedby="atlas-concat-separator-hint"><small id="atlas-concat-separator-hint" class="hint">Placed between the two values. Spaces count.</small></label>${atlasColumnDescriptionHtml(p)}`;
+  return `${base}${atlasColumnDescriptionHtml(p)}`;
+};
+// ATLAS-STRUCTURED-STEP-EDITORS:END

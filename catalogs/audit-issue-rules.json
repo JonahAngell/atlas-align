@@ -317,6 +317,22 @@
       "documentation": "ATLAS Phase 2 canonical rule."
     },
     {
+      "id": "audit.logic.structured-step-integrity",
+      "enabled": true,
+      "severity": "critical",
+      "category": "transformations",
+      "priority": 10,
+      "title": "Step setting is incomplete",
+      "summary": "A split, created column or Do Not Display action is missing a required setting.",
+      "detail": "A split, created column or Do Not Display action is missing a required setting, so it can't run.",
+      "evaluator": "structuredStepIntegrity",
+      "jumpAction": "openLogicTarget",
+      "fixAction": "repairIssue",
+      "targetType": "",
+      "config": {},
+      "documentation": "Structured step editors: split field, create column kinds and exclude by key."
+    },
+    {
       "id": "audit.display.integrity",
       "enabled": true,
       "severity": "critical",

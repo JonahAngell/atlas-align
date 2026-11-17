@@ -260,9 +260,22 @@ function catalogOperatorLabel(path, fallback) {
   return typeof value === "string" && value ? value : fallback;
 }
 
-function atlasThenActionTypeChoices() {
+/**
+ * Action types offered for a THEN/ELSE action. Free-form text can't run in
+ * File Utility, so it is offered only to a step that already uses it.
+ * @param {string} current - The step's current action type.
+ */
+function atlasThenActionTypeChoices(current = "") {
   return [
-    ["freeform", "Freeform Text", "Write the action in your own words."],
+    ...(current === "freeform"
+      ? [
+          [
+            "freeform",
+            "Freeform Text (legacy)",
+            "Written in words. Choose a structured action so the step can run.",
+          ],
+        ]
+      : []),
     [
       "set_column_value",
       "Set Column Value from Field",
@@ -291,6 +304,53 @@ function atlasThenActionTypeChoices() {
   ];
 }
 
+/**
+ * Returns which records a Do Not Display action hides: "matching" (only the
+ * records that meet the conditions) or "key" (every record that shares a
+ * key value with a matching record).
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasExcludeScope(p = {}) {
+  return p?.then_exclude_scope === "key" ? "key" : "matching";
+}
+
+/**
+ * Parses a JSON list param, returning [] when blank or invalid.
+ * @param {any} raw - Stored value (array or JSON text).
+ */
+function atlasParseJsonList(raw) {
+  if (Array.isArray(raw)) return raw;
+  try {
+    const parsed = JSON.parse(String(raw || "[]"));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Returns the key field of a group exclude, from the editor fields or the
+ * stored then_exclude_key_fields_json list.
+ * @param {Record<string, any>} p - Step params.
+ * @returns {{sourceFile: string, sourceAlias: string, fieldName: string}}
+ */
+function atlasExcludeKeyField(p = {}) {
+  const stored = atlasParseJsonList(p?.then_exclude_key_fields_json)[0] || {};
+  const fieldName = String(
+    p?.then_exclude_key_field ?? stored.fieldName ?? "",
+  ).trim();
+  const sourceFile = String(
+    p?.then_exclude_key_source_file || stored.sourceFile || "",
+  ).trim();
+  const sourceAlias = String(
+    (sourceFile ? sourceAliasFor?.(sourceFile) : "") ||
+      p?.then_exclude_key_source_alias ||
+      stored.sourceAlias ||
+      "",
+  ).trim();
+  return { sourceFile, sourceAlias, fieldName };
+}
+
 const ATLAS_DISPLAY_ACTION_TYPES = ["display", "do_not_display"];
 function atlasIsDisplayActionType(actionType) {
   return ATLAS_DISPLAY_ACTION_TYPES.includes(actionType);
@@ -299,7 +359,7 @@ function atlasIsDisplayActionType(actionType) {
 function atlasThenActionTypeControl(prefix, actionType) {
   return `<div class="full action-type-row atlas-choice-field">${atlasChoiceControl(
     {
-      options: atlasThenActionTypeChoices(),
+      options: atlasThenActionTypeChoices(actionType || "freeform"),
       selected: atlasIsDisplayActionType(actionType)
         ? "display"
         : actionType || "freeform",
@@ -500,11 +560,59 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
       `developer_logic.display_notes.${actionType}`,
       {},
     );
-    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<div class="full atlas-choice-field display-action-toggle">${toggle}</div><div class="logic-editor-callout full display-action-note" aria-live="polite">${esc(
-      hide
-        ? "Matching records will not be displayed in the audit output for this branch."
-        : "Only matching records will be displayed in the audit output for this branch.",
-    )}<br><span class="hint">Added to Developer Logic: ${esc(note)}</span></div><input type="hidden" data-param="then_action" value="${esc(hide ? "Do not display matching records" : "Display matching records")}"></div>`;
+    const byKey = hide && atlasExcludeScope(p) === "key";
+    const keyField = atlasExcludeKeyField(p);
+    const devNote = byKey
+      ? renderCatalogPhrase(
+          "developer_logic.display_notes.do_not_display_key",
+          {
+            key_column: keyField.fieldName || "[key field]",
+          },
+        )
+      : note;
+    const scope = hide
+      ? `<div class="full atlas-choice-field exclude-scope-choice">${atlasChoiceControl(
+          {
+            options: [
+              [
+                "matching",
+                "Matching records only",
+                "Hide only the records that match.",
+              ],
+              [
+                "key",
+                "All records for the same key",
+                "Also hide every other record that shares the key value, such as all records for this employee.",
+              ],
+            ],
+            selected: byKey ? "key" : "matching",
+            variant: "cards",
+            label: "Records to hide",
+            heading: "Records to Hide",
+            popover: "list",
+            attributes: 'data-param="then_exclude_scope"',
+          },
+        )}</div>${
+          byKey
+            ? `<input type="hidden" data-param="then_exclude_key_source_file" value="${esc(keyField.sourceFile)}"><label class="full">Key Field${fieldInputFromOptions(
+                {
+                  name: "then_exclude_key_field",
+                  value: keyField.fieldName,
+                  placeholder: "Select key field, e.g. Personnel Number",
+                  sourceFile: keyField.sourceFile,
+                },
+              )}<span class="hint">Every record with the same value in this field is hidden.</span></label>`
+            : ""
+        }`
+      : "";
+    const message = hide
+      ? byKey
+        ? "Matching records, and every record that shares their key value, will not be displayed in the audit output."
+        : "Matching records will not be displayed in the audit output for this branch."
+      : "Only matching records will be displayed in the audit output for this branch.";
+    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<div class="full atlas-choice-field display-action-toggle">${toggle}</div>${scope}<div class="logic-editor-callout full display-action-note" aria-live="polite">${esc(
+      message,
+    )}<br><span class="hint">Added to Developer Logic: ${esc(devNote)}</span></div><input type="hidden" data-param="then_action" value="${esc(hide ? (byKey ? "Do not display all records for this key" : "Do not display matching records") : "Display matching records")}"></div>`;
   }
   return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label></div>`;
 };
@@ -856,6 +964,7 @@ function atlasNewRuleTypeOptions() {
     ["if_then", "If/Then"],
     ["join", "Join/Union Sources"],
     ["format_field", "Format Field"],
+    ["split_field", "Split Field"],
     ["sort_records", "Sort Records"],
     ["remove_duplicates", "Remove Duplicates"],
   ];
@@ -1208,7 +1317,7 @@ function createInverseElseStepForIf(stepId) {
         source_file: sourceFile,
         source_alias: sourceAlias,
         conditions_json: JSON.stringify(conditions),
-        then_action_type: "freeform",
+        then_action_type: "display_text",
         then_action: "",
       },
     };
@@ -2034,7 +2143,8 @@ document.addEventListener(
     if (
       event.target.matches(
         '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"], ' +
-          '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"]',
+          '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"], ' +
+          '[data-param="then_exclude_scope"], [data-param="split_by"], [data-param="split_mode"], [data-param="split_delimiter"]',
       )
     )
       atlasCommitLiveEditor?.({ rerender: true });
@@ -2474,6 +2584,8 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
     concat_field_2: "concat_source_2",
     string_source_field: "string_source_file",
     then_string_source_field: "then_string_source_file",
+    then_exclude_key_field: "then_exclude_key_source_file",
+    date_diff_field: "date_diff_source_file",
   };
   const parameterFieldPairs = {
     source_file: "field_name",
@@ -2484,6 +2596,8 @@ setPickerTargetValue = function atlasSetPickerTargetValueCommitBeforeRender(
     concat_source_2: "concat_field_2",
     string_source_file: "string_source_field",
     then_string_source_file: "then_string_source_field",
+    then_exclude_key_source_file: "then_exclude_key_field",
+    date_diff_source_file: "date_diff_field",
   };
 
   if (context.targetType === "condition") {
@@ -3532,10 +3646,49 @@ atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithDisplayToggle(
   if (!params) return;
   const mode = params.then_display_mode;
   delete params.then_display_mode;
-  if (params.then_action_type !== "display") return;
-  if (mode === "do_not_display") params.then_action_type = "do_not_display";
-  params.then_action =
-    params.then_action_type === "do_not_display"
-      ? "Do not display matching records"
-      : "Display matching records";
+  if (params.then_action_type === "display") {
+    if (mode === "do_not_display") params.then_action_type = "do_not_display";
+    params.then_action =
+      params.then_action_type === "do_not_display"
+        ? "Do not display matching records"
+        : "Display matching records";
+  }
+  atlasNormalizeExcludeScopeParams(params);
+  if (step.step_type === "split_field") atlasNormalizeSplitFieldParams(params);
+  if (step.step_type === "create_column")
+    atlasNormalizeCreateColumnStructuredParams(params);
 };
+
+/**
+ * Keeps the group exclude settings consistent. A "key" scope is kept only on
+ * Do Not Display; its key field is mirrored into then_exclude_key_fields_json
+ * (a JSON list of {sourceFile, sourceAlias, fieldName}) for the compiler.
+ * @param {Record<string, any>} params - Step params, changed in place.
+ */
+function atlasNormalizeExcludeScopeParams(params) {
+  if (!params) return params;
+  const keys = [
+    "then_exclude_scope",
+    "then_exclude_key_field",
+    "then_exclude_key_source_file",
+    "then_exclude_key_source_alias",
+    "then_exclude_key_fields_json",
+  ];
+  if (
+    params.then_action_type !== "do_not_display" ||
+    atlasExcludeScope(params) !== "key"
+  ) {
+    keys.forEach((key) => delete params[key]);
+    return params;
+  }
+  const key = atlasExcludeKeyField(params);
+  params.then_exclude_scope = "key";
+  params.then_exclude_key_field = key.fieldName;
+  params.then_exclude_key_source_file = key.sourceFile;
+  params.then_exclude_key_source_alias = key.sourceAlias;
+  params.then_exclude_key_fields_json = JSON.stringify(
+    key.fieldName ? [key] : [],
+  );
+  params.then_action = "Do not display all records for this key";
+  return params;
+}
