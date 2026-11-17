@@ -84,6 +84,46 @@ publication opened in Audit History pass them to
 read (a newer `schemaVersion`, a conflict) appear to ATLAS admins as the
 Audit Issue `audit.logic.step-type-definitions-unavailable`.
 
+Field controls note (issue #5010, then #5011–#5014): block-based types become
+field-based, one branch per type. The control palette, which is the Step Type
+Builder's list of controls, lives in one machine-readable file:
+`catalogs/step-types/controls.json`. For every control it lists:
+
+- its name, label, category and status (`available` or `planned`)
+- the field properties it reads
+- the params it writes, for composite controls
+- the features an author can switch off
+- for `choice`, the option properties
+
+The schema's control enum, `ATLASStepTypeRuntime.FIELD_CONTROLS` and the palette
+must agree; `test/step-type-field-controls.test.js` checks that. Validation
+with `palette` rejects any property, feature or option key a control does not
+read. It also rejects a control the runtime cannot render, which covers the
+`planned` ones. Each planned control is implemented in the branch that first
+uses it:
+
+- `condition_group`, `action`, `math` and `string_transform` with `if_then`
+- `join_keys` with `join`
+
+Field additions:
+
+- `features: {name: false}` hides a feature for new steps.
+- An option's `hidden` and `visibleWhen` hide it for new steps. A saved step
+  that uses a hidden value still shows it.
+- `layout: "full"`, `display: "select"`, `maxLength`, `suggestions`, `helpId`
+  and `requiredIssue: false`, which keeps the required mark but leaves the
+  Audit Issue to the type's own checks.
+- The `callout` control renders an escaped template `message`.
+
+English, notes and formula `variants` (`[{when, …}]`, first match wins) cover
+outputs that differ by more than one subtype parameter. The editor redraws
+when a param from `ATLASStepTypeRuntime.rerenderParams()` changes.
+
+Format Field and Split Field are version 3, made of fields. They have no
+blocks, and `sync_format_field` / `sync_split_field` handlers keep their
+parameters normalized. Engine version 1.5.0. Stored param names and option
+values never change, and snapshots are identical.
+
 ## Goal
 
 Every Logic Builder step type is one data record, not code spread across
@@ -315,9 +355,12 @@ always allowed in templates, so most "new" logic can be written there directly.
 
 `renderGuidedBuilder` is replaced by one form renderer that reads `fields`:
 
-- **Controls:** `source_picker`, `field_picker` (current eligibility rules,
-  including created fields), `choice` (cards, chips, segment or list), `text`,
-  `textarea`, `whole_number`, `toggle`, `hidden`, `hint`, and `block`.
+- **Controls:** the palette in `catalogs/step-types/controls.json`:
+  `source_picker`, `field_picker` (current eligibility rules, including created
+  fields), `choice` (cards, chips, segment, list or select), `text`,
+  `textarea`, `whole_number`, `toggle`, `hidden`, `hint`, `callout`, `block`,
+  and the composite `sort_keys`, `duplicate_keys`, `condition_group`,
+  `action`, `math`, `string_transform` and `join_keys`.
 - **Per-field settings:** `label`, `placeholder`, `help`, `required`,
   `default`, `visibleWhen` / `enabledWhen` (simple equals, in and not-blank
   rules, combined with AND/OR), `sourceParam` and `group`.

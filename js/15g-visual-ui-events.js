@@ -2174,10 +2174,25 @@ document.addEventListener(
       event.target.matches(
         '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"], ' +
           '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"], ' +
-          '[data-param="then_exclude_scope"], [data-param="split_by"], [data-param="split_mode"], [data-param="split_delimiter"], [data-param="format_kind"]',
+          '[data-param="then_exclude_scope"]',
       )
     )
       atlasCommitLiveEditor?.({ rerender: true });
+  },
+  true,
+);
+
+/**
+ * Redraws a definition-based editor when a parameter that decides what it
+ * shows changes: the subtype, or one a visibleWhen or enabledWhen reads.
+ */
+document.addEventListener(
+  "change",
+  (event) => {
+    const param = event.target?.dataset?.param;
+    if (!param || !event.target.closest?.("[data-live-editor-step-id]")) return;
+    const params = window.ATLASStepTypeRuntime?.rerenderParams?.() || [];
+    if (params.includes(param)) atlasCommitLiveEditor?.({ rerender: true });
   },
   true,
 );

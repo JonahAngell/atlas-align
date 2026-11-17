@@ -34,6 +34,7 @@ export function loadStepTypeEngine() {
     }),
   );
   const runtime = context.ATLASStepTypeRuntime;
+  const palette = readJson(new URL("controls.json", CATALOG));
   cachedEngine = Object.freeze({
     engineVersion: manifest.engineVersion,
     schemaVersions: [...manifest.schemaVersions],
@@ -42,6 +43,8 @@ export function loadStepTypeEngine() {
       helpers: [...runtime.HELPER_NAMES],
       blocks: [...runtime.BLOCK_NAMES],
       handlers: [...runtime.HANDLER_NAMES],
+      controls: [...runtime.FIELD_CONTROLS],
+      palette,
     }),
   });
   return cachedEngine;

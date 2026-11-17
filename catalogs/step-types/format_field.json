@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "format_field",
-  "version": 2,
+  "version": 3,
   "label": "Format Field",
   "category": "transform",
   "order": 50,
@@ -12,14 +12,189 @@
     "step_type": [],
     "type": []
   },
-  "migrations": [],
-  "fields": [],
-  "block": "format_field",
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    },
+    {
+      "op": "handler",
+      "name": "sync_format_field"
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "hidden"
+    },
+    {
+      "param": "source_alias",
+      "control": "hidden",
+      "valueTemplate": "{{sourceAliasFor param.source_file}}"
+    },
+    {
+      "param": "field_name",
+      "control": "field_picker",
+      "label": "Field",
+      "placeholder": "Select field",
+      "sourceParam": "source_file"
+    },
+    {
+      "param": "format_legacy_note",
+      "control": "callout",
+      "layout": "full",
+      "visibleWhen": {
+        "all": [
+          {
+            "param": "format_kind",
+            "blank": true
+          },
+          {
+            "param": "format",
+            "notBlank": true
+          }
+        ]
+      },
+      "message": "This step's format is written as \"{{trim param.format}}\", which is not a known format. Choose one below."
+    },
+    {
+      "param": "format",
+      "control": "hidden"
+    },
+    {
+      "param": "format_kind",
+      "control": "choice",
+      "label": "Format",
+      "heading": "Format",
+      "display": "cards",
+      "popover": "list",
+      "layout": "full",
+      "options": [
+        {
+          "value": "text",
+          "label": "Text",
+          "description": "Keep the value as text."
+        },
+        {
+          "value": "trim",
+          "label": "Trim spaces",
+          "description": "Remove spaces at the start and end."
+        },
+        {
+          "value": "upper",
+          "label": "Upper case",
+          "description": "Change letters to upper case."
+        },
+        {
+          "value": "lower",
+          "label": "Lower case",
+          "description": "Change letters to lower case."
+        },
+        {
+          "value": "number",
+          "label": "Number",
+          "description": "Read the value as a number."
+        },
+        {
+          "value": "date",
+          "label": "Date",
+          "description": "Show the value as a date in a set format."
+        },
+        {
+          "value": "zeroPad",
+          "label": "Leading zeros",
+          "description": "Pad whole numbers with zeros to a width."
+        }
+      ]
+    },
+    {
+      "param": "format_decimals",
+      "control": "whole_number",
+      "label": "Decimal places",
+      "min": 0,
+      "max": 10,
+      "placeholder": "Blank keeps them as they are",
+      "help": "Rounds to this many places. Leave blank for a plain number.",
+      "visibleWhen": {
+        "param": "format_kind",
+        "equals": "number"
+      }
+    },
+    {
+      "param": "format_date_output",
+      "control": "choice",
+      "display": "select",
+      "label": "Date format",
+      "placeholder": "Choose date format",
+      "required": true,
+      "requiredIssue": false,
+      "visibleWhen": {
+        "param": "format_kind",
+        "equals": "date"
+      },
+      "options": [
+        {
+          "value": "MM/DD/YYYY",
+          "label": "MM/DD/YYYY"
+        },
+        {
+          "value": "YYYY-MM-DD",
+          "label": "YYYY-MM-DD"
+        },
+        {
+          "value": "YYYYMMDD",
+          "label": "YYYYMMDD"
+        },
+        {
+          "value": "DD.MM.YYYY",
+          "label": "DD.MM.YYYY"
+        }
+      ]
+    },
+    {
+      "param": "format_width",
+      "control": "whole_number",
+      "label": "Width (digits)",
+      "min": 1,
+      "max": 100,
+      "placeholder": "e.g., 8",
+      "required": true,
+      "requiredIssue": false,
+      "help": "Whole numbers shorter than this get zeros in front. Other values are left as they are.",
+      "visibleWhen": {
+        "param": "format_kind",
+        "equals": "zeroPad"
+      }
+    }
+  ],
   "english": {
-    "default": ""
+    "default": "Format {{tableColumn param.source_file param.source_alias param.field_name}} as {{#switch param.format_kind}}{{#case \"trim\"}}text with leading and trailing spaces removed{{/case}}{{#case \"upper\"}}upper case{{/case}}{{#case \"lower\"}}lower case{{/case}}{{#case \"number\"}}{{#if param.format_decimals}}a number with {{trim param.format_decimals}} decimal place{{#unless (eq (trim param.format_decimals) \"1\")}}s{{/unless}}{{else}}number{{/if}}{{/case}}{{#case \"date\"}}date {{default (trim param.format_date_output) \"[date format]\"}}{{/case}}{{#case \"zeroPad\"}}{{default (trim param.format_width) \"[width]\"}} digits with leading zeros{{/case}}{{#default}}{{#if param.format_kind}}{{param.format_kind}}{{else}}{{param.format}}{{/if}}{{/default}}{{/switch}}."
   },
   "formulas": {
-    "shape": "none"
+    "shape": "assignment",
+    "target": "{{#if (present param.field_name)}}{{trim param.field_name}}{{else}}{{placeholder \"field\" \"[field]\"}}{{/if}}",
+    "default": {
+      "excel": "{{#switch (formatCase param)}}{{#case \"trim\"}}TRIM({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"upper\" \"lower\"}}{{upper (formatCase param)}}({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"round\"}}ROUND(VALUE({{field param.source_file param.field_name alias=param.source_alias}}), {{formatPlaces param}}){{/case}}{{#case \"date\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, \"{{formatDateCode param \"excel\"}}\"){{/case}}{{#case \"pad\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (repeat \"0\" (formatPadWidth param))}}){{/case}}{{#case \"legacyDate\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, \"mm/dd/yyyy\"){{/case}}{{#case \"number\"}}VALUE({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"text\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, \"@\"){{/case}}{{#default}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (formatText param)}}){{/default}}{{/switch}}",
+      "sql": "{{#switch (formatCase param)}}{{#case \"trim\"}}TRIM({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"upper\" \"lower\"}}{{upper (formatCase param)}}({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"round\"}}ROUND(TRY_CAST({{field param.source_file param.field_name alias=param.source_alias}} AS DECIMAL(38, 10)), {{formatPlaces param}}){{/case}}{{#case \"date\"}}CONVERT(VARCHAR(10), TRY_CONVERT(date, {{field param.source_file param.field_name alias=param.source_alias}}), {{formatDateCode param \"sql\"}}){{/case}}{{#case \"pad\"}}RIGHT(REPLICATE('0', {{formatPadWidth param}}) + CAST({{field param.source_file param.field_name alias=param.source_alias}} AS VARCHAR(50)), {{formatPadWidth param}}){{/case}}{{#case \"legacyDate\"}}CONVERT(VARCHAR(10), TRY_CONVERT(date, {{field param.source_file param.field_name alias=param.source_alias}}), 101){{/case}}{{#case \"number\"}}TRY_CAST({{field param.source_file param.field_name alias=param.source_alias}} AS DECIMAL(38, 10)){{/case}}{{#case \"text\"}}CAST({{field param.source_file param.field_name alias=param.source_alias}} AS NVARCHAR(4000)){{/case}}{{#default}}FORMAT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (formatText param)}}){{/default}}{{/switch}}",
+      "python": "{{#switch (formatCase param)}}{{#case \"trim\"}}{{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).str.strip(){{/case}}{{#case \"upper\" \"lower\"}}{{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).str.{{formatCase param}}(){{/case}}{{#case \"round\"}}pd.to_numeric({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\").round({{formatPlaces param}}){{/case}}{{#case \"date\"}}pd.to_datetime({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\").dt.strftime(\"{{formatDateCode param \"python\"}}\"){{/case}}{{#case \"pad\"}}{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\").str.zfill({{formatPadWidth param}}){{/case}}{{#case \"legacyDate\"}}pd.to_datetime({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\").dt.strftime(\"%m/%d/%Y\"){{/case}}{{#case \"number\"}}pd.to_numeric({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\"){{/case}}{{#default}}{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\"){{/default}}{{/switch}}"
+    },
+    "notes": [
+      "{{#if (eq (formatCase param) \"unknown\")}}{{phrase \"developer_logic.notes.unknown_format\" format=(formatText param)}}{{/if}}"
+    ]
   },
   "autoNotes": null,
   "export": {

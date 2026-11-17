@@ -161,12 +161,6 @@ function atlasNormalizeIfThenStep(step) {
 }
 
 /** Format Field defaults (the format_field behavior block). */
-function atlasNormalizeFormatFieldStep(step) {
-  atlasCopyStepSourceParams(step);
-  // A new Format field step has no format until the author chooses one.
-  step.params.format = step.params.format || "";
-}
-
 /** Join defaults (the join behavior block). */
 function atlasNormalizeJoinStep(step) {
   atlasCopyStepSourceParams(step);
@@ -2251,69 +2245,6 @@ function atlasNormalizeSplitFieldParams(params) {
  * Renders the Split field editor.
  * @param {Record<string, any>} p - Step params.
  */
-function atlasSplitFieldEditorHtml(p = {}) {
-  const c = atlasSplitFieldConfig(p);
-  const delimiterOptions = [
-    ["", "Choose delimiter"],
-    ...ATLAS_STRING_SPLIT_DELIMITERS.map(([value, , label]) => [value, label]),
-    ["custom", "Custom…"],
-  ]
-    .map(
-      ([value, label]) =>
-        `<option value="${esc(value)}"${value === c.delimiterChoice ? " selected" : ""}>${esc(label)}</option>`,
-    )
-    .join("");
-  const splitOn =
-    c.by === "delimiter"
-      ? `<label>Delimiter<select data-param="split_delimiter" required>${delimiterOptions}</select></label>${
-          c.delimiterChoice === "custom"
-            ? `<label>Custom delimiter<input data-param="split_custom_delimiter" value="${esc(c.customDelimiter)}" maxlength="${ATLAS_SPLIT_MAX_DELIMITER}" placeholder='e.g., " - "' aria-describedby="atlas-split-field-custom-hint"><small id="atlas-split-field-custom-hint" class="hint">Spaces count. Matched exactly, not as a pattern.</small></label>`
-            : ""
-        }`
-      : `<label>Width (characters)<input type="number" data-param="split_width" inputmode="numeric" min="1" max="${ATLAS_SPLIT_MAX_WIDTH}" step="1" value="${esc(c.width)}" placeholder="e.g., 4" required></label>`;
-  const result =
-    c.mode === "part"
-      ? `<label>Part to Keep<input data-param="split_part" value="${esc(c.part)}" list="atlas-split-part-options" placeholder="1, 2, 3 … or last" aria-describedby="atlas-split-part-hint"><datalist id="atlas-split-part-options"><option value="1"></option><option value="2"></option><option value="3"></option><option value="last"></option></datalist><small id="atlas-split-part-hint" class="hint">A position counted from 1, or "last". Values with fewer parts give a blank.</small></label><label>Output Column${fieldInputFromOptions(
-          {
-            name: "output_column",
-            value: c.outputColumn,
-            placeholder: "Select or create column",
-            sourceFile: "",
-          },
-        )}</label>`
-      : `<p class="hint full">Each part becomes its own record, replacing the field's value. The other columns are copied to every new record. Blank parts are dropped.</p>`;
-  return `<div class="guided-builder"><h4>Split Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-    {
-      name: "field_name",
-      value: p.field_name,
-      placeholder: "Select field",
-      sourceFile: p.source_file,
-    },
-  )}</label><div class="atlas-choice-field"><span class="atlas-choice-heading">Split By</span>${atlasChoiceControl(
-    {
-      options: [
-        ["delimiter", "Delimiter"],
-        ["width", "Fixed width"],
-      ],
-      selected: c.by,
-      variant: "segment",
-      label: "Split by",
-      attributes: 'data-param="split_by"',
-    },
-  )}</div>${splitOn}<div class="atlas-choice-field full">${atlasChoiceControl({
-    options: [
-      ["part", "Keep one part", "Write one part to an output column."],
-      ["explode", "One record per part", "Turn each part into its own record."],
-    ],
-    selected: c.mode,
-    variant: "cards",
-    label: "Result",
-    heading: "Result",
-    popover: "list",
-    attributes: 'data-param="split_mode"',
-  })}</div>${result}</div>`;
-}
-
 /**
  * Date difference settings for a Create column step.
  * @param {Record<string, any>} p - Step params.
@@ -2553,42 +2484,6 @@ function atlasNormalizeFormatFieldParams(params) {
  * Renders the Format field editor.
  * @param {Record<string, any>} p - Step params.
  */
-function atlasFormatFieldEditorHtml(p = {}) {
-  const c = atlasFormatFieldConfig(p);
-  const legacy = c.legacyText
-    ? `<div class="logic-editor-callout full" role="note">This step's format is written as "${esc(c.legacyText)}", which is not a known format. Choose one below.</div>`
-    : "";
-  const detail =
-    c.kind === "number"
-      ? `<label>Decimal places<input type="number" data-param="format_decimals" inputmode="numeric" min="0" max="10" step="1" value="${esc(c.decimals)}" placeholder="Blank keeps them as they are" aria-describedby="atlas-format-decimals-hint"><small id="atlas-format-decimals-hint" class="hint">Rounds to this many places. Leave blank for a plain number.</small></label>`
-      : c.kind === "date"
-        ? `<label>Date format<select data-param="format_date_output" required><option value="">Choose date format</option>${ATLAS_FORMAT_DATE_OUTPUTS.map(
-            (name) =>
-              `<option value="${esc(name)}"${name === c.dateOutput ? " selected" : ""}>${esc(name)}</option>`,
-          ).join("")}</select></label>`
-        : c.kind === "zeroPad"
-          ? `<label>Width (digits)<input type="number" data-param="format_width" inputmode="numeric" min="1" max="100" step="1" value="${esc(c.width)}" placeholder="e.g., 8" required aria-describedby="atlas-format-width-hint"><small id="atlas-format-width-hint" class="hint">Whole numbers shorter than this get zeros in front. Other values are left as they are.</small></label>`
-          : "";
-  return `<div class="guided-builder"><h4>Format Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-    {
-      name: "field_name",
-      value: p.field_name,
-      placeholder: "Select field",
-      sourceFile: p.source_file,
-    },
-  )}</label>${legacy}<input type="hidden" data-param="format" value="${esc(p.format || "")}"><div class="atlas-choice-field full">${atlasChoiceControl(
-    {
-      options: ATLAS_FORMAT_KINDS,
-      selected: c.kind,
-      variant: "cards",
-      label: "Format",
-      heading: "Format",
-      popover: "list",
-      attributes: 'data-param="format_kind"',
-    },
-  )}</div>${detail}</div>`;
-}
-
 /**
  * Lists what a Remove duplicates step still needs before it can run.
  * @param {Record<string, any>} p - Step params.
@@ -2621,12 +2516,8 @@ normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
     index,
   );
   const target = normalized || step;
-  if (target?.step_type === "split_field")
-    atlasNormalizeSplitFieldParams(target.params);
   if (target?.step_type === "create_column")
     atlasNormalizeCreateColumnStructuredParams(target.params);
-  if (target?.step_type === "format_field")
-    atlasNormalizeFormatFieldParams(target.params);
   return normalized;
 };
 

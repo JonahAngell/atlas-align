@@ -18,15 +18,22 @@
  *   sqlName name / sqlSource name / pySource name
  *   repeat text count / minus a b
  *   orEmpty value fallback                       fallback only for "" (keeps " ")
- *   formatKind format / formatDigits format      Format Field options
+ *   formatKind format / formatDigits format      legacy Format Field text
+ *   formatCase params                            which Format Field formula
+ *   formatText / formatPadWidth / formatPlaces params, formatDateCode params dialect
  *   splitDelimiter value / splitPart value       Split Field options
+ *   splitDelimiterChar params / splitDelimiterName params
+ *   splitWidth value / splitWidthSet value
+ *   sourceAliasFor source                        the audit's alias for a source
+ *   plus a b / times a b                         arithmetic
+ *   phrase path key=value                        a phrase catalog entry
  *   sortKeys params                              Sort Records fields
  *   duplicateKeys params legacy=true             Remove Duplicates columns
  *   duplicateKeepClause action                   "keeping the first record"
  *   firstKeyTable keys source alias              Excel table of the first key
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
- * union_sources_to_join.
+ * sync_format_field, sync_split_field, union_sources_to_join.
  * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
  *
  * Behavior blocks (a definition's `block`) supply whole parts of a type from
@@ -38,8 +45,6 @@
  *   if_then         condition tree and THEN actions
  *   else            ELSE actions (legacy)
  *   join            Join and Union, with the join type picker
- *   format_field    structured formats (trim, case, number, date, zero pad)
- *   split_field     split by delimiter or width, one part or one row each
  *   union_sources   saved Union Sources steps (legacy; normalize makes a Join)
  *   filter_rows, flag_records   single-condition steps (legacy)
  * A new type can name one of them and change its label, order and export.
@@ -172,6 +177,94 @@
     const word = raw.trim().toLowerCase();
     if (DELIMITER_WORDS[word]) return DELIMITER_WORDS[word];
     return raw === "" ? "" : raw.trim() || raw;
+  }
+
+  const paramsOf = (params) =>
+    params && typeof params === "object" && !Array.isArray(params)
+      ? params
+      : {};
+
+  /** The structured Format Field settings, or null for a legacy format. */
+  function formatConfig(params) {
+    const values = paramsOf(params);
+    if (!values.format_kind) return null;
+    return app("atlasFormatFieldConfig")?.(values) || null;
+  }
+
+  /** The legacy format text the formulas name, "text" when blank. */
+  function formatText(params) {
+    return text(paramsOf(params).format || "text").trim();
+  }
+
+  /** Zero-pad width: the structured width, else the legacy "8 digits..." text. */
+  function formatPadWidth(params) {
+    const config = formatConfig(params);
+    if (config)
+      return config.kind === "zeroPad" ? Number(config.width) || 0 : 0;
+    return formatDigits(formatText(params));
+  }
+
+  /**
+   * Which formula a Format Field step uses: trim, upper, lower, round, date,
+   * pad, legacyDate, number, text or unknown (a format no formula knows).
+   */
+  function formatCase(params) {
+    const config = formatConfig(params);
+    const kind = config?.kind;
+    if (["trim", "upper", "lower"].includes(kind)) return kind;
+    if (kind === "number" && config.decimals !== "") return "round";
+    if (kind === "date" && config.dateOutput) return "date";
+    if (formatPadWidth(params)) return "pad";
+    const format = formatText(params).toLowerCase();
+    if (format.includes("mm/dd/yyyy")) return "legacyDate";
+    if (format === "number" || format === "text") return format;
+    return "unknown";
+  }
+
+  const DATE_FORMAT_CODES = Object.freeze({
+    "MM/DD/YYYY": { excel: "mm/dd/yyyy", sql: "101", python: "%m/%d/%Y" },
+    "YYYY-MM-DD": { excel: "yyyy-mm-dd", sql: "23", python: "%Y-%m-%d" },
+    YYYYMMDD: { excel: "yyyymmdd", sql: "112", python: "%Y%m%d" },
+    "DD.MM.YYYY": { excel: "dd.mm.yyyy", sql: "104", python: "%d.%m.%Y" },
+  });
+
+  /** The Excel format, SQL CONVERT style or strftime code of a date format. */
+  function formatDateCode(params, dialect) {
+    const output = formatConfig(params)?.dateOutput;
+    const codes = Object.prototype.hasOwnProperty.call(
+      DATE_FORMAT_CODES,
+      output,
+    )
+      ? DATE_FORMAT_CODES[output]
+      : null;
+    return text(codes?.[dialect]);
+  }
+
+  /** The structured Split Field settings, or null for a legacy split. */
+  function splitConfig(params) {
+    const values = paramsOf(params);
+    if (!values.split_by && !values.split_mode) return null;
+    return app("atlasSplitFieldConfig")?.(values) || null;
+  }
+
+  /** The characters a Split Field step splits on; "" when none are set. */
+  function splitDelimiterChar(params) {
+    const config = splitConfig(params);
+    return config
+      ? text(config.delimiter)
+      : splitDelimiter(paramsOf(params).split_on);
+  }
+
+  /** "the comma", "\" - \"" for a custom delimiter, or "[delimiter]". */
+  function splitDelimiterName(params) {
+    const config = app("atlasSplitFieldConfig")?.(paramsOf(params));
+    const named = config ? app("atlasSplitDelimiterPlain")?.(config) : null;
+    return named == null ? "[delimiter]" : text(named);
+  }
+
+  /** The split width as a number, or the [width] placeholder when unset. */
+  function splitWidth(value) {
+    return Number(text(value).trim()) || placeholder("width", "[width]");
   }
 
   /** The split part as a 1-based position, or "last". */
@@ -315,6 +408,64 @@
     splitPart(args) {
       return splitPart(args[0]);
     },
+    /** The alias the audit gives a source file. */
+    sourceAliasFor(args) {
+      const source = text(args[0]);
+      const appAlias = app("sourceAliasFor");
+      return appAlias ? text(appAlias(source)) : source;
+    },
+    formatCase(args) {
+      return formatCase(args[0]);
+    },
+    formatText(args) {
+      return formatText(args[0]);
+    },
+    formatPadWidth(args) {
+      return formatPadWidth(args[0]);
+    },
+    /** Decimal places of a rounded number format. */
+    formatPlaces(args) {
+      return Number(formatConfig(args[0])?.decimals) || 0;
+    },
+    formatDateCode(args) {
+      return formatDateCode(args[0], text(args[1]));
+    },
+    splitDelimiterChar(args) {
+      return splitDelimiterChar(args[0]);
+    },
+    splitDelimiterName(args) {
+      return splitDelimiterName(args[0]);
+    },
+    splitWidth(args) {
+      return splitWidth(args[0]);
+    },
+    /** Whether the split width is a number other than 0. */
+    splitWidthSet(args) {
+      return Boolean(Number(text(args[0]).trim()));
+    },
+    plus(args) {
+      return Number(args[0]) + Number(args[1]);
+    },
+    times(args) {
+      return Number(args[0]) * Number(args[1]);
+    },
+    /** A phrase from the phrase catalog, filled from the hash values. */
+    phrase(args, hash) {
+      const path = text(args[0]);
+      const render = app("renderCatalogPhrase");
+      if (!render) return `[Missing phrase path: ${path}]`;
+      return text(
+        render(
+          path,
+          Object.fromEntries(
+            Object.entries(hash || {}).map(([key, value]) => [
+              key,
+              text(value),
+            ]),
+          ),
+        ),
+      );
+    },
     /** "keeping the first record" and the other duplicate keep clauses. */
     duplicateKeepClause(args) {
       return text(app("atlasDuplicateKeepClause")?.(args[0]) ?? "");
@@ -348,6 +499,18 @@
     sync_duplicate_fields(_step, { params }) {
       app("atlasSyncDuplicateFieldParams")?.(params);
     },
+    /**
+     * Writes the structured Format Field settings and the `format` text the
+     * older compiler reads. A step without a format keeps it blank.
+     */
+    sync_format_field(_step, { params }) {
+      params.format = params.format || "";
+      app("atlasNormalizeFormatFieldParams")?.(params);
+    },
+    /** Writes the structured Split Field settings and their split_on mirror. */
+    sync_split_field(_step, { params }) {
+      app("atlasNormalizeSplitFieldParams")?.(params);
+    },
     /** Rewrites a saved Union Sources step as a UNION Join. */
     union_sources_to_join(step) {
       app("atlasConvertUnionSourcesStep")?.(step);
@@ -367,14 +530,6 @@
   /** The frame the built-in forms sit in, as the step type forms do. */
   const framed = (name) => (step) => {
     const html = app(name)?.(step);
-    return typeof html === "string"
-      ? `<div class="selected-source-only-builder">${html}</div>`
-      : html;
-  };
-
-  /** As framed, for a form that takes the step's params. */
-  const framedParams = (name) => (step) => {
-    const html = app(name)?.(step.params || {});
     return typeof html === "string"
       ? `<div class="selected-source-only-builder">${html}</div>`
       : html;
@@ -426,18 +581,6 @@
       notes: call("atlasJoinNotes"),
       formulas: call("atlasDevJoin"),
       qtestOutcomes: call("atlasQtestJoinOutcomes"),
-    },
-    format_field: {
-      normalize: call("atlasNormalizeFormatFieldStep"),
-      editor: framedParams("atlasFormatFieldEditorHtml"),
-      english: call("atlasFormatFieldSentence"),
-      formulas: call("atlasDevFormatField"),
-    },
-    split_field: {
-      normalize: call("atlasCopyStepSourceParams"),
-      editor: framedParams("atlasSplitFieldEditorHtml"),
-      english: call("atlasSplitFieldSentence"),
-      formulas: call("atlasDevSplitField"),
     },
     union_sources: {
       english: call("atlasUnionSourcesSentence"),

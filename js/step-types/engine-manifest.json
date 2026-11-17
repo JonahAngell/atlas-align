@@ -9,7 +9,10 @@
     "js/step-types/03-migrations.js",
     "js/step-types/04-registry.js"
   ],
-  "catalogs": ["catalogs/step-types/schema.json"],
+  "catalogs": [
+    "catalogs/step-types/schema.json",
+    "catalogs/step-types/controls.json"
+  ],
   "preview": {
     "$comment": "Everything the builder's live preview page loads to render the real guided editor, English, automatic notes, Developer Logic, formulas, SQL/Python script fragments and qTest rows for a step without the rest of ATLAS. scripts is the complete page list in load order (it includes the engine scripts above where they load); after loading, call initPhraseCatalog() (it fetches ./catalogs/logic_phrase_catalog.json) and put the draft in a registry with ATLASStepTypeRuntime.useRegistry(). css follows the cascade order of styles.css. Checked by test/step-type-preview-scripts.test.js.",
     "scripts": [

@@ -234,55 +234,6 @@ test("an incomplete split lists what it needs", () => {
   );
 });
 
-test("split field reads in analyst and developer logic", () => {
-  const ctx = load();
-  const step = (params) => ({
-    id: "s1",
-    step_type: "split_field",
-    params: { source_file: "PA", field_name: "Code", ...params },
-  });
-  assert.match(
-    ctx.atlasSplitFieldSentence(
-      step({
-        split_by: "width",
-        split_mode: "part",
-        split_width: "3",
-        split_part: "2",
-        output_column: "Mid",
-      }),
-    ),
-    /pieces of 3 characters and display part 2 in column/,
-  );
-  assert.match(
-    ctx.atlasSplitFieldSentence(
-      step({
-        split_by: "delimiter",
-        split_mode: "explode",
-        split_delimiter: "comma",
-      }),
-    ),
-    /on the comma and make one record for each part/,
-  );
-  const width = ctx.atlasDevSplitField(
-    step({
-      split_by: "width",
-      split_mode: "part",
-      split_width: "3",
-      split_part: "2",
-      output_column: "Mid",
-    }),
-  );
-  assert.match(width.sql, /SUBSTRING\(.*, 4, 3\)/);
-  const explode = ctx.atlasDevSplitField(
-    step({
-      split_by: "delimiter",
-      split_mode: "explode",
-      split_delimiter: "comma",
-    }),
-  );
-  assert.match(explode.python, /df\.explode/);
-});
-
 test("date difference keeps its settings and reads in both logics", () => {
   const ctx = load();
   const params = ctx.atlasNormalizeCreateColumnStructuredParams({

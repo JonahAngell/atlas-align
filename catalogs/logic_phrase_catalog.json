@@ -112,18 +112,6 @@
     }
   },
   "analyst_logic": {
-    "format_field": {
-      "default": "Format {table_column} as {format}{format_suffix}."
-    },
-    "split_field": {
-      "default": "Split {table_column} on the {split_on} and display {split_part} in column {output_column}.",
-      "delimiter_part": "Split {table_column} on {delimiter} and display part {split_part} in column {output_column}.",
-      "delimiter_last": "Split {table_column} on {delimiter} and display the last part in column {output_column}.",
-      "width_part": "Split {table_column} into pieces of {width} characters and display part {split_part} in column {output_column}.",
-      "width_last": "Split {table_column} into pieces of {width} characters and display the last part in column {output_column}.",
-      "delimiter_explode": "Split {table_column} on {delimiter} and make one record for each part.",
-      "width_explode": "Split {table_column} into pieces of {width} characters and make one record for each part."
-    },
     "remove_duplicates": {
       "keep_clauses": {
         "Keep first record": "keep the first record",
