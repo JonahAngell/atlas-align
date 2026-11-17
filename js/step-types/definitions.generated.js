@@ -566,7 +566,7 @@
       {
         schemaVersion: 1,
         id: "format_field",
-        version: 1,
+        version: 2,
         label: "Format Field",
         category: "transform",
         order: 50,
@@ -910,7 +910,7 @@
       {
         schemaVersion: 1,
         id: "split_field",
-        version: 1,
+        version: 2,
         label: "Split Field",
         category: "transform",
         order: 55,

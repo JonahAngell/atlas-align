@@ -14,7 +14,8 @@ INSERT INTO
     approver_user_id,
     approver_username,
     publisher_user_id,
-    publisher_username
+    publisher_username,
+    step_type_versions
   )
 VALUES
   (
@@ -32,7 +33,24 @@ VALUES
     $11,
     $12,
     $13,
-    $14
+    $14,
+    (
+      -- Decision B: pin the definition versions this publication renders with.
+      SELECT
+        COALESCE(jsonb_object_agg(latest.type_id, latest.version), '{}'::jsonb)
+      FROM
+        (
+          SELECT
+            type_id,
+            max(version) AS version
+          FROM
+            atlas_step_type_definitions
+          WHERE
+            status = 'published'
+          GROUP BY
+            type_id
+        ) latest
+    )
   )
 RETURNING
   *

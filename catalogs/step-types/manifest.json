@@ -28,9 +28,9 @@
     },
     {
       "id": "format_field",
-      "version": 1,
+      "version": 2,
       "file": "format_field.json",
-      "hash": "90a8b0f6a6b7d7ae25aedc676c9f8f4f4cfb5ac94194e8ec1fda197584482fa6"
+      "hash": "d12811b69399ce3f671609448ea3827d72a34fd86cca56c4bff250d57eb8cbcd"
     },
     {
       "id": "if_then",
@@ -64,9 +64,9 @@
     },
     {
       "id": "split_field",
-      "version": 1,
+      "version": 2,
       "file": "split_field.json",
-      "hash": "87befbd39561b59b452a95c807e80f2155a0c363fe70ad824c099eee1c752d1a"
+      "hash": "178040e86c05b66497ab5aecefb013b41295fb25689e80dc32351d0763a75a4d"
     },
     {
       "id": "union_sources",

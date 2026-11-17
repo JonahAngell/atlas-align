@@ -253,6 +253,22 @@
       "documentation": "Rules and required fields come from step type definitions (catalogs/step-types/). Each issue carries the definition's own severity and message."
     },
     {
+      "id": "audit.logic.step-type-definitions-unavailable",
+      "enabled": true,
+      "severity": "warning",
+      "category": "logic",
+      "priority": 5,
+      "title": "Step type definition not loaded",
+      "summary": "A published step type definition could not be loaded.",
+      "detail": "A published step type definition could not be loaded.",
+      "evaluator": "stepTypeDefinitionsUnavailable",
+      "jumpAction": "openLogicTarget",
+      "fixAction": "reloadStepTypes",
+      "targetType": "",
+      "config": {},
+      "documentation": "Shown to ATLAS admins only. Lists definitions the registry rejected, such as a schemaVersion this engine does not read."
+    },
+    {
       "id": "audit.logic.join-integrity",
       "enabled": true,
       "severity": "critical",
