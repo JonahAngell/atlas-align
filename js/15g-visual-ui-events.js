@@ -372,6 +372,29 @@ function atlasThenActionTypeControl(prefix, actionType) {
   )}</div>`;
 }
 
+const ATLAS_CONDITION_OPERATORS = [
+  "is equal to",
+  "is not equal to",
+  "contains",
+  "does not contain",
+  "starts with",
+  "does not start with",
+  "ends with",
+  "does not end with",
+  "is greater than",
+  "is greater than or equal to",
+  "is less than",
+  "is less than or equal to",
+];
+
+/** The values to show in the editor: the stored array, else the old text. */
+function atlasConditionValueLines(condition = {}) {
+  return Array.isArray(condition.compareValues) &&
+    condition.compareValues.length
+    ? atlasConditionValueArray(condition).join("\n")
+    : valuesToLines(condition.compareValue || "");
+}
+
 function atlasOperatorListForValueMode(valueMode) {
   const mode = valueMode || "values";
   if (mode === "blank") {
@@ -386,34 +409,22 @@ function atlasOperatorListForValueMode(valueMode) {
       ),
     ];
   }
+  if (mode === "parameter")
+    return catalogArrayFromOptions({
+      path: "app_config.logic_options.operator_sets.parameter",
+      fallback: ATLAS_PARAMETER_OPERATORS,
+    });
+  if (mode === "expression")
+    return catalogArrayFromOptions({
+      path: "app_config.logic_options.operator_sets.expression",
+      fallback: ["matches expression", "does not match expression"],
+    });
+  // Values and field comparisons share the contract's operator vocabulary.
   return catalogArrayFromOptions({
     path: `app_config.logic_options.operator_sets.${
-      mode === "field" || mode === "expression" ? mode : "values"
+      mode === "field" ? "field" : "values"
     }`,
-    fallback:
-      mode === "field"
-        ? [
-            "is equal to",
-            "is not equal to",
-            "contains",
-            "does not contain",
-            "starts with",
-            "ends with",
-            "is greater than",
-            "is greater than or equal to",
-            "is less than",
-            "is less than or equal to",
-          ]
-        : mode === "expression"
-          ? ["matches expression", "does not match expression"]
-          : [
-              "is equal to",
-              "is not equal to",
-              "contains",
-              "does not contain",
-              "starts with",
-              "ends with",
-            ],
+    fallback: ATLAS_CONDITION_OPERATORS,
   });
 }
 
@@ -427,7 +438,20 @@ function atlasOperatorOptionsForValueMode(valueMode, selectedOperator = "") {
 
 renderConditionRow = function renderConditionRowFollowUp(condition, index) {
   const sourceFile = condition.sourceFile || "";
-  const valueMode = condition.valueMode || "values";
+  const valueMode = atlasConditionUiValueMode(condition);
+  const valueModeOptions = [
+    ["values", "Values", "Match one or more listed values."],
+    ["field", "Compare to Field", "Compare this field to another field."],
+    ["parameter", "Run Parameter", "Compare this field to the run date."],
+    ["blank", "Blank / Null", "Match blank or null values."],
+  ];
+  // Written expressions can't run, so only an existing one keeps the choice.
+  if (valueMode === "expression")
+    valueModeOptions.push([
+      "expression",
+      "Expression (legacy)",
+      "A written expression. Choose another value mode so it can run.",
+    ]);
   return `<div class="guided-condition-row refined-condition-row" data-condition-index="${index}" data-condition-id="${esc(condition.id || uid("cond"))}">
     <div class="condition-row-header">${atlasChoiceControl({
       options: ["IF", "AND", "OR"],
@@ -439,12 +463,7 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
     <label>Source File${renderConditionPickerTrigger("source", "sourceFile", sourceFile, sourceFile || "Choose source")}</label>
     <label>Field${renderConditionPickerTrigger("field", "fieldName", condition.fieldName || "", condition.fieldName || "Choose field", sourceFile)}</label>
     <div class="atlas-choice-field">${atlasChoiceControl({
-      options: [
-        ["values", "Values", "Match one or more listed values."],
-        ["field", "Compare to Field", "Compare this field to another field."],
-        ["blank", "Blank / Null", "Match blank or null values."],
-        ["expression", "Expression", "Match a written expression."],
-      ],
+      options: valueModeOptions,
       selected: valueMode,
       variant: "cards",
       label: "Value mode",
@@ -464,11 +483,23 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
     ${
       valueMode === "field"
         ? `<label>Compare Source${renderConditionPickerTrigger("source", "compareSourceFile", condition.compareSourceFile || sourceFile, condition.compareSourceFile || sourceFile || "Choose source")}</label><label>Compare Field${renderConditionPickerTrigger("field", "compareFieldName", condition.compareFieldName || "", condition.compareFieldName || "Choose field", condition.compareSourceFile || sourceFile)}</label>`
-        : valueMode === "blank"
-          ? `<div class="logic-editor-callout full">No comparison value required.</div>`
-          : valueMode === "expression"
-            ? `<label class="full">Expression<textarea data-condition-field="expression">${esc(condition.expression || "")}</textarea></label>`
-            : `<div class="condition-values-editor full">
+        : valueMode === "parameter"
+          ? `<div class="atlas-choice-field full">${atlasChoiceControl({
+              options: ATLAS_RUN_PARAMETERS.map(([value, label]) => [
+                value,
+                label,
+              ]),
+              selected: condition.compareParameter || "runDate",
+              variant: "segment",
+              label: "Run parameter",
+              heading: "Run Parameter",
+              attributes: 'data-condition-field="compareParameter"',
+            })}<small class="hint">File Utility fills in this date when the audit runs.</small></div>`
+          : valueMode === "blank"
+            ? `<div class="logic-editor-callout full">No comparison value required.</div>`
+            : valueMode === "expression"
+              ? `<label class="full">Expression<textarea data-condition-field="expression">${esc(condition.expression || "")}</textarea></label>`
+              : `<div class="condition-values-editor full">
                   <div class="title-row compact-row">
                     <label>Comparison Values</label>
                     <button 
@@ -481,8 +512,8 @@ renderConditionRow = function renderConditionRowFollowUp(condition, index) {
                   <input 
                     type="hidden" 
                     data-condition-field="compareValue" 
-                    value="${esc(valuesToLines(condition.compareValue || ""))}">
-                  <div class="condition-values-list">${atlasConditionValueRows(condition.compareValue || "")}</div>
+                    value="${esc(atlasConditionValueLines(condition))}">
+                  <div class="condition-values-list">${atlasConditionValueRows(atlasConditionValueLines(condition))}</div>
                 </div>`
     }
     <button type="button" class="danger small" data-guided-delete-condition>Delete Condition</button>
@@ -2144,7 +2175,7 @@ document.addEventListener(
       event.target.matches(
         '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"], ' +
           '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"], ' +
-          '[data-param="then_exclude_scope"], [data-param="split_by"], [data-param="split_mode"], [data-param="split_delimiter"]',
+          '[data-param="then_exclude_scope"], [data-param="split_by"], [data-param="split_mode"], [data-param="split_delimiter"], [data-param="format_kind"]',
       )
     )
       atlasCommitLiveEditor?.({ rerender: true });
@@ -3657,6 +3688,8 @@ atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithDisplayToggle(
   if (step.step_type === "split_field") atlasNormalizeSplitFieldParams(params);
   if (step.step_type === "create_column")
     atlasNormalizeCreateColumnStructuredParams(params);
+  if (step.step_type === "format_field")
+    atlasNormalizeFormatFieldParams(params);
 };
 
 /**

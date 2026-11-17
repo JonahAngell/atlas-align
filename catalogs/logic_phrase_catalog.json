@@ -187,6 +187,9 @@
       "is_blank": "is blank/null",
       "is_not_blank": "is not blank/null"
     },
+    "run_parameter": {
+      "runDate": "the run date"
+    },
     "union_sources": {
       "default": "UNION file {left_source} and file {right_source}, reference as file {output_source}"
     },
@@ -349,7 +352,13 @@
           "contains",
           "does not contain",
           "starts with",
-          "ends with"
+          "does not start with",
+          "ends with",
+          "does not end with",
+          "is greater than",
+          "is greater than or equal to",
+          "is less than",
+          "is less than or equal to"
         ],
         "field": [
           "is equal to",
@@ -357,7 +366,17 @@
           "contains",
           "does not contain",
           "starts with",
+          "does not start with",
           "ends with",
+          "does not end with",
+          "is greater than",
+          "is greater than or equal to",
+          "is less than",
+          "is less than or equal to"
+        ],
+        "parameter": [
+          "is equal to",
+          "is not equal to",
           "is greater than",
           "is greater than or equal to",
           "is less than",

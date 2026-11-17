@@ -147,13 +147,9 @@ function normalizeCatalogStep(step, index = 0) {
   }
   if (step.step_type === "join")
     step.params.join_type = step.params.join_type || "INNER JOIN";
+  // A new Format field step has no format until the author chooses one.
   if (step.step_type === "format_field")
-    step.params.format =
-      step.params.format ||
-      catalogArrayFromOptions({
-        path: "app_config.logic_options.format_options",
-        fallback: ["text"],
-      })[0];
+    step.params.format = step.params.format || "";
   if (step.step_type === "sort_records") {
     step.params.sort_direction = step.params.sort_direction || "Ascending";
     atlasSyncSortFieldParams(step.params);
@@ -802,34 +798,7 @@ function renderGuidedBuilder(step) {
       }
     </div>`;
   }
-  if (step.step_type === "format_field")
-    return `<div class="guided-builder"><h4>Format Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select field",
-        sourceFile: p.source_file,
-      },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
-      options: atlasDescribedChoices(
-        catalogArrayFromOptions({
-          path: "app_config.logic_options.format_options",
-          fallback: ["text", "number"],
-        }),
-        {
-          "eight digits with leading zeroes": "Pad the value to eight digits.",
-          "date format MM/DD/YYYY": "Show the value as a date.",
-          text: "Keep the value as text.",
-          number: "Keep the value as a number.",
-        },
-      ),
-      selected: p.format,
-      variant: "cards",
-      label: "Format",
-      heading: "Format",
-      popover: "list",
-      attributes: 'data-param="format"',
-    })}</div></div>`;
+  if (step.step_type === "format_field") return atlasFormatFieldEditorHtml(p);
   if (step.step_type === "split_field") return atlasSplitFieldEditorHtml(p);
   if (step.step_type === "sort_records")
     return `<div class="guided-builder"><h4>Sort Records</h4>${atlasSortFieldsEditorHtml(p)}</div>`;
@@ -1080,6 +1049,7 @@ capture = function captureCatalogDriven() {
           compareSourceAlias: sourceAliasFor(compareSourceFile),
           expression: get("expression"),
           compareMathJson: get("compareMathJson"),
+          compareParameter: get("compareParameter"),
         };
       };
       const conditions =
@@ -2602,6 +2572,208 @@ function atlasNormalizeCreateColumnStructuredParams(params) {
   return params;
 }
 
+/* Format field: format_kind names a v3 format; the older `format` text is kept
+ * as a mirror the current compiler reads. Kinds it can't run get a mirror it
+ * does not know, so it blocks the step. */
+const ATLAS_FORMAT_KINDS = [
+  ["text", "Text", "Keep the value as text."],
+  ["trim", "Trim spaces", "Remove spaces at the start and end."],
+  ["upper", "Upper case", "Change letters to upper case."],
+  ["lower", "Lower case", "Change letters to lower case."],
+  ["number", "Number", "Read the value as a number."],
+  ["date", "Date", "Show the value as a date in a set format."],
+  ["zeroPad", "Leading zeros", "Pad whole numbers with zeros to a width."],
+];
+const ATLAS_FORMAT_DATE_OUTPUTS = [
+  "MM/DD/YYYY",
+  "YYYY-MM-DD",
+  "YYYYMMDD",
+  "DD.MM.YYYY",
+];
+const ATLAS_FORMAT_NUMBER_WORDS = {
+  one: 1,
+  two: 2,
+  three: 3,
+  four: 4,
+  five: 5,
+  six: 6,
+  seven: 7,
+  eight: 8,
+  nine: 9,
+  ten: 10,
+  eleven: 11,
+  twelve: 12,
+};
+
+/**
+ * Reads a legacy `format` string as a structured format.
+ * @param {any} format - Legacy format text, e.g. "8 digits with leading zeros".
+ * @returns {{kind: string, width?: string, dateOutput?: string}}
+ */
+function atlasFormatFromLegacy(format) {
+  const text = String(format ?? "").trim();
+  const low = text.toLowerCase();
+  if (!low) return { kind: "" };
+  const digits = low.match(/^(\w+) digits? with leading zero(?:e)?s?$/);
+  if (digits) {
+    const width = /^\d+$/.test(digits[1])
+      ? Number(digits[1])
+      : ATLAS_FORMAT_NUMBER_WORDS[digits[1]] || 0;
+    return width ? { kind: "zeroPad", width: String(width) } : { kind: "" };
+  }
+  const date = ATLAS_FORMAT_DATE_OUTPUTS.find(
+    (name) => name.toLowerCase() === low,
+  );
+  if (date) return { kind: "date", dateOutput: date };
+  if (low.includes("mm/dd/yyyy"))
+    return { kind: "date", dateOutput: "MM/DD/YYYY" };
+  if (ATLAS_FORMAT_KINDS.some(([kind]) => kind.toLowerCase() === low))
+    return {
+      kind: ATLAS_FORMAT_KINDS.find(([kind]) => kind.toLowerCase() === low)[0],
+    };
+  return { kind: "" };
+}
+
+/**
+ * Structured Format field settings, from new params or the legacy `format`.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasFormatFieldConfig(p = {}) {
+  const known = ATLAS_FORMAT_KINDS.some(([kind]) => kind === p.format_kind);
+  const legacy = known ? null : atlasFormatFromLegacy(p.format);
+  return {
+    kind: known ? p.format_kind : legacy.kind,
+    decimals: String(p.format_decimals ?? "").trim(),
+    dateOutput: String(
+      (known ? p.format_date_output : legacy.dateOutput) || "",
+    ).trim(),
+    width: String((known ? p.format_width : legacy.width) ?? "").trim(),
+    legacyText: !known && !legacy.kind ? String(p.format ?? "").trim() : "",
+  };
+}
+
+/** The legacy `format` text the current compiler reads for these settings. */
+function atlasFormatMirror(c) {
+  if (c.kind === "text") return "text";
+  if (c.kind === "number")
+    return c.decimals === "" ? "number" : "number (decimals)";
+  if (c.kind === "date") return c.dateOutput || "date";
+  if (c.kind === "zeroPad")
+    return c.width ? `${c.width} digits with leading zeros` : "leading zeros";
+  return c.kind || c.legacyText;
+}
+
+/**
+ * Lists what a Format field step still needs before it can run.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasFormatFieldProblems(p = {}) {
+  const c = atlasFormatFieldConfig(p);
+  const problems = [];
+  if (!String(p.field_name || "").trim()) problems.push("Choose the field.");
+  if (!c.kind)
+    problems.push(
+      c.legacyText
+        ? `The format "${c.legacyText}" is not a known format. Choose one.`
+        : "Choose a format.",
+    );
+  if (
+    c.kind === "number" &&
+    c.decimals !== "" &&
+    !(/^\d+$/.test(c.decimals) && Number(c.decimals) <= 10)
+  )
+    problems.push("Enter decimal places from 0 to 10, or leave blank.");
+  if (c.kind === "date" && !ATLAS_FORMAT_DATE_OUTPUTS.includes(c.dateOutput))
+    problems.push("Choose a date format.");
+  if (
+    c.kind === "zeroPad" &&
+    !(/^\d+$/.test(c.width) && Number(c.width) >= 1 && Number(c.width) <= 100)
+  )
+    problems.push("Enter a width from 1 to 100 digits.");
+  return problems;
+}
+
+/**
+ * Writes the structured Format field settings and the `format` mirror.
+ * @param {Record<string, any>} params - Step params, changed in place.
+ */
+function atlasNormalizeFormatFieldParams(params) {
+  if (!params) return params;
+  const c = atlasFormatFieldConfig(params);
+  if (!c.kind) {
+    delete params.format_kind;
+    return params;
+  }
+  params.format_kind = c.kind;
+  params.format_decimals = c.kind === "number" ? c.decimals : "";
+  params.format_date_output = c.kind === "date" ? c.dateOutput : "";
+  params.format_width = c.kind === "zeroPad" ? c.width : "";
+  params.format = atlasFormatMirror(c);
+  return params;
+}
+
+/**
+ * Renders the Format field editor.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasFormatFieldEditorHtml(p = {}) {
+  const c = atlasFormatFieldConfig(p);
+  const legacy = c.legacyText
+    ? `<div class="logic-editor-callout full" role="note">This step's format is written as "${esc(c.legacyText)}", which is not a known format. Choose one below.</div>`
+    : "";
+  const detail =
+    c.kind === "number"
+      ? `<label>Decimal places<input type="number" data-param="format_decimals" inputmode="numeric" min="0" max="10" step="1" value="${esc(c.decimals)}" placeholder="Blank keeps them as they are" aria-describedby="atlas-format-decimals-hint"><small id="atlas-format-decimals-hint" class="hint">Rounds to this many places. Leave blank for a plain number.</small></label>`
+      : c.kind === "date"
+        ? `<label>Date format<select data-param="format_date_output" required><option value="">Choose date format</option>${ATLAS_FORMAT_DATE_OUTPUTS.map(
+            (name) =>
+              `<option value="${esc(name)}"${name === c.dateOutput ? " selected" : ""}>${esc(name)}</option>`,
+          ).join("")}</select></label>`
+        : c.kind === "zeroPad"
+          ? `<label>Width (digits)<input type="number" data-param="format_width" inputmode="numeric" min="1" max="100" step="1" value="${esc(c.width)}" placeholder="e.g., 8" required aria-describedby="atlas-format-width-hint"><small id="atlas-format-width-hint" class="hint">Whole numbers shorter than this get zeros in front. Other values are left as they are.</small></label>`
+          : "";
+  return `<div class="guided-builder"><h4>Format Field</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
+    {
+      name: "field_name",
+      value: p.field_name,
+      placeholder: "Select field",
+      sourceFile: p.source_file,
+    },
+  )}</label>${legacy}<input type="hidden" data-param="format" value="${esc(p.format || "")}"><div class="atlas-choice-field full">${atlasChoiceControl(
+    {
+      options: ATLAS_FORMAT_KINDS,
+      selected: c.kind,
+      variant: "cards",
+      label: "Format",
+      heading: "Format",
+      popover: "list",
+      attributes: 'data-param="format_kind"',
+    },
+  )}</div>${detail}</div>`;
+}
+
+/**
+ * Lists what a Remove duplicates step still needs before it can run.
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasRemoveDuplicatesProblems(p = {}) {
+  const problems = [];
+  const fields =
+    typeof atlasDuplicateFieldsFromParams === "function"
+      ? atlasDuplicateFieldsFromParams(p)
+      : [];
+  if (!fields.length) problems.push("Choose at least one key field.");
+  if (
+    ![
+      "Keep first record",
+      "Keep last record",
+      "Drop all duplicated records",
+    ].includes(p.duplicate_action)
+  )
+    problems.push("Choose which record to keep.");
+  return problems;
+}
+
 const atlasNormalizeCatalogStepBeforeStructuredEditors = normalizeCatalogStep;
 normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
   step,
@@ -2616,6 +2788,8 @@ normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
     atlasNormalizeSplitFieldParams(target.params);
   if (target?.step_type === "create_column")
     atlasNormalizeCreateColumnStructuredParams(target.params);
+  if (target?.step_type === "format_field")
+    atlasNormalizeFormatFieldParams(target.params);
   return normalized;
 };
 
@@ -2663,5 +2837,98 @@ renderCreateModeInputs = function renderCreateModeInputsStructured(p) {
   if (p.value_mode === "Concatenate fields")
     return `${base}<label>Separator<input data-param="concat_separator" value="${esc(p.concat_separator ?? "")}" maxlength="${ATLAS_CONCAT_MAX_SEPARATOR}" placeholder='e.g., " - " (blank joins directly)' aria-describedby="atlas-concat-separator-hint"><small id="atlas-concat-separator-hint" class="hint">Placed between the two values. Spaces count.</small></label>${atlasColumnDescriptionHtml(p)}`;
   return `${base}${atlasColumnDescriptionHtml(p)}`;
+};
+// Conditions: one operator vocabulary, a run parameter mode and value arrays.
+const ATLAS_RUN_PARAMETERS = [
+  ["runDate", "Run Date", "The date the audit is run."],
+];
+const ATLAS_PARAMETER_OPERATORS = [
+  "is equal to",
+  "is not equal to",
+  "is greater than",
+  "is greater than or equal to",
+  "is less than",
+  "is less than or equal to",
+];
+/** Text the current compiler reads as the run date (see RUN_TOKENS). */
+const ATLAS_RUN_PARAMETER_MIRROR = { runDate: "run date" };
+
+/** The value mode shown in the editor; a run parameter is stored as values. */
+function atlasConditionUiValueMode(condition = {}) {
+  const mode = condition.valueMode || "values";
+  if (mode === "parameter") return "parameter";
+  if (mode === "values" && condition.compareParameter) return "parameter";
+  return mode;
+}
+
+/** Splits a stored value list into an array, one value per line. */
+function atlasConditionValueArray(condition = {}) {
+  if (Array.isArray(condition.compareValues))
+    return condition.compareValues
+      .map((value) => String(value ?? "").trim())
+      .filter(Boolean);
+  return String(condition.compareValue ?? "")
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Normalizes one condition in place.
+ * - A run parameter is stored as valueMode "values" plus compareParameter.
+ *   compareValue mirrors it as "run date", which the current compiler reads
+ *   as the run date. With an operator it cannot use, the mirror is blank so
+ *   the current compiler blocks the condition.
+ * - A value list is kept in compareValues (an array) and in compareValue
+ *   (one value per line), which the current compiler reads.
+ */
+function atlasNormalizeConditionLeaf(condition = {}) {
+  const next = { ...condition };
+  if (atlasConditionUiValueMode(next) === "parameter") {
+    const parameter = ATLAS_RUN_PARAMETERS.some(
+      ([value]) => value === next.compareParameter,
+    )
+      ? next.compareParameter
+      : "runDate";
+    next.valueMode = "values";
+    next.compareParameter = parameter;
+    next.compareValue = ATLAS_PARAMETER_OPERATORS.includes(next.operator)
+      ? ATLAS_RUN_PARAMETER_MIRROR[parameter]
+      : "";
+    delete next.compareValues;
+    return next;
+  }
+  delete next.compareParameter;
+  if ((next.valueMode || "values") === "values") {
+    const values = atlasConditionValueArray(next);
+    next.compareValues = values;
+    next.compareValue = values.join("\n");
+  } else delete next.compareValues;
+  return next;
+}
+
+/** Problems with one condition's structured settings. */
+function atlasConditionProblems(condition = {}) {
+  if (atlasConditionUiValueMode(condition) !== "parameter") return [];
+  return ATLAS_PARAMETER_OPERATORS.includes(condition.operator)
+    ? []
+    : [
+        `The run date can only be compared with ${ATLAS_PARAMETER_OPERATORS.join(", ")}.`,
+      ];
+}
+
+const atlasWriteLiveEditorConditionsBeforeStructuredEditors =
+  atlasWriteLiveEditorConditions;
+atlasWriteLiveEditorConditions = function atlasWriteStructuredConditions(
+  step,
+  conditions,
+) {
+  const tree =
+    typeof atlasMapConditionTree === "function"
+      ? atlasMapConditionTree(conditions || [], {
+          leaf: (node) => atlasNormalizeConditionLeaf(node),
+        })
+      : conditions;
+  return atlasWriteLiveEditorConditionsBeforeStructuredEditors(step, tree);
 };
 // ATLAS-STRUCTURED-STEP-EDITORS:END

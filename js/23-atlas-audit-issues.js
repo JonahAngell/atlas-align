@@ -1723,6 +1723,76 @@
             },
           );
         if (
+          step.type === "format_field" &&
+          typeof global.atlasFormatFieldProblems === "function"
+        )
+          array(global.atlasFormatFieldProblems(p)).forEach((message) => {
+            const param = /field\.$/.test(message)
+              ? "field_name"
+              : /decimal/.test(message)
+                ? "format_decimals"
+                : /date format/.test(message)
+                  ? "format_date_output"
+                  : /width/.test(message)
+                    ? "format_width"
+                    : "format_kind";
+            add(
+              param,
+              `Format field: ${message}`,
+              param === "field_name"
+                ? fieldFix("source_file", "Choose field to format")
+                : param === "format_kind"
+                  ? {
+                      title: "Choose format",
+                      label: "Format",
+                      choices: array(
+                        global.ATLAS_FORMAT_KINDS ||
+                          (typeof ATLAS_FORMAT_KINDS !== "undefined"
+                            ? ATLAS_FORMAT_KINDS
+                            : []),
+                      ).map(([value, label]) => ({ value, label })),
+                    }
+                  : param === "format_date_output"
+                    ? {
+                        title: "Choose date format",
+                        label: "Date format",
+                        choices: [
+                          "MM/DD/YYYY",
+                          "YYYY-MM-DD",
+                          "YYYYMMDD",
+                          "DD.MM.YYYY",
+                        ],
+                      }
+                    : {
+                        title: "Edit format",
+                        label:
+                          param === "format_width"
+                            ? "Width (digits)"
+                            : "Decimal places",
+                      },
+            );
+          });
+        if (
+          step.type === "remove_duplicates" &&
+          typeof global.atlasRemoveDuplicatesProblems === "function"
+        )
+          array(global.atlasRemoveDuplicatesProblems(p)).forEach((message) =>
+            /key field/.test(message)
+              ? add("duplicate_fields_json", `Remove duplicates: ${message}`, {
+                  ...fieldFix("", "Choose key field"),
+                  listParam: true,
+                })
+              : add("duplicate_action", `Remove duplicates: ${message}`, {
+                  title: "Choose record to keep",
+                  label: "Keep",
+                  choices: [
+                    "Keep first record",
+                    "Keep last record",
+                    "Drop all duplicated records",
+                  ],
+                }),
+          );
+        if (
           (step.type === "if_then" || step.type === "else") &&
           p.then_action_type === "do_not_display" &&
           p.then_exclude_scope === "key" &&
@@ -1732,6 +1802,22 @@
             "then_exclude_key_field",
             "Do Not Display: choose the key field whose records are hidden.",
             fieldFix("then_exclude_key_source_file", "Choose key field"),
+          );
+        if (typeof global.atlasConditionProblems === "function")
+          readConditions(step).forEach((condition) =>
+            array(global.atlasConditionProblems(condition)).forEach((message) =>
+              add("operator", `Condition: ${message}`, {
+                conditionId: string(condition.id),
+                title: "Choose operator",
+                label: "Operator",
+                choices: array(
+                  global.ATLAS_PARAMETER_OPERATORS ||
+                    (typeof ATLAS_PARAMETER_OPERATORS !== "undefined"
+                      ? ATLAS_PARAMETER_OPERATORS
+                      : []),
+                ),
+              }),
+            ),
           );
         return problems.map((problem, index) =>
           issue(
@@ -3056,10 +3142,20 @@
     }
     if (repair === "step-param") {
       const choices = array(data.choices);
-      const isField = Boolean(data.sourceParam);
-      const current = step ? string(step.params?.[data.param]) : "";
+      const isField = Boolean(data.sourceParam || data.listParam);
+      const condition = data.conditionId
+        ? step &&
+          readConditions(step).find(
+            (item) => string(item.id) === string(data.conditionId),
+          )
+        : null;
+      const current = condition
+        ? string(condition[data.param])
+        : step && !data.listParam
+          ? string(step.params?.[data.param])
+          : "";
       const body = isField
-        ? `${selectMarkup("source", "Source", sourceChoices(), step ? string(step.params?.[data.sourceParam] || step.params?.source_file) : "")}${selectMarkup("field", "Field", [], current)}`
+        ? `${selectMarkup("source", "Source", sourceChoices(), step ? string((data.sourceParam && step.params?.[data.sourceParam]) || step.params?.source_file) : "")}${selectMarkup("field", "Field", [], current)}`
         : choices.length
           ? selectMarkup("choice", data.label || "Value", choices, current)
           : `<label>${safeText(data.label || "Value")}<input data-fix-text value="${safeText(current)}"></label>`;
@@ -3087,9 +3183,32 @@
           showFixError(fix, "Enter a value before saving.");
           return false;
         }
+        if (data.conditionId) {
+          // A condition setting: patch the condition, which re-normalizes it.
+          if (
+            !patchCondition(step, data.conditionId, { [data.param]: value })
+          ) {
+            showFixError(fix, "That condition is no longer on the step.");
+            return false;
+          }
+          commitAudit("Audit issue updated.");
+          return;
+        }
         const params = ensureParams(step);
-        params[data.param] = value;
-        if (isField) params[data.sourceParam] = read("source");
+        if (data.listParam) {
+          const sourceFile = read("source");
+          params[data.param] = JSON.stringify([
+            {
+              sourceFile,
+              sourceAlias:
+                typeof global.sourceAliasFor === "function"
+                  ? string(global.sourceAliasFor(sourceFile))
+                  : sourceFile,
+              fieldName: value,
+            },
+          ]);
+        } else params[data.param] = value;
+        if (data.sourceParam) params[data.sourceParam] = read("source");
         global.normalizeCatalogStep?.(step);
         commitAudit("Audit issue updated.");
       });
