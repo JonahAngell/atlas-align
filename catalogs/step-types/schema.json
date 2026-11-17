@@ -144,6 +144,12 @@
           "type": "object",
           "additionalProperties": { "$ref": "#/$defs/formulaTriple" }
         },
+        "notes": {
+          "description": "Developer Logic notes, one template each. A note that renders blank is left out.",
+          "type": "array",
+          "maxItems": 20,
+          "items": { "$ref": "#/$defs/template" }
+        },
         "fallback": {
           "type": "object",
           "additionalProperties": false,
@@ -255,11 +261,17 @@
         "help": { "type": "string", "maxLength": 1000 },
         "required": { "type": "boolean" },
         "default": { "$ref": "#/$defs/scalar" },
+        "valueTemplate": {
+          "description": "The value the editor shows while the parameter is blank.",
+          "$ref": "#/$defs/template"
+        },
         "visibleWhen": { "$ref": "#/$defs/condition" },
         "enabledWhen": { "$ref": "#/$defs/condition" },
         "sourceParam": { "$ref": "#/$defs/paramName" },
         "group": { "$ref": "#/$defs/identifier" },
         "display": { "enum": ["cards", "chips", "segment", "list"] },
+        "heading": { "$ref": "#/$defs/label" },
+        "popover": { "enum": ["list", "pills", "grid"] },
         "options": {
           "type": "array",
           "maxItems": 200,

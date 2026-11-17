@@ -1,8 +1,8 @@
 # Dynamic Step Type Builder: Plan
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
-issue #5000). Phase 1 (issue #5001) and Phase 2 (issue #5002) are in review.
-Later phases have not started.
+issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002) and Phase 3 (issue
+#5003) are in review. Later phases have not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -12,6 +12,20 @@ and text import of sentences written by a definition's English template
 (`textImport.fromEnglish`). Script roles `source`, `join`, `union`, `sort` and
 `dedupe` place a step the way the matching built-in type is placed, so they
 expect that type's parameter names until phase 5.
+
+Phase 3 note: the five definitions are in `catalogs/step-types/` and are
+bundled into `js/step-types/definitions.generated.js` by
+`npm run step-types:manifest`, so the registry is ready before any app script
+runs. What a template cannot express is named from
+`js/13-step-type-library.js`: helpers (for example `sortKeys`, `formatKind`,
+`splitPart`), migration handlers (`sync_sort_fields`,
+`sync_duplicate_fields`) and editor blocks (`sort_keys`, `duplicate_keys`).
+The schema gained `formulas.notes` and the field keys `valueTemplate`,
+`heading` and `popover`. Their per-type English, notes, formulas, editor,
+normalization, picker entries and qTest placement code is deleted. Three
+things stay until later phases: the hand-written text-import parsers in
+`js/15j` (the definitions set `textImport.fromEnglish: false`), and the
+expected outcomes and script assembly in `js/12` and `js/12b` (phase 5).
 
 ## Goal
 

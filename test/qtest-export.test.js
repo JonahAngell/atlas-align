@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import vm from "node:vm";
+import { STEP_TYPE_SCRIPTS } from "./support/step-type-scripts.js";
 
 const require = createRequire(import.meta.url);
 const ExcelJS = require("exceljs");
@@ -160,6 +161,7 @@ async function runExport(audit) {
     "02-hierarchy.js",
     "07-phrase-catalog.js",
     "12-export-foundation.js",
+    ...STEP_TYPE_SCRIPTS.map((file) => file.replace(/^js\//, "")),
   ])
     vm.runInContext(
       readFileSync(new URL(`../js/${file}`, import.meta.url), "utf8"),
@@ -199,7 +201,10 @@ test("Qtest export keeps only the two template sheets", () => {
     ["Guide - Start Here", "UAT - Disney3"],
   );
   assert.equal(exported.file.kind, "ok");
-  assert.match(exported.file.message, /^Qtest Excel exported with \d+ scenarios\.$/);
+  assert.match(
+    exported.file.message,
+    /^Qtest Excel exported with \d+ scenarios\.$/,
+  );
 });
 
 test("Guide sheet exports exactly as the template", () => {

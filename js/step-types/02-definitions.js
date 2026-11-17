@@ -212,6 +212,17 @@
     Object.entries(formulaSet.bySubtype || {}).forEach(([key, value]) =>
       addTriple(`/formulas/bySubtype/${key}`, value),
     );
+    (formulaSet.notes || []).forEach((value, index) =>
+      add(`/formulas/notes/${index}`, value),
+    );
+    const addFields = (path, list) =>
+      (list || []).forEach((field, index) =>
+        add(`${path}/${index}/valueTemplate`, field.valueTemplate),
+      );
+    addFields("/fields", definition.fields);
+    (definition.subtypes?.options || []).forEach((option, index) =>
+      addFields(`/subtypes/options/${index}/fields`, option.fields),
+    );
     add("/outputs/assigns", definition.outputs?.assigns);
     (definition.outputs?.creates || []).forEach((value, index) =>
       add(`/outputs/creates/${index}`, value),

@@ -1,11 +1,12 @@
 /**
  * Step type runtime: every step type owner asks the registry first.
  *
- * With an empty registry the app behaves exactly as before (the snapshots in
- * step-type-snapshots.test.js prove that). These tests load the whole app,
- * register a sample type that no code knows about, and check that it reaches
- * every output: English, notes, Developer Logic, the editor, the picker,
- * text import, the SQL and Python scripts, qTest and Audit Issues.
+ * The repository definitions in catalogs/step-types/ load with the app (the
+ * snapshots in step-type-snapshots.test.js prove their output is unchanged).
+ * These tests load the whole app, register a sample type that no code knows
+ * about next to them, and check that it reaches every output: English,
+ * notes, Developer Logic, the editor, the picker, text import, the SQL and
+ * Python scripts, qTest and Audit Issues.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -211,8 +212,13 @@ async function appWith(definitions) {
       const registry = ATLASStepTypes.registry.createRegistry({
         schema: __schema,
         helpers: [...ATLASStepTypeRuntime.HELPER_NAMES],
+        blocks: [...ATLASStepTypeRuntime.BLOCK_NAMES],
+        handlers: [...ATLASStepTypeRuntime.HANDLER_NAMES],
       });
-      const results = __definitions.map((definition) => registry.add(definition));
+      const results = [
+        ...ATLASStepTypes.bundled.definitions,
+        ...__definitions,
+      ].map((definition) => registry.add(definition));
       ATLASStepTypeRuntime.useRegistry(registry);
       return results;
     })()`,
@@ -227,15 +233,28 @@ async function appWith(definitions) {
 const run = (context, code) =>
   JSON.parse(JSON.stringify(vm.runInContext(code, context) ?? null));
 
-test("an empty registry leaves every step type on its built-in code", async () => {
+const BUNDLED_IDS = [
+  "format_field",
+  "reference_source",
+  "remove_duplicates",
+  "sort_records",
+  "split_field",
+];
+
+test("the repository definitions load with the app", async () => {
   const context = await loadApp();
-  assert.equal(
-    vm.runInContext(
-      "ATLASStepTypeRuntime.registry()?.list().length || 0",
-      context,
-    ),
-    0,
+  assert.deepEqual(
+    run(context, "ATLASStepTypeRuntime.registry().rejected()"),
+    [],
   );
+  assert.deepEqual(
+    run(
+      context,
+      "ATLASStepTypeRuntime.registry().list({ includeLegacy: true }).map((d) => d.id).sort()",
+    ),
+    BUNDLED_IDS,
+  );
+  // Split Field is legacy: it keeps working but is not offered.
   assert.deepEqual(run(context, "STEP_TYPE_OPTIONS.map(([value]) => value)"), [
     "reference_source",
     "create_column",
@@ -245,6 +264,82 @@ test("an empty registry leaves every step type on its built-in code", async () =
     "sort_records",
     "remove_duplicates",
   ]);
+  assert.equal(run(context, "ATLAS_IMPORT_TITLES.split_field"), "Split Field");
+  // Source steps come from importing a source, not from the Add Rule menu.
+  assert.deepEqual(
+    run(context, "atlasNewRuleTypeOptions().map(([value]) => value)"),
+    [
+      "create_column",
+      "if_then",
+      "join",
+      "format_field",
+      "sort_records",
+      "remove_duplicates",
+    ],
+  );
+  assert.equal(
+    run(context, 'atlasRuleTypeDescription("sort_records")'),
+    "Sort records by one or more fields.",
+  );
+});
+
+test("an empty registry offers only the built-in step types", async () => {
+  const context = await loadApp();
+  vm.runInContext(
+    `ATLASStepTypeRuntime.useRegistry(
+      ATLASStepTypes.registry.createRegistry({ schema: ATLASStepTypes.bundled.schema }),
+    )`,
+    context,
+  );
+  assert.deepEqual(run(context, "STEP_TYPE_OPTIONS.map(([value]) => value)"), [
+    "create_column",
+    "if_then",
+    "join",
+  ]);
+});
+
+test("library blocks and handlers build the list editors", async () => {
+  const context = await loadApp();
+  context.__sort = {
+    id: "s9",
+    step_type: "sort_records",
+    params: {
+      source_file: "WD_Workers",
+      field_name: "Name",
+      sort_direction: "Descending",
+    },
+  };
+  // The sync_sort_fields handler writes the list from the legacy params.
+  const step = run(context, "normalizeCatalogStep(__sort)");
+  assert.equal(step.params.sort_direction, "Descending");
+  assert.match(step.params.sort_fields_json, /"fieldName":"Name"/);
+  const html = run(context, "ATLASStepTypeRuntime.renderEditor(__sort)");
+  assert.match(html, /<h4>Sort Records<\/h4>/);
+  assert.equal(
+    html.includes(run(context, "atlasSortFieldsEditorHtml(__sort.params)")),
+    true,
+  );
+});
+
+test("formula notes and value templates come from the definition", async () => {
+  const context = await loadApp();
+  context.__format = {
+    id: "s9",
+    step_type: "format_field",
+    params: {
+      source_file: "WD_Workers",
+      source_alias: "",
+      field_name: "Name",
+      format: "upper case",
+    },
+  };
+  const formulas = run(context, "atlasDeveloperFormulas(__format)");
+  assert.deepEqual(formulas.notes, [
+    'Note: Format "upper case" is not a standard option. Check the formulas before running.',
+  ]);
+  // The hidden alias shows the source's alias while the param is blank.
+  const html = run(context, "ATLASStepTypeRuntime.renderEditor(__format)");
+  assert.match(html, /data-param="source_alias" value="[^"]+"/);
 });
 
 test("a registered type reaches every output", async () => {
@@ -272,7 +367,6 @@ test("a registered type reaches every output", async () => {
   assert.equal(step.normalizedStep.type, "transform");
   assert.equal(step.normalizedStep.title, "Replace Text");
 
-  assert.match(step.editorHtml, /data-step-type-id="replace_text"/);
   assert.match(step.editorHtml, /<h4>Replace Text<\/h4>/);
   assert.match(step.editorHtml, /data-param="find_text" value="-"/);
   assert.match(step.editorHtml, /data-param="column_name" value="Clean Name"/);
@@ -330,10 +424,13 @@ test("picker lists, titles and created columns come from the registry", async ()
       "remove_duplicates",
     ],
   );
-  assert.deepEqual(run(context, "atlasNewRuleTypeOptions().at(-1)"), [
-    "replace_text",
-    "Replace Text",
-  ]);
+  assert.deepEqual(
+    run(
+      context,
+      'atlasNewRuleTypeOptions().find(([value]) => value === "replace_text")',
+    ),
+    ["replace_text", "Replace Text"],
+  );
   assert.equal(
     run(context, 'atlasRuleTypeDescription("replace_text")'),
     REPLACE_TEXT.description,

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "id": "reference_source",
+  "version": 1,
+  "label": "Reference Source",
+  "category": "source",
+  "order": 10,
+  "status": "active",
+  "legacyType": "source",
+  "aliases": {
+    "step_type": [],
+    "type": ["source"]
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    },
+    {
+      "op": "default",
+      "param": "source_file",
+      "template": "{{firstSource}}"
+    },
+    {
+      "op": "default",
+      "param": "source_alias",
+      "template": "{{alias param.source_file}}"
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "source_picker",
+      "label": "Source File",
+      "placeholder": "Select source file"
+    },
+    {
+      "param": "source_alias",
+      "control": "text",
+      "label": "Source Alias",
+      "valueTemplate": "{{alias param.source_file}}"
+    }
+  ],
+  "english": {
+    "default": "{{#if (alias (default param.source_file step.source) param.source_alias)}}Reference source file {{quote (default param.source_file step.source)}} as {{quote (alias (default param.source_file step.source) param.source_alias)}}:{{else}}Reference source file {{quote (default param.source_file step.source)}}:{{/if}}"
+  },
+  "formulas": {
+    "shape": "frame",
+    "default": {
+      "excel": "={{excelTable (default (alias (default param.source_file step.source) param.source_alias) (placeholder \"source\" \"[source]\"))}}",
+      "sql": "SELECT * FROM {{sqlSource (default (default param.source_file step.source) (default (alias (default param.source_file step.source) param.source_alias) (placeholder \"source\" \"[source]\")))}}{{#if (default param.source_file step.source)}} AS {{sqlName (default (alias (default param.source_file step.source) param.source_alias) (placeholder \"source\" \"[source]\"))}}{{/if}}",
+      "python": "df = {{pySource (default (alias (default param.source_file step.source) param.source_alias) (placeholder \"source\" \"[source]\"))}}.copy()"
+    }
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "source",
+    "qtest": {
+      "section": "G",
+      "testType": "Integration"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "tests": [
+    {
+      "name": "source with alias",
+      "params": {
+        "source_file": "sap.hi0256",
+        "source_alias": "hi0256"
+      },
+      "expect": {
+        "english": "Reference source file \"sap.hi0256\" as \"hi0256\":",
+        "excel": "=hi0256",
+        "sql": "SELECT * FROM [sap.hi0256] AS [hi0256]",
+        "python": "df = sources[\"hi0256\"].copy()"
+      }
+    }
+  ]
+}

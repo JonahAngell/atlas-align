@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "id": "format_field",
+  "version": 1,
+  "label": "Format Field",
+  "description": "Format values in a selected field.",
+  "category": "transform",
+  "order": 50,
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "hidden"
+    },
+    {
+      "param": "source_alias",
+      "control": "hidden",
+      "valueTemplate": "{{alias param.source_file}}"
+    },
+    {
+      "param": "field_name",
+      "control": "field_picker",
+      "label": "Field",
+      "placeholder": "Select field",
+      "sourceParam": "source_file"
+    },
+    {
+      "param": "format",
+      "control": "choice",
+      "label": "Format",
+      "display": "cards",
+      "popover": "list",
+      "default": "eight digits with leading zeroes",
+      "options": [
+        {
+          "value": "eight digits with leading zeroes",
+          "label": "eight digits with leading zeroes",
+          "description": "Pad the value to eight digits."
+        },
+        {
+          "value": "date format MM/DD/YYYY",
+          "label": "date format MM/DD/YYYY",
+          "description": "Show the value as a date."
+        },
+        {
+          "value": "text",
+          "label": "text",
+          "description": "Keep the value as text."
+        },
+        {
+          "value": "number",
+          "label": "number",
+          "description": "Keep the value as a number."
+        }
+      ]
+    }
+  ],
+  "english": {
+    "default": "Format {{tableColumn param.source_file param.source_alias param.field_name}} as {{param.format}}."
+  },
+  "formulas": {
+    "shape": "assignment",
+    "target": "{{default (trim param.field_name) (placeholder \"field\" \"[field]\")}}",
+    "default": {
+      "excel": "{{#switch (formatKind param.format)}}{{#case \"digits\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (repeat \"0\" (formatDigits param.format))}}){{/case}}{{#case \"date\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, \"mm/dd/yyyy\"){{/case}}{{#case \"number\"}}VALUE({{field param.source_file param.field_name alias=param.source_alias}}){{/case}}{{#case \"text\"}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, \"@\"){{/case}}{{#default}}TEXT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (trim (default param.format \"text\"))}}){{/default}}{{/switch}}",
+      "sql": "{{#switch (formatKind param.format)}}{{#case \"digits\"}}RIGHT(REPLICATE('0', {{formatDigits param.format}}) + CAST({{field param.source_file param.field_name alias=param.source_alias}} AS VARCHAR(50)), {{formatDigits param.format}}){{/case}}{{#case \"date\"}}CONVERT(VARCHAR(10), TRY_CONVERT(date, {{field param.source_file param.field_name alias=param.source_alias}}), 101){{/case}}{{#case \"number\"}}TRY_CAST({{field param.source_file param.field_name alias=param.source_alias}} AS DECIMAL(38, 10)){{/case}}{{#case \"text\"}}CAST({{field param.source_file param.field_name alias=param.source_alias}} AS NVARCHAR(4000)){{/case}}{{#default}}FORMAT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (trim (default param.format \"text\"))}}){{/default}}{{/switch}}",
+      "python": "{{#switch (formatKind param.format)}}{{#case \"digits\"}}{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\").str.zfill({{formatDigits param.format}}){{/case}}{{#case \"date\"}}pd.to_datetime({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\").dt.strftime(\"%m/%d/%Y\"){{/case}}{{#case \"number\"}}pd.to_numeric({{field param.source_file param.field_name alias=param.source_alias}}, errors=\"coerce\"){{/case}}{{#default}}{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\"){{/default}}{{/switch}}"
+    },
+    "notes": [
+      "{{#if (eq (formatKind param.format) \"custom\")}}Note: Format \"{{trim (default param.format \"text\")}}\" is not a standard option. Check the formulas before running.{{/if}}"
+    ]
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "tests": [
+    {
+      "name": "text format",
+      "params": {
+        "source_file": "sap.hi0256",
+        "source_alias": "sap.hi0256",
+        "field_name": "Pernr",
+        "format": "text"
+      },
+      "expect": {
+        "english": "Format file \"sap.hi0256\" column \"Pernr\" as text.",
+        "sql": "CAST([Pernr] AS NVARCHAR(4000)) AS [Pernr]"
+      }
+    }
+  ]
+}

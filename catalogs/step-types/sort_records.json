@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "sort_records",
+  "version": 1,
+  "label": "Sort Records",
+  "description": "Sort records by one or more fields.",
+  "category": "transform",
+  "order": 60,
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    },
+    {
+      "op": "default",
+      "param": "sort_direction",
+      "value": "Ascending"
+    },
+    {
+      "op": "handler",
+      "name": "sync_sort_fields"
+    }
+  ],
+  "fields": [
+    {
+      "param": "sort_fields_json",
+      "control": "block",
+      "block": "sort_keys",
+      "label": "Sort fields"
+    }
+  ],
+  "english": {
+    "default": "Sort records by {{#each (sortKeys param)}}{{#if @first}}{{tableColumn sourceFile sourceAlias fieldName}} in {{default direction \"Ascending\"}} order{{else}}, then by {{tableColumn sourceFile sourceAlias fieldName sameSource}} in {{direction}} order{{/if}}{{/each}}."
+  },
+  "formulas": {
+    "shape": "frame",
+    "default": {
+      "excel": "=SORTBY({{firstKeyTable (sortKeys param) param.source_file param.source_alias}}, {{#each (sortKeys param) separator=\", \"}}{{firstKeyTable (sortKeys param) param.source_file param.source_alias}}[{{excelColumn (default fieldName (placeholder \"field\" \"[field]\"))}}], {{#if (eq direction \"Descending\")}}-1{{else}}1{{/if}}{{/each}})",
+      "sql": "ORDER BY {{#each (sortKeys param) separator=\", \"}}{{field sourceFile fieldName alias=sourceAlias}} {{#if (eq direction \"Descending\")}}DESC{{else}}ASC{{/if}}{{/each}}",
+      "python": "df = df.sort_values([{{#each (sortKeys param) separator=\", \"}}{{quote fieldName}}{{/each}}], ascending=[{{#each (sortKeys param) separator=\", \"}}{{#if (eq direction \"Descending\")}}False{{else}}True{{/if}}{{/each}}], kind=\"stable\")"
+    }
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "sort",
+    "qtest": {
+      "section": "E",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}
