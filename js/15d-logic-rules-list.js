@@ -54,6 +54,7 @@ function atlasCaptureGuidedFields(root, step) {
         compareSourceAlias: sourceAliasFor(compareSourceFile),
         compareFieldName: get("compareFieldName"),
         expression: get("expression"),
+        compareParameter: get("compareParameter"),
       };
     };
     const conditions =

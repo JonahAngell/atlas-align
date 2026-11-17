@@ -44,6 +44,7 @@ async function runtime(audit, extras = {}) {
       })),
     renderValidationPanel() {},
   };
+  Object.assign(sandbox, extras.globals || {});
   if (extras.atlasResolveSourceIdentity)
     sandbox.atlasResolveSourceIdentity = extras.atlasResolveSourceIdentity;
   sandbox.window = sandbox;
@@ -2779,5 +2780,40 @@ test("Do Not Display by key without a key field is a critical issue", async () =
       (entry) => entry.ruleId === "audit.logic.structured-step-integrity",
     ).length,
     0,
+  );
+});
+
+test("a run date condition with a text operator is a critical issue", async () => {
+  const audit = completeAudit();
+  audit.steps[0].params.conditions_json = JSON.stringify([
+    {
+      id: "cond-run",
+      connector: "IF",
+      sourceFile: "Source One",
+      fieldName: "Status",
+      operator: "contains",
+      valueMode: "values",
+      compareParameter: "runDate",
+      compareValue: "",
+    },
+  ]);
+  const globals = {
+    ATLAS_PARAMETER_OPERATORS: ["is equal to", "is less than"],
+    atlasConditionProblems: (condition) =>
+      condition.compareParameter && condition.operator === "contains"
+        ? ["The run date can only be compared with is equal to."]
+        : [],
+  };
+  const context = await runtime(audit, { globals });
+  const issues = context.ATLASAuditIssues.current().issues.filter(
+    (entry) => entry.ruleId === "audit.logic.structured-step-integrity",
+  );
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].severity, "critical");
+  assert.equal(issues[0].actionData.conditionId, "cond-run");
+  assert.equal(issues[0].actionData.param, "operator");
+  assert.deepEqual(
+    [...issues[0].actionData.choices],
+    ["is equal to", "is less than"],
   );
 });

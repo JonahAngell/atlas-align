@@ -3563,6 +3563,7 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   margin-bottom: 10px;
 }
 
+
 #page-overview .layout2 {
   position: relative;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
@@ -3574,13 +3575,16 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   align-items: start;
 }
 
+
 #page-overview .layout2 > .card:first-child {
   grid-area: setup;
 }
 
+
 #page-overview #atlasWorkflowCard {
   grid-area: workflow;
 }
+
 
 #page-overview #atlasWorkflowDialogHost {
   position: absolute;
@@ -3590,6 +3594,7 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   overflow: visible;
 }
 
+
 #page-overview .layout2 > .card:last-child {
   grid-area: progress;
   display: grid;
@@ -3598,35 +3603,43 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   align-content: start;
 }
 
+
 #page-overview .card {
   padding: 14px 16px;
 }
 
+
 #page-overview .section-title {
   margin-bottom: 8px;
 }
+
 
 #page-overview .layout2 > .card:last-child > .section-title {
   grid-column: 1 / -1;
   margin-bottom: 0;
 }
 
+
 #page-overview .layout2 > .card:last-child > .package {
   margin: 0;
   padding: 8px 12px;
 }
 
+
 #page-overview .layout2 > .card:first-child label {
   margin-bottom: 0.5rem;
 }
+
 
 #page-overview .layout2 > .card:first-child > label:last-of-type {
   margin-bottom: 0;
 }
 
+
 #page-overview .layout2 > .card:first-child textarea {
   min-height: 72px;
 }
+
 
 #page-overview .audit-status-message:empty {
   display: none;
@@ -3634,22 +3647,27 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   margin: 0;
 }
 
+
 #page-overview .workflow-grid {
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.45rem 0.75rem;
 }
 
+
 #page-overview .workflow-actions {
   margin-top: 0.65rem;
 }
+
 
 #page-overview .assignment-card {
   margin-top: 12px;
 }
 
+
 #page-overview .assignment-card > .hint {
   margin: 0 0 0.55rem;
 }
+
 
 #page-overview .assignment-columns {
   gap: 12px;
@@ -3666,17 +3684,21 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   margin-top: auto;
 }
 
+
 #page-overview .assignment-columns h3 {
   margin: 0 0 0.35rem;
 }
+
 
 #page-overview .assignment-selected {
   margin: 0.35rem 0 0.45rem;
 }
 
+
 #page-overview > .workflow-readonly {
   margin-bottom: 0.65rem;
 }
+
 
 @media (max-width: 1100px) {
   #page-overview .layout2 {
@@ -3694,6 +3716,24 @@ body.dark #page-my-audits .my-audits-metrics .metric-card[aria-pressed="true"] {
   #page-overview .assignment-columns {
     grid-template-columns: 1fr;
   }
+}
+
+/* Run settings card (js/31-audit-execution.js). */
+#atlasExecutionCard {
+  margin-top: 18px;
+}
+
+
+.execution-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+
+.execution-grid > .atlas-field-error {
+  grid-column: 1 / -1;
 }
 
 #page-fields .source-field-browser-panel {

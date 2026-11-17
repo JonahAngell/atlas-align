@@ -310,7 +310,13 @@ function conditionValuePlain(condition) {
     return conditionCompareFieldPlain(condition);
   if (condition.valueMode === "expression")
     return String(condition.expression || "").trim();
-  return formattedValueList(condition.compareValue || condition.value || "");
+  if (condition.compareParameter === "runDate")
+    return renderCatalogPhrase("analyst_logic.run_parameter.runDate", {});
+  return formattedValueList(
+    Array.isArray(condition.compareValues) && condition.compareValues.length
+      ? condition.compareValues
+      : condition.compareValue || condition.value || "",
+  );
 }
 
 /**
@@ -901,6 +907,28 @@ function elseActionPlain(step) {
 }
 
 /**
+ * Names a Format field setting for analyst text, e.g. "upper case" or
+ * "a number with 2 decimal places". Steps without format_kind read as before.
+ * @param {Record<string, any>} params - Step params.
+ */
+function formatFieldPlain(params = {}) {
+  if (typeof atlasFormatFieldConfig !== "function" || !params.format_kind)
+    return params.format || "";
+  const c = atlasFormatFieldConfig(params);
+  if (c.kind === "trim") return "text with leading and trailing spaces removed";
+  if (c.kind === "upper") return "upper case";
+  if (c.kind === "lower") return "lower case";
+  if (c.kind === "number")
+    return c.decimals === ""
+      ? "number"
+      : `a number with ${c.decimals} decimal place${c.decimals === "1" ? "" : "s"}`;
+  if (c.kind === "date") return `date ${c.dateOutput || "[date format]"}`;
+  if (c.kind === "zeroPad")
+    return `${c.width || "[width]"} digits with leading zeros`;
+  return c.kind;
+}
+
+/**
  * Names a separator for analyst text. Spaces and tabs are named in words,
  * since a quoted space would read as nothing.
  * @param {any} value - Separator text.
@@ -1207,7 +1235,7 @@ function analystLogic(step) {
         params.source_alias,
         params.field_name,
       ),
-      format: params.format || "",
+      format: formatFieldPlain(params),
       format_suffix: "",
     });
   if (

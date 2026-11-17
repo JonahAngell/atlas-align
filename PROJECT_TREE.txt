@@ -180,7 +180,8 @@
 │   ├── 27-audit-review-mode.js
 │   ├── 28-validation-runner.js
 │   ├── 29-export-dashboard.js
-│   └── 30-deep-links.js
+│   ├── 30-deep-links.js
+│   └── 31-audit-execution.js
 ├── local-db
 │   ├── init-local-db.sh
 │   └── seed.sql
@@ -417,6 +418,7 @@
 │   ├── audit-comparison.test.js
 │   ├── audit-discussion-repository.test.js
 │   ├── audit-discussion-routes.test.js
+│   ├── audit-execution.test.js
 │   ├── audit-history-read-only.test.js
 │   ├── audit-history-timeline.test.js
 │   ├── audit-history-ui.test.js

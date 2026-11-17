@@ -740,6 +740,7 @@ const ATLAS_WORKFLOW_MUTATION_SELECTORS = [
   "#auditName",
   "#auditPurpose",
   "#auditStatus",
+  "[data-execution-setting]",
   "[data-open-assignment-picker]",
   "[data-remove-assignment-role]",
   "#importSourceLibraryBtn",

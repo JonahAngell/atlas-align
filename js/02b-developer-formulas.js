@@ -653,6 +653,10 @@ function atlasDevCompare(left, symbol, right, dialect) {
 }
 
 function atlasDevValueList(condition = {}) {
+  if (Array.isArray(condition.compareValues) && condition.compareValues.length)
+    return condition.compareValues
+      .map((item) => String(item ?? "").trim())
+      .filter(Boolean);
   return String(condition.compareValue ?? condition.value ?? "")
     .split(/\r?\n/)
     .map((item) => item.trim())
@@ -730,6 +734,14 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
       dialect,
     );
   }
+
+  if (condition.compareParameter === "runDate")
+    return atlasDevCompare(
+      left,
+      ATLAS_DEV_COMPARE_OPERATORS[operator] || "=",
+      { sql: "@RunDate", python: "run_date" }[dialect] || "RunDate",
+      dialect,
+    );
 
   const values = atlasDevValueList(condition);
   if (textMatch)
@@ -1346,12 +1358,63 @@ function atlasDevFormatField(step) {
     params.field_name,
   );
   const target = field.fieldName || atlasDevPlaceholder("field", "[field]");
+  const structured =
+    params.format_kind && typeof atlasFormatFieldConfig === "function"
+      ? atlasFormatFieldConfig(params)
+      : null;
   const format = String(params.format || "text").trim();
   const normalized = format.toLowerCase();
-  const digits = atlasDevFormatDigits(format);
+  const digits = structured
+    ? structured.kind === "zeroPad"
+      ? Number(structured.width) || 0
+      : 0
+    : atlasDevFormatDigits(format);
   let notes = [];
   const formulas = atlasDevAssignment(target, (dialect) => {
     const ref = atlasDevField(field, dialect);
+    const kind = structured?.kind;
+    if (kind === "trim") {
+      if (dialect === "excel") return `TRIM(${ref})`;
+      if (dialect === "sql") return `TRIM(${ref})`;
+      return `${atlasDevPyText(ref)}.str.strip()`;
+    }
+    if (kind === "upper" || kind === "lower") {
+      if (dialect === "excel") return `${kind.toUpperCase()}(${ref})`;
+      if (dialect === "sql") return `${kind.toUpperCase()}(${ref})`;
+      return `${atlasDevPyText(ref)}.str.${kind}()`;
+    }
+    if (kind === "number" && structured.decimals !== "") {
+      const places = Number(structured.decimals) || 0;
+      if (dialect === "excel") return `ROUND(VALUE(${ref}), ${places})`;
+      if (dialect === "sql")
+        return `ROUND(TRY_CAST(${ref} AS DECIMAL(38, 10)), ${places})`;
+      return `pd.to_numeric(${ref}, errors="coerce").round(${places})`;
+    }
+    if (kind === "date" && structured.dateOutput) {
+      const out = structured.dateOutput;
+      const excel = {
+        "MM/DD/YYYY": "mm/dd/yyyy",
+        "YYYY-MM-DD": "yyyy-mm-dd",
+        YYYYMMDD: "yyyymmdd",
+        "DD.MM.YYYY": "dd.mm.yyyy",
+      }[out];
+      const sqlStyle = {
+        "MM/DD/YYYY": "101",
+        "YYYY-MM-DD": "23",
+        YYYYMMDD: "112",
+        "DD.MM.YYYY": "104",
+      }[out];
+      const py = {
+        "MM/DD/YYYY": "%m/%d/%Y",
+        "YYYY-MM-DD": "%Y-%m-%d",
+        YYYYMMDD: "%Y%m%d",
+        "DD.MM.YYYY": "%d.%m.%Y",
+      }[out];
+      if (dialect === "excel") return `TEXT(${ref}, "${excel}")`;
+      if (dialect === "sql")
+        return `CONVERT(VARCHAR(10), TRY_CONVERT(date, ${ref}), ${sqlStyle})`;
+      return `pd.to_datetime(${ref}, errors="coerce").dt.strftime("${py}")`;
+    }
     if (digits) {
       if (dialect === "excel")
         return `TEXT(${ref}, ${atlasDevExcelString("0".repeat(digits))})`;

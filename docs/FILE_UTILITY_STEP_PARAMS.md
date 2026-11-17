@@ -212,6 +212,168 @@ Map these to a v3 `split` step:
 
 Split Field can now be chosen as a new rule type.
 
+## Format field
+
+| Param                | Value                                                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `format_kind`        | `text`, `trim`, `upper`, `lower`, `number`, `date` or `zeroPad`. Required.               |
+| `format_decimals`    | `"0"`–`"10"`, or `""` to keep the number as it is. Blank unless `format_kind` is number. |
+| `format_date_output` | `MM/DD/YYYY`, `YYYY-MM-DD`, `YYYYMMDD` or `DD.MM.YYYY`. Blank unless the kind is date.   |
+| `format_width`       | `"1"`–`"100"`. Blank unless the kind is `zeroPad`.                                       |
+| `format`             | Mirror for the current compiler. See below.                                              |
+
+A new step starts with no format, so the analyst must choose one. These
+settings match the v3 `format` step (`format`, `decimals`, `dateFormat` and
+`width`).
+
+The `format` mirror is:
+
+- `text`: `"text"`.
+- `number`: `"number"`, or `"number (decimals)"` when `format_decimals` is set.
+- `date`: the date format, such as `"YYYY-MM-DD"`.
+- `zeroPad`: `"<width> digits with leading zeros"`.
+- `trim`, `upper` and `lower`: the kind name.
+
+The current compiler blocks a number with decimals, and blocks `trim`, `upper`
+and `lower`, because it does not know those formats. It runs the others the
+same way as v3.
+
+An older step that has only `format` is mapped when it is opened. For example,
+`"eight digits with leading zeros"` becomes `zeroPad` with width `8`, and
+`"mm/dd/yyyy"` becomes `date` with `MM/DD/YYYY`. Text the builder can't read is
+shown to the analyst, who must choose a format.
+
+```json
+{
+  "source_file": "PA0001",
+  "field_name": "Personnel Number",
+  "format_kind": "zeroPad",
+  "format_decimals": "",
+  "format_date_output": "",
+  "format_width": "8",
+  "format": "8 digits with leading zeros"
+}
+```
+
+## Remove duplicates
+
+These params are unchanged. The builder now reports a step that can't run.
+
+| Param                   | Value                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `duplicate_fields_json` | The key fields, as a JSON list of `{sourceFile, sourceAlias, fieldName}`. At least one required. |
+| `duplicate_action`      | `"Keep first record"`, `"Keep last record"` or `"Drop all duplicated records"`. Required.        |
+
+They map to the contract's `duplicateActions`: `first`, `last` and `none`.
+
+## Conditions
+
+Conditions are stored in `conditions_json` as before: a list of conditions and
+groups. A group is `{"conditionType": "group", "groupConnector": "AND" | "OR",
+"items": [...]}` and is shown as `( )` in the builder. These group params and
+`compareMathJson` (arithmetic on a compared field) already exist.
+
+### Operators
+
+Values and Compare to Field conditions offer the contract's 12 operators:
+
+- `is equal to`
+- `is not equal to`
+- `contains`
+- `does not contain`
+- `starts with`
+- `does not start with`
+- `ends with`
+- `does not end with`
+- `is greater than`
+- `is greater than or equal to`
+- `is less than`
+- `is less than or equal to`
+
+Blank / Null conditions use `is blank/null` and `is not blank/null`.
+
+The Expression value mode and its operators (`matches expression`,
+`does not match expression`) are offered only for a condition that already
+uses them.
+
+### Run parameter
+
+A condition can compare a field with a run parameter. The run date is the only
+run parameter so far.
+
+| Param              | Value                                                                             |
+| ------------------ | --------------------------------------------------------------------------------- |
+| `valueMode`        | `"values"`.                                                                       |
+| `compareParameter` | `"runDate"`.                                                                      |
+| `compareValue`     | Mirror: `"run date"`, which the current compiler reads as `{"param": "runDate"}`. |
+| `operator`         | `is equal to`, `is not equal to`, or one of the greater / less than operators.    |
+
+The builder shows these conditions as the "Run Parameter" value mode. They are
+stored as `values` so that the current compiler runs them correctly.
+
+If the operator is a text match, such as `contains`, the builder leaves
+`compareValue` blank so the current compiler blocks the condition. Audit
+Issues also reports it.
+
+```json
+{
+  "id": "cond_1",
+  "connector": "IF",
+  "sourceFile": "PA0000",
+  "sourceAlias": "sap.pa0000",
+  "fieldName": "End Date",
+  "operator": "is less than",
+  "valueMode": "values",
+  "compareParameter": "runDate",
+  "compareValue": "run date"
+}
+```
+
+Map it to a condition whose `right` is `{"param": <compareParameter>}`, here
+`{"param": "runDate"}`.
+
+### Value lists
+
+| Param           | Value                                                                        |
+| --------------- | ---------------------------------------------------------------------------- |
+| `compareValues` | The values as a JSON array of strings. Written for every `values` condition. |
+| `compareValue`  | The same values, one per line, which the current compiler reads.             |
+
+Read `compareValues` when it is present. Unlike commas in `compareValue`, it
+keeps commas inside a value. `compareValues` is removed for other value modes
+and for run parameter conditions.
+
+## Run settings (`execution`)
+
+These settings are for the whole audit, not one step. They are stored at the
+top level of the audit document as `audit.execution` and set on the Overview
+page in the "Run settings" card. The current compiler already reads them
+(`execution()` in `atlas_compile.py`).
+
+| Key             | Value                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------- |
+| `resultRows`    | `"all_except_excluded"` (default) or `"only_flagged"` (only records a Display Text step wrote on). |
+| `textCombine`   | `"append"` (default) or `"last"`.                                                                  |
+| `textSeparator` | 1–10 characters. The default is `"; "`.                                                            |
+| `resultSource`  | The alias of the source whose table makes up the result. Absent means the last step's table.       |
+
+The builder stores only the keys that differ from the defaults. An audit that
+keeps every default has no `execution` key, so its saved document does not
+change.
+
+```json
+{
+  "execution": {
+    "resultRows": "only_flagged",
+    "textSeparator": " | "
+  }
+}
+```
+
+The `then_text_separator` param on a Display Text step (default `"||"`) is
+used only in the step's ATLAS logic text. `textSeparator` is what File Utility
+places between messages when it adds them together.
+
 ## Audit Issues
 
 The new rule `audit.logic.structured-step-integrity` reports these problems:
@@ -221,5 +383,13 @@ The new rule `audit.logic.structured-step-integrity` reports these problems:
 - A Date difference column that has no date field.
 - A separator longer than 20 characters.
 - A Do Not Display by key that has no key field.
+- A Format field step with no field or format, or with decimals, a date format
+  or a width that is out of range.
+- A Remove duplicates step with no key field, or with an unknown keep choice.
+- A run date condition with an operator it can't use.
 
-These are critical. A legacy written expression is reported as a warning.
+These are critical. Each one opens a fix dialog that sets the missing setting.
+A legacy written expression is reported as a warning.
+
+The Run settings card shows its own problems, such as a separator that is too
+long or a result source that is not loaded.

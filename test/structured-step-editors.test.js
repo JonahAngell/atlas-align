@@ -31,6 +31,10 @@ function load() {
     sourceAliasFor: (source) => (source ? `alias.${source}` : ""),
     fieldsForSource: () => [],
     normalizeCatalogStep: (step) => step,
+    atlasWriteLiveEditorConditions: (step, conditions) => {
+      step.params = step.params || {};
+      step.params.conditions_json = JSON.stringify(conditions);
+    },
     renderCreateModeInputs: (p) => `<base mode="${p.value_mode}">`,
     esc: (value) => String(value ?? ""),
     fieldInputFromOptions: ({ name, value }) =>
@@ -349,4 +353,125 @@ test("a written expression becomes a description and is flagged", () => {
     expression_type: "first_characters",
   };
   assert.equal(ctx.atlasCreateColumnIsWrittenExpression(runnable), false);
+});
+
+test("a run parameter condition is stored as values with a run date mirror", () => {
+  const ctx = load();
+  const leaf = ctx.atlasNormalizeConditionLeaf({
+    id: "c1",
+    fieldName: "End Date",
+    operator: "is less than",
+    valueMode: "parameter",
+    compareValue: "2024-01-01",
+  });
+  assert.equal(leaf.valueMode, "values");
+  assert.equal(leaf.compareParameter, "runDate");
+  assert.equal(leaf.compareValue, "run date");
+  assert.equal(leaf.compareValues, undefined);
+  assert.equal(ctx.atlasConditionUiValueMode(leaf), "parameter");
+  assert.deepEqual(plain(ctx.atlasConditionProblems(leaf)), []);
+  assert.match(ctx.conditionToPlain(leaf, true), /is less than the run date/);
+  assert.match(ctx.atlasDevConditionLeaf(leaf, "sql"), /< @RunDate/);
+
+  const text = ctx.atlasNormalizeConditionLeaf({
+    operator: "contains",
+    valueMode: "parameter",
+  });
+  assert.equal(text.compareValue, "");
+  assert.equal(ctx.atlasConditionProblems(text).length, 1);
+});
+
+test("value lists are kept as arrays and as one value per line", () => {
+  const ctx = load();
+  const leaf = ctx.atlasNormalizeConditionLeaf({
+    valueMode: "values",
+    operator: "is equal to",
+    compareValue: "A\n B \n\nC",
+    compareParameter: "",
+  });
+  assert.deepEqual(plain(leaf.compareValues), ["A", "B", "C"]);
+  assert.equal(leaf.compareValue, "A\nB\nC");
+  assert.equal("compareParameter" in leaf, false);
+  const field = ctx.atlasNormalizeConditionLeaf({
+    valueMode: "field",
+    compareValues: ["x"],
+  });
+  assert.equal(field.compareValues, undefined);
+
+  const step = { params: {} };
+  ctx.atlasWriteLiveEditorConditions(step, [
+    { id: "a", valueMode: "parameter", operator: "is equal to" },
+    {
+      id: "g",
+      conditionType: "group",
+      items: [{ id: "b", valueMode: "values", compareValue: "1\n2" }],
+    },
+  ]);
+  const tree = JSON.parse(step.params.conditions_json);
+  assert.equal(tree[0].compareParameter, "runDate");
+  assert.deepEqual(tree[1].items[0].compareValues, ["1", "2"]);
+});
+
+test("format field maps legacy text and keeps a mirror the compiler reads", () => {
+  const ctx = load();
+  const pad = ctx.atlasNormalizeFormatFieldParams({
+    field_name: "Pernr",
+    format: "eight digits with leading zeros",
+  });
+  assert.equal(pad.format_kind, "zeroPad");
+  assert.equal(pad.format_width, "8");
+  assert.equal(pad.format, "8 digits with leading zeros");
+  assert.deepEqual(plain(ctx.atlasFormatFieldProblems(pad)), []);
+
+  const date = ctx.atlasNormalizeFormatFieldParams({
+    field_name: "Hire Date",
+    format_kind: "date",
+    format_date_output: "YYYY-MM-DD",
+  });
+  assert.equal(date.format, "YYYY-MM-DD");
+
+  // Settings the current compiler can't run get a mirror it blocks.
+  const decimals = ctx.atlasNormalizeFormatFieldParams({
+    field_name: "Rate",
+    format_kind: "number",
+    format_decimals: "2",
+  });
+  assert.equal(decimals.format, "number (decimals)");
+  const upper = ctx.atlasNormalizeFormatFieldParams({
+    field_name: "Name",
+    format_kind: "upper",
+  });
+  assert.equal(upper.format, "upper");
+
+  assert.deepEqual(plain(ctx.atlasFormatFieldProblems({ format: "fancy" })), [
+    "Choose the field.",
+    'The format "fancy" is not a known format. Choose one.',
+  ]);
+  assert.equal(
+    ctx.atlasFormatFieldProblems({
+      field_name: "Code",
+      format_kind: "zeroPad",
+      format_width: "101",
+    }).length,
+    1,
+  );
+});
+
+test("remove duplicates needs key fields and a known keep choice", () => {
+  const ctx = load();
+  assert.deepEqual(
+    plain(ctx.atlasRemoveDuplicatesProblems({ duplicate_action: "Keep any" })),
+    ["Choose at least one key field.", "Choose which record to keep."],
+  );
+  assert.deepEqual(
+    plain(
+      ctx.atlasRemoveDuplicatesProblems({
+        duplicate_fields_json: JSON.stringify([
+          { sourceFile: "PA", fieldName: "Pernr" },
+        ]),
+        duplicate_action: "Keep last record",
+      }),
+    ),
+    [],
+  );
 });

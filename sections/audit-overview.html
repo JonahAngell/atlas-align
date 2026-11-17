@@ -72,10 +72,46 @@
           aria-labelledby="auditStatusLabel"
         >
           <input id="auditStatus" type="hidden" value="Draft" />
-          <button type="button" class="atlas-choice-option is-selected" role="radio" aria-checked="true" data-choice-value="Draft" tabindex="0">Draft</button>
-          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Requirement Gathering" tabindex="-1">Requirement Gathering</button>
-          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Ready for Review" tabindex="-1">Ready for Review</button>
-          <button type="button" class="atlas-choice-option" role="radio" aria-checked="false" data-choice-value="Complete" tabindex="-1">Complete</button>
+          <button
+            type="button"
+            class="atlas-choice-option is-selected"
+            role="radio"
+            aria-checked="true"
+            data-choice-value="Draft"
+            tabindex="0"
+          >
+            Draft
+          </button>
+          <button
+            type="button"
+            class="atlas-choice-option"
+            role="radio"
+            aria-checked="false"
+            data-choice-value="Requirement Gathering"
+            tabindex="-1"
+          >
+            Requirement Gathering
+          </button>
+          <button
+            type="button"
+            class="atlas-choice-option"
+            role="radio"
+            aria-checked="false"
+            data-choice-value="Ready for Review"
+            tabindex="-1"
+          >
+            Ready for Review
+          </button>
+          <button
+            type="button"
+            class="atlas-choice-option"
+            role="radio"
+            aria-checked="false"
+            data-choice-value="Complete"
+            tabindex="-1"
+          >
+            Complete
+          </button>
         </div>
       </div>
       <p
@@ -120,6 +156,21 @@
       </div>
     </section>
   </div>
+  <section
+    class="card"
+    id="atlasExecutionCard"
+    aria-labelledby="atlasExecutionHeading"
+  >
+    <div class="section-title">
+      <strong id="atlasExecutionHeading">Run settings</strong
+      ><span class="badge blue">File Utility</span>
+    </div>
+    <p class="hint">
+      How File Utility builds the result when it runs this audit. The defaults
+      suit most audits.
+    </p>
+    <div class="execution-grid" id="atlasExecutionCardBody"></div>
+  </section>
   <section class="card assignment-card">
     <div class="section-title">
       <strong>Audit Assignments</strong
