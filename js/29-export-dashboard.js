@@ -19,6 +19,8 @@ const ATLAS_EXPORT_MIME_TYPES = Object.freeze({
   html: "text/html",
   csv: "text/csv",
   md: "text/markdown",
+  sql: "application/sql",
+  py: "text/x-python",
 });
 const ATLAS_EXPORT_PREVIEW_LINES = 400;
 const ATLAS_EXPORT_PREVIEW_ROWS = 12;
@@ -72,7 +74,8 @@ function atlasRegisterExportFormat(format) {
       actions: ["download"],
       preview: null,
       hidden: false,
-      mimeType: ATLAS_EXPORT_MIME_TYPES[extension] || "application/octet-stream",
+      mimeType:
+        ATLAS_EXPORT_MIME_TYPES[extension] || "application/octet-stream",
       ...format,
       id,
       extension,
@@ -128,8 +131,10 @@ function atlasExportFileNameValue(format) {
 
 function atlasExportFileName(format) {
   const name =
-    atlasSanitizeExportFileName(atlasExportFileNameValue(format), format.extension) ||
-    atlasExportDefaultFileName(format);
+    atlasSanitizeExportFileName(
+      atlasExportFileNameValue(format),
+      format.extension,
+    ) || atlasExportDefaultFileName(format);
   return format.extension ? `${name}.${format.extension}` : name;
 }
 
@@ -328,7 +333,9 @@ function atlasExportCardHtml(format) {
 }
 
 function atlasRenderExportSize(formatId) {
-  const host = document.querySelector(`[data-export-size="${CSS.escape(formatId)}"]`);
+  const host = document.querySelector(
+    `[data-export-size="${CSS.escape(formatId)}"]`,
+  );
   if (!host) return;
   const entry = atlasExportView.built.get(formatId);
   const current = entry?.generation === atlasExportView.generation;
@@ -532,7 +539,12 @@ async function atlasShowExportPreview(formatId, { toggle = true } = {}) {
   try {
     const result = await atlasBuildExport(format);
     if (sequence !== atlasExportView.previewSequence) return;
-    ATLAS_EXPORT_PREVIEW_RENDERERS[format.preview]?.(body, note, result, format);
+    ATLAS_EXPORT_PREVIEW_RENDERERS[format.preview]?.(
+      body,
+      note,
+      result,
+      format,
+    );
   } catch (error) {
     if (sequence !== atlasExportView.previewSequence) return;
     body.innerHTML = `<p class="export-preview-error" role="alert">The preview could not be built. ${esc(error.message)}</p>`;
@@ -646,6 +658,32 @@ atlasRegisterExportFormat({
   preview: "html",
   fileName: () => `${atlasExportAuditBaseName()}_${today()}`,
   build: () => auditHtmlDocument(),
+});
+atlasRegisterExportFormat({
+  id: "sql",
+  label: "SQL",
+  icon: "file-code",
+  description:
+    "The Audit Logic as one SQL Server query, with a step-by-step CTE chain. Disabled steps are left out.",
+  extension: "sql",
+  tags: ["SQL Server"],
+  actions: ["download", "copy"],
+  preview: "text",
+  fileName: () => `${atlasExportAuditBaseName()}_audit_logic_${today()}`,
+  build: () => buildAuditSqlScript(),
+});
+atlasRegisterExportFormat({
+  id: "python",
+  label: "Python",
+  icon: "file-code",
+  description:
+    "A pandas script that runs the Audit Logic. Fill in the source and output file paths at the top before running.",
+  extension: "py",
+  tags: ["pandas"],
+  actions: ["download", "copy"],
+  preview: "text",
+  fileName: () => `${atlasExportAuditBaseName()}_audit_logic_${today()}`,
+  build: () => buildAuditPythonScript(),
 });
 atlasRegisterExportFormat({
   id: "csv",

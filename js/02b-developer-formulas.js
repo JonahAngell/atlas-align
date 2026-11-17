@@ -270,12 +270,23 @@ function atlasDevFieldSpec(sourceFile, sourceAlias, fieldName) {
   };
 }
 
+/**
+ * Set only while the Python code export builds a script: maps
+ * "alias\u0000field" to the column a pandas merge renamed it to.
+ */
+let atlasDevPythonRenames = null;
+
 /** Row-level reference to a field in one dialect. */
 function atlasDevField(field = {}, dialect) {
   const name = String(field.fieldName || "").trim();
   if (!name) return atlasDevPlaceholder("field", "[field]");
   if (dialect === "excel") return `[@[${atlasDevExcelColumnName(name)}]]`;
-  if (dialect === "python") return `df[${atlasDevPyString(name)}]`;
+  if (dialect === "python") {
+    const renamed = atlasDevPythonRenames?.get(
+      `${atlasDevSourceAlias(field.sourceFile, field.sourceAlias)}\u0000${name}`,
+    );
+    return `df[${atlasDevPyString(renamed || name)}]`;
+  }
   const alias = atlasDevSourceAlias(field.sourceFile, field.sourceAlias);
   return alias && atlasDevFieldIsAmbiguous(name)
     ? `${atlasDevSqlName(alias)}.${atlasDevSqlName(name)}`
