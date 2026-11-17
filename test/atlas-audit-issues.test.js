@@ -977,6 +977,33 @@ test("issue findings name the control and fix kind", async () => {
   assert.equal(joinIssue.severity, "critical");
   assert.equal(joinIssue.actionData.fixKind, "picker");
 
+  // A UNION appends rows and needs no keys, but still needs both sources.
+  const unionStep = (rightSource) => ({
+    id: "union-1",
+    enabled: true,
+    parentId: null,
+    branchType: "root",
+    step_type: "join",
+    params: {
+      join_type: "UNION",
+      left_source: "Source One",
+      right_source: rightSource,
+      left_field: "",
+      right_field: "",
+    },
+  });
+  const unionIssues = async (rightSource) => {
+    const audit = completeAudit();
+    audit.steps = [unionStep(rightSource)];
+    return [
+      ...(await runtime(audit)).ATLASAuditIssues.current()
+        .issues.filter((entry) => entry.ruleId === "audit.logic.join-integrity")
+        .map((entry) => entry.target.control),
+    ];
+  };
+  assert.deepEqual(await unionIssues("Source Two"), []);
+  assert.deepEqual(await unionIssues(""), ["param:right_source"]);
+
   const displayAudit = completeAudit();
   displayAudit.displayFields = [
     { sourceKey: "source.one", rawFieldName: "Status" },

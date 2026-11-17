@@ -1223,21 +1223,23 @@
               summary: "A join has no right source.",
             }),
           );
-        if (blank(p.left_field))
+        // A UNION appends rows, so it has no keys to check.
+        const union = string(p.join_type).trim().toUpperCase() === "UNION";
+        if (!union && blank(p.left_field))
           issues.push(
             joinIssue("left-field", "left_field", "picker", {
               severity: "critical",
               summary: "A join has no left key.",
             }),
           );
-        if (blank(p.right_field))
+        if (!union && blank(p.right_field))
           issues.push(
             joinIssue("right-field", "right_field", "picker", {
               severity: "critical",
               summary: "A join has no right key.",
             }),
           );
-        if (string(p.join_type).trim().toUpperCase() !== "UNION")
+        if (!union)
           joinKeyPairs(p).forEach((pair, keyIndex) => {
             // The first pair is the mirrored left_field/right_field checked above.
             if (
