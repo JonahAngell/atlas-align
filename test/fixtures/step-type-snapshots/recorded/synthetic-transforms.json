@@ -1,0 +1,1143 @@
+{
+  "entries": [
+    {
+      "id": "ref-wd",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "join-note-manual",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "format-1",
+      "number": "3",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "format-2",
+      "number": "4",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "format-3",
+      "number": "5",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "format-4",
+      "number": "6",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "format-5",
+      "number": "7",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "sort-single",
+      "number": "8",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "sort-multi",
+      "number": "9",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "dupes-1",
+      "number": "10",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "dupes-2",
+      "number": "11",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "dupes-3",
+      "number": "12",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "split-legacy",
+      "number": "13",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "filter-keep",
+      "number": "14",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "filter-exclude",
+      "number": "15",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "flag-text",
+      "number": "16",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "flag-hide",
+      "number": "17",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "ref-wd",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd\" as \"wd\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "formulas": {
+        "excel": "=wd",
+        "sql": "SELECT * FROM [wd] AS [wd]",
+        "python": "df = sources[\"wd\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>WD_Workers</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference Source",
+        "params": {
+          "source_file": "wd",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "format-1",
+      "stepType": "format_field",
+      "english": "Format file \"wd\" column \"Worker ID\" as text.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"@\")\n\nSQL Server:\nCAST([Worker ID] AS NVARCHAR(4000)) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")",
+      "formulas": {
+        "excel": "=TEXT([@[Worker ID]], \"@\")",
+        "sql": "CAST([Worker ID] AS NVARCHAR(4000)) AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: text\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">text</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"text\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"-1\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"text\" tabindex=\"0\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "text"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "format": "text"
+        }
+      }
+    },
+    {
+      "id": "format-2",
+      "stepType": "format_field",
+      "english": "Format file \"wd\" column \"Worker ID\" as number.",
+      "autoNotes": "",
+      "developer": "Excel:\n=VALUE([@[Worker ID]])\n\nSQL Server:\nTRY_CAST([Worker ID] AS DECIMAL(38, 10)) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = pd.to_numeric(df[\"Worker ID\"], errors=\"coerce\")",
+      "formulas": {
+        "excel": "=VALUE([@[Worker ID]])",
+        "sql": "TRY_CAST([Worker ID] AS DECIMAL(38, 10)) AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = pd.to_numeric(df[\"Worker ID\"], errors=\"coerce\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: number\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">number</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"number\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"-1\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"number\" tabindex=\"0\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "number"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "format": "number"
+        }
+      }
+    },
+    {
+      "id": "format-3",
+      "stepType": "format_field",
+      "english": "Format file \"wd\" column \"Worker ID\" as date format MM/DD/YYYY.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"mm/dd/yyyy\")\n\nSQL Server:\nCONVERT(VARCHAR(10), TRY_CONVERT(date, [Worker ID]), 101) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = pd.to_datetime(df[\"Worker ID\"], errors=\"coerce\").dt.strftime(\"%m/%d/%Y\")",
+      "formulas": {
+        "excel": "=TEXT([@[Worker ID]], \"mm/dd/yyyy\")",
+        "sql": "CONVERT(VARCHAR(10), TRY_CONVERT(date, [Worker ID]), 101) AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = pd.to_datetime(df[\"Worker ID\"], errors=\"coerce\").dt.strftime(\"%m/%d/%Y\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: date format MM/DD/YYYY\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">date format MM/DD/YYYY</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"date format MM/DD/YYYY\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"-1\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"0\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "date format MM/DD/YYYY"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "format": "date format MM/DD/YYYY"
+        }
+      }
+    },
+    {
+      "id": "format-4",
+      "stepType": "format_field",
+      "english": "Format file \"wd\" column \"Worker ID\" as eight digits with leading zeroes.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)",
+      "formulas": {
+        "excel": "=TEXT([@[Worker ID]], \"00000000\")",
+        "sql": "RIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "eight digits with leading zeroes"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "format": "eight digits with leading zeroes"
+        }
+      }
+    },
+    {
+      "id": "format-5",
+      "stepType": "format_field",
+      "english": "Format file \"wd\" column \"Worker ID\" as currency with two decimals.",
+      "autoNotes": "",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"currency with two decimals\")\n\nSQL Server:\nFORMAT([Worker ID], 'currency with two decimals') AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")\n\nNote: Format \"currency with two decimals\" is not a standard option. Check the formulas before running.",
+      "formulas": {
+        "excel": "=TEXT([@[Worker ID]], \"currency with two decimals\")",
+        "sql": "FORMAT([Worker ID], 'currency with two decimals') AS [Worker ID]",
+        "python": "df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")",
+        "notes": [
+          "Note: Format \"currency with two decimals\" is not a standard option. Check the formulas before running."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Format Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Format: eight digits with leading zeroes\"><span class=\"atlas-choice-heading\">Format</span><span class=\"atlas-choice-current\">eight digits with leading zeroes</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Format\"><input type=\"hidden\" data-param=\"format\" value=\"eight digits with leading zeroes\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"eight digits with leading zeroes\" tabindex=\"0\"><span class=\"atlas-choice-label\">eight digits with leading zeroes</span><span class=\"atlas-choice-description\">Pad the value to eight digits.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"date format MM/DD/YYYY\" tabindex=\"-1\"><span class=\"atlas-choice-label\">date format MM/DD/YYYY</span><span class=\"atlas-choice-description\">Show the value as a date.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">text</span><span class=\"atlas-choice-description\">Keep the value as text.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"number\" tabindex=\"-1\"><span class=\"atlas-choice-label\">number</span><span class=\"atlas-choice-description\">Keep the value as a number.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "format_field",
+        "params": {
+          "format": "currency with two decimals"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "format_field",
+        "type": "transform",
+        "title": "Format Field",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Worker ID",
+          "format": "currency with two decimals"
+        }
+      }
+    },
+    {
+      "id": "sort-single",
+      "stepType": "sort_records",
+      "english": "Sort records by file \"wd\" column \"Hire Date\" in Descending order.",
+      "autoNotes": "",
+      "developer": "Excel:\n=SORTBY(wd, wd[Hire Date], -1)\n\nSQL Server:\nORDER BY [Hire Date] DESC\n\nPython (pandas):\ndf = df.sort_values([\"Hire Date\"], ascending=[False], kind=\"stable\")",
+      "formulas": {
+        "excel": "=SORTBY(wd, wd[Hire Date], -1)",
+        "sql": "ORDER BY [Hire Date] DESC",
+        "python": "df = df.sort_values([\"Hire Date\"], ascending=[False], kind=\"stable\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Sort Records</h4><div class=\"sort-fields-editor\" data-sort-editor><input type=\"hidden\" data-param=\"sort_fields_json\" data-sort-json value=\"[{&quot;id&quot;:&quot;sort_00000000&quot;,&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Hire Date&quot;,&quot;direction&quot;:&quot;Descending&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><input type=\"hidden\" data-param=\"field_name\" value=\"Hire Date\"><input type=\"hidden\" data-param=\"sort_direction\" value=\"Descending\"><div class=\"sort-fields-header\"><strong>Sort fields</strong><button type=\"button\" class=\"secondary small\" data-add-sort-field>Add Field</button></div><p class=\"hint\">Fields are applied in listed order. Later fields break ties in earlier ones.</p><div class=\"sort-field-list\"><div class=\"sort-field-row\" data-sort-row data-sort-id=\"sort_00000000\"><span class=\"sort-field-position\" data-sort-position aria-hidden=\"true\">1</span><div class=\"sort-field-picker\"><input type=\"hidden\" data-sort-source value=\"wd\"><input type=\"hidden\" data-sort-field value=\"Hire Date\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"sort_field\" data-picker-source=\"\" aria-label=\"Choose Hire Date\"><span class=\"visual-picker-trigger-copy\"><strong>Hire Date</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></div><div class=\"sort-field-direction\"><input type=\"hidden\" data-sort-direction value=\"Descending\"><button type=\"button\" class=\"sort-direction-toggle\" data-sort-direction-toggle aria-label=\"Sort direction: descending. Activate to sort ascending.\" title=\"Descending\"><svg class=\"app-icon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 4.5v15M3 16.5l3 3 3-3\"/><path d=\"M12 6h8.5M12 12h6M12 18h3.5\"/></svg></button></div><button type=\"button\" class=\"secondary small sort-field-remove\" data-remove-sort-field aria-label=\"Remove Hire Date\">Remove</button></div></div><div class=\"empty-state sort-fields-empty\" data-sort-empty hidden><p>No sort fields yet. Add a field to choose how records are ordered.</p></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "sort_records",
+        "params": {
+          "sort_direction": "Descending"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "sort_records",
+        "type": "transform",
+        "title": "Sort Records",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Hire Date",
+          "sort_direction": "Descending",
+          "sort_fields_json": "[{\"id\":\"sort_00000000\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Hire Date\",\"direction\":\"Descending\"}]",
+          "source_alias": "wd"
+        }
+      }
+    },
+    {
+      "id": "sort-multi",
+      "stepType": "sort_records",
+      "english": "Sort records by file \"wd\" column \"Country\" in Ascending order, then by column \"Pay\" in Descending order.",
+      "autoNotes": "",
+      "developer": "Excel:\n=SORTBY(wd, wd[Country], 1, wd[Pay], -1)\n\nSQL Server:\nORDER BY [Country] ASC, [Pay] DESC\n\nPython (pandas):\ndf = df.sort_values([\"Country\", \"Pay\"], ascending=[True, False], kind=\"stable\")",
+      "formulas": {
+        "excel": "=SORTBY(wd, wd[Country], 1, wd[Pay], -1)",
+        "sql": "ORDER BY [Country] ASC, [Pay] DESC",
+        "python": "df = df.sort_values([\"Country\", \"Pay\"], ascending=[True, False], kind=\"stable\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Sort Records</h4><div class=\"sort-fields-editor\" data-sort-editor><input type=\"hidden\" data-param=\"sort_fields_json\" data-sort-json value=\"[{&quot;id&quot;:&quot;sort_00000000&quot;,&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Country&quot;,&quot;direction&quot;:&quot;Ascending&quot;},{&quot;id&quot;:&quot;sort_00000000&quot;,&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Pay&quot;,&quot;direction&quot;:&quot;Descending&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><input type=\"hidden\" data-param=\"field_name\" value=\"Country\"><input type=\"hidden\" data-param=\"sort_direction\" value=\"Ascending\"><div class=\"sort-fields-header\"><strong>Sort fields</strong><button type=\"button\" class=\"secondary small\" data-add-sort-field>Add Field</button></div><p class=\"hint\">Fields are applied in listed order. Later fields break ties in earlier ones.</p><div class=\"sort-field-list\"><div class=\"sort-field-row\" data-sort-row data-sort-id=\"sort_00000000\"><span class=\"sort-field-position\" data-sort-position aria-hidden=\"true\">1</span><div class=\"sort-field-picker\"><input type=\"hidden\" data-sort-source value=\"wd\"><input type=\"hidden\" data-sort-field value=\"Country\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"sort_field\" data-picker-source=\"\" aria-label=\"Choose Country\"><span class=\"visual-picker-trigger-copy\"><strong>Country</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></div><div class=\"sort-field-direction\"><input type=\"hidden\" data-sort-direction value=\"Ascending\"><button type=\"button\" class=\"sort-direction-toggle\" data-sort-direction-toggle aria-label=\"Sort direction: ascending. Activate to sort descending.\" title=\"Ascending\"><svg class=\"app-icon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 19.5V4.5M3 7.5l3-3 3 3\"/><path d=\"M12 6h3.5M12 12h6M12 18h8.5\"/></svg></button></div><button type=\"button\" class=\"secondary small sort-field-remove\" data-remove-sort-field aria-label=\"Remove Country\">Remove</button></div><div class=\"sort-field-row\" data-sort-row data-sort-id=\"sort_00000000\"><span class=\"sort-field-position\" data-sort-position aria-hidden=\"true\">2</span><div class=\"sort-field-picker\"><input type=\"hidden\" data-sort-source value=\"wd\"><input type=\"hidden\" data-sort-field value=\"Pay\"><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"sort_field\" data-picker-source=\"\" aria-label=\"Choose Pay\"><span class=\"visual-picker-trigger-copy\"><strong>Pay</strong><small>wd</small></span><span aria-hidden=\"true\">⌄</span></button></div><div class=\"sort-field-direction\"><input type=\"hidden\" data-sort-direction value=\"Descending\"><button type=\"button\" class=\"sort-direction-toggle\" data-sort-direction-toggle aria-label=\"Sort direction: descending. Activate to sort ascending.\" title=\"Descending\"><svg class=\"app-icon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" aria-hidden=\"true\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 4.5v15M3 16.5l3 3 3-3\"/><path d=\"M12 6h8.5M12 12h6M12 18h3.5\"/></svg></button></div><button type=\"button\" class=\"secondary small sort-field-remove\" data-remove-sort-field aria-label=\"Remove Pay\">Remove</button></div></div><div class=\"empty-state sort-fields-empty\" data-sort-empty hidden><p>No sort fields yet. Add a field to choose how records are ordered.</p></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "sort_records",
+        "type": "transform",
+        "title": "Sort Records",
+        "params": {
+          "source_file": "wd",
+          "sort_fields_json": "[{\"id\":\"sort_00000000\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Country\",\"direction\":\"Ascending\"},{\"id\":\"sort_00000000\",\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Pay\",\"direction\":\"Descending\"}]",
+          "sort_direction": "Ascending",
+          "source_alias": "wd",
+          "field_name": "Country"
+        }
+      }
+    },
+    {
+      "id": "dupes-1",
+      "stepType": "remove_duplicates",
+      "english": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the first record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=COUNTIFS(INDEX(wd[Worker ID], 1):[@[Worker ID]], [@[Worker ID]], INDEX(wd[Position], 1):[@[Position]], [@[Position]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"first\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "formulas": {
+        "excel": "=COUNTIFS(INDEX(wd[Worker ID], 1):[@[Worker ID]], [@[Worker ID]], INDEX(wd[Position], 1):[@[Position]], [@[Position]])=1",
+        "sql": "ROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1",
+        "python": "df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"first\")",
+        "notes": [
+          "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Remove Duplicates</h4><div class=\"duplicate-fields-editor\" data-duplicate-editor><input type=\"hidden\" data-param=\"duplicate_fields_json\" data-duplicate-json value=\"[{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Worker ID&quot;},{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Position&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><input type=\"hidden\" data-param=\"field_name\" value=\"Worker ID\"><div class=\"duplicate-fields-header\"><span class=\"atlas-choice-heading\">Columns to Match</span><span class=\"hint\">A record is a duplicate when every selected column matches another record.</span></div><ul class=\"duplicate-field-list\" aria-label=\"Columns that must match\"><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Worker ID\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Worker ID</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Worker ID\" aria-label=\"Remove column Worker ID from file wd\">Remove</button></li><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Position\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Position</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Position\" aria-label=\"Remove column Position from file wd\">Remove</button></li></ul><div class=\"duplicate-fields-actions\"><button type=\"button\" class=\"secondary small\" data-add-duplicate-field>Add Columns</button></div></div><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Keep: Keep first\"><span class=\"atlas-choice-heading\">Records to Keep</span><span class=\"atlas-choice-current\">Keep first</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to keep\"><input type=\"hidden\" data-param=\"duplicate_action\" value=\"Keep first record\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Keep first record\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep first</span><span class=\"atlas-choice-description\">Keep the earliest matching record.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Drop all duplicated records\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep none</span><span class=\"atlas-choice-description\">Remove every record that has a duplicate.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep last record\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep last</span><span class=\"atlas-choice-description\">Keep the latest matching record.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "remove_duplicates",
+        "type": "transform",
+        "title": "Remove Duplicates",
+        "params": {
+          "source_file": "wd",
+          "duplicate_action": "Keep first record",
+          "duplicate_fields_json": "[{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Worker ID\"},{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Position\"}]",
+          "source_alias": "wd",
+          "field_name": "Worker ID"
+        }
+      }
+    },
+    {
+      "id": "dupes-2",
+      "stepType": "remove_duplicates",
+      "english": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the last record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=COUNTIFS([@[Worker ID]]:INDEX(wd[Worker ID], ROWS(wd[Worker ID])), [@[Worker ID]], [@[Position]]:INDEX(wd[Position], ROWS(wd[Position])), [@[Position]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank], COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Rank] = [Duplicate Count]\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"last\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "formulas": {
+        "excel": "=COUNTIFS([@[Worker ID]]:INDEX(wd[Worker ID], ROWS(wd[Worker ID])), [@[Worker ID]], [@[Position]]:INDEX(wd[Position], ROWS(wd[Position])), [@[Position]])=1",
+        "sql": "ROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank], COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Rank] = [Duplicate Count]",
+        "python": "df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"last\")",
+        "notes": [
+          "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Remove Duplicates</h4><div class=\"duplicate-fields-editor\" data-duplicate-editor><input type=\"hidden\" data-param=\"duplicate_fields_json\" data-duplicate-json value=\"[{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Worker ID&quot;},{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Position&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><input type=\"hidden\" data-param=\"field_name\" value=\"Worker ID\"><div class=\"duplicate-fields-header\"><span class=\"atlas-choice-heading\">Columns to Match</span><span class=\"hint\">A record is a duplicate when every selected column matches another record.</span></div><ul class=\"duplicate-field-list\" aria-label=\"Columns that must match\"><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Worker ID\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Worker ID</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Worker ID\" aria-label=\"Remove column Worker ID from file wd\">Remove</button></li><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Position\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Position</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Position\" aria-label=\"Remove column Position from file wd\">Remove</button></li></ul><div class=\"duplicate-fields-actions\"><button type=\"button\" class=\"secondary small\" data-add-duplicate-field>Add Columns</button></div></div><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Keep: Keep last\"><span class=\"atlas-choice-heading\">Records to Keep</span><span class=\"atlas-choice-current\">Keep last</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to keep\"><input type=\"hidden\" data-param=\"duplicate_action\" value=\"Keep last record\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep first record\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep first</span><span class=\"atlas-choice-description\">Keep the earliest matching record.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Drop all duplicated records\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep none</span><span class=\"atlas-choice-description\">Remove every record that has a duplicate.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Keep last record\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep last</span><span class=\"atlas-choice-description\">Keep the latest matching record.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "remove_duplicates",
+        "type": "transform",
+        "title": "Remove Duplicates",
+        "params": {
+          "source_file": "wd",
+          "duplicate_action": "Keep last record",
+          "duplicate_fields_json": "[{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Worker ID\"},{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Position\"}]",
+          "source_alias": "wd",
+          "field_name": "Worker ID"
+        }
+      }
+    },
+    {
+      "id": "dupes-3",
+      "stepType": "remove_duplicates",
+      "english": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep none of the duplicated records.",
+      "autoNotes": "",
+      "developer": "Excel:\n=COUNTIFS(wd[Worker ID], [@[Worker ID]], wd[Position], [@[Position]])=1\n\nSQL Server:\nCOUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Count] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=False)\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "formulas": {
+        "excel": "=COUNTIFS(wd[Worker ID], [@[Worker ID]], wd[Position], [@[Position]])=1",
+        "sql": "COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Count] = 1",
+        "python": "df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=False)",
+        "notes": [
+          "Note: Keep rows where the Excel formula returns TRUE. First and last follow the current row order."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Remove Duplicates</h4><div class=\"duplicate-fields-editor\" data-duplicate-editor><input type=\"hidden\" data-param=\"duplicate_fields_json\" data-duplicate-json value=\"[{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Worker ID&quot;},{&quot;sourceFile&quot;:&quot;wd&quot;,&quot;sourceAlias&quot;:&quot;wd&quot;,&quot;fieldName&quot;:&quot;Position&quot;}]\"><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><input type=\"hidden\" data-param=\"field_name\" value=\"Worker ID\"><div class=\"duplicate-fields-header\"><span class=\"atlas-choice-heading\">Columns to Match</span><span class=\"hint\">A record is a duplicate when every selected column matches another record.</span></div><ul class=\"duplicate-field-list\" aria-label=\"Columns that must match\"><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Worker ID\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Worker ID</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Worker ID\" aria-label=\"Remove column Worker ID from file wd\">Remove</button></li><li class=\"duplicate-field-row\" data-duplicate-field=\"wd::Position\"><span class=\"visual-picker-pill duplicate-field-source\" style=\"--source-color:#b3f5ff\"><span class=\"visual-picker-pill-main\">wd</span></span><span class=\"duplicate-field-name\">Position</span><button type=\"button\" class=\"secondary small duplicate-field-remove\" data-remove-duplicate-field=\"wd::Position\" aria-label=\"Remove column Position from file wd\">Remove</button></li></ul><div class=\"duplicate-fields-actions\"><button type=\"button\" class=\"secondary small\" data-add-duplicate-field>Add Columns</button></div></div><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Records to Keep: Keep none\"><span class=\"atlas-choice-heading\">Records to Keep</span><span class=\"atlas-choice-current\">Keep none</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Records to keep\"><input type=\"hidden\" data-param=\"duplicate_action\" value=\"Drop all duplicated records\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep first record\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep first</span><span class=\"atlas-choice-description\">Keep the earliest matching record.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Drop all duplicated records\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep none</span><span class=\"atlas-choice-description\">Remove every record that has a duplicate.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep last record\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep last</span><span class=\"atlas-choice-description\">Keep the latest matching record.</span></button></div></div></div></div></div></div>",
+      "textImport": {
+        "ok": false
+      },
+      "normalizedStep": {
+        "step_type": "remove_duplicates",
+        "type": "transform",
+        "title": "Remove Duplicates",
+        "params": {
+          "source_file": "wd",
+          "duplicate_action": "Drop all duplicated records",
+          "duplicate_fields_json": "[{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Worker ID\"},{\"sourceFile\":\"wd\",\"sourceAlias\":\"wd\",\"fieldName\":\"Position\"}]",
+          "source_alias": "wd",
+          "field_name": "Worker ID"
+        }
+      }
+    },
+    {
+      "id": "split-legacy",
+      "stepType": "split_field",
+      "english": "Split file \"wd\" column \"Legal Name\" on the \"space\" and display first value in column \"First Name\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=INDEX(TEXTSPLIT([@[Legal Name]], \" \"), 1)\n\nSQL Server:\nLEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name]\n\nPython (pandas):\ndf[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", regex=False).str[0]",
+      "formulas": {
+        "excel": "=INDEX(TEXTSPLIT([@[Legal Name]], \" \"), 1)",
+        "sql": "LEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name]",
+        "python": "df[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", regex=False).str[0]",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Split Field</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Legal Name</strong><small>wd.Legal Name</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Split On<input data-param=\"split_on\" value=\"space\"></label><label>Display Part<input data-param=\"split_part\" value=\"first value\" placeholder=\"e.g., first value\"></label><label>Output Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>First Name</strong><small>First Name</small></span><span aria-hidden=\"true\">⌄</span></button></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "split_field",
+        "params": {
+          "split_on": "space",
+          "split_part": "first value",
+          "output_column": "First Name"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "split_field",
+        "type": "transform",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Legal Name",
+          "split_on": "space",
+          "split_part": "first value",
+          "output_column": "First Name"
+        }
+      }
+    },
+    {
+      "id": "filter-keep",
+      "stepType": "filter_rows",
+      "english": "IF file \"wd\" column \"Status\" is equal to \"Active\", THEN Keep matching rows.",
+      "autoNotes": "",
+      "developer": "Excel:\n=[@[Status]]=\"Active\"\n\nSQL Server:\nWHERE [Status] = 'Active'\n\nPython (pandas):\nmask = df[\"Status\"] == \"Active\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "formulas": {
+        "excel": "=[@[Status]]=\"Active\"",
+        "sql": "WHERE [Status] = 'Active'",
+        "python": "mask = df[\"Status\"] == \"Active\"\ndf = df[mask]",
+        "notes": [
+          "Note: Display - Keep only rows that match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Filter Rows</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Status</strong><small>wd.Status</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Operator: is equal to\"><span class=\"atlas-choice-heading\">Operator</span><span class=\"atlas-choice-current\">is equal to</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-chips\" role=\"radiogroup\" aria-label=\"Operator\"><input type=\"hidden\" data-param=\"operator\" value=\"is equal to\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"is equal to\" tabindex=\"0\"><span class=\"atlas-choice-label\">is equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not equal to\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"contains\" tabindex=\"-1\"><span class=\"atlas-choice-label\">contains</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"does not contain\" tabindex=\"-1\"><span class=\"atlas-choice-label\">does not contain</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is greater than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is greater than</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is less than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is less than</span></button></div></div></div></div><label>Compare Value<textarea data-param=\"compare_value\" placeholder=\"One or more values\">Active</textarea></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Filter Action</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Filter action\"><input type=\"hidden\" data-param=\"filter_action\" value=\"Keep matching rows\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Keep matching rows\" tabindex=\"0\"><span class=\"atlas-choice-label\">Keep matching rows</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Exclude matching rows\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Exclude matching rows</span></button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "filter_rows",
+        "params": {
+          "operator": "is equal to",
+          "compare_value": "Active",
+          "filter_action": "Keep matching rows"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "filter_rows",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Status",
+          "operator": "is equal to",
+          "compare_value": "Active",
+          "filter_action": "Keep matching rows"
+        }
+      }
+    },
+    {
+      "id": "filter-exclude",
+      "stepType": "filter_rows",
+      "english": "IF file \"wd\" column \"Status\" is not equal to \"Active\", THEN Exclude matching rows.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[Status]]<>\"Active\")\n\nSQL Server:\nWHERE NOT ([Status] <> 'Active')\n\nPython (pandas):\nmask = df[\"Status\"] != \"Active\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Status]]<>\"Active\")",
+        "sql": "WHERE NOT ([Status] <> 'Active')",
+        "python": "mask = df[\"Status\"] != \"Active\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Filter Rows</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Status</strong><small>wd.Status</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Operator: is not equal to\"><span class=\"atlas-choice-heading\">Operator</span><span class=\"atlas-choice-current\">is not equal to</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-chips\" role=\"radiogroup\" aria-label=\"Operator\"><input type=\"hidden\" data-param=\"operator\" value=\"is not equal to\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is equal to\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is equal to</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"is not equal to\" tabindex=\"0\"><span class=\"atlas-choice-label\">is not equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"contains\" tabindex=\"-1\"><span class=\"atlas-choice-label\">contains</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"does not contain\" tabindex=\"-1\"><span class=\"atlas-choice-label\">does not contain</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is greater than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is greater than</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is less than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is less than</span></button></div></div></div></div><label>Compare Value<textarea data-param=\"compare_value\" placeholder=\"One or more values\">Active</textarea></label><div class=\"atlas-choice-field\"><span class=\"atlas-choice-heading\">Filter Action</span><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Filter action\"><input type=\"hidden\" data-param=\"filter_action\" value=\"Exclude matching rows\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"Keep matching rows\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Keep matching rows</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"Exclude matching rows\" tabindex=\"0\"><span class=\"atlas-choice-label\">Exclude matching rows</span></button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "filter_rows",
+        "params": {
+          "operator": "is not equal to",
+          "compare_value": "Active",
+          "filter_action": "Exclude matching rows"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "filter_rows",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Status",
+          "operator": "is not equal to",
+          "compare_value": "Active",
+          "filter_action": "Exclude matching rows"
+        }
+      }
+    },
+    {
+      "id": "flag-text",
+      "stepType": "flag_records",
+      "english": "IF file \"wd\" column \"Email\" is blank/null, THEN display text response \"Missing email\" in column \"Error Message\".",
+      "autoNotes": "",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Email]]))=0, IF([@[Error Message]]=\"\", \"Missing email\", [@[Error Message]]&\"||\"&\"Missing email\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Email])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Missing email') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Email\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Missing email\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "formulas": {
+        "excel": "=IF(LEN(TRIM([@[Email]]))=0, IF([@[Error Message]]=\"\", \"Missing email\", [@[Error Message]]&\"||\"&\"Missing email\"), [@[Error Message]])",
+        "sql": "CASE WHEN NULLIF(LTRIM(RTRIM([Email])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Missing email') ELSE [Error Message] END AS [Error Message]",
+        "python": "mask = df[\"Email\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Missing email\"",
+        "notes": [
+          "Note: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\"."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Flag Records</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Email</strong><small>wd.Email</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Operator: is equal to\"><span class=\"atlas-choice-heading\">Operator</span><span class=\"atlas-choice-current\">is equal to</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-chips\" role=\"radiogroup\" aria-label=\"Operator\"><input type=\"hidden\" data-param=\"operator\" value=\"is equal to\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"is equal to\" tabindex=\"0\"><span class=\"atlas-choice-label\">is equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not equal to\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"contains\" tabindex=\"-1\"><span class=\"atlas-choice-label\">contains</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"does not contain\" tabindex=\"-1\"><span class=\"atlas-choice-label\">does not contain</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is greater than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is greater than</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is less than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is less than</span></button></div></div></div></div><label>Compare Value<textarea data-param=\"compare_value\" placeholder=\"One or more values\"></textarea></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Flag Action: Display text response\"><span class=\"atlas-choice-heading\">Flag Action</span><span class=\"atlas-choice-current\">Display text response</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Flag action\"><input type=\"hidden\" data-param=\"flag_action\" value=\"display_text\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display_text\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display text response</span><span class=\"atlas-choice-description\">Show a message for the matching record.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"do_not_display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Do not display record</span><span class=\"atlas-choice-description\">Hide the matching record.</span></button></div></div></div></div><label>Message<input data-param=\"message\" value=\"Missing email\"></label><label>Output Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "flag_records",
+        "params": {
+          "operator": "is blank/null",
+          "compare_value": "",
+          "flag_action": "display_text",
+          "message": "Missing email",
+          "output_column": "Error Message"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "flag_records",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Email",
+          "operator": "is blank/null",
+          "flag_action": "display_text",
+          "message": "Missing email",
+          "output_column": "Error Message"
+        }
+      }
+    },
+    {
+      "id": "flag-hide",
+      "stepType": "flag_records",
+      "english": "IF file \"wd\" column \"Status\" is equal to \"Terminated\", THEN do NOT display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[Status]]=\"Terminated\")\n\nSQL Server:\nWHERE NOT ([Status] = 'Terminated')\n\nPython (pandas):\nmask = df[\"Status\"] == \"Terminated\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Status]]=\"Terminated\")",
+        "sql": "WHERE NOT ([Status] = 'Terminated')",
+        "python": "mask = df[\"Status\"] == \"Terminated\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Flag Records</h4><input type=\"hidden\" data-param=\"source_file\" value=\"wd\"><input type=\"hidden\" data-param=\"source_alias\" value=\"wd\"><label>Field<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"field_name\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Status</strong><small>wd.Status</small></span><span aria-hidden=\"true\">⌄</span></button></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Operator: is equal to\"><span class=\"atlas-choice-heading\">Operator</span><span class=\"atlas-choice-current\">is equal to</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-pills\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-chips\" role=\"radiogroup\" aria-label=\"Operator\"><input type=\"hidden\" data-param=\"operator\" value=\"is equal to\"><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"is equal to\" tabindex=\"0\"><span class=\"atlas-choice-label\">is equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not equal to\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not equal to</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"contains\" tabindex=\"-1\"><span class=\"atlas-choice-label\">contains</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"does not contain\" tabindex=\"-1\"><span class=\"atlas-choice-label\">does not contain</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is not blank\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is not blank</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is greater than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is greater than</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"is less than\" tabindex=\"-1\"><span class=\"atlas-choice-label\">is less than</span></button></div></div></div></div><label>Compare Value<textarea data-param=\"compare_value\" placeholder=\"One or more values\">Terminated</textarea></label><div class=\"atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Flag Action: Do not display record\"><span class=\"atlas-choice-heading\">Flag Action</span><span class=\"atlas-choice-current\">Do not display record</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"Flag action\"><input type=\"hidden\" data-param=\"flag_action\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display text response</span><span class=\"atlas-choice-description\">Show a message for the matching record.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do not display record</span><span class=\"atlas-choice-description\">Hide the matching record.</span></button></div></div></div></div><label>Message<input data-param=\"message\" value=\"\"></label><label>Output Column<button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"output_column\" data-picker-source=\"\" data-source-key=\"\" style=\"\"><span class=\"visual-picker-trigger-copy\"><strong>Error Message</strong><small>Error Message</small></span><span aria-hidden=\"true\">⌄</span></button></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "flag_records",
+        "params": {
+          "operator": "is equal to",
+          "compare_value": "Terminated",
+          "flag_action": "do_not_display"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "flag_records",
+        "type": "if",
+        "title": "Logic Step",
+        "params": {
+          "source_file": "wd",
+          "field_name": "Status",
+          "operator": "is equal to",
+          "compare_value": "Terminated",
+          "flag_action": "do_not_display"
+        }
+      }
+    },
+    {
+      "id": "join-note-manual",
+      "stepType": "join",
+      "english": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "autoNotes": "A LEFT JOIN keeps every record from file 1 (wd) and adds matching details from file 2 (sap) when a match is found. Rows in file 2 (sap) will not be kept if the keys \"Worker ID\" / \"PERNR\" do not match. As a result, rows from file 1 (wd) may contain NULL values if no match is found in file 2 (sap).",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+      "formulas": {
+        "lead": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".",
+        "excel": "=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")",
+        "sql": "FROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]",
+        "python": "df = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"guided-builder join-guided-builder\"><h4>Join</h4><div class=\"join-type-trigger\"><span>Join Type</span><input type=\"hidden\" data-param=\"join_type\" value=\"LEFT JOIN\"><div class=\"join-type-trigger-row\"><span class=\"join-type-value-pill\">LEFT JOIN</span><button type=\"button\" class=\"btn secondary small\" data-open-join-picker=\"join-note-manual\">Choose Join Type</button></div><p class=\"hint\">All rows from the left source, plus matching rows from the right source.</p></div><div class=\"condition-values-editor join-keys-editor full\" data-join-keys-editor role=\"group\" aria-labelledby=\"join-keys-heading-join-note-manual\"><input type=\"hidden\" data-param=\"left_source\" value=\"wd\"><input type=\"hidden\" data-param=\"right_source\" value=\"sap\"><input type=\"hidden\" data-param=\"left_field\" value=\"Worker ID\"><input type=\"hidden\" data-param=\"right_field\" value=\"PERNR\"><input type=\"hidden\" data-param=\"join_keys_json\" data-join-keys-json value=\"[{&quot;id&quot;:&quot;joinkey-1&quot;,&quot;left_field&quot;:&quot;Worker ID&quot;,&quot;right_field&quot;:&quot;PERNR&quot;}]\"><div class=\"title-row compact-row\"><span class=\"join-keys-heading\" id=\"join-keys-heading-join-note-manual\">Join Keys</span><button type=\"button\" class=\"secondary small\" data-add-join-key>Add Key Pair</button></div><p class=\"hint\">Rows match only when every key pair matches.</p><div class=\"condition-values-list join-keys-list\"><div class=\"condition-value-row join-key-row\" data-join-key-row data-join-key-id=\"joinkey-1\"><input type=\"hidden\" data-join-key-left value=\"Worker ID\"><input type=\"hidden\" data-join-key-right value=\"PERNR\"><div class=\"join-key-fields\"><div class=\"join-key-field\" data-join-key-side=\"left\"><span class=\"join-key-side-label\">Left Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_left_field\" data-picker-source=\"wd\" data-source-key=\"wd\" style=\"--source-color:#b3f5ff\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>Worker ID</strong><small>wd.Worker ID</small></span><span aria-hidden=\"true\">⌄</span></button></div><span class=\"join-key-equals\" aria-hidden=\"true\">=</span><div class=\"join-key-field\" data-join-key-side=\"right\"><span class=\"join-key-side-label\">Right Field</span><button type=\"button\" class=\"visual-picker-trigger-button field-token \" data-open-mini-picker=\"field\" data-param-name=\"join_right_field\" data-picker-source=\"sap\" data-source-key=\"sap\" style=\"--source-color:#abf5d1\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>PERNR</strong><small>sap.PERNR</small></span><span aria-hidden=\"true\">⌄</span></button></div></div><button type=\"button\" class=\"secondary small\" data-remove-join-key aria-label=\"Remove key pair 1\">Remove</button></div></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "join",
+        "params": {
+          "join_type": "INNER JOIN"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "join",
+        "type": "join",
+        "title": "Join / Union Sources",
+        "params": {
+          "join_type": "LEFT JOIN",
+          "left_source": "wd",
+          "right_source": "sap",
+          "left_field": "Worker ID",
+          "right_field": "PERNR"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"WD_Workers\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [WD_Workers] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "2",
+      "stepId": "reference_source_sap",
+      "branch": "Root",
+      "analyst": "Reference source file \"SAP_HI0256\" as \"sap\":",
+      "developer": "Excel:\n=sap\n\nSQL Server:\nSELECT * FROM [SAP_HI0256] AS [sap]\n\nPython (pandas):\ndf = sources[\"sap\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "sap"
+    },
+    {
+      "step": "3",
+      "stepId": "ref-wd",
+      "branch": "Root",
+      "analyst": "Reference source file \"wd\" as \"wd\":",
+      "developer": "Excel:\n=wd\n\nSQL Server:\nSELECT * FROM [wd] AS [wd]\n\nPython (pandas):\ndf = sources[\"wd\"].copy()",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "4",
+      "stepId": "join-note-manual",
+      "branch": "Root",
+      "analyst": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+      "developer": "LEFT JOIN: keep all rows from the left source and matching rows from the right source when joining \"wd\" on \"Worker ID\" to \"sap\" on \"PERNR\".\n\nExcel:\n=XLOOKUP([@[Worker ID]], sap[PERNR], sap, \"\")\n\nSQL Server:\nFROM [wd]\nLEFT JOIN [sap]\n  ON [wd].[Worker ID] = [sap].[PERNR]\n\nPython (pandas):\ndf = sources[\"wd\"].merge(sources[\"sap\"], how=\"left\", left_on=\"Worker ID\", right_on=\"PERNR\")",
+      "notes": "Analyst wrote this note, so no automatic note.",
+      "level": 0,
+      "source": ""
+    },
+    {
+      "step": "5",
+      "stepId": "format-1",
+      "branch": "Root",
+      "analyst": "Format file \"wd\" column \"Worker ID\" as text.",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"@\")\n\nSQL Server:\nCAST([Worker ID] AS NVARCHAR(4000)) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "6",
+      "stepId": "format-2",
+      "branch": "Root",
+      "analyst": "Format file \"wd\" column \"Worker ID\" as number.",
+      "developer": "Excel:\n=VALUE([@[Worker ID]])\n\nSQL Server:\nTRY_CAST([Worker ID] AS DECIMAL(38, 10)) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = pd.to_numeric(df[\"Worker ID\"], errors=\"coerce\")",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "7",
+      "stepId": "format-3",
+      "branch": "Root",
+      "analyst": "Format file \"wd\" column \"Worker ID\" as date format MM/DD/YYYY.",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"mm/dd/yyyy\")\n\nSQL Server:\nCONVERT(VARCHAR(10), TRY_CONVERT(date, [Worker ID]), 101) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = pd.to_datetime(df[\"Worker ID\"], errors=\"coerce\").dt.strftime(\"%m/%d/%Y\")",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "8",
+      "stepId": "format-4",
+      "branch": "Root",
+      "analyst": "Format file \"wd\" column \"Worker ID\" as eight digits with leading zeroes.",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"00000000\")\n\nSQL Server:\nRIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "9",
+      "stepId": "format-5",
+      "branch": "Root",
+      "analyst": "Format file \"wd\" column \"Worker ID\" as currency with two decimals.",
+      "developer": "Excel:\n=TEXT([@[Worker ID]], \"currency with two decimals\")\n\nSQL Server:\nFORMAT([Worker ID], 'currency with two decimals') AS [Worker ID]\n\nPython (pandas):\ndf[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")\n\nNote: Format \"currency with two decimals\" is not a standard option. Check the formulas before running.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "10",
+      "stepId": "sort-single",
+      "branch": "Root",
+      "analyst": "Sort records by file \"wd\" column \"Hire Date\" in Descending order.",
+      "developer": "Excel:\n=SORTBY(wd, wd[Hire Date], -1)\n\nSQL Server:\nORDER BY [Hire Date] DESC\n\nPython (pandas):\ndf = df.sort_values([\"Hire Date\"], ascending=[False], kind=\"stable\")",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "11",
+      "stepId": "sort-multi",
+      "branch": "Root",
+      "analyst": "Sort records by file \"wd\" column \"Country\" in Ascending order, then by column \"Pay\" in Descending order.",
+      "developer": "Excel:\n=SORTBY(wd, wd[Country], 1, wd[Pay], -1)\n\nSQL Server:\nORDER BY [Country] ASC, [Pay] DESC\n\nPython (pandas):\ndf = df.sort_values([\"Country\", \"Pay\"], ascending=[True, False], kind=\"stable\")",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "12",
+      "stepId": "dupes-1",
+      "branch": "Root",
+      "analyst": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the first record.",
+      "developer": "Excel:\n=COUNTIFS(INDEX(wd[Worker ID], 1):[@[Worker ID]], [@[Worker ID]], INDEX(wd[Position], 1):[@[Position]], [@[Position]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank] -- keep rows where [Duplicate Rank] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"first\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "13",
+      "stepId": "dupes-2",
+      "branch": "Root",
+      "analyst": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the last record.",
+      "developer": "Excel:\n=COUNTIFS([@[Worker ID]]:INDEX(wd[Worker ID], ROWS(wd[Worker ID])), [@[Worker ID]], [@[Position]]:INDEX(wd[Position], ROWS(wd[Position])), [@[Position]])=1\n\nSQL Server:\nROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY (SELECT NULL)) AS [Duplicate Rank], COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Rank] = [Duplicate Count]\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"last\")\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "14",
+      "stepId": "dupes-3",
+      "branch": "Root",
+      "analyst": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep none of the duplicated records.",
+      "developer": "Excel:\n=COUNTIFS(wd[Worker ID], [@[Worker ID]], wd[Position], [@[Position]])=1\n\nSQL Server:\nCOUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count] -- keep rows where [Duplicate Count] = 1\n\nPython (pandas):\ndf = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=False)\n\nNote: Keep rows where the Excel formula returns TRUE. First and last follow the current row order.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "15",
+      "stepId": "split-legacy",
+      "branch": "Root",
+      "analyst": "Split file \"wd\" column \"Legal Name\" on the \"space\" and display first value in column \"First Name\".",
+      "developer": "Excel:\n=INDEX(TEXTSPLIT([@[Legal Name]], \" \"), 1)\n\nSQL Server:\nLEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name]\n\nPython (pandas):\ndf[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", regex=False).str[0]",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "16",
+      "stepId": "filter-keep",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" is equal to \"Active\", THEN Keep matching rows.",
+      "developer": "Excel:\n=[@[Status]]=\"Active\"\n\nSQL Server:\nWHERE [Status] = 'Active'\n\nPython (pandas):\nmask = df[\"Status\"] == \"Active\"\ndf = df[mask]\n\nNote: Display - Keep only rows that match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "17",
+      "stepId": "filter-exclude",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" is not equal to \"Active\", THEN Exclude matching rows.",
+      "developer": "Excel:\n=NOT([@[Status]]<>\"Active\")\n\nSQL Server:\nWHERE NOT ([Status] <> 'Active')\n\nPython (pandas):\nmask = df[\"Status\"] != \"Active\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "18",
+      "stepId": "flag-text",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Email\" is blank/null, THEN display text response \"Missing email\" in column \"Error Message\".",
+      "developer": "Excel:\n=IF(LEN(TRIM([@[Email]]))=0, IF([@[Error Message]]=\"\", \"Missing email\", [@[Error Message]]&\"||\"&\"Missing email\"), [@[Error Message]])\n\nSQL Server:\nCASE WHEN NULLIF(LTRIM(RTRIM([Email])), '') IS NULL THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Missing email') ELSE [Error Message] END AS [Error Message]\n\nPython (pandas):\nmask = df[\"Email\"].fillna(\"\").astype(str).str.strip().eq(\"\")\ndf[\"Error Message\"] = df.get(\"Error Message\", \"\")\nexisting = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\ndf.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Missing email\"\n\nNote: \"Error Message\" keeps the messages from earlier steps. Excel cannot refer to the column it fills, so calculate this in a helper column and copy the values into \"Error Message\".",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    },
+    {
+      "step": "19",
+      "stepId": "flag-hide",
+      "branch": "Root",
+      "analyst": "IF file \"wd\" column \"Status\" is equal to \"Terminated\", THEN do NOT display record.",
+      "developer": "Excel:\n=NOT([@[Status]]=\"Terminated\")\n\nSQL Server:\nWHERE NOT ([Status] = 'Terminated')\n\nPython (pandas):\nmask = df[\"Status\"] == \"Terminated\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd"
+    }
+  ],
+  "sqlScript": "-- Format, sort, duplicates and legacy - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 19 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- Review:\n--   - Step 6 overwrites [Worker ID], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Worker ID] is not selected twice.\n--   - Step 7 overwrites [Worker ID], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Worker ID] is not selected twice.\n--   - Step 8 overwrites [Worker ID], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Worker ID] is not selected twice.\n--   - Step 9 overwrites [Worker ID], but the source columns are not listed in the audit. Replace SELECT * in that step with the column list so [Worker ID] is not selected twice.\n--   - The audit does not list the columns of wd, sap, so those steps use SELECT *. Check for columns selected twice.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [WD_Workers]: wd\n--   - [SAP_HI0256]: sap\n--   - [wd]\n--   - [sap]\n\nWITH\n-- Step 1: Reference wd\n-- Reference source file \"WD_Workers\" as \"wd\":\nstep_1 AS (\n  SELECT * FROM [WD_Workers] AS [wd]\n),\n\n-- Step 2: Reference sap\n-- Reference source file \"SAP_HI0256\" as \"sap\":\nstep_2 AS (\n  SELECT * FROM [SAP_HI0256] AS [sap]\n),\n\n-- Step 3: Reference Source\n-- Reference source file \"wd\" as \"wd\":\nstep_3 AS (\n  SELECT * FROM [wd] AS [wd]\n),\n\n-- Step 4: Join / Union Sources\n-- Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\nstep_4 AS (\n  SELECT [wd].*,\n         [sap].*\n  FROM step_3 AS [wd]\n  LEFT JOIN [sap] AS [sap]\n    ON [wd].[Worker ID] = [sap].[PERNR]\n),\n\n-- Step 5: Format Field\n-- Format file \"wd\" column \"Worker ID\" as text.\nstep_5 AS (\n  SELECT *, CAST(CAST(NULL AS NVARCHAR(4000)) AS NVARCHAR(4000)) AS [Worker ID]\n  FROM step_4\n),\n\n-- Step 6: Format Field\n-- Format file \"wd\" column \"Worker ID\" as number.\nstep_6 AS (\n  SELECT *, TRY_CAST([Worker ID] AS DECIMAL(38, 10)) AS [Worker ID]\n  FROM step_5\n),\n\n-- Step 7: Format Field\n-- Format file \"wd\" column \"Worker ID\" as date format MM/DD/YYYY.\nstep_7 AS (\n  SELECT *, CONVERT(VARCHAR(10), TRY_CONVERT(date, [Worker ID]), 101) AS [Worker ID]\n  FROM step_6\n),\n\n-- Step 8: Format Field\n-- Format file \"wd\" column \"Worker ID\" as eight digits with leading zeroes.\nstep_8 AS (\n  SELECT *, RIGHT(REPLICATE('0', 8) + CAST([Worker ID] AS VARCHAR(50)), 8) AS [Worker ID]\n  FROM step_7\n),\n\n-- Step 9: Format Field\n-- Format file \"wd\" column \"Worker ID\" as currency with two decimals.\n-- Note: Format \"currency with two decimals\" is not a standard option. Check the formulas before running.\nstep_9 AS (\n  SELECT *, FORMAT([Worker ID], 'currency with two decimals') AS [Worker ID]\n  FROM step_8\n),\n\n-- Step 10: Sort Records\n-- Sort records by file \"wd\" column \"Hire Date\" in Descending order.\n-- The sort order is applied in the final SELECT (and to later Remove Duplicates steps).\n\n-- Step 11: Sort Records\n-- Sort records by file \"wd\" column \"Country\" in Ascending order, then by column \"Pay\" in Descending order.\n-- The sort order is applied in the final SELECT (and to later Remove Duplicates steps).\n\n-- Step 12: Remove Duplicates\n-- Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the first record.\nstep_12_ranked AS (\n  SELECT *, ROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY [Country] ASC, [Pay] DESC) AS [Duplicate Rank]\n  FROM step_9\n),\n\nstep_12 AS (\n  SELECT *\n  FROM step_12_ranked\n  WHERE [Duplicate Rank] = 1\n),\n\n-- Step 13: Remove Duplicates\n-- Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the last record.\nstep_13_ranked AS (\n  SELECT *, ROW_NUMBER() OVER (PARTITION BY [Worker ID], [Position] ORDER BY [Country] ASC, [Pay] DESC) AS [Duplicate Rank], COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count]\n  FROM step_12\n),\n\nstep_13 AS (\n  SELECT *\n  FROM step_13_ranked\n  WHERE [Duplicate Rank] = [Duplicate Count]\n),\n\n-- Step 14: Remove Duplicates\n-- Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep none of the duplicated records.\nstep_14_ranked AS (\n  SELECT *, COUNT(*) OVER (PARTITION BY [Worker ID], [Position]) AS [Duplicate Count]\n  FROM step_13\n),\n\nstep_14 AS (\n  SELECT *\n  FROM step_14_ranked\n  WHERE [Duplicate Count] = 1\n),\n\n-- Step 15: Logic Step\n-- Split file \"wd\" column \"Legal Name\" on the \"space\" and display first value in column \"First Name\".\nstep_15 AS (\n  SELECT *, LEFT([Legal Name], CHARINDEX(' ', [Legal Name] + ' ') - 1) AS [First Name]\n  FROM step_14\n),\n\n-- Step 16: Logic Step\n-- IF file \"wd\" column \"Status\" is equal to \"Active\", THEN Keep matching rows.\n-- Note: Display - Keep only rows that match this condition.\nstep_16 AS (\n  SELECT *\n  FROM step_15\n  WHERE [Status] = 'Active'\n),\n\n-- Step 17: Logic Step\n-- IF file \"wd\" column \"Status\" is not equal to \"Active\", THEN Exclude matching rows.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_17 AS (\n  SELECT *\n  FROM step_16\n  WHERE NOT ([Status] <> 'Active')\n),\n\n-- Step 18: Logic Step\n-- IF file \"wd\" column \"Email\" is blank/null, THEN display text response \"Missing email\" in column \"Error Message\".\nstep_18 AS (\n  SELECT *, CASE WHEN NULLIF(LTRIM(RTRIM([Email])), '') IS NULL THEN CONCAT_WS('||', NULLIF(CAST(NULL AS NVARCHAR(4000)), ''), 'Missing email') ELSE CAST(NULL AS NVARCHAR(4000)) END AS [Error Message]\n  FROM step_17\n),\n\n-- Step 19: Logic Step\n-- IF file \"wd\" column \"Status\" is equal to \"Terminated\", THEN do NOT display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_19 AS (\n  SELECT *\n  FROM step_18\n  WHERE NOT ([Status] = 'Terminated')\n)\n\nSELECT *\nFROM step_19\nORDER BY [Country] ASC, [Pay] DESC;\n",
+  "pythonScript": "# Format, sort, duplicates and legacy - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 19 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd\": \"\",\n    \"sap\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd\n    # Reference source file \"WD_Workers\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 2: Reference sap\n    # Reference source file \"SAP_HI0256\" as \"sap\":\n    df = sources[\"sap\"].copy()\n\n    # Step 3: Reference Source\n    # Reference source file \"wd\" as \"wd\":\n    df = sources[\"wd\"].copy()\n\n    # Step 4: Join / Union Sources\n    # Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".\n    df = df.merge(sources[\"sap\"], how=\"left\", left_on=\"Worker ID\", right_on=\"PERNR\", suffixes=(\"\", \"_sap\"))\n\n    # Step 5: Format Field\n    # Format file \"wd\" column \"Worker ID\" as text.\n    df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")\n\n    # Step 6: Format Field\n    # Format file \"wd\" column \"Worker ID\" as number.\n    df[\"Worker ID\"] = pd.to_numeric(df[\"Worker ID\"], errors=\"coerce\")\n\n    # Step 7: Format Field\n    # Format file \"wd\" column \"Worker ID\" as date format MM/DD/YYYY.\n    df[\"Worker ID\"] = pd.to_datetime(df[\"Worker ID\"], errors=\"coerce\").dt.strftime(\"%m/%d/%Y\")\n\n    # Step 8: Format Field\n    # Format file \"wd\" column \"Worker ID\" as eight digits with leading zeroes.\n    df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\").str.zfill(8)\n\n    # Step 9: Format Field\n    # Format file \"wd\" column \"Worker ID\" as currency with two decimals.\n    # Note: Format \"currency with two decimals\" is not a standard option. Check the formulas before running.\n    df[\"Worker ID\"] = df[\"Worker ID\"].astype(\"string\")\n\n    # Step 10: Sort Records\n    # Sort records by file \"wd\" column \"Hire Date\" in Descending order.\n    df = df.sort_values([\"Hire Date\"], ascending=[False], kind=\"stable\")\n\n    # Step 11: Sort Records\n    # Sort records by file \"wd\" column \"Country\" in Ascending order, then by column \"Pay\" in Descending order.\n    df = df.sort_values([\"Country\", \"Pay\"], ascending=[True, False], kind=\"stable\")\n\n    # Step 12: Remove Duplicates\n    # Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the first record.\n    df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"first\")\n\n    # Step 13: Remove Duplicates\n    # Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the last record.\n    df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=\"last\")\n\n    # Step 14: Remove Duplicates\n    # Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep none of the duplicated records.\n    df = df.drop_duplicates(subset=[\"Worker ID\", \"Position\"], keep=False)\n\n    # Step 15: Logic Step\n    # Split file \"wd\" column \"Legal Name\" on the \"space\" and display first value in column \"First Name\".\n    df[\"First Name\"] = df[\"Legal Name\"].astype(\"string\").str.split(\" \", regex=False).str[0]\n\n    # Step 16: Logic Step\n    # IF file \"wd\" column \"Status\" is equal to \"Active\", THEN Keep matching rows.\n    # Note: Display - Keep only rows that match this condition.\n    mask = df[\"Status\"] == \"Active\"\n    df = df[mask]\n\n    # Step 17: Logic Step\n    # IF file \"wd\" column \"Status\" is not equal to \"Active\", THEN Exclude matching rows.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Status\"] != \"Active\"\n    df = df[~mask]\n\n    # Step 18: Logic Step\n    # IF file \"wd\" column \"Email\" is blank/null, THEN display text response \"Missing email\" in column \"Error Message\".\n    mask = df[\"Email\"].fillna(\"\").astype(str).str.strip().eq(\"\")\n    df[\"Error Message\"] = df.get(\"Error Message\", \"\")\n    existing = df.loc[mask, \"Error Message\"].fillna(\"\").astype(str)\n    df.loc[mask, \"Error Message\"] = existing.where(existing == \"\", existing + \"||\") + \"Missing email\"\n\n    # Step 19: Logic Step\n    # IF file \"wd\" column \"Status\" is equal to \"Terminated\", THEN do NOT display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Status\"] == \"Terminated\"\n    df = df[~mask]\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "A",
+      "title": "Core Comparison Logic - Expected Match and Mismatch Results",
+      "rows": [
+        {
+          "testType": "UAT",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Email\" is blank/null, THEN display text response \"Missing email\" in column \"Error Message\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "One Format, sort, duplicates and legacy audit record is displayed with \"Error Message\" = \"Missing email\" for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the condition for this step is met.",
+          "comments": "",
+          "number": 1
+        }
+      ]
+    },
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" is equal to \"Active\", THEN Keep matching rows.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No Format, sort, duplicates and legacy audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the condition for this step is met.",
+          "comments": "",
+          "number": 2
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" is not equal to \"Active\", THEN Exclude matching rows.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No Format, sort, duplicates and legacy audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the condition for this step is met.",
+          "comments": "",
+          "number": 3
+        },
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd\" column \"Status\" is equal to \"Terminated\", THEN do NOT display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No Format, sort, duplicates and legacy audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms the condition for this step is met.",
+          "comments": "",
+          "number": 4
+        }
+      ]
+    },
+    {
+      "code": "D",
+      "title": "Enrichment, Regionalization and Display Fields",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Join file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Records are matched where file \"wd\" column \"Worker ID\" equals file \"sap\" column \"PERNR\"; joined values display on the Format, sort, duplicates and legacy audit record.",
+          "sourceDataExpectedOutcome": "Source values for file \"wd\" column \"Worker ID\" and file \"sap\" column \"PERNR\" agree for each joined record.",
+          "comments": "Analyst wrote this note, so no automatic note.",
+          "number": 5
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"wd\" column \"Worker ID\" as text.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"wd\" column \"Worker ID\" displays in text format.",
+          "sourceDataExpectedOutcome": "The formatted file \"wd\" column \"Worker ID\" value matches the underlying source value.",
+          "comments": "",
+          "number": 6
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"wd\" column \"Worker ID\" as number.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"wd\" column \"Worker ID\" displays in number format.",
+          "sourceDataExpectedOutcome": "The formatted file \"wd\" column \"Worker ID\" value matches the underlying source value.",
+          "comments": "",
+          "number": 7
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"wd\" column \"Worker ID\" as date format MM/DD/YYYY.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"wd\" column \"Worker ID\" displays in date format MM/DD/YYYY format.",
+          "sourceDataExpectedOutcome": "The formatted file \"wd\" column \"Worker ID\" value matches the underlying source value.",
+          "comments": "",
+          "number": 8
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"wd\" column \"Worker ID\" as eight digits with leading zeroes.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"wd\" column \"Worker ID\" displays in eight digits with leading zeroes format.",
+          "sourceDataExpectedOutcome": "The formatted file \"wd\" column \"Worker ID\" value matches the underlying source value.",
+          "comments": "",
+          "number": 9
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Format file \"wd\" column \"Worker ID\" as currency with two decimals.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "File \"wd\" column \"Worker ID\" displays in currency with two decimals format.",
+          "sourceDataExpectedOutcome": "The formatted file \"wd\" column \"Worker ID\" value matches the underlying source value.",
+          "comments": "",
+          "number": 10
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Split file \"wd\" column \"Legal Name\" on the \"space\" and display first value in column \"First Name\".",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Column \"First Name\" displays first value of file \"wd\" column \"Legal Name\".",
+          "sourceDataExpectedOutcome": "The \"First Name\" value matches the corresponding part of the source file \"wd\" column \"Legal Name\" value.",
+          "comments": "",
+          "number": 11
+        }
+      ]
+    },
+    {
+      "code": "E",
+      "title": "Output Suppression and Data Quality",
+      "rows": [
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Sort records by file \"wd\" column \"Hire Date\" in Descending order.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Audit records display in the sort order defined in this step.",
+          "sourceDataExpectedOutcome": "The displayed order agrees with the source values of the sort columns.",
+          "comments": "",
+          "number": 12
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Sort records by file \"wd\" column \"Country\" in Ascending order, then by column \"Pay\" in Descending order.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Audit records display in the sort order defined in this step.",
+          "sourceDataExpectedOutcome": "The displayed order agrees with the source values of the sort columns.",
+          "comments": "",
+          "number": 13
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the first record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Duplicate records are removed, keep the first record.",
+          "sourceDataExpectedOutcome": "Source data contains the duplicate records, and any retained record follows the rule in this step.",
+          "comments": "",
+          "number": 14
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep the last record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Duplicate records are removed, keep the last record.",
+          "sourceDataExpectedOutcome": "Source data contains the duplicate records, and any retained record follows the rule in this step.",
+          "comments": "",
+          "number": 15
+        },
+        {
+          "testType": "Data Validation",
+          "testPurpose": "",
+          "sourceRule": "Identify rows where all values match across these columns: file \"wd\" column \"Worker ID\" and column \"Position\", remove duplicates and keep none of the duplicated records.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "Duplicate records are removed, keep none of the duplicated records.",
+          "sourceDataExpectedOutcome": "Source data contains the duplicate records, and any retained record follows the rule in this step.",
+          "comments": "",
+          "number": 16
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"WD_Workers\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"WD_Workers\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"WD_Workers\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 17
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"SAP_HI0256\" as \"sap\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"SAP_HI0256\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"SAP_HI0256\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 18
+        },
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"wd\" as \"wd\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Format, sort, duplicates and legacy audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"wd\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"wd\" is available, current, and contains the expected columns.",
+          "comments": "",
+          "number": 19
+        }
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "key": "audit.logic.action-missing|filter-exclude|steps|filter-exclude||action|param:then_action_type",
+      "severity": "warning",
+      "message": "Action is missing"
+    },
+    {
+      "key": "audit.logic.action-missing|filter-keep|steps|filter-keep||action|param:then_action_type",
+      "severity": "warning",
+      "message": "Action is missing"
+    },
+    {
+      "key": "audit.logic.action-missing|flag-hide|steps|flag-hide||action|param:then_action_type",
+      "severity": "warning",
+      "message": "Action is missing"
+    },
+    {
+      "key": "audit.logic.action-missing|flag-text|steps|flag-text||action|param:then_action_type",
+      "severity": "warning",
+      "message": "Action is missing"
+    },
+    {
+      "key": "audit.assignments.assigned-missing|assigned|overview|||assignments.assigned|assignment-assigned",
+      "severity": "warning",
+      "message": "Assigned analyst is missing"
+    },
+    {
+      "key": "audit.assignments.backup-missing|backup|overview|||assignments.backup|assignment-backup",
+      "severity": "warning",
+      "message": "Backup analyst is missing"
+    },
+    {
+      "key": "audit.assignments.developer-missing|developer|overview|||assignments.developer|assignment-developer",
+      "severity": "warning",
+      "message": "Developer is missing"
+    }
+  ]
+}

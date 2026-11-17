@@ -1,0 +1,147 @@
+{
+  "entries": [
+    {
+      "id": "reference_source_bdc816d3",
+      "number": "1",
+      "level": 0,
+      "branchLabel": "Root"
+    },
+    {
+      "id": "step_2b84fd6e",
+      "number": "2",
+      "level": 0,
+      "branchLabel": "Root"
+    }
+  ],
+  "steps": [
+    {
+      "id": "reference_source_bdc816d3",
+      "stepType": "reference_source",
+      "english": "Reference source file \"wd.INT2128a\" as \"wd.INT2128a\":",
+      "autoNotes": "",
+      "developer": "Excel:\n=wd_INT2128a\n\nSQL Server:\nSELECT * FROM [wd.INT2128a] AS [wd.INT2128a]\n\nPython (pandas):\ndf = sources[\"wd.INT2128a\"].copy()",
+      "formulas": {
+        "excel": "=wd_INT2128a",
+        "sql": "SELECT * FROM [wd.INT2128a] AS [wd.INT2128a]",
+        "python": "df = sources[\"wd.INT2128a\"].copy()",
+        "notes": []
+      },
+      "editorHtml": "<div class=\"selected-source-only-builder\"><div class=\"guided-builder\"><h4>Reference Source</h4><label>Source File<button type=\"button\" class=\"visual-picker-trigger-button source-token \" data-open-mini-picker=\"source\" data-param-name=\"source_file\" data-picker-source=\"\" data-source-key=\"wd.INT2128a\" style=\"--source-color:#fdd0ec\"><span class=\"source-color-dot\" aria-hidden=\"true\"></span><span class=\"visual-picker-trigger-copy\"><strong>[Maseke_Audit_001] - Worker Currency Audit</strong><small>wd.INT2128a</small></span><span aria-hidden=\"true\">⌄</span></button></label><label>Source Alias<input data-param=\"source_alias\" value=\"wd.INT2128a\"></label></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "reference_source",
+        "params": {
+          "source_file": "wd.INT2128a",
+          "source_alias": "wd.INT2128a"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "reference_source",
+        "type": "source",
+        "title": "Reference wd.INT2128a",
+        "params": {
+          "source_file": "wd.INT2128a",
+          "source_alias": "wd.INT2128a"
+        }
+      }
+    },
+    {
+      "id": "step_2b84fd6e",
+      "stepType": "if_then",
+      "english": "IF file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\" THEN do not display record.",
+      "autoNotes": "",
+      "developer": "Excel:\n=NOT([@[Primary Compensation Basis - Currency]]=\"3\")\n\nSQL Server:\nWHERE NOT ([Primary Compensation Basis - Currency] = '3')\n\nPython (pandas):\nmask = df[\"Primary Compensation Basis - Currency\"] == \"3\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "formulas": {
+        "excel": "=NOT([@[Primary Compensation Basis - Currency]]=\"3\")",
+        "sql": "WHERE NOT ([Primary Compensation Basis - Currency] = '3')",
+        "python": "mask = df[\"Primary Compensation Basis - Currency\"] == \"3\"\ndf = df[~mask]",
+        "notes": [
+          "Note: Do Not Display - Keep only rows that do not match this condition."
+        ]
+      },
+      "editorHtml": "<div class=\"guided-builder if-then-tabbed-builder\"><div class=\"logic-editor-tabs\"><button type=\"button\" class=\"logic-editor-tab active\" data-editor-tab=\"conditions\"> Condition Builder </button><button type=\"button\" class=\"logic-editor-tab \" data-editor-tab=\"actions\"> Action Builder </button></div><div class=\"logic-editor-tab-panel active\" data-editor-panel=\"conditions\"><div class=\"condition-guided-stack\" data-condition-list data-group-id=\"\"></div><div class=\"row condition-root-actions\"><button type=\"button\" class=\"secondary small\" data-guided-add-condition=\"AND\">+ Add Condition</button></div></div><div class=\"logic-editor-tab-panel \" data-editor-panel=\"actions\"><div class=\"then-action-builder refined-action-builder dynamic-action-builder\"><div class=\"full action-type-row atlas-choice-field\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"THEN Action Type: Display / Do Not Display\"><span class=\"atlas-choice-heading\">THEN Action Type</span><span class=\"atlas-choice-current\">Display / Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-cards\" role=\"radiogroup\" aria-label=\"THEN action type\"><input type=\"hidden\" data-param=\"then_action_type\" value=\"display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"freeform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Freeform Text</span><span class=\"atlas-choice-description\">Write the action in your own words.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_value\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column Value from Field</span><span class=\"atlas-choice-description\">Copy a field into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_string_transform\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to String Transformation</span><span class=\"atlas-choice-description\">Take characters or a character count from a field.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"set_column_calculation\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Set Column to Calculated Value</span><span class=\"atlas-choice-description\">Calculate a numeric result into the target column.</span></button><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display_text\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display Text Response in Column</span><span class=\"atlas-choice-description\">Show a text response in a column.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Display / Do Not Display</span><span class=\"atlas-choice-description\">Keep or remove the records that match.</span></button></div></div></div></div><div class=\"full atlas-choice-field display-action-toggle\"><div class=\"atlas-choice-popover-field\"><button type=\"button\" class=\"atlas-choice-trigger\" data-choice-popover-trigger aria-haspopup=\"true\" aria-expanded=\"false\" aria-controls=\"atlas-choice-popover-N\" aria-label=\"Matching records: Do Not Display\"><span class=\"atlas-choice-heading\">Matching records</span><span class=\"atlas-choice-current\">Do Not Display</span><span class=\"atlas-choice-caret\" aria-hidden=\"true\">⌄</span></button><div class=\"atlas-choice-popover atlas-choice-popover-list\" id=\"atlas-choice-popover-N\" hidden><div class=\"atlas-choice atlas-choice-segment\" role=\"radiogroup\" aria-label=\"Matching records\"><input type=\"hidden\" data-param=\"then_display_mode\" value=\"do_not_display\"><button type=\"button\" class=\"atlas-choice-option\" role=\"radio\" aria-checked=\"false\" data-choice-value=\"display\" tabindex=\"-1\"><span class=\"atlas-choice-label\">Display</span><span class=\"atlas-choice-description\">Keep only rows that match this condition.</span></button><button type=\"button\" class=\"atlas-choice-option is-selected\" role=\"radio\" aria-checked=\"true\" data-choice-value=\"do_not_display\" tabindex=\"0\"><span class=\"atlas-choice-label\">Do Not Display</span><span class=\"atlas-choice-description\">Keep only rows that do not match this condition.</span></button></div></div></div></div><div class=\"logic-editor-callout full display-action-note\" aria-live=\"polite\">Matching records will not be displayed in the audit output for this branch.<br><span class=\"hint\">Added to Developer Logic: Note: Do Not Display - Keep only rows that do not match this condition.</span></div><input type=\"hidden\" data-param=\"then_action\" value=\"Do not display matching records\"></div></div></div>",
+      "textImport": {
+        "ok": true,
+        "stepType": "if_then",
+        "params": {
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records"
+        }
+      },
+      "normalizedStep": {
+        "step_type": "if_then",
+        "type": "if",
+        "title": "IF / THEN",
+        "params": {
+          "source_file": "wd.INT2128a",
+          "source_alias": "wd.INT2128a",
+          "conditions_json": "[{\"id\":\"cond_0f4d2137\",\"connector\":\"IF\",\"conditionType\":\"row_compare\",\"sourceFile\":\"[Maseke_Audit_001] - Worker Currency Audit\",\"sourceAlias\":\"wd.INT2128a\",\"fieldName\":\"Primary Compensation Basis - Currency\",\"operator\":\"is equal to\",\"valueMode\":\"values\",\"compareValue\":\"3\",\"compareSourceFile\":\"[Maseke_Audit_001] - Worker Currency Audit\",\"compareSourceAlias\":\"wd.INT2128a\",\"compareFieldName\":\"\",\"expression\":\"\",\"compareMathJson\":\"\"}]",
+          "then_action_type": "do_not_display",
+          "then_action": "Do not display matching records",
+          "then_value_source_file": "wd.INT2128a"
+        }
+      }
+    }
+  ],
+  "preview": [
+    {
+      "step": "1",
+      "stepId": "reference_source_bdc816d3",
+      "branch": "Root",
+      "analyst": "Reference source file \"[Maseke_Audit_001] - Worker Currency Audit\" as \"wd.INT2128a\":",
+      "developer": "Excel:\n=wd_INT2128a\n\nSQL Server:\nSELECT * FROM [[Maseke_Audit_001]] - Worker Currency Audit] AS [wd.INT2128a]\n\nPython (pandas):\ndf = sources[\"wd.INT2128a\"].copy()",
+      "notes": "Generated automatically from the source files selected in Sources & Fields.",
+      "level": 0,
+      "source": "wd.INT2128a"
+    },
+    {
+      "step": "2",
+      "stepId": "step_2b84fd6e",
+      "branch": "Root",
+      "analyst": "IF file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\" THEN do not display record.",
+      "developer": "Excel:\n=NOT([@[Primary Compensation Basis - Currency]]=\"3\")\n\nSQL Server:\nWHERE NOT ([Primary Compensation Basis - Currency] = '3')\n\nPython (pandas):\nmask = df[\"Primary Compensation Basis - Currency\"] == \"3\"\ndf = df[~mask]\n\nNote: Do Not Display - Keep only rows that do not match this condition.",
+      "notes": "",
+      "level": 0,
+      "source": "wd.INT2128a"
+    }
+  ],
+  "sqlScript": "-- Untitled Audit - SQL Server audit query\n-- Exported from ATLAS Align on 2026-11-16. 2 enabled steps; disabled steps are left out.\n-- Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n--\n-- Source tables (replace these names if your tables are named differently):\n--   - [[Maseke_Audit_001]] - Worker Currency Audit]: wd.INT2128a\n\nWITH\n-- Step 1: Reference wd.INT2128a\n-- Reference source file \"[Maseke_Audit_001] - Worker Currency Audit\" as \"wd.INT2128a\":\nstep_1 AS (\n  SELECT * FROM [[Maseke_Audit_001]] - Worker Currency Audit] AS [wd.INT2128a]\n),\n\n-- Step 2: IF / THEN\n-- IF file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\" THEN do not display record.\n-- Note: Do Not Display - Keep only rows that do not match this condition.\nstep_2 AS (\n  SELECT *\n  FROM step_1\n  WHERE NOT ([Primary Compensation Basis - Currency] = '3')\n)\n\nSELECT *\nFROM step_2;\n",
+  "pythonScript": "# Untitled Audit - Python (pandas) audit script\n# Exported from ATLAS Align on 2026-11-16. 2 enabled steps; disabled steps are left out.\n# Generated from Developer Logic. Review the code and test it on sample data before relying on the results.\n#\n# Before running: fill in SOURCE_PATHS and OUTPUT_PATH below.\n# Requires pandas and numpy, plus openpyxl to read or write Excel files.\n\nimport sys\nfrom pathlib import Path\n\nimport numpy as np\nimport pandas as pd\n\n# -----------------------------------------------------------------------------\n# Required variables: set these paths before running\n# -----------------------------------------------------------------------------\n# Source files to read, one per source the audit uses (.csv, .txt, .xlsx, .xls).\nSOURCE_PATHS = {\n    \"wd.INT2128a\": \"\",\n}\n\n# File to write the audit results to (.csv or .xlsx).\nOUTPUT_PATH = \"\"\n\n# -----------------------------------------------------------------------------\n# Reading and writing files\n# -----------------------------------------------------------------------------\nEXCEL_EXTENSIONS = {\".xlsx\", \".xlsm\", \".xls\"}\nTEXT_EXTENSIONS = {\".csv\", \".txt\"}\n\n\ndef check_paths():\n    \"\"\"Stops with a message when a required path is blank or a file is missing.\"\"\"\n    blank = [f\"SOURCE_PATHS[{name!r}]\" for name, path in SOURCE_PATHS.items() if not path]\n    if not OUTPUT_PATH:\n        blank.append(\"OUTPUT_PATH\")\n    if blank:\n        sys.exit(\"Set these paths at the top of the script: \" + \", \".join(blank))\n    missing = [path for path in SOURCE_PATHS.values() if not Path(path).is_file()]\n    if missing:\n        sys.exit(\"These source files were not found: \" + \", \".join(missing))\n\n\ndef read_source(path):\n    \"\"\"Reads a source file, choosing the reader from its extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        return pd.read_excel(path)\n    if extension in TEXT_EXTENSIONS:\n        return pd.read_csv(path)\n    sys.exit(f\"{path}: use a .csv, .txt, .xlsx or .xls file.\")\n\n\ndef write_output(df, path):\n    \"\"\"Writes the results, choosing the writer from the file extension.\"\"\"\n    extension = Path(path).suffix.lower()\n    if extension in EXCEL_EXTENSIONS:\n        df.to_excel(path, index=False)\n    elif extension in TEXT_EXTENSIONS:\n        df.to_csv(path, index=False)\n    else:\n        sys.exit(f\"{path}: OUTPUT_PATH must end in .csv or .xlsx.\")\n\n\n# -----------------------------------------------------------------------------\n# Audit logic\n# -----------------------------------------------------------------------------\ndef run_audit(sources):\n    \"\"\"Runs the audit steps in order and returns the results.\"\"\"\n    # Step 1: Reference wd.INT2128a\n    # Reference source file \"[Maseke_Audit_001] - Worker Currency Audit\" as \"wd.INT2128a\":\n    df = sources[\"wd.INT2128a\"].copy()\n\n    # Step 2: IF / THEN\n    # IF file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\" THEN do not display record.\n    # Note: Do Not Display - Keep only rows that do not match this condition.\n    mask = df[\"Primary Compensation Basis - Currency\"] == \"3\"\n    df = df[~mask]\n\n    return df\n\n\ndef main():\n    check_paths()\n    sources = {name: read_source(path) for name, path in SOURCE_PATHS.items()}\n    results = run_audit(sources)\n    write_output(results, OUTPUT_PATH)\n    print(f\"Wrote {len(results):,} rows to {OUTPUT_PATH}\")\n\n\nif __name__ == \"__main__\":\n    main()\n",
+  "qtest": [
+    {
+      "code": "B",
+      "title": "Record Exclusions and Source Filters",
+      "rows": [
+        {
+          "testType": "Negative",
+          "testPurpose": "",
+          "sourceRule": "IF file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\" THEN do not display record.",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Untitled Audit audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "No Untitled Audit audit record is displayed for records that meet this condition.",
+          "sourceDataExpectedOutcome": "Source data confirms file \"wd.INT2128a\" column \"Primary Compensation Basis - Currency\" is equal to \"3\".",
+          "comments": "",
+          "number": 1
+        }
+      ]
+    },
+    {
+      "code": "G",
+      "title": "End-to-End, Refresh and Regression Validation",
+      "rows": [
+        {
+          "testType": "Integration",
+          "testPurpose": "",
+          "sourceRule": "Reference source file \"[Maseke_Audit_001] - Worker Currency Audit\" as \"wd.INT2128a\":",
+          "testDataScenario": "",
+          "testActionSteps": "1. Identify or stage the source record(s) needed for this scenario.\n2. Run or refresh the Untitled Audit audit in ATLAS.\n3. Search for the relevant record or organization.\n4. Review the ATLAS result and displayed source/enrichment fields.\n5. Compare the ATLAS result to the source records and document evidence.",
+          "atlasExpectedOutcome": "The audit run loads source file \"[Maseke_Audit_001] - Worker Currency Audit\" with current data.",
+          "sourceDataExpectedOutcome": "Source file \"[Maseke_Audit_001] - Worker Currency Audit\" is available, current, and contains the expected columns.",
+          "comments": "Generated automatically from the source files selected in Sources & Fields.",
+          "number": 2
+        }
+      ]
+    }
+  ],
+  "issues": []
+}
