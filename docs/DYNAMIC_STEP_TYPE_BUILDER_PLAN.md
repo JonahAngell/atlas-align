@@ -1,7 +1,7 @@
 # Dynamic Step Type Builder: Plan
 
 Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
-issue #5000). Later phases have not started.
+issue #5000). Phase 1 is in review (issue #5001). Later phases have not started.
 
 ## Goal
 
@@ -169,9 +169,9 @@ What each part does:
   and text import runs them.
 - **`subtypes`** names the parameter that already holds the subtype for that
   type (`value_mode`, `then_action_type`, `join_type`, `format`). Option values
-  are the stored strings, so saved data is unchanged (decision 4). A subtype can
-  add its own `fields`, `english`, `formulas`, `autoNotes` and `export`
-  overrides.
+  are the stored strings, so saved data is unchanged (decision 4). A subtype option
+  can add its own `fields` and `export` overrides, and `english`, `formulas`
+  and `autoNotes` each hold a `bySubtype` map that falls back to `default`.
 - **`fields`** describes the editor UI as data (see "Editor UI from
   definitions" below).
 - **`english`, `formulas` and `autoNotes`** are templates (see "Template

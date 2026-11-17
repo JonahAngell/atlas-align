@@ -90,6 +90,9 @@
 ├── catalogs
 │   ├── file-utility
 │   │   └── executable-steps.json
+│   ├── step-types
+│   │   ├── manifest.json
+│   │   └── schema.json
 │   ├── audit-issue-rules.json
 │   ├── logic_phrase_catalog.json
 │   ├── source-fields.json
@@ -132,6 +135,13 @@
 │   ├── me-response-sanitized.txt
 │   └── source-library-access-response.txt
 ├── js
+│   ├── step-types
+│   │   ├── 00-templates.js
+│   │   ├── 01-schema.js
+│   │   ├── 02-definitions.js
+│   │   ├── 03-migrations.js
+│   │   ├── 04-registry.js
+│   │   └── engine-manifest.json
 │   ├── 00-config-utils.js
 │   ├── 00-exceljs-loader.js
 │   ├── 00-html-partials-loader.js
@@ -510,6 +520,7 @@
 │   ├── source-versions.test.js
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
+│   ├── step-type-engine.test.js
 │   ├── step-type-snapshots.test.js
 │   ├── string-transform-split.test.js
 │   ├── structured-step-editors.test.js
@@ -550,6 +561,7 @@
 │   └── smoke.spec.js
 ├── tools
 │   ├── analyze-css-cascade.mjs
+│   ├── build-step-type-manifest.mjs
 │   ├── check-syntax.mjs
 │   ├── clear_database.sql
 │   ├── create-review-bundle.mjs
