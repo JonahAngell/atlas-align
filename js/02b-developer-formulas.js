@@ -889,6 +889,10 @@ function atlasDevActionValue(params = {}, dialect) {
         params.then_output_column ||
         atlasDevPlaceholder("error_message_column", "Error Message"),
       value: atlasDevString(params.then_text || "", dialect),
+      append:
+        typeof atlasDisplayTextSeparator === "function"
+          ? atlasDisplayTextSeparator(params)
+          : "||",
     };
   if (action === "set_column_value")
     return {
@@ -938,6 +942,54 @@ function atlasDevActionValue(params = {}, dialect) {
   return null;
 }
 
+/**
+ * Row value for a THEN/ELSE action. Display text appends to the message an
+ * earlier step already wrote, joined by the step's separator.
+ * @param {{target: string, value: string, append?: string}} action
+ * @param {string} dialect - "excel" or "sql" (pandas uses atlasDevPyActionLines).
+ */
+function atlasDevActionExpression(action, dialect) {
+  if (action.append === undefined) return action.value;
+  const separator = atlasDevString(action.append, dialect);
+  if (dialect === "excel") {
+    const column = `[@[${atlasDevExcelColumnName(action.target)}]]`;
+    return `IF(${column}="", ${action.value}, ${column}&${separator}&${action.value})`;
+  }
+  return `CONCAT_WS(${separator}, NULLIF(${atlasDevSqlName(action.target)}, ''), ${action.value})`;
+}
+
+/** Value for rows a THEN/ELSE action skips: keep earlier messages, else blank. */
+function atlasDevUnmatchedValue(action, dialect) {
+  if (action.append === undefined) return dialect === "excel" ? '""' : "";
+  return dialect === "excel"
+    ? `[@[${atlasDevExcelColumnName(action.target)}]]`
+    : atlasDevSqlName(action.target);
+}
+
+/** pandas lines writing one THEN/ELSE action to the rows selected by rowMask. */
+function atlasDevPyActionLines(action, rowMask) {
+  const column = atlasDevPyString(action.target);
+  if (action.append === undefined)
+    return [`df.loc[${rowMask}, ${column}] = ${action.value}`];
+  return [
+    `df[${column}] = df.get(${column}, "")`,
+    `existing = df.loc[${rowMask}, ${column}].fillna("").astype(str)`,
+    `df.loc[${rowMask}, ${column}] = existing.where(existing == "", existing + ${atlasDevPyString(action.append)}) + ${action.value}`,
+  ];
+}
+
+/** Note for appended messages, which Excel cannot write into their own column. */
+function atlasDevAppendNotes(...actions) {
+  const appended = actions.find((action) => action?.append !== undefined);
+  return appended
+    ? [
+        atlasDevPhrase("developer_logic.notes.append_message_excel", {
+          column: `"${appended.target}"`,
+        }),
+      ]
+    : [];
+}
+
 /** Keep-rows formulas for Display / Do Not Display style actions. */
 function atlasDevFilterFormulas(condition, keepMatches) {
   return {
@@ -978,19 +1030,20 @@ function atlasDevIfThen(step) {
     const folded =
       !!elseValue?.excel && elseValue.excel.target === thenValue.excel.target;
     const target = thenValue.excel.target;
+    const otherwise = (dialect) =>
+      folded
+        ? atlasDevActionExpression(elseValue[dialect], dialect)
+        : atlasDevUnmatchedValue(thenValue[dialect], dialect);
+    const sqlOtherwise = otherwise("sql");
     return {
-      excel: `=IF(${condition.excel}, ${thenValue.excel.value}, ${folded ? elseValue.excel.value : '""'})`,
-      sql: `CASE WHEN ${condition.sql} THEN ${thenValue.sql.value}${folded ? ` ELSE ${elseValue.sql.value}` : ""} END AS ${atlasDevSqlName(target)}`,
+      excel: `=IF(${condition.excel}, ${atlasDevActionExpression(thenValue.excel, "excel")}, ${otherwise("excel")})`,
+      sql: `CASE WHEN ${condition.sql} THEN ${atlasDevActionExpression(thenValue.sql, "sql")}${sqlOtherwise ? ` ELSE ${sqlOtherwise}` : ""} END AS ${atlasDevSqlName(target)}`,
       python: [
         `mask = ${condition.python}`,
-        `df.loc[mask, ${atlasDevPyString(target)}] = ${thenValue.python.value}`,
-        folded
-          ? `df.loc[~mask, ${atlasDevPyString(target)}] = ${elseValue.python.value}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-      notes: [],
+        ...atlasDevPyActionLines(thenValue.python, "mask"),
+        ...(folded ? atlasDevPyActionLines(elseValue.python, "~mask") : []),
+      ].join("\n"),
+      notes: atlasDevAppendNotes(thenValue.excel, folded && elseValue.excel),
     };
   }
 
@@ -1049,12 +1102,16 @@ function atlasDevElse(step) {
     const value = atlasDevEachDialect((dialect) =>
       atlasDevActionValue(params, dialect),
     );
+    const sqlOtherwise = atlasDevUnmatchedValue(value.sql, "sql");
     return {
       lead: label,
-      excel: `=IF(${atlasDevNot(condition.excel, "excel")}, ${value.excel.value}, "")`,
-      sql: `CASE WHEN ${atlasDevNot(condition.sql, "sql")} THEN ${value.sql.value} END AS ${atlasDevSqlName(elseValue.target)}`,
-      python: `mask = ${condition.python}\ndf.loc[~mask, ${atlasDevPyString(elseValue.target)}] = ${value.python.value}`,
-      notes: [],
+      excel: `=IF(${atlasDevNot(condition.excel, "excel")}, ${atlasDevActionExpression(value.excel, "excel")}, ${atlasDevUnmatchedValue(value.excel, "excel")})`,
+      sql: `CASE WHEN ${atlasDevNot(condition.sql, "sql")} THEN ${atlasDevActionExpression(value.sql, "sql")}${sqlOtherwise ? ` ELSE ${sqlOtherwise}` : ""} END AS ${atlasDevSqlName(elseValue.target)}`,
+      python: [
+        `mask = ${condition.python}`,
+        ...atlasDevPyActionLines(value.python, "~mask"),
+      ].join("\n"),
+      notes: atlasDevAppendNotes(value.excel),
     };
   }
   const freeform = String(params.then_action || "").trim();
