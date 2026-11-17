@@ -123,6 +123,7 @@
 │   ├── atlas-logo.png
 │   ├── BACKLOG.md
 │   ├── COPILOT_AUDIT_IMPORT_GUIDE.md
+│   ├── DYNAMIC_STEP_TYPE_BUILDER_PLAN.md
 │   ├── field_table.html
 │   ├── FILE_UTILITY_STEP_PARAMS.md
 │   ├── sample_field_table.html
