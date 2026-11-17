@@ -1,0 +1,78 @@
+{
+  "Currency_Accuracy_Outside_North_America.json": {
+    "runnable": true,
+    "blockerSteps": []
+  },
+  "Untitled_Audit.json": {
+    "runnable": true,
+    "blockerSteps": []
+  },
+  "active-employees-in-sap-not-wd.json": {
+    "runnable": false,
+    "blockerSteps": ["3.5", "3.5.1", "4.4.1", "5", "8", "9"]
+  },
+  "core-connector-worker-idoc.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "currency-accuracy-outside-north.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "currency-accuracy.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "dcl-it210.json": {
+    "runnable": false,
+    "blockerSteps": ["8.2.1"]
+  },
+  "dcl-loa-90-day.json": {
+    "runnable": true,
+    "blockerSteps": []
+  },
+  "diesi-sapl---infotypes-missing.json": {
+    "runnable": false,
+    "blockerSteps": ["1.1", "1.2", "2.1", "2.2", "8"]
+  },
+  "global-names.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "infotype-errors.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "midweek-rehire-status.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "pa-to-psa.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "rehire-status-compare.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "sample-audit-logic-flow.json": {
+    "runnable": true,
+    "blockerSteps": []
+  },
+  "security-groups-assigned-to-vac.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "service-dates.json": {
+    "runnable": true,
+    "blockerSteps": []
+  },
+  "system-security-role-assignment.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  },
+  "work-contract-comparison.json": {
+    "runnable": false,
+    "blockerSteps": [""]
+  }
+}

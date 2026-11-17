@@ -8384,6 +8384,11 @@ body.atlas-audit-issues-open {
   gap: 18px;
 }
 
+
+.readiness-file-utility {
+  grid-column: 1 / -1;
+}
+
 .display-field-pill {
   display: inline-flex;
   align-items: center;

@@ -35,4 +35,9 @@
   display: grid;
   gap: 18px;
 }
-/* ATLAS-SOURCE-UNIT:u0912:END */
+/* ATLAS-SOURCE-UNIT:u0912:END */ /* ATLAS-SOURCE-UNIT:u1671:BEGIN */
+
+.readiness-file-utility {
+  grid-column: 1 / -1;
+}
+/* ATLAS-SOURCE-UNIT:u1671:END */

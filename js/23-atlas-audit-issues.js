@@ -4590,6 +4590,7 @@
     } finally {
       renderStepNumbers = null;
     }
+    global.ATLASFileUtilityReadiness?.render?.();
   }
 
   function renderIssueSurfacesWithStepNumbers() {
