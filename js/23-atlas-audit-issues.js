@@ -1155,6 +1155,50 @@
       });
       return issues;
     },
+    /** Validation rules and required fields from step type definitions. */
+    stepTypeRules(context) {
+      const runtime = global.ATLASStepTypeRuntime;
+      if (!runtime?.validate) return [];
+      return context.audit.steps.flatMap((step) => {
+        if (!step.enabled) return [];
+        const found =
+          runtime.validate({
+            id: step.id,
+            step_type: step.type,
+            title: step.title,
+            source: step.source,
+            field: step.field,
+            params: step.params,
+          }) || [];
+        return found.map((entry) =>
+          issue(
+            `${step.id}:${entry.id}`,
+            {
+              page: "steps",
+              stepId: step.id,
+              ...(entry.param ? { field: entry.param } : {}),
+            },
+            {
+              ...(entry.param
+                ? {
+                    control: `param:${entry.param}`,
+                    actionData: {
+                      repair: "step-param",
+                      param: entry.param,
+                      label: entry.label || entry.param,
+                      stepId: step.id,
+                    },
+                  }
+                : { canFix: false }),
+              severity: entry.severity,
+              ...(entry.title ? { title: entry.title } : {}),
+              summary: entry.message,
+              detail: entry.message,
+            },
+          ),
+        );
+      });
+    },
     missingAction(context) {
       return context.audit.steps.flatMap((step) => {
         if (

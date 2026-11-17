@@ -1111,6 +1111,8 @@ function atlasDuplicateKeepClause(action = "") {
  */
 function analystLogic(step) {
   normalizeCatalogStep(step);
+  const definedEnglish = globalThis.ATLASStepTypeRuntime?.english?.(step);
+  if (definedEnglish != null) return definedEnglish;
   const params = step.params || {};
   const stepType = step.step_type;
   if (stepType === "reference_source") {
@@ -1342,6 +1344,8 @@ function noteText(step, index) {
   normalizeCatalogStep(step);
   const params = step.params || {};
   if (step.notes) return step.notes;
+  const definedNotes = globalThis.ATLASStepTypeRuntime?.autoNotes?.(step);
+  if (definedNotes != null) return definedNotes;
   if (step.step_type === "join") {
     if (phraseIsUnionJoinType(params.join_type))
       return renderCatalogPhrase("notes.union", {

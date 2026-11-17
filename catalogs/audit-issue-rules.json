@@ -237,6 +237,22 @@
       "documentation": "ATLAS Phase 2 canonical rule."
     },
     {
+      "id": "audit.logic.step-type-rules",
+      "enabled": true,
+      "severity": "warning",
+      "category": "logic",
+      "priority": 20,
+      "title": "Step needs attention",
+      "summary": "A step does not meet a rule of its step type.",
+      "detail": "A step does not meet a rule of its step type.",
+      "evaluator": "stepTypeRules",
+      "jumpAction": "openLogicTarget",
+      "fixAction": "repairIssue",
+      "targetType": "",
+      "config": {},
+      "documentation": "Rules and required fields come from step type definitions (catalogs/step-types/). Each issue carries the definition's own severity and message."
+    },
+    {
       "id": "audit.logic.join-integrity",
       "enabled": true,
       "severity": "critical",

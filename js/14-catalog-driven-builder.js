@@ -26,6 +26,29 @@ const LEGACY_TYPE_MAP = {
   join: "join",
   transform: "filter_rows",
 };
+// Built-in picker entries; STEP_TYPE_OPTIONS adds the registry's types to them.
+const ATLAS_BUILT_IN_STEP_TYPE_OPTIONS = STEP_TYPE_OPTIONS.map((option) => [
+  ...option,
+]);
+
+/** Rebuilds STEP_TYPE_OPTIONS in place from the built-ins and the registry. */
+function atlasSyncStepTypeOptions() {
+  const runtime = globalThis.ATLASStepTypeRuntime;
+  const merged = runtime
+    ? runtime.mergeTypeOptions(ATLAS_BUILT_IN_STEP_TYPE_OPTIONS)
+    : ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map((option) => [...option]);
+  STEP_TYPE_OPTIONS.splice(0, STEP_TYPE_OPTIONS.length, ...merged);
+}
+globalThis.ATLASStepTypeRuntime?.onChange?.((registry) => {
+  atlasSyncStepTypeOptions();
+  // Steps drawn before the definitions arrived are drawn again.
+  if (registry && typeof atlasRequestStructuralStepRender === "function")
+    try {
+      atlasRequestStructuralStepRender();
+    } catch (_error) {
+      /* The page may not be ready to draw yet. */
+    }
+});
 
 /**
  * Returns true when a Join Type value is Union.
@@ -43,6 +66,9 @@ function isUnionJoinType(joinType) {
  * @param {any} stepType - Input used by legacyTypeFromStepType.
  */
 function legacyTypeFromStepType(stepType) {
+  const definition =
+    globalThis.ATLASStepTypeRuntime?.definitionById?.(stepType);
+  if (definition) return definition.legacyType || "transform";
   if (stepType === "reference_source") return "source";
   if (stepType === "create_column") return "create";
   if (stepType === "join") return "join";
@@ -66,6 +92,7 @@ function legacyTypeFromStepType(stepType) {
  */
 function normalizeCatalogStep(step, index = 0) {
   if (!step) return step;
+  if (globalThis.ATLASStepTypeRuntime?.normalize?.(step, index)) return step;
   step.step_type =
     step.step_type || LEGACY_TYPE_MAP[step.type] || step.type || "if_then";
   step.type = legacyTypeFromStepType(step.step_type);
@@ -640,6 +667,8 @@ function atlasWriteLiveEditorConditions(step, conditions) {
  */
 function renderGuidedBuilder(step) {
   normalizeCatalogStep(step);
+  const definedEditor = globalThis.ATLASStepTypeRuntime?.renderEditor?.(step);
+  if (definedEditor != null) return definedEditor;
   const p = step.params || {};
   if (step.step_type === "reference_source")
     return `<div class="guided-builder"><h4>Reference Source</h4><label>Source File${sourceInputFromOptions(
@@ -1688,6 +1717,8 @@ function atlasStringSplitConfig(get, baseColumn = "") {
  * a single "Name_x" entry standing for Name_1, Name_2... when the count is open.
  */
 function atlasCreatedColumnNames(step) {
+  const defined = globalThis.ATLASStepTypeRuntime?.createdColumns?.(step);
+  if (defined) return defined;
   if (!step || step.step_type !== "create_column") return [];
   const p = step.params || {};
   if (
