@@ -325,6 +325,17 @@
           properties: {
             section: { type: "string", minLength: 1, maxLength: 20 },
             testType: { type: "string", minLength: 1, maxLength: 120 },
+            outcomes: {
+              type: "object",
+              additionalProperties: false,
+              required: ["atlas", "source"],
+              description:
+                "The two expected outcomes on the qTest row, as English templates. A behavior block's qtestOutcomes takes their place.",
+              properties: {
+                atlas: { $ref: "#/$defs/template" },
+                source: { $ref: "#/$defs/template" },
+              },
+            },
           },
         },
         exportOverride: {
@@ -361,9 +372,27 @@
         validationRule: {
           type: "object",
           additionalProperties: false,
-          required: ["severity", "message"],
+          anyOf: [
+            { required: ["severity", "message"] },
+            { required: ["builtIn"] },
+          ],
           properties: {
             id: { $ref: "#/$defs/identifier" },
+            builtIn: {
+              enum: [
+                "conditions",
+                "fieldRelationships",
+                "action",
+                "join",
+                "createdColumns",
+                "sourceMath",
+                "thenMath",
+                "stringTransform",
+                "thenStringTransform",
+              ],
+              description:
+                "Turns on one of the Audit Issues checks for this step type: condition rows, field-to-field comparisons that need a JOIN, a THEN action, join keys, Create Column params, calculations in source_math_json or then_math_json, and string transformations in the string_* or then_string_* params. The rule catalog (catalogs/audit-issue-rules.json) gives its severity and message; `when` limits it to some steps.",
+            },
             when: {
               anyOf: [{ const: "always" }, { $ref: "#/$defs/condition" }],
               description: '"always" or a condition',
@@ -462,6 +491,17 @@
           qtest: { section: "D", testType: "Data Validation" },
         },
         textImport: { fromEnglish: false },
+        validation: [
+          { builtIn: "createdColumns" },
+          {
+            builtIn: "sourceMath",
+            when: { param: "value_mode", equals: "Source field value" },
+          },
+          {
+            builtIn: "stringTransform",
+            when: { param: "value_mode", equals: "String transformation" },
+          },
+        ],
       },
       {
         schemaVersion: 1,
@@ -481,6 +521,7 @@
         autoNotes: null,
         export: { scriptRole: "else" },
         textImport: { fromEnglish: false },
+        validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
       },
       {
         schemaVersion: 1,
@@ -500,6 +541,7 @@
         autoNotes: null,
         export: { scriptRole: "filter" },
         textImport: { fromEnglish: false },
+        validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
       },
       {
         schemaVersion: 1,
@@ -519,6 +561,7 @@
         autoNotes: null,
         export: { scriptRole: "flag" },
         textImport: { fromEnglish: false },
+        validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
       },
       {
         schemaVersion: 1,
@@ -612,7 +655,16 @@
         autoNotes: null,
         export: {
           scriptRole: "column",
-          qtest: { section: "D", testType: "Data Validation" },
+          qtest: {
+            section: "D",
+            testType: "Data Validation",
+            outcomes: {
+              atlas:
+                '{{tableColumn param.source_file param.source_alias param.field_name}} displays in {{default param.format "the designed"}} format.',
+              source:
+                "The formatted {{tableColumn param.source_file param.source_alias param.field_name}} value matches the underlying source value.",
+            },
+          },
         },
         textImport: { fromEnglish: false },
         tests: [
@@ -650,6 +702,25 @@
         autoNotes: null,
         export: { scriptRole: "condition" },
         textImport: { fromEnglish: false },
+        validation: [
+          { builtIn: "conditions" },
+          { builtIn: "fieldRelationships" },
+          { builtIn: "action" },
+          {
+            builtIn: "thenMath",
+            when: {
+              param: "then_action_type",
+              equals: "set_column_calculation",
+            },
+          },
+          {
+            builtIn: "thenStringTransform",
+            when: {
+              param: "then_action_type",
+              equals: "set_column_string_transform",
+            },
+          },
+        ],
       },
       {
         schemaVersion: 1,
@@ -673,6 +744,7 @@
           qtest: { section: "D", testType: "Integration" },
         },
         textImport: { fromEnglish: false },
+        validation: [{ builtIn: "join" }],
       },
       {
         schemaVersion: 1,
@@ -735,7 +807,16 @@
         autoNotes: null,
         export: {
           scriptRole: "source",
-          qtest: { section: "G", testType: "Integration" },
+          qtest: {
+            section: "G",
+            testType: "Integration",
+            outcomes: {
+              atlas:
+                "The audit run loads source file {{quote (default param.source_file step.source)}} with current data.",
+              source:
+                "Source file {{quote (default param.source_file step.source)}} is available, current, and contains the expected columns.",
+            },
+          },
         },
         textImport: { fromEnglish: false },
         tests: [
@@ -836,7 +917,16 @@
         autoNotes: null,
         export: {
           scriptRole: "dedupe",
-          qtest: { section: "E", testType: "Data Validation" },
+          qtest: {
+            section: "E",
+            testType: "Data Validation",
+            outcomes: {
+              atlas:
+                "Duplicate records are removed, {{duplicateKeepClause param.duplicate_action}}.",
+              source:
+                "Source data contains the duplicate records, and any retained record follows the rule in this step.",
+            },
+          },
         },
         textImport: { fromEnglish: false },
       },
@@ -892,7 +982,16 @@
         autoNotes: null,
         export: {
           scriptRole: "sort",
-          qtest: { section: "E", testType: "Data Validation" },
+          qtest: {
+            section: "E",
+            testType: "Data Validation",
+            outcomes: {
+              atlas:
+                "Audit records display in the sort order defined in this step.",
+              source:
+                "The displayed order agrees with the source values of the sort columns.",
+            },
+          },
         },
         textImport: { fromEnglish: false },
       },
@@ -971,7 +1070,16 @@
         autoNotes: null,
         export: {
           scriptRole: "column",
-          qtest: { section: "D", testType: "Data Validation" },
+          qtest: {
+            section: "D",
+            testType: "Data Validation",
+            outcomes: {
+              atlas:
+                'Column {{quote param.output_column}} displays {{default param.split_part "the designed part"}} of {{tableColumn param.source_file param.source_alias param.field_name}}.',
+              source:
+                "The {{quote param.output_column}} value matches the corresponding part of the source {{tableColumn param.source_file param.source_alias param.field_name}} value.",
+            },
+          },
         },
         textImport: { fromEnglish: false },
       },

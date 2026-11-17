@@ -12,10 +12,13 @@
  *   atlasDeveloperFormulas  formulas(step)            Excel / SQL / Python
  *   12b code export         scriptRole(step)          SQL and Python script place
  *   qTest export            qtest(step)               section and test type
+ *                           qtestAction(step)         outcome the row tests
+ *                           qtestOutcomes(step, ctx)  expected outcomes
  *   atlasCreatedColumnNames createdColumns(step)      new output columns
  *   renderGuidedBuilder     renderEditor(step)        editor form
  *   text import             parseText(text)           sentence to step
  *   Audit Issues            validate(step)            validation rules
+ *                           builtInChecks(step)       built-in checks it uses
  *   STEP_TYPE_OPTIONS and import titles: typeOptions() and onChange().
  *
  * Each call returns null when no definition claims the step, so a step type
@@ -29,7 +32,8 @@
  * blocks of js/13-step-type-library.js.
  *
  * A definition that names a behavior `block` gets each part the block has
- * (normalize, editor, english, notes, formulas, createdColumns) from that
+ * (normalize, editor, english, notes, formulas, createdColumns, qtestAction,
+ * qtestOutcomes) from that
  * block, which calls the app's own code; its templates cover the rest. The
  * types that came with ATLAS Align use these blocks so their output does not
  * change.
@@ -584,9 +588,48 @@
     return exportSettings(step)?.scriptRole || null;
   }
 
+  /** The qTest section and test type: { section, testType }. */
   function qtest(step) {
     const settings = exportSettings(step);
-    return settings ? { ...(settings.qtest || {}) } : null;
+    if (!settings) return null;
+    const { outcomes: _outcomes, ...placement } = settings.qtest || {};
+    return placement;
+  }
+
+  /**
+   * The outcome qTest tests ({ kind, ... }) from the definition's behavior
+   * block, or null so the step counts as having no action of its own.
+   */
+  function qtestAction(step) {
+    const fromBlock = blockPart(definitionFor(step), "qtestAction");
+    return fromBlock ? fromBlock(step) || null : null;
+  }
+
+  /**
+   * The two expected outcomes on the qTest row: [ATLAS outcome, source data
+   * outcome]. A behavior block answers first, then `export.qtest.outcomes`.
+   * Null when neither is set, so the outcome comes from the step's action.
+   * `context.record` names the audit record ("Payroll audit record").
+   */
+  function qtestOutcomes(step, context = {}) {
+    const definition = definitionFor(step);
+    if (!definition) return null;
+    const fromBlock = blockPart(definition, "qtestOutcomes");
+    if (fromBlock) {
+      const found = fromBlock(step, context);
+      return Array.isArray(found) ? found.map(text) : null;
+    }
+    const outcomes = exportSettings(step)?.qtest?.outcomes;
+    if (!outcomes) return null;
+    try {
+      return [
+        render(outcomes.atlas, step, definition, "english"),
+        render(outcomes.source, step, definition, "english"),
+      ].map((value) => text(value).trim());
+    } catch (error) {
+      const failure = renderFailure(definition, "qTest outcome", error);
+      return [failure, failure];
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -951,6 +994,26 @@
    * [{ id, severity, title, message, param, label }]. Null when no definition
    * claims the step.
    */
+  /**
+   * The Audit Issues checks a step type turns on with `builtIn` rules, for
+   * this step: ["conditions", "action", ...]. Null when no definition claims
+   * the step.
+   */
+  function builtInChecks(step) {
+    const definition = definitionFor(step);
+    if (!definition) return null;
+    const { definitions } = engine();
+    return (definition.validation || [])
+      .filter(
+        (rule) =>
+          rule.builtIn &&
+          (!rule.when ||
+            rule.when === "always" ||
+            definitions.matches(rule.when, step)),
+      )
+      .map((rule) => rule.builtIn);
+  }
+
   function validate(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
@@ -973,6 +1036,7 @@
         });
     });
     (definition.validation || []).forEach((rule, index) => {
+      if (rule.builtIn) return;
       if (
         rule.when &&
         rule.when !== "always" &&
@@ -1020,6 +1084,9 @@
     createdColumns,
     scriptRole,
     qtest,
+    qtestAction,
+    qtestOutcomes,
+    builtInChecks,
     typeOptions,
     mergeTypeOptions,
     importTitles,

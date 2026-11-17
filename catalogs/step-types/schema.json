@@ -308,7 +308,17 @@
       "additionalProperties": false,
       "properties": {
         "section": { "type": "string", "minLength": 1, "maxLength": 20 },
-        "testType": { "type": "string", "minLength": 1, "maxLength": 120 }
+        "testType": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "outcomes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["atlas", "source"],
+          "description": "The two expected outcomes on the qTest row, as English templates. A behavior block's qtestOutcomes takes their place.",
+          "properties": {
+            "atlas": { "$ref": "#/$defs/template" },
+            "source": { "$ref": "#/$defs/template" }
+          }
+        }
       }
     },
     "exportOverride": {
@@ -345,9 +355,26 @@
     "validationRule": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["severity", "message"],
+      "anyOf": [
+        { "required": ["severity", "message"] },
+        { "required": ["builtIn"] }
+      ],
       "properties": {
         "id": { "$ref": "#/$defs/identifier" },
+        "builtIn": {
+          "enum": [
+            "conditions",
+            "fieldRelationships",
+            "action",
+            "join",
+            "createdColumns",
+            "sourceMath",
+            "thenMath",
+            "stringTransform",
+            "thenStringTransform"
+          ],
+          "description": "Turns on one of the Audit Issues checks for this step type: condition rows, field-to-field comparisons that need a JOIN, a THEN action, join keys, Create Column params, calculations in source_math_json or then_math_json, and string transformations in the string_* or then_string_* params. The rule catalog (catalogs/audit-issue-rules.json) gives its severity and message; `when` limits it to some steps."
+        },
         "when": {
           "anyOf": [{ "const": "always" }, { "$ref": "#/$defs/condition" }],
           "description": "\"always\" or a condition"

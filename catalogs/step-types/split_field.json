@@ -87,7 +87,11 @@
     "scriptRole": "column",
     "qtest": {
       "section": "D",
-      "testType": "Data Validation"
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "Column {{quote param.output_column}} displays {{default param.split_part \"the designed part\"}} of {{tableColumn param.source_file param.source_alias param.field_name}}.",
+        "source": "The {{quote param.output_column}} value matches the corresponding part of the source {{tableColumn param.source_file param.source_alias param.field_name}} value."
+      }
     }
   },
   "textImport": {

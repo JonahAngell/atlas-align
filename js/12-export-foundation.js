@@ -236,32 +236,51 @@ async function loadQtestTemplateWorkbook() {
 // qTest scenario classification
 // -----------------------------------------------------------------------------
 /**
- * Reads the THEN/ELSE outcome of a logic step, including legacy free-text actions.
+ * Reads the outcome qTest tests for a logic step: the definition's behavior
+ * block answers (`qtestAction`), else the step has no action of its own.
  * @param {any} step - Logic step object being read.
  */
 function qtestStepAction(step) {
-  const params = step.params || {};
-  const errorColumn = phrasePlaceholder(
-    "error_message_column",
-    "Error Message",
+  return (
+    globalThis.ATLASStepTypeRuntime?.qtestAction?.(step) || { kind: "none" }
   );
-  if (step.step_type === "flag_records")
-    return params.flag_action === "do_not_display"
-      ? { kind: "do_not_display" }
-      : {
-          kind: "display_text",
-          message: params.message || "",
-          outputColumn: params.output_column || errorColumn,
-        };
-  if (step.step_type === "filter_rows") return { kind: "do_not_display" };
-  if (step.step_type !== "if_then" && step.step_type !== "else")
-    return { kind: "none" };
+}
+
+/** The column a display-text action writes when the step names none. */
+function qtestErrorColumn() {
+  return phrasePlaceholder("error_message_column", "Error Message");
+}
+
+/** The outcome of a Flag Records step (legacy). */
+function atlasQtestFlagAction(step) {
+  const params = step.params || {};
+  return params.flag_action === "do_not_display"
+    ? { kind: "do_not_display" }
+    : {
+        kind: "display_text",
+        message: params.message || "",
+        outputColumn: params.output_column || qtestErrorColumn(),
+      };
+}
+
+/** The outcome of a Filter Rows step (legacy). */
+function atlasQtestFilterAction() {
+  return { kind: "do_not_display" };
+}
+
+/**
+ * The THEN/ELSE outcome of an IF/THEN or ELSE step, including legacy
+ * free-text actions.
+ * @param {any} step - Logic step object being read.
+ */
+function atlasQtestThenAction(step) {
+  const params = step.params || {};
   const actionType = params.then_action_type || "freeform";
   if (actionType === "display_text")
     return {
       kind: "display_text",
       message: params.then_text || "",
-      outputColumn: params.then_output_column || errorColumn,
+      outputColumn: params.then_output_column || qtestErrorColumn(),
     };
   if (actionType === "do_not_display") return { kind: "do_not_display" };
   if (actionType.startsWith("set_column"))
@@ -315,11 +334,8 @@ function qtestOutputColumns(entries) {
     if (clean) columns.add(clean);
   };
   entries.forEach(({ step, action }) => {
-    if (step.step_type === "create_column")
-      (typeof atlasCreatedColumnNames === "function"
-        ? atlasCreatedColumnNames(step)
-        : [step.params?.column_name || step.field]
-      ).forEach(add);
+    if (typeof atlasCreatedColumnNames === "function")
+      atlasCreatedColumnNames(step).forEach(add);
     if (action.kind === "display_text") add(action.outputColumn);
     if (action.kind === "set_column") add(action.targetColumn);
   });
@@ -407,10 +423,15 @@ function qtestDefaultActionSteps(auditName = "") {
  * @param {any} context - Audit name and, for ELSE steps, the ATLAS number of the IF step.
  */
 function qtestExpectedOutcomes(step, action, { auditName, ifNumber }) {
-  const params = step.params || {};
   const record = auditName ? `${auditName} audit record` : "audit record";
+  // The step type's definition writes its own outcomes when it has them.
+  const defined = globalThis.ATLASStepTypeRuntime?.qtestOutcomes?.(step, {
+    record,
+  });
+  if (defined) return defined;
+
   const ifStep = ifNumber ? `ATLAS logic step ${ifNumber}` : "preceding IF";
-  const isElse = step.step_type === "else";
+  const isElse = qtestStepRole(step) === "else";
   const condition = isElse ? "" : qtestConditionText(step);
   const conditionMet = isElse
     ? `the ${ifStep} condition is not met`
@@ -418,106 +439,6 @@ function qtestExpectedOutcomes(step, action, { auditName, ifNumber }) {
   const scope = isElse
     ? `records that do not meet the ${ifStep} condition`
     : "records that meet this condition";
-  switch (step.step_type) {
-    case "reference_source": {
-      const file = quotePhraseValue(params.source_file || step.source || "");
-      return [
-        `The audit run loads source file ${file} with current data.`,
-        `Source file ${file} is available, current, and contains the expected columns.`,
-      ];
-    }
-    case "union_sources":
-      return qtestUnionOutcomes(params, step);
-    case "join": {
-      if (phraseIsUnionJoinType(params.join_type))
-        return qtestUnionOutcomes(params, step);
-      const keyPairs = atlasJoinKeyPairsForText(params);
-      const pairs = (
-        keyPairs.length ? keyPairs : [{ left_field: "", right_field: "" }]
-      ).map((pair) => ({
-        left: tableColumnPlain(
-          params.left_source,
-          params.left_alias,
-          pair.left_field,
-        ),
-        right: tableColumnPlain(
-          params.right_source,
-          params.right_alias,
-          pair.right_field,
-        ),
-      }));
-      const matched = pairs
-        .map(({ left, right }) => `${left} equals ${right}`)
-        .join(" and ");
-      const agreed = pairs
-        .map(({ left, right }) => `${left} and ${right}`)
-        .join(", ");
-      return [
-        `Records are matched where ${matched}; joined values display on the ${record}.`,
-        `Source values for ${agreed} agree for each joined record.`,
-      ];
-    }
-    case "create_column": {
-      const created =
-        typeof atlasCreatedColumnNames === "function"
-          ? atlasCreatedColumnNames(step)
-          : [];
-      if (created.length > 1 || params.string_operation === "split") {
-        const names = created.map(quotePhraseValue).join(", ") || '""';
-        return [
-          `Columns ${names} are created from the parts of the split source value.`,
-          `Each of columns ${names} holds the matching part of the source value, and parts that do not exist are blank.`,
-        ];
-      }
-      const name = quotePhraseValue(params.column_name || step.field || "");
-      const blank =
-        (params.value_mode === "Static value" || !params.value_mode) &&
-        !String(params.static_value || "").trim();
-      if (blank)
-        return [
-          `Column ${name} is added to the ${record} for later logic steps to populate.`,
-          `Column ${name} is present in the output.`,
-        ];
-      return [
-        `Column ${name} is created and populated as defined in this step.`,
-        `Values in column ${name} reconcile to the source fields and rule in this step.`,
-      ];
-    }
-    case "format_field": {
-      const field = tableColumnPlain(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
-      );
-      return [
-        `${field} displays in ${params.format || "the designed"} format.`,
-        `The formatted ${field} value matches the underlying source value.`,
-      ];
-    }
-    case "split_field": {
-      const field = tableColumnPlain(
-        params.source_file,
-        params.source_alias,
-        params.field_name,
-      );
-      const output = quotePhraseValue(params.output_column || "");
-      return [
-        `Column ${output} displays ${params.split_part || "the designed part"} of ${field}.`,
-        `The ${output} value matches the corresponding part of the source ${field} value.`,
-      ];
-    }
-    case "sort_records":
-      return [
-        "Audit records display in the sort order defined in this step.",
-        "The displayed order agrees with the source values of the sort columns.",
-      ];
-    case "remove_duplicates":
-      return [
-        `Duplicate records are removed, ${atlasDuplicateKeepClause(params.duplicate_action)}.`,
-        "Source data contains the duplicate records, and any retained record follows the rule in this step.",
-      ];
-  }
-
   if (action.kind === "display_text")
     return [
       `One ${record} is displayed with ${quotePhraseValue(action.outputColumn)} = ${quotePhraseValue(action.message)} for ${scope}.`,
@@ -573,6 +494,81 @@ function qtestUnionOutcomes(params, step) {
 }
 
 /**
+ * Expected outcomes for a Join step; a UNION join reads like Union Sources.
+ * @param {any} step - Logic step object being read.
+ * @param {any} context - `record`, the audit record the outcome names.
+ */
+function atlasQtestJoinOutcomes(step, { record } = {}) {
+  const params = step.params || {};
+  if (phraseIsUnionJoinType(params.join_type))
+    return qtestUnionOutcomes(params, step);
+  const keyPairs = atlasJoinKeyPairsForText(params);
+  const pairs = (
+    keyPairs.length ? keyPairs : [{ left_field: "", right_field: "" }]
+  ).map((pair) => ({
+    left: tableColumnPlain(
+      params.left_source,
+      params.left_alias,
+      pair.left_field,
+    ),
+    right: tableColumnPlain(
+      params.right_source,
+      params.right_alias,
+      pair.right_field,
+    ),
+  }));
+  const matched = pairs
+    .map(({ left, right }) => `${left} equals ${right}`)
+    .join(" and ");
+  const agreed = pairs
+    .map(({ left, right }) => `${left} and ${right}`)
+    .join(", ");
+  return [
+    `Records are matched where ${matched}; joined values display on the ${record}.`,
+    `Source values for ${agreed} agree for each joined record.`,
+  ];
+}
+
+/**
+ * Expected outcomes for a Create Column step: split columns, an empty
+ * column, or a populated one.
+ * @param {any} step - Logic step object being read.
+ * @param {any} context - `record`, the audit record the outcome names.
+ */
+function atlasQtestCreateColumnOutcomes(step, { record } = {}) {
+  const params = step.params || {};
+  const created =
+    typeof atlasCreatedColumnNames === "function"
+      ? atlasCreatedColumnNames(step)
+      : [];
+  if (created.length > 1 || params.string_operation === "split") {
+    const names = created.map(quotePhraseValue).join(", ") || '""';
+    return [
+      `Columns ${names} are created from the parts of the split source value.`,
+      `Each of columns ${names} holds the matching part of the source value, and parts that do not exist are blank.`,
+    ];
+  }
+  const name = quotePhraseValue(params.column_name || step.field || "");
+  const blank =
+    (params.value_mode === "Static value" || !params.value_mode) &&
+    !String(params.static_value || "").trim();
+  if (blank)
+    return [
+      `Column ${name} is added to the ${record} for later logic steps to populate.`,
+      `Column ${name} is present in the output.`,
+    ];
+  return [
+    `Column ${name} is created and populated as defined in this step.`,
+    `Values in column ${name} reconcile to the source fields and rule in this step.`,
+  ];
+}
+
+/** The script role of a step's definition: "condition", "else" and so on. */
+function qtestStepRole(step) {
+  return globalThis.ATLASStepTypeRuntime?.scriptRole?.(step) || "none";
+}
+
+/**
  * Returns the ATLAS number of the IF step an ELSE step answers: the nearest
  * preceding IF sibling, else an IF parent.
  * @param {any} entries - Hierarchy entries in logic order.
@@ -583,10 +579,12 @@ function qtestElseIfNumber(entries, index) {
   for (let previous = index - 1; previous >= 0; previous -= 1) {
     const candidate = entries[previous].step;
     if (candidate.id === step.parentId)
-      return candidate.step_type === "if_then" ? entries[previous].number : "";
+      return qtestStepRole(candidate) === "condition"
+        ? entries[previous].number
+        : "";
     if (
       (candidate.parentId || null) === (step.parentId || null) &&
-      candidate.step_type === "if_then"
+      qtestStepRole(candidate) === "condition"
     )
       return entries[previous].number;
   }
@@ -616,7 +614,9 @@ function qtestSectionsFromLogicSteps() {
       qtestExpectedOutcomes(step, action, {
         auditName,
         ifNumber:
-          step.step_type === "else" ? qtestElseIfNumber(entries, index) : "",
+          qtestStepRole(step) === "else"
+            ? qtestElseIfNumber(entries, index)
+            : "",
       }).map(qtestSentenceCase);
     return {
       section: qtestSectionForStep(step, action, outputColumns),
