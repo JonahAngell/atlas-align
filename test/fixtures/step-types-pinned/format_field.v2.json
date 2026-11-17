@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "format_field",
+  "version": 2,
+  "label": "Format Field",
+  "category": "transform",
+  "order": 50,
+  "description": "Format values in a selected field.",
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "format_field",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "{{tableColumn param.source_file param.source_alias param.field_name}} displays in {{default param.format \"the designed\"}} format.",
+        "source": "The formatted {{tableColumn param.source_file param.source_alias param.field_name}} value matches the underlying source value."
+      }
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}
