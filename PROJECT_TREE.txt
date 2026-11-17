@@ -2387,6 +2387,7 @@
 │   ├── 12-export-foundation.js
 │   ├── 12b-code-export.js
 │   ├── 13-catalog-field-browser.js
+│   ├── 13a-step-type-runtime.js
 │   ├── 14-catalog-driven-builder.js
 │   ├── 15a-audit-library-ui.js
 │   ├── 15b-source-library-ui.js
@@ -2783,6 +2784,7 @@
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
 │   ├── step-type-engine.test.js
+│   ├── step-type-runtime.test.js
 │   ├── step-type-snapshots.test.js
 │   ├── string-transform-split.test.js
 │   ├── user-impersonation.test.js

@@ -126,9 +126,30 @@ function atlasCodeEntries() {
   });
 }
 
+/** Built-in step type that stands for each definition script role. */
+const ATLAS_CODE_ROLE_KINDS = Object.freeze({
+  source: "reference_source",
+  join: "join",
+  union: "union_sources",
+  sort: "sort_records",
+  dedupe: "remove_duplicates",
+  filter: "filter_rows",
+  column: "create_column",
+  none: "none",
+});
+
+/**
+ * The step type the script builders place a step as: the built-in type for a
+ * definition's script role, or the step's own type.
+ */
+function atlasCodeStepKind(step) {
+  const role = globalThis.ATLASStepTypeRuntime?.scriptRole?.(step);
+  return (role && ATLAS_CODE_ROLE_KINDS[role]) || step?.step_type;
+}
+
 /** Steps that start a new data set instead of changing the current one. */
 function atlasCodeStartsData(entry) {
-  const type = entry.step?.step_type;
+  const type = atlasCodeStepKind(entry.step);
   return (
     type === "reference_source" || type === "join" || type === "union_sources"
   );
@@ -136,7 +157,7 @@ function atlasCodeStartsData(entry) {
 
 function atlasCodeIsUnion(step) {
   return (
-    step?.step_type === "union_sources" ||
+    atlasCodeStepKind(step) === "union_sources" ||
     String(step?.params?.join_type || "").toUpperCase() === "UNION"
   );
 }
@@ -320,7 +341,7 @@ function atlasCodeFreeformReason(entry) {
 /** The step's code for one dialect, or the reason it cannot be converted. */
 function atlasCodeClassify(entry, dialect, placeholders) {
   const formulas = entry.formulas;
-  const type = entry.step?.step_type;
+  const type = atlasCodeStepKind(entry.step);
   const code = String(formulas?.[dialect] || "").trim();
   if (!formulas) return { gap: "This step type has no code equivalent." };
   if (!code) {
@@ -591,7 +612,7 @@ function buildAuditSqlScript() {
     }
     if (result.gap) return skip(result.gap, result.code);
     const sql = result.code;
-    const type = entry.step.step_type;
+    const type = atlasCodeStepKind(entry.step);
     const notes = atlasCodeNotes(entry.formulas);
     const withNotes = [heading, ...notes].join("\n");
 
@@ -802,7 +823,7 @@ function buildAuditPythonScript() {
       );
       return;
     }
-    const type = entry.step.step_type;
+    const type = atlasCodeStepKind(entry.step);
     const params = entry.step.params || {};
     if (type === "join" && !atlasCodeIsUnion(entry.step)) {
       const left = atlasDevSourceAlias(params.left_source, params.left_alias);

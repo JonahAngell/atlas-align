@@ -1147,6 +1147,50 @@
       });
       return issues;
     },
+    /** Validation rules and required fields from step type definitions. */
+    stepTypeRules(context) {
+      const runtime = global.ATLASStepTypeRuntime;
+      if (!runtime?.validate) return [];
+      return context.audit.steps.flatMap((step) => {
+        if (!step.enabled) return [];
+        const found =
+          runtime.validate({
+            id: step.id,
+            step_type: step.type,
+            title: step.title,
+            source: step.source,
+            field: step.field,
+            params: step.params,
+          }) || [];
+        return found.map((entry) =>
+          issue(
+            `${step.id}:${entry.id}`,
+            {
+              page: "steps",
+              stepId: step.id,
+              ...(entry.param ? { field: entry.param } : {}),
+            },
+            {
+              ...(entry.param
+                ? {
+                    control: `param:${entry.param}`,
+                    actionData: {
+                      repair: "step-param",
+                      param: entry.param,
+                      label: entry.label || entry.param,
+                      stepId: step.id,
+                    },
+                  }
+                : { canFix: false }),
+              severity: entry.severity,
+              ...(entry.title ? { title: entry.title } : {}),
+              summary: entry.message,
+              detail: entry.message,
+            },
+          ),
+        );
+      });
+    },
     missingAction(context) {
       return context.audit.steps.flatMap((step) => {
         if (
@@ -2915,6 +2959,31 @@
           showFixError(fix, error);
           return false;
         }
+        commitAudit("Audit issue updated.");
+      });
+      return true;
+    }
+    if (repair === "step-param" && data.param) {
+      const fix = openFixShell(
+        entry,
+        trigger,
+        "Edit value",
+        `<label>${safeText(data.label || "Value")}<input data-fix-text></label>${actionRow("Save")}`,
+      );
+      const input = fix.root.querySelector("[data-fix-text]");
+      input.value = string(step?.params?.[data.param]);
+      bindFixSave(fix, () => {
+        const value = input.value.trim();
+        if (!value) {
+          showFixError(fix, "Enter a value before saving.");
+          input.focus();
+          return false;
+        }
+        if (!step) {
+          showFixError(fix, "That logic step is no longer on the audit.");
+          return false;
+        }
+        ensureParams(step)[data.param] = value;
         commitAudit("Audit issue updated.");
       });
       return true;
