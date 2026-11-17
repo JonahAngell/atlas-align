@@ -77,7 +77,7 @@ function atlasImportFail(message) {
 }
 
 function atlasImportNormalizeText(value) {
-  const raw = String(value || "")
+  const raw = atlasImportRepairEncoding(value)
     .replace(/[“”]/g, '"')
     .replace(/\u00a0/g, " ");
   let out = "";
@@ -927,13 +927,26 @@ function atlasImportParseThenAction(action) {
         'Display text needs a column, such as in new column "Error Message".',
       );
     const column = atlasImportReadQuote(rest, columnLead[0].length);
-    if (!column || !atlasImportRemainderOk(rest.slice(column.end)))
+    if (!column)
+      return atlasImportFail("Display text needs a quoted output column.");
+    let tail = rest.slice(column.end);
+    let separator = null;
+    const separatorLead = /^\s*,?\s*appended with separator\s+/i.exec(tail);
+    if (separatorLead) {
+      const quoted = atlasImportReadQuote(tail, separatorLead[0].length);
+      if (!quoted)
+        return atlasImportFail("The message separator needs quotes.");
+      separator = quoted.value;
+      tail = tail.slice(quoted.end);
+    }
+    if (!atlasImportRemainderOk(tail))
       return atlasImportFail("Display text needs a quoted output column.");
     return {
       params: {
         then_action_type: "display_text",
         then_text: message.value,
         then_output_column: column.value,
+        ...(separator === null ? {} : { then_text_separator: separator }),
       },
       references: [],
       controls: [
@@ -2143,8 +2156,194 @@ function atlasImportParseElse(text) {
   return atlasImportDraft("else", action);
 }
 
+/**
+ * Repairs text that was saved as UTF-8 and read back as Windows-1252, as in
+ * notebook comments: â€œ and â€ for curly quotes, â€™ for an apostrophe and Â
+ * before a non-breaking space.
+ * @param {string} value - Raw pasted text.
+ */
+function atlasImportRepairEncoding(value) {
+  return String(value || "")
+    .replace(/â€™/g, "'")
+    .replace(/â€œ|â€\u009d|â€/g, '"')
+    .replace(/Â(?=[\s ])/g, "");
+}
+
+/**
+ * Drops code-comment markers from pasted requirement lines: a leading "#" or
+ * "//" and section rulers such as "# 8.1 -------".
+ * @param {string} value - Raw pasted text.
+ */
+function atlasImportStripCommentMarkers(value) {
+  return String(value || "")
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(?:#|\/\/)?\s*[\d.]*\s*-{3,}\s*$/.test(line))
+    .map((line) => line.replace(/^\s*(?:#+|\/\/)\s?/, ""))
+    .join("\n");
+}
+
+/** Quoted tokens in text, each with its start and end index. */
+function atlasImportQuotedTokens(text) {
+  return [...String(text || "").matchAll(/"(?:[^"\\]|\\.)*"/g)].map(
+    (match) => ({
+      text: match[0],
+      start: match.index,
+      end: match.index + match[0].length,
+    }),
+  );
+}
+
+/** Applies a replacement to the parts of text outside double quotes. */
+function atlasImportReplaceOutsideQuotes(text, pattern, replacement) {
+  let out = "";
+  let cursor = 0;
+  for (const token of atlasImportQuotedTokens(text)) {
+    out += text.slice(cursor, token.start).replace(pattern, replacement);
+    out += token.text;
+    cursor = token.end;
+  }
+  return out + text.slice(cursor).replace(pattern, replacement);
+}
+
+/** Adds "file" before a quoted table name followed by column "...". */
+function atlasImportAddFileKeyword(text) {
+  let out = "";
+  let cursor = 0;
+  for (const token of atlasImportQuotedTokens(text)) {
+    const before = text.slice(cursor, token.start);
+    const prefix = out + before;
+    const needsFile =
+      /^\s+column\s+"/i.test(text.slice(token.end)) &&
+      !/\b(?:file|column)\s*$/i.test(prefix);
+    out = prefix + (needsFile ? "file " : "") + token.text;
+    cursor = token.end;
+  }
+  return out + text.slice(cursor);
+}
+
+/**
+ * Expands "<condition> or is blank" into a group that repeats the column:
+ * (file "a" column "b" is equal to "x" OR file "a" column "b" is blank/null).
+ */
+function atlasImportExpandOrBlank(text) {
+  const shorthand = /\s+or\s+(is\s+(?:not\s+)?blank\/null)\b/i;
+  for (let guard = 0; guard < 20; guard += 1) {
+    // Blank quoted text but keep the quote marks, so file "..." still matches.
+    const mask = text.replace(
+      /"(?:[^"\\]|\\.)*"/g,
+      (quoted) => `"${" ".repeat(quoted.length - 2)}"`,
+    );
+    const match = shorthand.exec(mask);
+    if (!match) return text;
+    const head = mask.slice(0, match.index);
+    const starts = [
+      ...head.matchAll(/(?:^|\b(?:IF|AND|OR)\s+|\(\s*)(file\s+"|column\s+")/gi),
+    ];
+    const start = starts.at(-1);
+    if (!start) return text;
+    const conditionStart = start.index + start[0].length - start[1].length;
+    const column = atlasImportReadTableColumn(text.slice(conditionStart));
+    if (!column) return text;
+    const columnText = text
+      .slice(conditionStart, conditionStart + column.end)
+      .trim();
+    text = `${text.slice(0, conditionStart)}(${text.slice(conditionStart, match.index)} OR ${columnText} ${match[1]})${text.slice(match.index + match[0].length)}`;
+  }
+  return text;
+}
+
+const ATLAS_IMPORT_JOIN_LEAD =
+  /^(INNER\s+|LEFT\s+(?:OUTER\s+)?|RIGHT\s+(?:OUTER\s+)?|FULL\s+(?:OUTER\s+)?)?JOIN\s+/i;
+
+/** Join type named at the start of a notebook-style JOIN line, if any. */
+function atlasImportNotebookJoinType(text) {
+  const lead = ATLAS_IMPORT_JOIN_LEAD.exec(String(text || ""));
+  const word = (lead?.[1] || "").trim().split(/\s+/)[0].toUpperCase();
+  return (
+    {
+      INNER: "INNER JOIN",
+      LEFT: "LEFT JOIN",
+      RIGHT: "RIGHT JOIN",
+      FULL: "FULL OUTER JOIN",
+    }[word] || ""
+  );
+}
+
+/**
+ * Rewrites the wording analysts use in notebooks and specs into the sentences
+ * the builder writes, so they import as written. Quoted names are untouched.
+ * @param {string} value - Normalized single-line text.
+ */
+function atlasImportNotebookWording(value) {
+  let text = String(value || "");
+  const q = '"(?:[^"\\\\]|\\\\.)*"';
+  const outside = (pattern, replacement) => {
+    text = atlasImportReplaceOutsideQuotes(text, pattern, replacement);
+  };
+
+  // Reference [source data] file "a" as "b" / Reference ... "a" file as "b".
+  text = text.replace(
+    new RegExp(`^reference\\b[^"]*(${q})(?:\\s+file)?\\s+as\\s+(${q})`, "i"),
+    "Reference source file $1 as $2",
+  );
+  // UNION "a" AND "b" as "c".
+  text = text.replace(
+    new RegExp(
+      `^union\\s+(?:file\\s+)?(${q})\\s+and\\s+(?:file\\s+)?(${q})\\s*,?\\s*(?:reference\\s+)?as\\s+(?:file\\s+)?(${q})`,
+      "i",
+    ),
+    "UNION file $1 and file $2, reference as file $3",
+  );
+  // JOIN "a" AND "b" on column "k".
+  text = text.replace(
+    new RegExp(
+      `^(?:(?:INNER|LEFT(?:\\s+OUTER)?|RIGHT(?:\\s+OUTER)?|FULL(?:\\s+OUTER)?)\\s+)?JOIN\\s+(?:file\\s+)?(${q})\\s+and\\s+(?:file\\s+)?(${q})\\s+on\\s+(?:column\\s+)?(${q})`,
+      "i",
+    ),
+    "Join file $1 column $3 and file $2 column $3",
+  );
+  // Create new column titled "a" [in table "b"] ...
+  if (/^create new (?:blank )?columns?\b/i.test(text)) {
+    text = text.replace(/^(create new (?:blank )?column)\s+titled\s+/i, "$1 ");
+    text = text.replace(
+      new RegExp(
+        `^(create new (?:blank )?column\\s+${q})\\s+in\\s+(?:table|file)\\s+${q}`,
+        "i",
+      ),
+      "$1",
+    );
+  }
+
+  outside(/\b(?:is\s+)?not\s+equals?(?:\s+to)?\b/gi, "is not equal to");
+  outside(/\bdoes\s+not\s+equal\b/gi, "is not equal to");
+  outside(
+    /(?<!\b(?:or|not|than)\s+)\b(?:is\s+)?equals?(?:\s+to)?\b/gi,
+    "is equal to",
+  );
+  outside(/\bis\s+not\s+(?:null|blank)(?!\/)\b/gi, "is not blank/null");
+  outside(/\bis\s+(?:null|blank)(?!\/)\b/gi, "is blank/null");
+  outside(/\bnewly\s+created\s+column\b/gi, "new column");
+  outside(/\b(THEN|ELSE)\s+text\s+response\b/gi, "$1 display text response");
+  outside(
+    /\bvalue appears more than once(?: in the column)?\s*,?\s*(?:THEN\s+)?(?:drop|remove) all (?:rows|records)(?: where it appears)?/gi,
+    "value appears more than once in the column, Drop all duplicated records",
+  );
+  outside(
+    /\bvalue appears more than once(?: in the column)?\s*,?\s*(?:THEN\s+)?keep (?:the )?(first|last)(?: record| row)?/gi,
+    (_match, which) =>
+      `value appears more than once in the column, Keep ${which.toLowerCase()} record`,
+  );
+
+  text = atlasImportAddFileKeyword(text);
+  return atlasImportExpandOrBlank(text);
+}
+
 function atlasParseImportedLogicText(value) {
-  const text = atlasImportNormalizeText(atlasImportBulletsToParens(value));
+  const text = atlasImportNotebookWording(
+    atlasImportNormalizeText(
+      atlasImportBulletsToParens(atlasImportStripCommentMarkers(value)),
+    ),
+  );
   if (!text) return atlasImportFail("Enter a logic sentence to import.");
   const head = text.toLowerCase();
   if (head.startsWith("reference source file"))
@@ -2156,7 +2355,19 @@ function atlasParseImportedLogicText(value) {
     head.startsWith("create new column")
   )
     return atlasImportParseCreate(text);
-  if (head.startsWith("join ")) return atlasImportParseJoin(text);
+  if (head.startsWith("join ")) {
+    const draft = atlasImportParseJoin(text);
+    const joinType = atlasImportNotebookJoinType(
+      atlasImportStripCommentMarkers(value).trim(),
+    );
+    if (draft.ok && joinType) {
+      draft.params.join_type = joinType;
+      draft.controls = draft.controls.map((control) =>
+        control.id === "join_type" ? { ...control, value: joinType } : control,
+      );
+    }
+    return draft;
+  }
   if (head.startsWith("union file")) return atlasImportParseUnion(text);
   if (head.startsWith("format ")) return atlasImportParseFormat(text);
   if (head.startsWith("split ")) return atlasImportParseSplit(text);
@@ -2168,7 +2379,13 @@ function atlasParseImportedLogicText(value) {
   if (head.startsWith("else")) return atlasImportParseElse(text);
   if (/^if\b/i.test(text)) {
     const split = atlasImportSplitThen(text);
-    if (!split) return atlasImportFail(ATLAS_IMPORT_UNRECOGNIZED);
+    // A condition-only IF ("IF ...:") owns the nested steps under it.
+    if (!split) {
+      const before = text.replace(/\s*:\s*$/, "");
+      const parsed = atlasImportParseConditions(before);
+      if (!parsed.ok) return parsed;
+      return atlasImportParseIfThen(before, "");
+    }
     // Grouped conditions only exist on IF / THEN rules, whatever the action.
     const grouped = atlasImportParseConditions(split.before);
     if (grouped.ok && grouped.conditionTree)

@@ -759,6 +759,53 @@ function ensureIfThenPrefix(text) {
   return `IF ${value}`;
 }
 
+/** Separator placed between messages when a Display text column already has one. */
+const ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR = "||";
+
+/**
+ * The separator a Display text action appends with. Blank means the default.
+ * Spaces are kept, so " | " and "|" are different separators.
+ * @param {any} params - THEN/ELSE step params.
+ */
+function atlasDisplayTextSeparator(params = {}) {
+  const value = params?.then_text_separator;
+  return value === undefined || value === null || value === ""
+    ? ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR
+    : String(value);
+}
+
+/**
+ * Sentence clause naming a non-default separator; empty for the default, so
+ * sentences written before separators existed read the same.
+ * @param {any} params - THEN/ELSE step params.
+ */
+function atlasDisplayTextSeparatorClause(params = {}) {
+  const separator = atlasDisplayTextSeparator(params);
+  if (separator === ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR) return "";
+  return renderCatalogPhrase(
+    "analyst_logic.if_then.then_display_text_separator",
+    {
+      separator: `"${separator.replace(/"/g, '\\"')}"`,
+    },
+  );
+}
+
+/**
+ * Placeholder values for the Display text sentence templates.
+ * @param {any} params - THEN/ELSE step params.
+ * @param {string} [message] - Message text to show instead of params.then_text.
+ */
+function atlasDisplayTextPhraseValues(params = {}, message) {
+  return {
+    message: message ?? quotePhraseValue(params.then_text || ""),
+    output_column: quotePhraseValue(
+      params.then_output_column ||
+        phrasePlaceholder("error_message_column", "Error Message"),
+    ),
+    separator_clause: atlasDisplayTextSeparatorClause(params),
+  };
+}
+
 /**
  * Formats the THEN action for an IF/THEN step.
  * @param {any} step - Logic step object being read or modified.
@@ -767,13 +814,10 @@ function thenActionPlain(step) {
   const params = step.params || {};
   const actionType = params.then_action_type || "freeform";
   if (actionType === "display_text")
-    return renderCatalogPhrase("analyst_logic.if_then.then_display_text", {
-      message: quotePhraseValue(params.then_text || ""),
-      output_column: quotePhraseValue(
-        params.then_output_column ||
-          phrasePlaceholder("error_message_column", "Error Message"),
-      ),
-    });
+    return renderCatalogPhrase(
+      "analyst_logic.if_then.then_display_text",
+      atlasDisplayTextPhraseValues(params),
+    );
   if (actionType === "set_column_value")
     return renderCatalogPhrase("analyst_logic.if_then.then_set_column_value", {
       target_column: quotePhraseValue(params.then_target_column || ""),
@@ -800,13 +844,10 @@ function elseActionPlain(step) {
   const params = step.params || {};
   const actionType = params.then_action_type || "freeform";
   if (actionType === "display_text")
-    return renderCatalogPhrase("analyst_logic.else.display_text", {
-      message: quotePhraseValue(params.then_text || ""),
-      output_column: quotePhraseValue(
-        params.then_output_column ||
-          phrasePlaceholder("error_message_column", "Error Message"),
-      ),
-    });
+    return renderCatalogPhrase(
+      "analyst_logic.else.display_text",
+      atlasDisplayTextPhraseValues(params),
+    );
   if (actionType === "set_column_value")
     return renderCatalogPhrase("analyst_logic.else.set_column_value", {
       target_column: quotePhraseValue(params.then_target_column || ""),

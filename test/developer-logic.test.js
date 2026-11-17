@@ -280,7 +280,7 @@ test("Display and Do Not Display become keep-row filters", () => {
   assert.match(show.python, /df = df\[mask\]$/);
 });
 
-test("display text writes the message into the output column", () => {
+test("display text appends the message to the output column", () => {
   const ctx = load();
   const result = formulas(
     ctx,
@@ -290,15 +290,40 @@ test("display text writes the message into the output column", () => {
       then_output_column: "Error Message",
     }),
   );
-  assert.equal(result.excel, '=IF([@[Plan]]="Bonus", "Check plan", "")');
+  assert.equal(
+    result.excel,
+    '=IF([@[Plan]]="Bonus", IF([@[Error Message]]="", "Check plan", [@[Error Message]]&"||"&"Check plan"), [@[Error Message]])',
+  );
   assert.equal(
     result.sql,
-    "CASE WHEN [Plan] = 'Bonus' THEN 'Check plan' END AS [Error Message]",
+    "CASE WHEN [Plan] = 'Bonus' THEN CONCAT_WS('||', NULLIF([Error Message], ''), 'Check plan') ELSE [Error Message] END AS [Error Message]",
   );
-  assert.match(
+  assert.equal(
     result.python,
-    /df\.loc\[mask, "Error Message"\] = "Check plan"$/,
+    [
+      'mask = df["Plan"] == "Bonus"',
+      'df["Error Message"] = df.get("Error Message", "")',
+      'existing = df.loc[mask, "Error Message"].fillna("").astype(str)',
+      'df.loc[mask, "Error Message"] = existing.where(existing == "", existing + "||") + "Check plan"',
+    ].join("\n"),
   );
+  assert.ok(result.notes.some((note) => /helper column/.test(note)));
+});
+
+test("display text uses the step's own separator", () => {
+  const ctx = load();
+  const result = formulas(
+    ctx,
+    ifStep([leaf("Plan", "is equal to", "Bonus")], {
+      then_action_type: "display_text",
+      then_text: "Check plan",
+      then_output_column: "Error Message",
+      then_text_separator: "; ",
+    }),
+  );
+  assert.match(result.excel, /\[@\[Error Message\]\]&"; "&"Check plan"/);
+  assert.match(result.sql, /CONCAT_WS\('; ', NULLIF/);
+  assert.match(result.python, /existing \+ "; "\) \+ "Check plan"$/);
 });
 
 test("an ELSE writing the same column folds into the IF formulas", () => {
@@ -323,12 +348,15 @@ test("an ELSE writing the same column folds into the IF formulas", () => {
   const result = formulas(ctx, parent);
   assert.equal(
     result.excel,
-    '=IF([@[Plan]]="Bonus", "Bonus plan", "Other plan")',
+    '=IF([@[Plan]]="Bonus", IF([@[Error Message]]="", "Bonus plan", [@[Error Message]]&"||"&"Bonus plan"), IF([@[Error Message]]="", "Other plan", [@[Error Message]]&"||"&"Other plan"))',
   );
-  assert.match(result.sql, /THEN 'Bonus plan' ELSE 'Other plan' END/);
+  assert.match(
+    result.sql,
+    /THEN CONCAT_WS\('\|\|', NULLIF\(\[Error Message\], ''\), 'Bonus plan'\) ELSE CONCAT_WS\('\|\|', NULLIF\(\[Error Message\], ''\), 'Other plan'\) END/,
+  );
   assert.match(
     result.python,
-    /df\.loc\[~mask, "Error Message"\] = "Other plan"$/,
+    /df\.loc\[~mask, "Error Message"\] = existing\.where\(existing == "", existing \+ "\|\|"\) \+ "Other plan"$/,
   );
   assert.equal(
     ctx.developerLogic(elseStep),

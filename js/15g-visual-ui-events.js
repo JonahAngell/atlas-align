@@ -460,11 +460,15 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
       phrasePlaceholder("error_message_column", "Error Message");
     const previewText = `${prefix} ${renderCatalogPhrase(
       "analyst_logic.if_then.then_display_text",
-      {
-        message: p.then_text ? quotePhraseValue(p.then_text) : "[message]",
-        output_column: quotePhraseValue(outputColumn),
-      },
+      atlasDisplayTextPhraseValues(
+        { ...p, then_output_column: outputColumn },
+        p.then_text ? quotePhraseValue(p.then_text) : "[message]",
+      ),
     )}.`;
+    const separatorValue =
+      p.then_text_separator === undefined || p.then_text_separator === null
+        ? ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR
+        : p.then_text_separator;
     return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Message<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="e.g., Hourly Rate Mismatch"><span class="hint">Shown for each record that matches the conditions.</span></label><label class="full">Write to Column${fieldInputFromOptions(
       {
         name: "then_output_column",
@@ -472,7 +476,7 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
         placeholder: "Select or create column",
         sourceFile: "",
       },
-    )}<span class="hint">The column where the message appears. Defaults to Error Message.</span></label><div class="logic-editor-callout full display-text-preview" aria-live="polite"><strong>Preview:</strong> ${esc(previewText)}</div><label class="full">Notes (optional)<textarea data-param="then_action" placeholder="Internal notes about this action">${esc(p.then_action || "")}</textarea></label></div>`;
+    )}<span class="hint">The column where the message appears. Defaults to Error Message.</span></label><label class="full">Separator<input data-param="then_text_separator" value="${esc(separatorValue)}" placeholder="${esc(ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR)}" autocomplete="off" spellcheck="false"><span class="hint">Goes between messages when an earlier step already wrote one to this column. Leave blank to use ${esc(ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR)}.</span></label><div class="logic-editor-callout full display-text-preview" aria-live="polite"><strong>Preview:</strong> ${esc(previewText)}</div><label class="full">Notes (optional)<textarea data-param="then_action" placeholder="Internal notes about this action">${esc(p.then_action || "")}</textarea></label></div>`;
   }
   if (atlasIsDisplayActionType(actionType)) {
     const hide = actionType === "do_not_display";
