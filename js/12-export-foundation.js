@@ -359,12 +359,6 @@ function qtestConditionUsesOutputColumn(step, outputColumns) {
 function qtestSectionForStep(step, action, outputColumns) {
   const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
   if (defined?.section) return defined.section;
-  switch (step.step_type) {
-    case "join":
-    case "union_sources":
-    case "create_column":
-      return "D";
-  }
   if (action.kind === "display_text")
     return /^research\b/i.test(String(action.message).trim()) ? "C" : "A";
   if (action.kind === "do_not_display")
@@ -382,13 +376,6 @@ function qtestSectionForStep(step, action, outputColumns) {
 function qtestTestTypeForStep(step, action) {
   const defined = globalThis.ATLASStepTypeRuntime?.qtest?.(step);
   if (defined?.testType) return defined.testType;
-  switch (step.step_type) {
-    case "join":
-    case "union_sources":
-      return "Integration";
-    case "create_column":
-      return "Data Validation";
-  }
   if (action.kind === "display_text" || action.kind === "none") return "UAT";
   if (action.kind === "do_not_display") return "Negative";
   if (action.kind === "set_column") return "Data Validation";

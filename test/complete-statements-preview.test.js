@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadStepTypeScripts } from "./support/step-type-scripts.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -61,6 +62,7 @@ function loadPreview(entries) {
     context,
   );
   vm.runInContext(read("js/02b-developer-formulas.js"), context);
+  loadStepTypeScripts(context);
   context.hierarchicalStepEntries = () =>
     entries.map((entry) => ({ ...entry, level: 0, branchLabel: "" }));
   return context;

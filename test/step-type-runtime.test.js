@@ -234,11 +234,18 @@ const run = (context, code) =>
   JSON.parse(JSON.stringify(vm.runInContext(code, context) ?? null));
 
 const BUNDLED_IDS = [
+  "create_column",
+  "else",
+  "filter_rows",
+  "flag_records",
   "format_field",
+  "if_then",
+  "join",
   "reference_source",
   "remove_duplicates",
   "sort_records",
   "split_field",
+  "union_sources",
 ];
 
 test("the repository definitions load with the app", async () => {
@@ -281,9 +288,19 @@ test("the repository definitions load with the app", async () => {
     run(context, 'atlasRuleTypeDescription("sort_records")'),
     "Sort records by one or more fields.",
   );
+  assert.equal(
+    run(context, 'atlasRuleTypeDescription("join")'),
+    "Combine sources with Join or Union logic.",
+  );
+  // Legacy types keep their import titles.
+  assert.equal(run(context, "ATLAS_IMPORT_TITLES.else"), "ELSE");
+  assert.equal(
+    run(context, "ATLAS_IMPORT_TITLES.flag_records"),
+    "Flag Records",
+  );
 });
 
-test("an empty registry offers only the built-in step types", async () => {
+test("an empty registry offers no step types", async () => {
   const context = await loadApp();
   vm.runInContext(
     `ATLASStepTypeRuntime.useRegistry(
@@ -291,11 +308,88 @@ test("an empty registry offers only the built-in step types", async () => {
     )`,
     context,
   );
-  assert.deepEqual(run(context, "STEP_TYPE_OPTIONS.map(([value]) => value)"), [
-    "create_column",
-    "if_then",
-    "join",
+  assert.deepEqual(
+    run(context, "STEP_TYPE_OPTIONS.map(([value]) => value)"),
+    [],
+  );
+});
+
+test("behavior blocks build the types that came with ATLAS Align", async () => {
+  const context = await loadApp();
+  context.__union = {
+    id: "u1",
+    step_type: "union_sources",
+    source: "Combined",
+    params: {
+      union_left_source: "WD_Workers",
+      union_right_source: "SAP_HI0256",
+    },
+  };
+  // The legacy Union Sources step opens as a UNION Join.
+  const union = run(context, "normalizeCatalogStep(__union)");
+  assert.equal(union.step_type, "join");
+  assert.equal(union.type, "join");
+  assert.equal(union.params.join_type, "UNION");
+  assert.equal(union.params.left_source, "WD_Workers");
+  assert.equal(union.params.output_source, "Combined");
+  assert.match(run(context, "renderGuidedBuilder(__union)"), /Union Sources/);
+
+  // A step that names no type opens as IF / THEN.
+  context.__blank = { id: "b1", params: {} };
+  const blank = run(context, "normalizeCatalogStep(__blank)");
+  assert.equal(blank.step_type, "if_then");
+  assert.equal(blank.type, "if");
+  assert.equal(blank.title, "IF / THEN");
+  assert.ok(blank.params.conditions_json);
+
+  // The legacy type name still finds its definition.
+  context.__create = {
+    id: "c1",
+    type: "create",
+    field: "Total",
+    params: { value_mode: "Static value", static_value: "1" },
+  };
+  const created = run(context, "normalizeCatalogStep(__create)");
+  assert.equal(created.step_type, "create_column");
+  assert.equal(created.params.column_name, "Total");
+  assert.deepEqual(run(context, "atlasCreatedColumnNames(__create)"), [
+    "Total",
   ]);
+  assert.match(run(context, "analystLogic(__create)"), /Total/);
+  assert.equal(
+    run(context, "ATLASStepTypeRuntime.scriptRole(__create)"),
+    "column",
+  );
+  assert.match(
+    run(context, "renderGuidedBuilder(__create)"),
+    /^<div class="selected-source-only-builder"><div class="guided-builder"><h4>Create Column<\/h4>/,
+  );
+
+  // A new type can reuse a block under its own label and export.
+  vm.runInContext(
+    `(() => {
+       const join = ATLASStepTypes.bundled.definitions.find((d) => d.id === "join");
+       const registry = ATLASStepTypes.registry.createRegistry({
+         schema: ATLASStepTypes.bundled.schema,
+         helpers: [...ATLASStepTypeRuntime.HELPER_NAMES],
+         blocks: [...ATLASStepTypeRuntime.BLOCK_NAMES],
+         handlers: [...ATLASStepTypeRuntime.HANDLER_NAMES],
+       });
+       const added = registry.add({ ...join, id: "lookup_join", label: "Lookup Join", order: 45 });
+       if (!added.ok) throw new Error(JSON.stringify(added.errors));
+       ATLASStepTypeRuntime.useRegistry(registry);
+     })()`,
+    context,
+  );
+  context.__lookup = {
+    id: "l1",
+    step_type: "lookup_join",
+    params: { left_source: "WD_Workers", right_source: "SAP_HI0256" },
+  };
+  run(context, "normalizeCatalogStep(__lookup)");
+  assert.equal(context.__lookup.params.join_type, "INNER JOIN");
+  assert.equal(context.__lookup.title, "Lookup Join");
+  assert.match(run(context, "analystLogic(__lookup)"), /^Join /);
 });
 
 test("library blocks and handlers build the list editors", async () => {

@@ -8,31 +8,13 @@
 // -----------------------------------------------------------------------------
 // Step type catalog
 // -----------------------------------------------------------------------------
-// Built-in picker entries as [value, label, order]. The registry's
-// definitions are placed among them by their own order.
-const ATLAS_BUILT_IN_STEP_TYPE_OPTIONS = [
-  ["create_column", "Create Column", 20],
-  ["if_then", "IF / THEN", 30],
-  ["join", "Join / Union Sources", 40],
-];
-// [value, label] for every type the picker offers.
-const STEP_TYPE_OPTIONS = ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map(
-  ([value, label]) => [value, label],
-);
-const LEGACY_TYPE_MAP = {
-  create: "create_column",
-  if: "if_then",
-  compare: "if_then",
-  join: "join",
-  transform: "filter_rows",
-};
+// Every step type is a definition in catalogs/step-types/, so the picker list
+// comes from the registry. [value, label] for every type the picker offers.
+const STEP_TYPE_OPTIONS = [];
 
-/** Rebuilds STEP_TYPE_OPTIONS in place from the built-ins and the registry. */
+/** Rebuilds STEP_TYPE_OPTIONS in place from the registry. */
 function atlasSyncStepTypeOptions() {
-  const runtime = globalThis.ATLASStepTypeRuntime;
-  const merged = runtime
-    ? runtime.mergeTypeOptions(ATLAS_BUILT_IN_STEP_TYPE_OPTIONS)
-    : ATLAS_BUILT_IN_STEP_TYPE_OPTIONS.map(([value, label]) => [value, label]);
+  const merged = globalThis.ATLASStepTypeRuntime?.mergeTypeOptions?.([]) || [];
   STEP_TYPE_OPTIONS.splice(0, STEP_TYPE_OPTIONS.length, ...merged);
 }
 // onChange calls the listener once at once; the bundled definitions are
@@ -72,17 +54,7 @@ function isUnionJoinType(joinType) {
 function legacyTypeFromStepType(stepType) {
   const definition =
     globalThis.ATLASStepTypeRuntime?.definitionById?.(stepType);
-  if (definition) return definition.legacyType || "transform";
-  if (stepType === "create_column") return "create";
-  if (stepType === "join") return "join";
-  if (
-    stepType === "if_then" ||
-    stepType === "else" ||
-    stepType === "filter_rows" ||
-    stepType === "flag_records"
-  )
-    return "if";
-  return "transform";
+  return definition?.legacyType || "transform";
 }
 
 // -----------------------------------------------------------------------------
@@ -95,79 +67,22 @@ function legacyTypeFromStepType(stepType) {
  */
 function normalizeCatalogStep(step, index = 0) {
   if (!step) return step;
-  if (globalThis.ATLASStepTypeRuntime?.normalize?.(step, index)) return step;
-  step.step_type =
-    step.step_type || LEGACY_TYPE_MAP[step.type] || step.type || "if_then";
+  // A step that names no type has always opened as IF / THEN.
+  if (!step.step_type && !step.type) step.step_type = "if_then";
+  if (!globalThis.ATLASStepTypeRuntime?.normalize?.(step, index))
+    atlasNormalizeUnknownStep(step, index);
+  atlasNormalizeMathParams(step);
+  atlasNormalizeStringTransformParams(step);
+  return step;
+}
+
+/** A step whose type no definition claims keeps its type and params. */
+function atlasNormalizeUnknownStep(step, index = 0) {
+  step.step_type = step.step_type || step.type;
   step.type = legacyTypeFromStepType(step.step_type);
   step.params =
     step.params && typeof step.params === "object" ? step.params : {};
-  if (step.step_type === "union_sources") {
-    step.step_type = "join";
-    step.type = "join";
-    step.params.join_type = "UNION";
-    step.params.left_source =
-      step.params.left_source || step.params.union_left_source || "";
-    step.params.right_source =
-      step.params.right_source || step.params.union_right_source || "";
-    step.params.output_source = step.params.output_source || step.source || "";
-    step.params.left_alias =
-      step.params.left_alias || sourceAliasFor(step.params.left_source);
-    step.params.right_alias =
-      step.params.right_alias || sourceAliasFor(step.params.right_source);
-    step.params.left_field = "";
-    step.params.right_field = "";
-    delete step.params.join_keys_json;
-  }
-  if (step.source && !step.params.source_file)
-    step.params.source_file = step.source;
-  if (
-    step.field &&
-    !step.params.field_name &&
-    step.step_type !== "create_column"
-  )
-    step.params.field_name = step.field;
-  if (step.step_type === "create_column") {
-    step.params.column_name = step.params.column_name || step.field || "";
-    step.params.value_mode = step.params.value_mode || "Static value";
-    step.params.expression_type =
-      step.params.expression_type || "custom_expression";
-    // Legacy concatenate steps used one shared source. Migrate only populated
-    // operands so a deliberately cleared field does not regain a stale source.
-    if (step.params.value_mode === "Concatenate fields") {
-      if (step.params.concat_field_1) {
-        step.params.concat_source_1 =
-          step.params.concat_source_1 ||
-          step.params.source_file ||
-          step.source ||
-          "";
-      } else {
-        delete step.params.concat_source_1;
-        delete step.params.concat_field_1_field_ref;
-      }
-      if (step.params.concat_field_2) {
-        step.params.concat_source_2 =
-          step.params.concat_source_2 ||
-          step.params.source_file ||
-          step.source ||
-          "";
-      } else {
-        delete step.params.concat_source_2;
-        delete step.params.concat_field_2_field_ref;
-      }
-    }
-  }
-  if (step.step_type === "if_then") {
-    const conditions = parseStepConditions(step);
-    if (!step.params.conditions_json)
-      atlasWriteLiveEditorConditions(
-        step,
-        conditions.length ? conditions : [defaultGuidedCondition(step)],
-      );
-    step.params.then_action_type =
-      step.params.then_action_type || atlasDefaultIfThenActionType(step);
-  }
-  if (step.step_type === "join")
-    step.params.join_type = step.params.join_type || "INNER JOIN";
+  atlasCopyStepSourceParams(step);
   step.id = step.id || uid("step");
   step.sortOrder = Number.isFinite(Number(step.sortOrder))
     ? step.sortOrder
@@ -177,6 +92,78 @@ function normalizeCatalogStep(step, index = 0) {
       STEP_TYPE_OPTIONS.find(([value]) => value === step.step_type)?.[1] ||
       "Logic Step";
   return step;
+}
+
+/** Copies the legacy step source and field into source_file and field_name. */
+function atlasCopyStepSourceParams(step) {
+  const params = step.params || (step.params = {});
+  if (step.source && !params.source_file) params.source_file = step.source;
+  if (step.field && !params.field_name && step.step_type !== "create_column")
+    params.field_name = step.field;
+}
+
+/**
+ * Rewrites a saved Union Sources step as a Join with join_type UNION (the
+ * union_sources_to_join migration handler).
+ */
+function atlasConvertUnionSourcesStep(step) {
+  const params = step.params || (step.params = {});
+  params.join_type = "UNION";
+  params.left_source = params.left_source || params.union_left_source || "";
+  params.right_source = params.right_source || params.union_right_source || "";
+  params.output_source = params.output_source || step.source || "";
+  params.left_alias = params.left_alias || sourceAliasFor(params.left_source);
+  params.right_alias =
+    params.right_alias || sourceAliasFor(params.right_source);
+  params.left_field = "";
+  params.right_field = "";
+  delete params.join_keys_json;
+}
+
+/** Create Column defaults (the create_column behavior block). */
+function atlasNormalizeCreateColumnStep(step) {
+  atlasCopyStepSourceParams(step);
+  const params = step.params;
+  params.column_name = params.column_name || step.field || "";
+  params.value_mode = params.value_mode || "Static value";
+  params.expression_type = params.expression_type || "custom_expression";
+  // Legacy concatenate steps used one shared source. Migrate only populated
+  // operands so a deliberately cleared field does not regain a stale source.
+  if (params.value_mode === "Concatenate fields") {
+    if (params.concat_field_1) {
+      params.concat_source_1 =
+        params.concat_source_1 || params.source_file || step.source || "";
+    } else {
+      delete params.concat_source_1;
+      delete params.concat_field_1_field_ref;
+    }
+    if (params.concat_field_2) {
+      params.concat_source_2 =
+        params.concat_source_2 || params.source_file || step.source || "";
+    } else {
+      delete params.concat_source_2;
+      delete params.concat_field_2_field_ref;
+    }
+  }
+}
+
+/** IF / THEN conditions and action type (the if_then behavior block). */
+function atlasNormalizeIfThenStep(step) {
+  atlasCopyStepSourceParams(step);
+  const conditions = parseStepConditions(step);
+  if (!step.params.conditions_json)
+    atlasWriteLiveEditorConditions(
+      step,
+      conditions.length ? conditions : [defaultGuidedCondition(step)],
+    );
+  step.params.then_action_type =
+    step.params.then_action_type || atlasDefaultIfThenActionType(step);
+}
+
+/** Join defaults (the join behavior block). */
+function atlasNormalizeJoinStep(step) {
+  atlasCopyStepSourceParams(step);
+  step.params.join_type = step.params.join_type || "INNER JOIN";
 }
 
 // -----------------------------------------------------------------------------
@@ -649,227 +636,144 @@ function atlasWriteLiveEditorConditions(step, conditions) {
  */
 function renderGuidedBuilder(step) {
   normalizeCatalogStep(step);
-  const definedEditor = globalThis.ATLASStepTypeRuntime?.renderEditor?.(step);
-  if (definedEditor != null) return definedEditor;
-  const p = step.params || {};
-  if (step.step_type === "create_column") {
-    const valueModes = catalogArrayFromOptions({
-      path: "app_config.logic_options.create_value_modes",
-      fallback: [
-        "Static value",
-        "Source field value",
-        ATLAS_STRING_TRANSFORM_VALUE_MODE,
-        "Concatenate fields",
-      ],
-    }).filter(
-      (value) =>
-        value !== "Expression / calculation" &&
-        value !== "Expression/Calculation",
-    );
-    const selectedValueMode =
-      p.value_mode === "Expression / calculation" ||
-      p.value_mode === "Expression/Calculation"
-        ? ""
-        : p.value_mode;
-    const namedSplit =
-      p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
-      p.string_operation === "split" &&
-      atlasStringTransformConfig(p).named;
-    const columnNameInput = namedSplit
-      ? `<input type="hidden" data-param="column_name" value="${esc(p.column_name || "")}">`
-      : `<label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label>`;
-    return `<div class="guided-builder"><h4>Create Column</h4>${columnNameInput}<div class="atlas-choice-field">${atlasChoiceControl(
-      {
-        options: atlasDescribedChoices(valueModes, {
-          "Static value": "Write a fixed value into the new column.",
-          "Source field value": "Copy or calculate from a source field.",
-          [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
-            "Take characters, a character count, or split parts from a field.",
-          "Concatenate fields": "Join two fields into one value.",
-        }),
-        selected: selectedValueMode,
-        variant: "cards",
-        label: "Column Value Type",
-        heading: "Column Value Type",
-        popover: "pills",
-        attributes: 'data-param="value_mode"',
-      },
-    )}</div>${renderCreateModeInputs(p)}</div>`;
-  }
-  if (step.step_type === "if_then")
-    return `<div class="guided-builder"><h4>IF Condition Builder</h4><div class="condition-guided-stack">${parseStepConditions(
-      step,
-    )
-      .map((condition, index) => renderConditionRow(condition, index))
-      .join(
-        "",
-      )}</div><div class="row"><button type="button" class="secondary small" data-guided-add-condition="AND">+ AND</button><button type="button" class="secondary small" data-guided-add-condition="OR">+ OR</button></div>${renderThenActionBuilder(p)}</div>`;
-  if (step.step_type === "else")
-    return `<div class="guided-builder"><h4>ELSE Action</h4><p class="hint">ELSE can apply an action or end with a colon so nested sub-steps can continue beneath it.</p>${renderThenActionBuilder(p, "ELSE")}</div>`;
+  const editor = globalThis.ATLASStepTypeRuntime?.renderEditor?.(step);
+  if (editor != null) return editor;
+  // A type no definition claims has no form; it keeps the empty frame.
+  return `<div class="selected-source-only-builder"></div>`;
+}
 
-  if (step.step_type === "join") {
-    const union = isUnionJoinType(p.join_type);
-    const joinOptions = [
-      "INNER JOIN",
-      "LEFT JOIN",
-      "RIGHT JOIN",
-      "FULL OUTER JOIN",
-      "UNION",
-    ];
-    return `
-    <div class="guided-builder">
-      <h4>${union ? "Union Sources" : "Join / Union Sources"}</h4>
-      <label>
-        Join Type
-        <select data-param="join_type">
-          ${optionsHtml(joinOptions, p.join_type || "INNER JOIN")}
-        </select>
-      </label>
-      <label>
-        Left Source
-        ${
-          union
-            ? sourceInputFromOptions({
-                name: "left_source",
-                value: p.left_source,
-                placeholder: "Select source file",
-              })
-            : `<input type="hidden" data-param="left_source" value="${esc(p.left_source || "")}">`
-        }
-      </label>
-      ${
-        union
-          ? ""
-          : `<label>
-        Left Field
-        ${fieldInputFromOptions({
-          name: "left_field",
-          value: p.left_field,
-          placeholder: "Select field",
-          sourceFile: p.left_source,
-        })}
-      </label>`
-      }
-      <label>
-        Right Source
-        ${
-          union
-            ? sourceInputFromOptions({
-                name: "right_source",
-                value: p.right_source,
-                placeholder: "Select source file",
-              })
-            : `<input type="hidden" data-param="right_source" value="${esc(p.right_source || "")}">`
-        }
-      </label>
-      ${
-        union
-          ? ""
-          : `<label>
-        Right Field
-        ${fieldInputFromOptions({
-          name: "right_field",
-          value: p.right_field,
-          placeholder: "Select field",
-          sourceFile: p.right_source,
-        })}
-      </label>`
-      }
-      ${
-        union
-          ? `<label>Output Source${sourceInputFromOptions({
-              name: "output_source",
-              value: p.output_source,
-              placeholder: "Select source file",
-            })}</label><p class="hint join-builder-union-hint">Union appends rows from both files into one combined output. No matching key is needed.</p>`
-          : ""
-      }
-    </div>`;
-  }
-  if (step.step_type === "filter_rows" || step.step_type === "flag_records")
-    return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select field",
-        sourceFile: p.source_file,
-      },
-    )}</label><div class="atlas-choice-field">${atlasChoiceControl({
-      options: catalogArrayFromOptions({
-        path: "app_config.logic_options.operators",
-        fallback: ["is equal to"],
+/** The Create Column form (the create_column behavior block). */
+function atlasCreateColumnEditorHtml(step) {
+  const p = step.params || {};
+  const valueModes = catalogArrayFromOptions({
+    path: "app_config.logic_options.create_value_modes",
+    fallback: [
+      "Static value",
+      "Source field value",
+      ATLAS_STRING_TRANSFORM_VALUE_MODE,
+      "Concatenate fields",
+    ],
+  }).filter(
+    (value) =>
+      value !== "Expression / calculation" &&
+      value !== "Expression/Calculation",
+  );
+  const selectedValueMode =
+    p.value_mode === "Expression / calculation" ||
+    p.value_mode === "Expression/Calculation"
+      ? ""
+      : p.value_mode;
+  const namedSplit =
+    p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
+    p.string_operation === "split" &&
+    atlasStringTransformConfig(p).named;
+  const columnNameInput = namedSplit
+    ? `<input type="hidden" data-param="column_name" value="${esc(p.column_name || "")}">`
+    : `<label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label>`;
+  return `<div class="guided-builder"><h4>Create Column</h4>${columnNameInput}<div class="atlas-choice-field">${atlasChoiceControl(
+    {
+      options: atlasDescribedChoices(valueModes, {
+        "Static value": "Write a fixed value into the new column.",
+        "Source field value": "Copy or calculate from a source field.",
+        [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
+          "Take characters, a character count, or split parts from a field.",
+        "Concatenate fields": "Join two fields into one value.",
       }),
-      selected: p.operator,
-      variant: "chips",
-      label: "Operator",
-      heading: "Operator",
+      selected: selectedValueMode,
+      variant: "cards",
+      label: "Column Value Type",
+      heading: "Column Value Type",
       popover: "pills",
-      attributes: 'data-param="operator"',
-    })}</div><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
-      step.step_type === "filter_rows"
-        ? `<div class="atlas-choice-field"><span class="atlas-choice-heading">Filter Action</span>${atlasChoiceControl(
-            {
-              options: catalogArrayFromOptions({
-                path: "app_config.logic_options.filter_actions",
-                fallback: ["Keep matching rows", "Exclude matching rows"],
-              }),
-              selected: p.filter_action,
-              variant: "segment",
-              label: "Filter action",
-              attributes: 'data-param="filter_action"',
-            },
-          )}</div>`
-        : `<div class="atlas-choice-field">${atlasChoiceControl({
-            options: [
-              [
-                "display_text",
-                "Display text response",
-                "Show a message for the matching record.",
-              ],
-              [
-                "do_not_display",
-                "Do not display record",
-                "Hide the matching record.",
-              ],
+      attributes: 'data-param="value_mode"',
+    },
+  )}</div>${renderCreateModeInputs(p)}</div>`;
+}
+
+/** The Filter Rows and Flag Records form (their behavior blocks). */
+function atlasLegacyConditionEditorHtml(step) {
+  const p = step.params || {};
+  return `<div class="guided-builder"><h4>${step.step_type === "filter_rows" ? "Filter Rows" : "Flag Records"}</h4><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Field${fieldInputFromOptions(
+    {
+      name: "field_name",
+      value: p.field_name,
+      placeholder: "Select field",
+      sourceFile: p.source_file,
+    },
+  )}</label><div class="atlas-choice-field">${atlasChoiceControl({
+    options: catalogArrayFromOptions({
+      path: "app_config.logic_options.operators",
+      fallback: ["is equal to"],
+    }),
+    selected: p.operator,
+    variant: "chips",
+    label: "Operator",
+    heading: "Operator",
+    popover: "pills",
+    attributes: 'data-param="operator"',
+  })}</div><label>Compare Value<textarea data-param="compare_value" placeholder="One or more values">${esc(p.compare_value || "")}</textarea></label>${
+    step.step_type === "filter_rows"
+      ? `<div class="atlas-choice-field"><span class="atlas-choice-heading">Filter Action</span>${atlasChoiceControl(
+          {
+            options: catalogArrayFromOptions({
+              path: "app_config.logic_options.filter_actions",
+              fallback: ["Keep matching rows", "Exclude matching rows"],
+            }),
+            selected: p.filter_action,
+            variant: "segment",
+            label: "Filter action",
+            attributes: 'data-param="filter_action"',
+          },
+        )}</div>`
+      : `<div class="atlas-choice-field">${atlasChoiceControl({
+          options: [
+            [
+              "display_text",
+              "Display text response",
+              "Show a message for the matching record.",
             ],
-            selected:
-              p.flag_action === "do_not_display"
-                ? "do_not_display"
-                : "display_text",
-            variant: "cards",
-            label: "Flag action",
-            heading: "Flag Action",
-            popover: "list",
-            attributes: 'data-param="flag_action"',
-          })}</div><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
-            {
-              name: "output_column",
-              value:
-                p.output_column ||
-                phrasePlaceholder("error_message_column", "Error Message"),
-              placeholder: "Select field",
-              sourceFile: "",
-            },
-          )}</label>`
-    }</div>`;
-  return "";
+            [
+              "do_not_display",
+              "Do not display record",
+              "Hide the matching record.",
+            ],
+          ],
+          selected:
+            p.flag_action === "do_not_display"
+              ? "do_not_display"
+              : "display_text",
+          variant: "cards",
+          label: "Flag action",
+          heading: "Flag Action",
+          popover: "list",
+          attributes: 'data-param="flag_action"',
+        })}</div><label>Message<input data-param="message" value="${esc(p.message || "")}"></label><label>Output Column${fieldInputFromOptions(
+          {
+            name: "output_column",
+            value:
+              p.output_column ||
+              phrasePlaceholder("error_message_column", "Error Message"),
+            placeholder: "Select field",
+            sourceFile: "",
+          },
+        )}</label>`
+  }</div>`;
 }
 /**
  * Renders Create Column inputs for the selected value mode.
  * @param {any} p - Input used by renderCreateModeInputs.
  */
 function renderCreateModeInputs(p) {
+  if (p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE)
+    return atlasStringTransformModeInputs(p);
+  if (p.value_mode === "Source field value")
+    return atlasSourceFieldModeInputs(p);
+  return atlasCreateModeInputsBase(p);
+}
+
+/** Static value, Concatenate fields and the old expression inputs. */
+function atlasCreateModeInputsBase(p) {
   if (p.value_mode === "Static value")
     return `<label>Static Value<input data-param="static_value" value="${esc(p.static_value || "")}"></label>`;
-  if (p.value_mode === "Source field value")
-    return `<input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Source Field${fieldInputFromOptions(
-      {
-        name: "field_name",
-        value: p.field_name,
-        placeholder: "Select source field",
-        sourceFile: p.source_file,
-      },
-    )}</label>`;
   if (p.value_mode === "Concatenate fields")
     return `<div class="logic-picker-pair"><input type="hidden" data-param="concat_source_1" value="${esc(p.concat_field_1 ? p.concat_source_1 || "" : "")}"><label>First Field${fieldInputFromOptions(
       {
@@ -894,36 +798,6 @@ function renderCreateModeInputs(p) {
       sourceFile: p.source_file,
     },
   )}</label><label>Number of Characters<input data-param="character_count" value="${esc(p.character_count || "")}"></label>`;
-}
-
-/**
- * Renders THEN/ELSE action controls.
- * @param {any} p - Input used by renderThenActionBuilder.
- * @param {any} prefix - Action label prefix such as THEN or ELSE.
- */
-function renderThenActionBuilder(p, prefix = "THEN") {
-  return `<div class="then-action-builder"><h4>${prefix} Action</h4><label>${prefix} Action Type<select data-param="then_action_type"><option value="freeform" ${p.then_action_type === "freeform" ? "selected" : ""}>Freeform Text</option><option value="set_column_value" ${p.then_action_type === "set_column_value" ? "selected" : ""}>Set Column Value from Field</option><option value="display_text" ${p.then_action_type === "display_text" ? "selected" : ""}>Display Text Response in Column</option><option value="do_not_display" ${p.then_action_type === "do_not_display" ? "selected" : ""}>Do Not Display</option></select></label><label>${prefix} Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label><label>Display Text<input data-param="then_text" value="${esc(p.then_text || "")}" placeholder="e.g., Research IT0027"></label><label>Output Column${fieldInputFromOptions(
-    {
-      name: "then_output_column",
-      value:
-        p.then_output_column ||
-        phrasePlaceholder("error_message_column", "Error Message"),
-      placeholder: "Select field",
-      sourceFile: "",
-    },
-  )}</label><label>Target Column${fieldInputFromOptions({
-    name: "then_target_column",
-    value: p.then_target_column,
-    placeholder: "Select field",
-    sourceFile: "",
-  })}</label><input type="hidden" data-param="then_value_source_file" value="${esc(p.then_value_source_file || p.source_file || "")}"><label>Value Field${fieldInputFromOptions(
-    {
-      name: "then_value_field",
-      value: p.then_value_field,
-      placeholder: "Select field",
-      sourceFile: p.then_value_source_file || p.source_file,
-    },
-  )}</label></div>`;
 }
 
 // -----------------------------------------------------------------------------
@@ -1173,10 +1047,8 @@ function atlasCachedCatalogJson(step, key, raw, compute) {
 }
 
 // ATLAS-MATH-OPERATIONS-UPDATE:BEGIN
-const atlasNormalizeCatalogStepBeforeMathUpdate = normalizeCatalogStep;
-normalizeCatalogStep = function normalizeCatalogStepWithMath(step, index = 0) {
-  const normalized = atlasNormalizeCatalogStepBeforeMathUpdate(step, index);
-  if (!normalized) return normalized;
+/** Rewrites stored math operation lists in their current shape. */
+function atlasNormalizeMathParams(normalized) {
   const p = normalized.params || {};
   ["source_math_json", "then_math_json"].forEach((key) => {
     if (!p[key]) return;
@@ -1224,7 +1096,7 @@ normalizeCatalogStep = function normalizeCatalogStepWithMath(step, index = 0) {
     );
   }
   return normalized;
-};
+}
 
 /**
  * Rewrites duplicate_fields_json from the stored list (migrating the legacy
@@ -1434,10 +1306,8 @@ function atlasMathOperationRowHtml(operation = {}, fallbackSourceFile = "") {
   </div>`;
 }
 
-const atlasRenderCreateModeInputsBeforeMathUpdate = renderCreateModeInputs;
-renderCreateModeInputs = function renderCreateModeInputsWithMath(p) {
-  if (p.value_mode !== "Source field value")
-    return atlasRenderCreateModeInputsBeforeMathUpdate(p);
+/** Source field value inputs with math operations and rounding. */
+function atlasSourceFieldModeInputs(p) {
   return `<input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}
     <label>Source Field${fieldInputFromOptions({
       name: "field_name",
@@ -1461,7 +1331,7 @@ renderCreateModeInputs = function renderCreateModeInputsWithMath(p) {
       },
     )}</div>
     <label>Decimal places<input data-param="rounding_decimal_places" inputmode="numeric" value="${esc(p.rounding_decimal_places || "0")}"></label></div>`;
-};
+}
 // ATLAS-MATH-OPERATIONS-UPDATE:END
 
 // ATLAS-STRING-TRANSFORM-UPDATE:BEGIN
@@ -1637,9 +1507,12 @@ function atlasStringSplitConfig(get, baseColumn = "") {
  * a single "Name_x" entry standing for Name_1, Name_2... when the count is open.
  */
 function atlasCreatedColumnNames(step) {
-  const defined = globalThis.ATLASStepTypeRuntime?.createdColumns?.(step);
-  if (defined) return defined;
-  if (!step || step.step_type !== "create_column") return [];
+  return globalThis.ATLASStepTypeRuntime?.createdColumns?.(step) || [];
+}
+
+/** Column names a Create Column step adds (the create_column block). */
+function atlasCreateColumnOutputNames(step) {
+  if (!step) return [];
   const p = step.params || {};
   if (
     p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
@@ -2006,16 +1879,8 @@ function atlasRegisterSplitResults(step) {
   return registered[0] || null;
 }
 
-const atlasNormalizeCatalogStepBeforeStringTransform = normalizeCatalogStep;
-normalizeCatalogStep = function normalizeCatalogStepWithStringTransform(
-  step,
-  index = 0,
-) {
-  const normalized = atlasNormalizeCatalogStepBeforeStringTransform(
-    step,
-    index,
-  );
-  if (!normalized) return normalized;
+/** Brings string transformation params up to the current shape. */
+function atlasNormalizeStringTransformParams(normalized) {
   const p = normalized.params || (normalized.params = {});
   if (normalized.step_type === "create_column") {
     if (
@@ -2076,12 +1941,10 @@ normalizeCatalogStep = function normalizeCatalogStepWithStringTransform(
       p.then_string_operation === "character_count" ? "integer" : "string";
   }
   return normalized;
-};
+}
 
-const atlasRenderCreateModeInputsBeforeStringTransform = renderCreateModeInputs;
-renderCreateModeInputs = function renderCreateModeInputsWithStringTransform(p) {
-  if (p.value_mode !== ATLAS_STRING_TRANSFORM_VALUE_MODE)
-    return atlasRenderCreateModeInputsBeforeStringTransform(p);
+/** String transformation inputs. */
+function atlasStringTransformModeInputs(p) {
   const c = atlasStringTransformConfig(p);
   return `
     <div class="atlas-choice-field">
@@ -2116,7 +1979,7 @@ renderCreateModeInputs = function renderCreateModeInputsWithStringTransform(p) {
             count: c.count,
           })
     }`;
-};
+}
 
 /** Existing field names offered while typing a split column name. */
 function atlasStringSplitNameSuggestions(c) {

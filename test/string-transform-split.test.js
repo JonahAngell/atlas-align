@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadStepTypeScripts } from "./support/step-type-scripts.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -40,6 +41,7 @@ function load() {
   vm.runInContext(stringTransformBlock(), context, {
     filename: "js/14-catalog-driven-builder.js",
   });
+  loadStepTypeScripts(context);
   vm.runInContext(read("js/15j-logic-text-import.js"), context, {
     filename: "js/15j-logic-text-import.js",
   });

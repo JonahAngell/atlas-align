@@ -1801,6 +1801,7 @@
 │   │       │   ├── BACKLOG.md
 │   │       │   ├── COPILOT_AUDIT_IMPORT_GUIDE.md
 │   │       │   ├── field_table.html
+│   │       │   ├── FILE_UTILITY_STEP_PARAMS.md
 │   │       │   ├── sample_field_table.html
 │   │       │   └── SOURCE_LIBRARY_LIVE_DEBUG.md
 │   │       ├── evidence
@@ -2319,13 +2320,20 @@
 │   └── work-contract-comparison.json
 ├── catalogs
 │   ├── step-types
+│   │   ├── create_column.json
+│   │   ├── else.json
+│   │   ├── filter_rows.json
+│   │   ├── flag_records.json
 │   │   ├── format_field.json
+│   │   ├── if_then.json
+│   │   ├── join.json
 │   │   ├── manifest.json
 │   │   ├── reference_source.json
 │   │   ├── remove_duplicates.json
 │   │   ├── schema.json
 │   │   ├── sort_records.json
-│   │   └── split_field.json
+│   │   ├── split_field.json
+│   │   └── union_sources.json
 │   ├── audit-issue-rules.json
 │   ├── logic_phrase_catalog.json
 │   ├── source-fields.json
@@ -2808,13 +2816,6 @@
 │   ├── workflow-validation-matrix.test.js
 │   └── workspace-navigation.test.js
 ├── test-results
-│   ├── audit-assignments-sources--f89f7-prerequisites-and-discovery-chromium
-│   ├── audit-creation-overview-1--d47f7-nd-persists-Overview-values-chromium
-│   ├── audit-exports-21-21-3-vali-ded93-port-controls-and-downloads-chromium
-│   ├── audit-issues-readiness-17--6941c-sues-and-Readiness-surfaces-chromium
-│   ├── audit-persistence-history--6c5ea-undary-and-detached-history-chromium
-│   ├── custom-source-dialog-custo-71398-rts-a-row-and-saves-symbols-chromium
-│   ├── display-fields-preview-15--124c4-quirements-Preview-surfaces-chromium
 │   ├── logic-builder-inventory-5--03142-ommon-behavior-is-traceable-chromium
 │   ├── logic-builder-inventory-5--68d5b-ble-Logic-Builder-step-type-chromium
 │   ├── logic-builder-remove-dupli-4c42c--migrate-to-the-column-list-chromium

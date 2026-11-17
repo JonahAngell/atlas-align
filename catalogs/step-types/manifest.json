@@ -3,10 +3,46 @@
   "schemaVersion": 1,
   "definitions": [
     {
+      "id": "create_column",
+      "version": 1,
+      "file": "create_column.json",
+      "hash": "a061183aa9c988308807079413f53d4989b13cd7a504aac78932f8b190accb30"
+    },
+    {
+      "id": "else",
+      "version": 1,
+      "file": "else.json",
+      "hash": "a1ccc276e7233b946cb308258cdf8798b7e430ff9a95271dd8573a3f33a113fa"
+    },
+    {
+      "id": "filter_rows",
+      "version": 1,
+      "file": "filter_rows.json",
+      "hash": "3b68b8d5a2e6dbc9602362129558fef8be9170f43b4eedca957d17a396336866"
+    },
+    {
+      "id": "flag_records",
+      "version": 1,
+      "file": "flag_records.json",
+      "hash": "a92926e5eaf1ec2863a985c9be225789f3ce7b394f7dd9653d7f92ed91818cc4"
+    },
+    {
       "id": "format_field",
       "version": 1,
       "file": "format_field.json",
       "hash": "b476a29d46f7684297bb3774b7d4f3e7e1a1ec653f7f8edf406943f0cd762026"
+    },
+    {
+      "id": "if_then",
+      "version": 1,
+      "file": "if_then.json",
+      "hash": "a83cc1d00062c412628f6bb7af9de42eedeba1806da0105b230cc97190592159"
+    },
+    {
+      "id": "join",
+      "version": 1,
+      "file": "join.json",
+      "hash": "8756317333128a15f995ee4f281e3d1b4b32e00243f041d2b3b7a4f76562391d"
     },
     {
       "id": "reference_source",
@@ -31,6 +67,12 @@
       "version": 1,
       "file": "split_field.json",
       "hash": "713f19e953fa55b8899b6b57a617e50fcfff08bee467334a4da210ee054cc76e"
+    },
+    {
+      "id": "union_sources",
+      "version": 1,
+      "file": "union_sources.json",
+      "hash": "94023916eec45065a8d6c5ba9f898df0ceb59d986ccfc663969c1314e33620f1"
     }
   ]
 }

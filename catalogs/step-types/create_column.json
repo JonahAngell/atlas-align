@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "id": "create_column",
+  "version": 1,
+  "label": "Create Column",
+  "category": "column",
+  "order": 20,
+  "description": "Create or populate an output column.",
+  "status": "active",
+  "legacyType": "create",
+  "aliases": {
+    "step_type": [],
+    "type": ["create"]
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "create_column",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

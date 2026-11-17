@@ -24,8 +24,21 @@
  *   duplicateKeys params legacy=true             Remove Duplicates columns
  *   firstKeyTable keys source alias              Excel table of the first key
  *
- * Migration handlers: sync_sort_fields, sync_duplicate_fields.
- * Editor blocks: sort_keys, duplicate_keys.
+ * Migration handlers: sync_sort_fields, sync_duplicate_fields,
+ * union_sources_to_join.
+ * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
+ *
+ * Behavior blocks (a definition's `block`) supply whole parts of a type from
+ * the app's own code: normalize(step, index) on the real step, editor(step)
+ * markup, english(step), notes(step), formulas(step) and
+ * createdColumns(step). The types that came with ATLAS Align use them:
+ *   create_column   all value modes, math and string transformations
+ *   if_then         condition tree and THEN actions
+ *   else            ELSE actions (legacy)
+ *   join            Join and Union, with the join type picker
+ *   union_sources   saved Union Sources steps (legacy; normalize makes a Join)
+ *   filter_rows, flag_records   single-condition steps (legacy)
+ * A new type can name one of them and change its label, order and export.
  */
 (function initializeStepTypeLibrary(global) {
   "use strict";
@@ -327,11 +340,36 @@
     sync_duplicate_fields(_step, { params }) {
       app("atlasSyncDuplicateFieldParams")?.(params);
     },
+    /** Rewrites a saved Union Sources step as a UNION Join. */
+    union_sources_to_join(step) {
+      app("atlasConvertUnionSourcesStep")?.(step);
+    },
   });
 
   // ---------------------------------------------------------------------------
   // Editor blocks: markup is built and escaped by the app's own editors.
   // ---------------------------------------------------------------------------
+
+  /** Calls an app function by name; undefined when it is not loaded. */
+  const call =
+    (name) =>
+    (...args) =>
+      app(name)?.(...args);
+
+  /** The frame the built-in forms sit in, as the step type forms do. */
+  const framed = (name) => (step) => {
+    const html = app(name)?.(step);
+    return typeof html === "string"
+      ? `<div class="selected-source-only-builder">${html}</div>`
+      : html;
+  };
+
+  const legacyCondition = (sentence) => ({
+    normalize: call("atlasCopyStepSourceParams"),
+    editor: framed("atlasLegacyConditionEditorHtml"),
+    english: call(sentence),
+    formulas: call("atlasDevLegacyCondition"),
+  });
 
   const blocks = Object.freeze({
     sort_keys: {
@@ -341,6 +379,40 @@
       editor: (step) =>
         app("atlasDuplicateFieldsEditorHtml")?.(step.params || {}),
     },
+    create_column: {
+      normalize: call("atlasNormalizeCreateColumnStep"),
+      editor: framed("atlasCreateColumnEditorHtml"),
+      english: call("atlasCreateColumnSentence"),
+      formulas: call("atlasDevCreateColumn"),
+      createdColumns: call("atlasCreateColumnOutputNames"),
+    },
+    if_then: {
+      normalize: call("atlasNormalizeIfThenStep"),
+      editor: call("atlasRenderIfThenTabbedBuilder"),
+      english: call("atlasIfThenSentence"),
+      formulas: call("atlasDevIfThen"),
+    },
+    else: {
+      normalize: call("atlasCopyStepSourceParams"),
+      editor: call("atlasElseEditorHtml"),
+      english: call("elseActionPlain"),
+      notes: () => app("renderCatalogPhrase")?.("notes.else.default", {}),
+      formulas: call("atlasDevElse"),
+    },
+    join: {
+      normalize: call("atlasNormalizeJoinStep"),
+      editor: call("atlasJoinEditorHtml"),
+      english: call("atlasJoinSentence"),
+      notes: call("atlasJoinNotes"),
+      formulas: call("atlasDevJoin"),
+    },
+    union_sources: {
+      english: call("atlasUnionSourcesSentence"),
+      notes: call("atlasUnionSourcesNotes"),
+      formulas: (step) => app("atlasDevUnion")?.(step.params || {}),
+    },
+    filter_rows: legacyCondition("atlasFilterRowsSentence"),
+    flag_records: legacyCondition("atlasFlagRecordsSentence"),
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({
