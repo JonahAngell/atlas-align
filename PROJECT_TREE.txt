@@ -57,7 +57,8 @@
 │   │   ├── 20260915190000_add_rescinded_approval_request_state.sql
 │   │   ├── 20261013120000_create_atlas_custom_sources.sql
 │   │   ├── 20261026120000_cascade_audit_id_updates.sql
-│   │   └── 20261028120000_add_manual_audit_lock_publications.sql
+│   │   ├── 20261028120000_add_manual_audit_lock_publications.sql
+│   │   └── 20261116120000_create_atlas_audit_runs.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
@@ -87,6 +88,8 @@
 │   ├── Untitled_Audit.json
 │   └── work-contract-comparison.json
 ├── catalogs
+│   ├── file-utility
+│   │   └── executable-steps.json
 │   ├── audit-issue-rules.json
 │   ├── logic_phrase_catalog.json
 │   ├── source-fields.json
@@ -166,7 +169,9 @@
 │   ├── 20-database-only-audits.js
 │   ├── 21-display-fields.js
 │   ├── 22-audit-issue-engine.js
+│   ├── 22a-file-utility-readiness.js
 │   ├── 23-atlas-audit-issues.js
+│   ├── 23a-file-utility-readiness-ui.js
 │   ├── 24-audit-workflow-ui.js
 │   ├── 25-inbox.js
 │   ├── 26-recently-deleted-publications.js
@@ -401,7 +406,8 @@
 │   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
-│   │   └── authorization-role-matrix.fixture.json
+│   │   ├── authorization-role-matrix.fixture.json
+│   │   └── file-utility-compile-verdicts.json
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js
@@ -438,6 +444,8 @@
 │   ├── display-fields-bulk.test.js
 │   ├── export-logic-indent.test.js
 │   ├── export-page.test.js
+│   ├── file-utility-contract.test.js
+│   ├── file-utility-readiness.test.js
 │   ├── html-escaping.test.js
 │   ├── http-security.test.js
 │   ├── in-app-validation-config.test.js
