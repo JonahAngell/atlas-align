@@ -1,6 +1,6 @@
 {
   "$comment": "The step type engine as one copyable unit. The Step Type Builder repository pins an ATLAS Align revision and copies exactly these files, in this order. Raise engineVersion whenever a listed file changes behavior.",
-  "engineVersion": "1.4.0",
+  "engineVersion": "1.5.0",
   "schemaVersions": [1],
   "scripts": [
     "js/step-types/00-templates.js",
@@ -9,5 +9,39 @@
     "js/step-types/03-migrations.js",
     "js/step-types/04-registry.js"
   ],
-  "catalogs": ["catalogs/step-types/schema.json"]
+  "catalogs": ["catalogs/step-types/schema.json"],
+  "preview": {
+    "$comment": "Everything the builder's live preview page loads to render the real guided editor, English, automatic notes, Developer Logic, formulas, SQL/Python script fragments and qTest rows for a step without the rest of ATLAS. scripts is the complete page list in load order (it includes the engine scripts above where they load); after loading, call initPhraseCatalog() (it fetches ./catalogs/logic_phrase_catalog.json) and put the draft in a registry with ATLASStepTypeRuntime.useRegistry(). css follows the cascade order of styles.css. Checked by test/step-type-preview-scripts.test.js.",
+    "scripts": [
+      "js/00-icons.js",
+      "js/00-config-utils.js",
+      "js/step-types/00-templates.js",
+      "js/step-types/01-schema.js",
+      "js/step-types/02-definitions.js",
+      "js/step-types/03-migrations.js",
+      "js/step-types/04-registry.js",
+      "js/step-types/definitions.generated.js",
+      "js/01-state-dom.js",
+      "js/02-hierarchy.js",
+      "js/02-logic-rendering.js",
+      "js/02b-developer-formulas.js",
+      "js/03-capture-actions.js",
+      "js/07-phrase-catalog.js",
+      "js/09-workbook-import.js",
+      "js/10-field-picker.js",
+      "js/11-repo-library.js",
+      "js/12-export-foundation.js",
+      "js/12b-code-export.js",
+      "js/13-step-type-library.js",
+      "js/13a-step-type-runtime.js",
+      "js/14-catalog-driven-builder.js",
+      "js/15a-audit-library-ui.js",
+      "js/15d-logic-rules-list.js",
+      "js/15e-logic-step-editor.js",
+      "js/15f-join-picker.js",
+      "js/15g-visual-ui-events.js"
+    ],
+    "css": ["css/global.css", "css/sources.css", "css/logic-builder.css"],
+    "catalogs": ["catalogs/logic_phrase_catalog.json"]
+  }
 }

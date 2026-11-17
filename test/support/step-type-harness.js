@@ -94,8 +94,15 @@ async function repoFetch(url) {
   };
 }
 
-/** Loads the whole browser app into a fresh vm context. */
-export async function loadApp() {
+/**
+ * Loads the whole browser app into a fresh vm context, or only `scripts`
+ * (repository paths, in load order) when given. `globals` replaces entries of
+ * the stand-in window (document, fetch, ...) before any script runs.
+ */
+export async function loadApp({
+  scripts = appScriptPaths(),
+  globals = {},
+} = {}) {
   let uuid = 0;
   const storage = { getItem: () => null, setItem() {}, removeItem() {} };
   const observer = class {
@@ -158,13 +165,14 @@ export async function loadApp() {
     CustomEvent: class {},
     Blob: class {},
   };
+  Object.assign(context, globals);
   context.window = context;
   context.self = context;
   context.globalThis = context;
   vm.createContext(context);
   context.Math = vm.runInContext("Math", context);
   vm.runInContext("Math.random = () => 0.5;", context);
-  for (const path of appScriptPaths())
+  for (const path of scripts)
     vm.runInContext(read(path), context, { filename: path });
   vm.runInContext(
     `phraseCatalog = ${read("catalogs/logic_phrase_catalog.json")};`,
