@@ -152,16 +152,7 @@ atlasRenderStepEditor = function atlasRenderStepEditorUsability(step) {
       <h3>Step Settings</h3>
       <div class="logic-editor-grid single-column-settings">
         <div class="atlas-choice-field">${atlasChoiceControl({
-          options: [
-            ...atlasNewRuleTypeOptions(),
-            ...(atlasNewRuleTypeOptions().some(
-              ([value]) => value === step.step_type,
-            )
-              ? []
-              : (STEP_TYPE_OPTIONS || []).filter(
-                  ([value]) => value === step.step_type,
-                )),
-          ].map(([value, label]) => [
+          options: atlasStepTypeChoiceOptions(step).map(([value, label]) => [
             value,
             label,
             atlasRuleTypeDescription(value),
@@ -950,6 +941,24 @@ function atlasInitializeNewIfThenAction(
   step.params.then_output_column = identity;
   return step;
 }
+/**
+ * The Step Type choices for a selected step: the types new rules can pick,
+ * plus the step's own type when it is not one of them. A legacy type (Filter
+ * Rows, Flag Records, ELSE) stays out of the new-rule menu, but its saved
+ * steps must still show and keep it, since the editor saves the chosen value.
+ * @param {any} step - Logic step being edited.
+ */
+function atlasStepTypeChoiceOptions(step) {
+  const options = atlasNewRuleTypeOptions();
+  const current = String(step?.step_type || "");
+  if (!current || options.some(([value]) => value === current)) return options;
+  const label =
+    (STEP_TYPE_OPTIONS || []).find(([value]) => value === current)?.[1] ||
+    globalThis.ATLASStepTypeRuntime?.definitionById?.(current)?.label ||
+    current;
+  return [...options, [current, label]];
+}
+
 function atlasNewRuleTypeOptions() {
   // Built-in rule types with the menu's own labels, placed among the
   // registry's definitions by order. Source steps are added by importing a

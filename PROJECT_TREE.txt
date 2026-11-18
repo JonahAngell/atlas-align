@@ -17,8 +17,7 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   ├── settings.json
-│   └── settings.local.json
+│   └── settings.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -563,6 +562,7 @@
 │   ├── source-versions.test.js
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
+│   ├── step-editor-step-type.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
 │   ├── step-type-pinned-versions.test.js
@@ -585,20 +585,6 @@
 │   ├── workflow-ui-contract.test.js
 │   ├── workflow-validation-matrix.test.js
 │   └── workspace-navigation.test.js
-├── test-results
-│   ├── logic-builder-inventory-5--03142-ommon-behavior-is-traceable-chromium
-│   ├── logic-builder-inventory-5--68d5b-ble-Logic-Builder-step-type-chromium
-│   ├── logic-builder-remove-dupli-4c42c--migrate-to-the-column-list-chromium
-│   ├── logic-builder-remove-dupli-608b0-dates-the-list-and-sentence-chromium
-│   ├── logic-builder-remove-dupli-ee804-nd-switches-records-to-keep-chromium
-│   ├── logic-builder-remove-dupli-fe8c6--before-any-column-is-added-chromium
-│   ├── logic-builder-runtime-opti-16793-cords-ELSE-runtime-controls-chromium
-│   ├── logic-builder-runtime-opti-22e21-rt-Records-runtime-controls-chromium
-│   ├── logic-builder-runtime-opti-237aa-ds-IF-THEN-runtime-controls-chromium
-│   ├── logic-builder-runtime-opti-68ca1-ate-Column-runtime-controls-chromium
-│   ├── logic-builder-runtime-opti-e15a5-rmat-Field-runtime-controls-chromium
-│   ├── logic-builder-runtime-opti-f0f40-on-Sources-runtime-controls-chromium
-│   └── .last-run.json
 ├── tests
 │   ├── fixtures
 │   │   ├── atlas.fixture.js
