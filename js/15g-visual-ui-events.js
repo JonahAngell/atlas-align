@@ -5,7 +5,13 @@
  * IMPORTANT: classic browser script; preserve the 15a-15g load order.
  */
 /* Logic Step Editor usability refinement */
-let atlasIfThenEditorTab = "conditions";
+/** The step editor tab last chosen (a definition's editorFrame tab id). */
+let atlasLogicEditorTab = "";
+
+/** The step editor tab last chosen, or "" before one is chosen. */
+function atlasActiveLogicEditorTab() {
+  return atlasLogicEditorTab;
+}
 
 function atlasConditionValues(value) {
   return String(value || "")
@@ -184,7 +190,7 @@ document.addEventListener(
   (event) => {
     const editorTab = event.target.closest("[data-editor-tab]");
     if (editorTab) {
-      atlasIfThenEditorTab = editorTab.dataset.editorTab || "conditions";
+      atlasLogicEditorTab = editorTab.dataset.editorTab || "";
       renderSelectedStep();
       return;
     }
@@ -757,68 +763,27 @@ function atlasRenderConditionNodes(nodes, depth, groupConnector, listId = "") {
     .join("");
 }
 
-function atlasRenderIfThenTabbedBuilder(step) {
-  normalizeCatalogStep(step);
-  const p = step.params || {};
-  const conditions = parseStepConditions?.(step) || [];
+/** The THEN or ELSE action form (the action control). */
+function atlasActionEditorHtml(params, branch = "THEN") {
+  return atlasRenderThenActionBuilder(params || {}, branch);
+}
+
+/**
+ * The IF condition list with its Add Condition button (the condition_group
+ * control). A step without conditions gets the default one.
+ */
+function atlasConditionGroupEditorHtml(step) {
+  const conditions = parseStepConditions(step);
   if (!conditions.length) {
-    conditions.push(
-      defaultGuidedCondition?.(step) || {
-        id: uid("cond"),
-        connector: "IF",
-        conditionType: "row_compare",
-        sourceFile: step.source || p.source_file || "",
-        sourceAlias: sourceAliasFor?.(step.source || p.source_file || "") || "",
-        fieldName: step.field || p.field_name || "",
-        operator: "is equal to",
-        valueMode: "values",
-        compareValue: "",
-      },
-    );
-    writeLiveConditions?.(step, conditions);
+    conditions.push(defaultGuidedCondition(step));
+    writeLiveConditions(step, conditions);
   }
-  const conditionsHtml = `<div class="condition-guided-stack" data-condition-list data-group-id="">${atlasRenderConditionNodes(
+  return `<div class="condition-guided-stack" data-condition-list data-group-id="">${atlasRenderConditionNodes(
     conditions,
     0,
     null,
     "",
   )}</div><div class="row condition-root-actions"><button type="button" class="secondary small" data-guided-add-condition="${atlasConditionLevelConnector(conditions, null)}">+ Add Condition</button></div>`;
-  const actionHtml = atlasRenderThenActionBuilder(p);
-  return `
-    <div class="guided-builder if-then-tabbed-builder">
-      <div class="logic-editor-tabs">
-        <button 
-          type="button" 
-          class="logic-editor-tab ${atlasIfThenEditorTab === "conditions" ? "active" : ""}" 
-          data-editor-tab="conditions">
-            Condition Builder
-        </button>
-        
-        <button 
-          type="button" 
-          class="logic-editor-tab ${atlasIfThenEditorTab === "actions" ? "active" : ""}" 
-          data-editor-tab="actions">
-            Action Builder
-        </button>
-      </div>
-      
-      <div 
-        class="logic-editor-tab-panel ${atlasIfThenEditorTab === "conditions" ? "active" : ""}" 
-        data-editor-panel="conditions">
-          ${conditionsHtml}
-      </div>
-      
-      <div 
-        class="logic-editor-tab-panel ${atlasIfThenEditorTab === "actions" ? "active" : ""}" 
-        data-editor-panel="actions">
-          ${actionHtml}
-      </div>
-    </div>`;
-}
-
-/** The ELSE action form (the else behavior block). */
-function atlasElseEditorHtml(step) {
-  return `<div class="guided-builder else-action-builder"><p class="hint">Configure what happens when the IF conditions are not met.</p>${atlasRenderThenActionBuilder(step.params || {}, "ELSE")}</div>`;
 }
 
 renderSelectedStep = function renderSelectedStepFollowUpPane() {

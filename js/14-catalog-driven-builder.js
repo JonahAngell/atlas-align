@@ -147,21 +147,29 @@ function atlasNormalizeCreateColumnStep(step) {
   }
 }
 
-/** IF / THEN conditions and action type (the if_then behavior block). */
+/** IF / THEN source params and action type (the sync_if_then handler). */
 function atlasNormalizeIfThenStep(step) {
   atlasCopyStepSourceParams(step);
-  const conditions = parseStepConditions(step);
-  if (!step.params.conditions_json)
-    atlasWriteLiveEditorConditions(
-      step,
-      conditions.length ? conditions : [defaultGuidedCondition(step)],
-    );
   step.params.then_action_type =
     step.params.then_action_type || atlasDefaultIfThenActionType(step);
 }
 
-/** Format Field defaults (the format_field behavior block). */
-/** Join defaults (the join behavior block). */
+/**
+ * Writes conditions_json and its step.conditions mirror from the saved
+ * conditions, or the default condition when there are none (the
+ * condition_group control).
+ */
+function atlasNormalizeConditionGroup(step) {
+  step.params = step.params || {};
+  if (step.params.conditions_json) return;
+  const conditions = parseStepConditions(step);
+  atlasWriteLiveEditorConditions(
+    step,
+    conditions.length ? conditions : [defaultGuidedCondition(step)],
+  );
+}
+
+/** Join defaults (the sync_join handler). */
 function atlasNormalizeJoinStep(step) {
   atlasCopyStepSourceParams(step);
   step.params.join_type = step.params.join_type || "INNER JOIN";

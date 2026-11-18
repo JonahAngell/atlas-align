@@ -1006,22 +1006,6 @@ function analystLogic(step) {
   return `[Missing phrase path: analyst_logic.${step.step_type || "unknown"}]`;
 }
 
-/** IF / THEN sentence (the if_then behavior block). */
-function atlasIfThenSentence(step) {
-  const group = ensureIfThenPrefix(conditionGroupPlain(step));
-  const action = thenActionPlain(step);
-  const phrase = action
-    ? renderCatalogPhrase("analyst_logic.if_then.condition_group_with_action", {
-        condition_group: group,
-        then_action: action,
-      })
-    : renderCatalogPhrase(
-        "analyst_logic.if_then.condition_group_without_action",
-        { condition_group: group },
-      );
-  return ensureIfThenPrefix(phrase);
-}
-
 /** Filter Rows sentence (the filter_rows behavior block). */
 function atlasFilterRowsSentence(step) {
   const params = step.params || {};

@@ -2,8 +2,8 @@
  * Field controls: the palette in catalogs/step-types/controls.json, the
  * schema's control list and the runtime's FIELD_CONTROLS agree, the palette
  * check rejects what a control does not read, and the field-based Format
- * Field, Split Field, Create Column and Join definitions read as the block
- * editors did.
+ * Field, Split Field, Create Column, Join, IF / THEN and ELSE definitions read
+ * as the block editors did.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -48,6 +48,8 @@ test("every bundled definition passes the palette check", () => {
     "create_column.json",
     "join.json",
     "union_sources.json",
+    "if_then.json",
+    "else.json",
   ]) {
     const result = engine.definitions.validate(readJson(file), {
       ...options,
@@ -105,13 +107,17 @@ test("palette check rejects properties, features and options a control does not 
   );
 });
 
-test("palette check rejects a planned control the runtime cannot render", () => {
-  assert.match(
-    errorsFor(
-      withField({ param: "conditions_json", control: "condition_group" }),
-    ),
-    /condition_group/,
+test("palette check rejects a control the runtime cannot render", () => {
+  const { engine, options } = loadStepTypeEngine();
+  const result = engine.definitions.validate(
+    withField({ param: "conditions_json", control: "condition_group" }),
+    {
+      ...options,
+      controls: options.controls.filter((name) => name !== "condition_group"),
+      schema,
+    },
   );
+  assert.match(JSON.stringify(result.errors || []), /condition_group/);
 });
 
 test("template render escapes text and values separately", () => {
@@ -392,5 +398,93 @@ test("the join editor keeps its own frame and follows the join type", async () =
   assert.equal(
     context.ATLASStepTypeRuntime.rerenderParams().includes("join_type"),
     true,
+  );
+});
+
+const ifCondition = JSON.stringify([
+  {
+    connector: "IF",
+    conditionType: "row_compare",
+    sourceFile: "wd",
+    sourceAlias: "wd",
+    fieldName: "Status",
+    operator: "is equal to",
+    valueMode: "values",
+    compareValue: "T",
+  },
+]);
+
+test("if then shows its conditions and action on two tabs", async () => {
+  const { context, step } = await app();
+  const render = (params) =>
+    context.ATLASStepTypeRuntime.renderEditor(step("if_then", params));
+  const html = render({
+    conditions_json: ifCondition,
+    then_action_type: "display",
+  });
+  assert.match(html, /^<div class="guided-builder if-then-tabbed-builder">/);
+  assert.doesNotMatch(html, /<h4>IF \/ THEN<\/h4>/);
+  assert.match(
+    html,
+    /class="logic-editor-tab active" data-editor-tab="conditions"> Condition Builder </,
+  );
+  assert.match(
+    html,
+    /data-editor-panel="conditions"><div class="condition-guided-stack"/,
+  );
+  assert.match(
+    html,
+    /data-editor-panel="actions"><div class="then-action-builder/,
+  );
+  assert.match(html, /THEN Action Type/);
+  vm.runInContext('atlasLogicEditorTab = "actions"', context);
+  assert.match(
+    render({ conditions_json: ifCondition }),
+    /class="logic-editor-tab-panel active" data-editor-panel="actions"/,
+  );
+  vm.runInContext('atlasLogicEditorTab = ""', context);
+});
+
+test("a step without conditions gets one condition and its mirror", async () => {
+  const { step } = await app();
+  const saved = step("if_then", { field_name: "Status", source_file: "wd" });
+  const conditions = JSON.parse(saved.params.conditions_json);
+  assert.equal(conditions.length, 1);
+  assert.equal(conditions[0].fieldName, "Status");
+  assert.equal(saved.conditions.length, 1);
+  assert.equal(saved.params.then_action_type, "display");
+});
+
+test("else keeps its frame without a heading and writes the ELSE action", async () => {
+  const { context, step, run } = await app();
+  const saved = step("else", { then_action_type: "do_not_display" });
+  const html = context.ATLASStepTypeRuntime.renderEditor(saved);
+  assert.match(
+    html,
+    /^<div class="guided-builder else-action-builder"><p class="hint">Configure what happens when the IF conditions are not met\.<\/p><div class="then-action-builder/,
+  );
+  assert.match(html, /ELSE Action Type/);
+  assert.deepEqual(
+    { ...run("ATLASStepTypeRuntime.qtestAction(__step)", saved) },
+    { kind: "do_not_display" },
+  );
+  assert.match(run("analystLogic(__step)", saved), /ELSE/);
+});
+
+test("if then reads in analyst and developer logic", async () => {
+  const { step, run } = await app();
+  const saved = step("if_then", {
+    conditions_json: ifCondition,
+    then_action_type: "display_text",
+    then_text: "Check",
+    then_output_column: "Error Message",
+  });
+  assert.match(run("analystLogic(__step)", saved), /^IF .*Status.*Check/);
+  const formulas = run("atlasDeveloperFormulas(__step)", saved);
+  assert.match(formulas.excel, /^=IF\(/);
+  assert.match(formulas.sql, /^CASE WHEN /);
+  assert.equal(
+    run("ATLASStepTypeRuntime.qtestAction(__step)", saved).kind,
+    "display_text",
   );
 });

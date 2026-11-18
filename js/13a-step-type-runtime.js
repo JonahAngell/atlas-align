@@ -90,12 +90,16 @@
               params: step.params,
             }),
           );
+        normalizeComposites(definition, step);
       }),
       editor: through((definition, step) => renderEditorWith(definition, step)),
       english: through((definition, step) => englishWith(definition, step)),
       formulas: through((definition, step) => formulasWith(definition, step)),
       createdColumns: through(
         (definition, step) => createdColumnsWith(definition, step) || [],
+      ),
+      qtestAction: through((definition, step) =>
+        qtestActionWith(definition, step),
       ),
       qtestOutcomes: through((definition, step, context) =>
         qtestOutcomesWith(definition, step, context),
@@ -127,6 +131,8 @@
     "string_transform",
     "join_type",
     "join_keys",
+    "condition_group",
+    "action",
   ]);
 
   let registry = null;
@@ -574,6 +580,8 @@
         notes: step.notes,
         type: step.type,
         step_type: step.step_type,
+        conditions: step.conditions,
+        action: step.action,
       },
       format,
     };
@@ -612,6 +620,21 @@
   }
 
   /**
+   * Composite controls that keep state of their own up to date on the real
+   * step: control -> app function(step).
+   */
+  const COMPOSITE_NORMALIZERS = Object.freeze({
+    condition_group: "atlasNormalizeConditionGroup",
+  });
+
+  function normalizeComposites(definition, step) {
+    const { definitions } = engine();
+    definitions
+      .fields(definition, definitions.subtypeOf(definition, step))
+      .forEach((field) => app(COMPOSITE_NORMALIZERS[field.control])?.(step));
+  }
+
+  /**
    * Brings a saved step up to its definition: aliases, migrations, the
    * subtype default and field defaults. Returns false when no definition
    * claims the step, so the caller runs its built-in normalization.
@@ -639,8 +662,10 @@
           step.params[field.param] =
             field.default === null ? "" : String(field.default);
       });
-    // A behavior block finishes on the real step, so rewrites that keep state
-    // on the step itself (condition mirrors, created fields) still happen.
+    // Composite controls and behavior blocks finish on the real step, so
+    // rewrites that keep state on the step itself (condition mirrors,
+    // created fields) still happen.
+    normalizeComposites(current, step);
     blockPart(current, "normalize")?.(step, index);
     if (!step.id) step.id = app("uid")?.("step") || `step_${Date.now()}`;
     step.sortOrder = Number.isFinite(Number(step.sortOrder))
@@ -780,6 +805,15 @@
         notes: [],
       };
     }
+    // A set that writes only a lead (an ELSE folded into its IF) gives only
+    // the lead.
+    if (
+      result.lead &&
+      !notes.length &&
+      !set.fallback?.notes?.length &&
+      !DIALECTS.some((dialect) => result[dialect])
+    )
+      return result;
     const complete = DIALECTS.every((dialect) => result[dialect]);
     result.notes = complete
       ? notes
@@ -832,11 +866,23 @@
 
   /**
    * The outcome qTest tests ({ kind, ... }) from the definition's behavior
-   * block, or null so the step counts as having no action of its own.
+   * block or its action field, or null so the step counts as having no
+   * action of its own.
    */
   function qtestAction(step) {
-    const fromBlock = blockPart(definitionFor(step), "qtestAction");
-    return fromBlock ? fromBlock(step) || null : null;
+    const definition = definitionFor(step);
+    const fromBlock = blockPart(definition, "qtestAction");
+    if (fromBlock) return fromBlock(step) || null;
+    return definition ? qtestActionWith(definition, step) : null;
+  }
+
+  /** The outcome of the definition's action field, which qTest tests. */
+  function qtestActionWith(definition, step) {
+    const { definitions } = engine();
+    const hasAction = definitions
+      .fields(definition, definitions.subtypeOf(definition, step))
+      .some((field) => field.control === "action");
+    return hasAction ? app("atlasQtestThenAction")?.(step) || null : null;
   }
 
   /**
@@ -1232,6 +1278,9 @@
     },
     join_type: { name: "atlasRenderJoinTypePickerButton", reads: "step" },
     join_keys: { name: "atlasJoinKeysEditorHtml", reads: "step" },
+    condition_group: { name: "atlasConditionGroupEditorHtml", reads: "step" },
+    // The action builder also takes the branch it writes: THEN or ELSE.
+    action: { name: "atlasActionEditorHtml", reads: "params" },
   });
 
   /** The parameter's value, or the field's valueTemplate while it is blank. */
@@ -1361,10 +1410,13 @@
       case "math":
       case "string_transform":
       case "join_type":
-      case "join_keys": {
+      case "join_keys":
+      case "condition_group":
+      case "action": {
         const editor = COMPOSITE_EDITORS[field.control];
         const html = app(editor.name)?.(
           editor.reads === "step" ? { ...step, params } : params,
+          ...(field.control === "action" ? [field.branch || "THEN"] : []),
         );
         return typeof html === "string"
           ? html
@@ -1432,6 +1484,29 @@
     return renderEditorWith(definitionFor(step), step);
   }
 
+  /**
+   * Tab buttons and one panel per tab. The tab last chosen stays open; the
+   * first tab opens until one is chosen.
+   */
+  function tabsHtml(tabs, panels) {
+    const chosen = text(app("atlasActiveLogicEditorTab")?.());
+    const open = tabs.some((tab) => tab.id === chosen) ? chosen : tabs[0].id;
+    const active = (tab) => (tab.id === open ? "active" : "");
+    const buttons = tabs
+      .map(
+        (tab) =>
+          `<button type="button" class="logic-editor-tab ${active(tab)}" data-editor-tab="${escapeHtml(tab.id)}"> ${escapeText(tab.label)} </button>`,
+      )
+      .join("");
+    const bodies = tabs
+      .map(
+        (tab) =>
+          `<div class="logic-editor-tab-panel ${active(tab)}" data-editor-panel="${escapeHtml(tab.id)}">${panels.get(tab.id).join("")}</div>`,
+      )
+      .join("");
+    return `<div class="logic-editor-tabs">${buttons}</div>${bodies}`;
+  }
+
   function renderEditorWith(definition, step) {
     if (!definition) return null;
     const fromBlock = blockPart(definition, "editor");
@@ -1458,12 +1533,17 @@
           display: subtypes.control === "list" ? "cards" : subtypes.control,
         }),
       );
+    const frame = definition.editorFrame || {};
+    const tabs = Array.isArray(frame.tabs) ? frame.tabs : [];
+    // Each tab's fields, in order; without tabs every field is in one list.
+    const panels = new Map(tabs.map((tab) => [tab.id, []]));
     // Shown fields with layout "pair" next to each other share one row.
     let pair = [];
     let pairClass = "";
+    let pairPanel = parts;
     const flushPair = () => {
       if (pair.length)
-        parts.push(
+        pairPanel.push(
           `<div class="logic-picker-pair${pairClass ? ` ${escapeHtml(pairClass)}` : ""}">${pair.join("")}</div>`,
         );
       pair = [];
@@ -1472,17 +1552,18 @@
     definitions.fields(definition, subtype).forEach((field) => {
       const html = fieldHtml(field, step, definition);
       if (!html) return;
-      if (field.layout === "pair") {
-        if (!pair.length) pairClass = field.pairClass || "";
-        pair.push(html);
-      } else {
-        flushPair();
-        parts.push(html);
+      const panel = panels.get(field.tab) || parts;
+      if (field.layout !== "pair" || panel !== pairPanel) flushPair();
+      if (field.layout !== "pair") return panel.push(html);
+      if (!pair.length) {
+        pairClass = field.pairClass || "";
+        pairPanel = panel;
       }
+      pair.push(html);
     });
     flushPair();
+    if (tabs.length) parts.push(tabsHtml(tabs, panels));
     // The same markup as the built-in editors, so the look does not change.
-    const frame = definition.editorFrame || {};
     let heading = definition.label;
     if (frame.heading) {
       try {
@@ -1492,7 +1573,9 @@
       }
     }
     const className = frame.className ? ` ${escapeHtml(frame.className)}` : "";
-    const form = `<div class="guided-builder${className}"><h4>${escapeHtml(heading)}</h4>${parts.join("")}</div>`;
+    const title =
+      frame.heading === false ? "" : `<h4>${escapeHtml(heading)}</h4>`;
+    const form = `<div class="guided-builder${className}">${title}${parts.join("")}</div>`;
     return frame.standalone
       ? form
       : `<div class="selected-source-only-builder">${form}</div>`;

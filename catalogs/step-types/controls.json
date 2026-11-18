@@ -1,5 +1,5 @@
 {
-  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame`, exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
+  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame` (its class, heading and tabs), exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
   "paletteVersion": 1,
   "commonProperties": [
     {
@@ -62,6 +62,12 @@
       "name": "group",
       "type": "identifier",
       "description": "Groups related fields in the builder."
+    },
+    {
+      "name": "tab",
+      "type": "identifier",
+      "internal": true,
+      "description": "Internal, never offered by the builder. The editorFrame tab that shows the field. Kept for IF / THEN, whose editor shows the conditions and the action on two tabs."
     },
     {
       "name": "sharesParam",
@@ -242,8 +248,8 @@
       "name": "condition_group",
       "label": "Conditions",
       "category": "composite",
-      "status": "planned",
-      "description": "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json.",
+      "status": "available",
+      "description": "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json and keeps the step's conditions list in step with it; a step without conditions gets one blank condition. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
       "params": ["conditions_json"],
       "properties": [],
       "features": [
@@ -288,9 +294,40 @@
       "name": "action",
       "label": "Action",
       "category": "composite",
-      "status": "planned",
-      "description": "What a THEN or ELSE branch does. Stores then_action_type and the parameters of the chosen action.",
-      "params": ["then_action_type"],
+      "status": "available",
+      "description": "What a THEN or ELSE branch does: display or leave out the records, write text, a field, a calculation or part of a text value into a column, or describe the action in words. Stores then_action_type and the parameters of the chosen action, and gives the outcome qTest tests. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+      "params": [
+        "then_action_type",
+        "then_action",
+        "then_text",
+        "then_output_column",
+        "then_output_source_file",
+        "then_output_source_alias",
+        "then_text_separator",
+        "then_display_mode",
+        "then_target_column",
+        "then_value_source_file",
+        "then_value_source_alias",
+        "then_value_field",
+        "then_math_json",
+        "then_rounding_mode",
+        "then_rounding_decimal_places",
+        "then_string_operation",
+        "then_string_position",
+        "then_string_source_file",
+        "then_string_source_alias",
+        "then_string_source_field",
+        "then_string_character_count",
+        "then_string_split_mode",
+        "then_string_split_delimiter",
+        "then_string_split_custom_delimiter",
+        "then_string_split_column_count",
+        "then_exclude_scope",
+        "then_exclude_key_source_file",
+        "then_exclude_key_source_alias",
+        "then_exclude_key_field",
+        "then_exclude_key_fields_json"
+      ],
       "properties": ["branch"],
       "features": [
         {
