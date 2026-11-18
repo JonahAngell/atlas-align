@@ -1,6 +1,6 @@
 {
   "$comment": "The step type engine as one copyable unit. The Step Type Builder repository pins an ATLAS Align revision and copies exactly these files, in this order. Raise engineVersion whenever a listed file changes behavior.",
-  "engineVersion": "1.5.0",
+  "engineVersion": "1.5.1",
   "schemaVersions": [1],
   "scripts": [
     "js/step-types/00-templates.js",
@@ -27,6 +27,7 @@
       "js/02b-developer-formulas.js",
       "js/03-capture-actions.js",
       "js/07-phrase-catalog.js",
+      "js/08-step-templates-validation.js",
       "js/09-workbook-import.js",
       "js/10-field-picker.js",
       "js/11-repo-library.js",
