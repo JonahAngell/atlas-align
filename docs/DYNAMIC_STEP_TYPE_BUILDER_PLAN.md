@@ -499,6 +499,17 @@ updated_* = ... WHERE type_id = $2 AND revision = $3`; no row updated means
   `GET /api/step-types` keeps sending retired versions that publications are
   pinned to and lists types with no published version left in `retired`, so
   the browser drops them from the picker while existing steps keep rendering.
+  For such a type it also sends the highest retired version, so steps of a
+  builder-made type (no bundled file to fall back on) still render.
+- **Retiring the latest version is checked.** Saved steps don't record a
+  version, so retiring the latest published version moves editable audits to
+  the next older published one. If that version lacks an option value
+  (subtype or choice) the retired one offers, the retire is refused with a
+  `StepTypeRetireBlockedError` (`code: "option_removed"`), the same rule as
+  removing an option on publish. Older versions and the only published
+  version can always be retired. `lock-published-versions.sql` locks the
+  type's published rows so the check and the retire see the same versions.
+  The builder applies the same rule in its own retire route.
 - **Exports target this repository.** The `.zip` layout below is relative to
   the ATLAS Align repository root, not the builder's.
 

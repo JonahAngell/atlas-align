@@ -288,3 +288,34 @@ test("retiring one version keeps the type in the picker at its published version
   assert.match(english(context), /^Order the rows by /);
   vm.runInContext("ATLASStepTypeRuntime.usePinnedVersions(null)", context);
 });
+
+test("steps of a fully retired builder-made type render with its last retired version", async () => {
+  const context = await loadApp();
+  // A type only the database has: no file in catalogs/step-types/.
+  const { aliases: _aliases, ...withoutAliases } = SORT_V1;
+  const CUSTOM = {
+    ...withoutAliases,
+    id: "custom_sort",
+    label: "Custom Sort",
+    version: 3,
+  };
+  const step = { ...STEP, step_type: "custom_sort" };
+  // The server sends the highest retired version and names the type retired.
+  const { fetch } = serverFetch({
+    latest: {},
+    retired: ["custom_sort"],
+    definitions: [{ status: "retired", definition: CUSTOM }],
+  });
+  await loadFrom(context, fetch);
+  assert.equal(
+    run(context, 'ATLASStepTypeRuntime.definitionById("custom_sort").version'),
+    3,
+  );
+  assert.match(english(context, step), /Order Date/);
+  assert.ok(
+    !run(context, "ATLASStepTypeRuntime.typeOptions()").some(
+      (option) => option.id === "custom_sort",
+    ),
+    "hidden from the picker",
+  );
+});

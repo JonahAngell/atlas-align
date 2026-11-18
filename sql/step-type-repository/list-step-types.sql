@@ -1,6 +1,9 @@
--- The latest published version of every type, plus every older or retired
--- version a publication was pinned to, so published audits keep rendering
--- with the definitions they were published with.
+-- The latest published version of every type, every older or retired version
+-- a publication was pinned to, and the highest retired version of a type with
+-- no published version left. Published audits keep rendering with the
+-- definitions they were published with, and steps of a fully retired type
+-- still render even when ATLAS Align bundles no file for it (a type the
+-- builder created).
 WITH
   latest AS (
     SELECT
@@ -22,6 +25,21 @@ WITH
       CROSS JOIN LATERAL jsonb_each_text(publication.step_type_versions) pin
     WHERE
       pin.value ~ '^[0-9]+$'
+  ),
+  last_retired AS (
+    SELECT
+      type_id,
+      max(version) FILTER (
+        WHERE
+          status = 'retired'
+      ) AS version
+    FROM
+      atlas_step_type_definitions
+    GROUP BY
+      type_id
+    HAVING
+      bool_or(status = 'retired')
+      AND NOT bool_or(status = 'published')
   )
 SELECT
   definition.type_id,
@@ -45,6 +63,13 @@ WHERE
         version
       FROM
         pinned
+    )
+    OR (definition.type_id, definition.version) IN (
+      SELECT
+        type_id,
+        version
+      FROM
+        last_retired
     )
   )
 ORDER BY

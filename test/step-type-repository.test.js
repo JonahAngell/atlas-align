@@ -21,7 +21,9 @@ import {
   importRepositoryStepTypes,
   importStepTypeDefinitions,
   listStepTypes,
+  removedStepTypeOptionValues,
   retireStepTypeVersion,
+  StepTypeRetireBlockedError,
 } from "../src/step-type-repository.js";
 
 const ROOT = new URL("../", import.meta.url);
@@ -33,6 +35,7 @@ const SQL = {
   list: read("sql/step-type-repository/list-step-types.sql"),
   retired: read("sql/step-type-repository/list-retired-step-types.sql"),
   retire: read("sql/step-type-repository/retire-definition.sql"),
+  lock: read("sql/step-type-repository/lock-published-versions.sql"),
 };
 const DRAFTS_MIGRATION = read(
   ".launch/migrations/20261117130000_create_atlas_step_type_drafts.sql",
@@ -40,6 +43,8 @@ const DRAFTS_MIGRATION = read(
 const MANIFEST = JSON.parse(read("catalogs/step-types/manifest.json"));
 const sortRecords = () =>
   JSON.parse(read("catalogs/step-types/sort_records.json"));
+const removeDuplicates = () =>
+  JSON.parse(read("catalogs/step-types/remove_duplicates.json"));
 
 /** An in-memory atlas_step_type_definitions behind the repository SQL. */
 function fakePool(rows = []) {
@@ -88,6 +93,14 @@ function fakePool(rows = []) {
       row.updated_by_username = params[3];
       return { rows: [row] };
     }
+    if (text === SQL.lock)
+      return {
+        rows: [...table.values()]
+          .filter(
+            (row) => row.type_id === params[0] && row.status === "published",
+          )
+          .sort((a, b) => b.version - a.version),
+      };
     if (text === SQL.retired) {
       const statuses = new Map();
       for (const row of table.values())
@@ -390,8 +403,9 @@ test("retiring a published version records a retired event", async () => {
       actor: "u-42",
     },
   );
-  assert.deepEqual(pool.statements.slice(-4), [
+  assert.deepEqual(pool.statements.slice(-5), [
     "BEGIN",
+    SQL.lock,
     SQL.retire,
     SQL.event,
     "COMMIT",
@@ -427,6 +441,126 @@ test("GET /api/step-types names types with no published version left", async () 
   assert.deepEqual((await listStepTypes(pool)).retired, ["sort_records"]);
 });
 
+/** remove_duplicates v2 whose "Records to keep" choice gains one option. */
+function removeDuplicatesWithExtraOption(extra = "Keep newest record") {
+  const definition = { ...removeDuplicates(), version: 2 };
+  definition.fields = definition.fields.map((field) =>
+    field.param === "duplicate_action"
+      ? {
+          ...field,
+          options: [...field.options, { value: extra, label: extra }],
+        }
+      : field,
+  );
+  return definition;
+}
+
+function addPublished(pool, definition) {
+  pool.table.set(`${definition.id}@${definition.version}`, {
+    id: `def-${pool.table.size + 1}`,
+    type_id: definition.id,
+    version: definition.version,
+    definition,
+    status: "published",
+  });
+}
+
+test("retiring the latest version is refused when the older one lacks its options", async () => {
+  const pool = fakePool();
+  await importRepositoryStepTypes(pool, { logger: quietLogger() });
+  addPublished(pool, removeDuplicatesWithExtraOption());
+  const events = pool.events.length;
+  await assert.rejects(
+    retireStepTypeVersion(pool, {
+      typeId: "remove_duplicates",
+      version: 2,
+      actor: BUILDER,
+    }),
+    (error) => {
+      assert.ok(error instanceof StepTypeRetireBlockedError);
+      assert.equal(error.code, "option_removed");
+      assert.equal(error.fallbackVersion, 1);
+      assert.deepEqual(error.removed, [
+        {
+          param: "duplicate_action",
+          label: error.removed[0].label,
+          value: "Keep newest record",
+        },
+      ]);
+      assert.match(error.message, /"Keep newest record"/);
+      return true;
+    },
+  );
+  assert.equal(pool.table.get("remove_duplicates@2").status, "published");
+  assert.equal(pool.events.length, events, "no event for a refused retire");
+  assert.equal(pool.statements.at(-1), "ROLLBACK");
+});
+
+test("retiring is allowed when no option values would be stranded", async () => {
+  const pool = fakePool();
+  await importRepositoryStepTypes(pool, { logger: quietLogger() });
+  // An older version can always go: the latest version stays in use.
+  addPublished(pool, removeDuplicatesWithExtraOption());
+  assert.equal(
+    (
+      await retireStepTypeVersion(pool, {
+        typeId: "remove_duplicates",
+        version: 1,
+        actor: BUILDER,
+      })
+    ).status,
+    "retired",
+  );
+  // The only published version can go: its steps render with it (see the
+  // list SQL), and no other version takes over.
+  assert.equal(
+    (
+      await retireStepTypeVersion(pool, {
+        typeId: "remove_duplicates",
+        version: 2,
+        actor: BUILDER,
+      })
+    ).status,
+    "retired",
+  );
+  // The latest can go when the version before it has every option value.
+  const same = { ...sortRecords(), version: 2, label: "Order Records" };
+  addPublished(pool, same);
+  assert.equal(
+    (
+      await retireStepTypeVersion(pool, {
+        typeId: "sort_records",
+        version: 2,
+        actor: BUILDER,
+      })
+    ).status,
+    "retired",
+  );
+});
+
+test("removed option values cover subtypes, choices and dropped controls", () => {
+  const before = {
+    subtypes: {
+      param: "mode",
+      label: "Mode",
+      options: [
+        { value: "a", fields: [{ param: "x", options: [{ value: "1" }] }] },
+        { value: "b" },
+      ],
+    },
+    fields: [{ param: "kind", label: "Kind", options: [{ value: "k" }] }],
+  };
+  const after = {
+    subtypes: { param: "mode", options: [{ value: "a" }] },
+    fields: [{ param: "kind", options: [{ value: "k" }, { value: "new" }] }],
+  };
+  assert.deepEqual(
+    removedStepTypeOptionValues(before, after).map((item) => item.value),
+    ["b", "1"],
+  );
+  assert.deepEqual(removedStepTypeOptionValues(after, after), []);
+});
+
 test("the retire SQL changes only status and updated_* of a published row", () => {
   assert.match(SQL.retire, /^UPDATE atlas_step_type_definitions$/m);
   assert.match(SQL.retire, /status = 'retired'/);
@@ -444,6 +578,12 @@ test("the retire SQL changes only status and updated_* of a published row", () =
   assert.match(SQL.retired, /NOT bool_or\(status = 'published'\)/);
   // Pinned retired versions keep rendering; only drafts are never served.
   assert.match(SQL.list, /definition\.status <> 'draft'/);
+  // A type with no published version left still sends its highest retired
+  // version, so its steps render even without a bundled file.
+  assert.match(SQL.list, /last_retired AS \(/);
+  assert.match(SQL.list, /FROM\s+last_retired/);
+  assert.match(SQL.lock, /status = 'published'/);
+  assert.match(SQL.lock, /FOR UPDATE\s*$/);
 });
 
 test("the drafts migration matches the builder contract", () => {
