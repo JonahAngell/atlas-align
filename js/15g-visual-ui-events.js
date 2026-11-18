@@ -2183,7 +2183,10 @@ function atlasValidateStringCharacterCountInput(
   { report = false } = {},
 ) {
   if (!atlasIsStringCharacterCountInput(input)) return true;
-  const valid = atlasIsPositiveWholeNumber(input.value);
+  // A blank count is unfinished, not wrong: the validation panel asks for it,
+  // and blocking the commit would stop every other edit, even the operation.
+  const blank = !String(input.value ?? "").trim();
+  const valid = blank || atlasIsPositiveWholeNumber(input.value);
   input.setAttribute("aria-invalid", valid ? "false" : "true");
   input.setCustomValidity?.(
     valid ? "" : "Enter a positive whole number greater than zero.",

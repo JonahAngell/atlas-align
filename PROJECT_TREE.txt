@@ -573,6 +573,7 @@
 │   ├── step-type-repository.test.js
 │   ├── step-type-runtime.test.js
 │   ├── step-type-snapshots.test.js
+│   ├── string-character-count-input.test.js
 │   ├── string-transform-split.test.js
 │   ├── structured-step-editors.test.js
 │   ├── user-impersonation.test.js

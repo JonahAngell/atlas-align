@@ -1856,7 +1856,14 @@
               },
             ],
           },
-          { param: "message", control: "text", label: "Message" },
+          {
+            param: "message",
+            control: "text",
+            label: "Message",
+            visibleWhen: {
+              not: { param: "flag_action", equals: "do_not_display" },
+            },
+          },
           {
             param: "output_column",
             control: "field_picker",
@@ -1864,6 +1871,9 @@
             placeholder: "Select field",
             valueTemplate:
               '{{placeholder "error_message_column" "Error Message"}}',
+            visibleWhen: {
+              not: { param: "flag_action", equals: "do_not_display" },
+            },
           },
         ],
         english: {

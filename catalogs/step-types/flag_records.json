@@ -78,14 +78,20 @@
     {
       "param": "message",
       "control": "text",
-      "label": "Message"
+      "label": "Message",
+      "visibleWhen": {
+        "not": { "param": "flag_action", "equals": "do_not_display" }
+      }
     },
     {
       "param": "output_column",
       "control": "field_picker",
       "label": "Output Column",
       "placeholder": "Select field",
-      "valueTemplate": "{{placeholder \"error_message_column\" \"Error Message\"}}"
+      "valueTemplate": "{{placeholder \"error_message_column\" \"Error Message\"}}",
+      "visibleWhen": {
+        "not": { "param": "flag_action", "equals": "do_not_display" }
+      }
     }
   ],
   "english": {
