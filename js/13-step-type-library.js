@@ -31,9 +31,16 @@
  *   duplicateKeys params legacy=true             Remove Duplicates columns
  *   duplicateKeepClause action                   "keeping the first record"
  *   firstKeyTable keys source alias              Excel table of the first key
+ *   separatorPhrase value                        "with a space between them"
+ *   stringTransformPhrase / stringTransformTarget / stringTransformFormula params
+ *   splitColumnsFormula params note=N            Create Column split formulas
+ *   mathActive / mathPhrase / mathFormula params Create Column calculations
+ *   literal value / writtenExpression value      quoted text, written formula
+ *   createColumnOutputs params field / quotedNames list   created columns
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
- * sync_format_field, sync_split_field, union_sources_to_join.
+ * sync_format_field, sync_split_field, sync_create_column,
+ * union_sources_to_join.
  * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
  *
  * Behavior blocks (a definition's `block`) supply whole parts of a type from
@@ -41,14 +48,13 @@
  * markup, english(step), notes(step), formulas(step), createdColumns(step),
  * qtestAction(step) (the THEN outcome qTest tests) and
  * qtestOutcomes(step, { record }) (the two expected outcomes). The types that came with ATLAS Align use them:
- *   create_column   all value modes, math and string transformations
  *   if_then         condition tree and THEN actions
  *   else            ELSE actions (legacy)
  *   join            Join and Union, with the join type picker
  *   union_sources   saved Union Sources steps (legacy; normalize makes a Join)
  *   filter_rows, flag_records   single-condition steps (legacy)
  * Replaced blocks (replacedBlocks below) are the ones a later version
- * rebuilt with fields: format_field and split_field. Only definitions pinned
+ * rebuilt with fields: format_field, split_field and create_column. Only definitions pinned
  * to their old versions name them; they render through the field-based
  * definition.
  * A new type can name one of them and change its label, order and export.
@@ -348,6 +354,37 @@
   }
 
   // ---------------------------------------------------------------------------
+  // Create Column.
+  // ---------------------------------------------------------------------------
+
+  /** Math operations of a stored list; [] when it cannot be read. */
+  function mathOperations(value) {
+    const parse = app("parseSourceMathOperations");
+    return parse ? parse(value || []) : [];
+  }
+
+  /**
+   * Column names a Create Column step adds. A split adds one per named
+   * part, or "Name_x" standing for Name_1, Name_2... when the count is open.
+   */
+  function createColumnOutputs(params, field) {
+    const values = paramsOf(params);
+    if (
+      values.value_mode === "String transformation" &&
+      text(values.string_operation).trim() === "split"
+    ) {
+      const config = app("atlasStringTransformConfig")?.(values);
+      if (!config) return [];
+      const names = config.named
+        ? config.outputColumns
+        : [config.outputPattern];
+      return [...new Set(names.filter(Boolean))];
+    }
+    const name = text(values.column_name || field || "").trim();
+    return name ? [name] : [];
+  }
+
+  // ---------------------------------------------------------------------------
   // Template helpers.
   // ---------------------------------------------------------------------------
 
@@ -480,6 +517,118 @@
     duplicateKeys(args, hash) {
       return duplicateKeys(args[0], hash.legacy === true);
     },
+    /** A separator in analyst text: "a space", "a comma" or the quoted text. */
+    separatorPhrase(args) {
+      return text(app("separatorPlain")?.(args[0]) ?? args[0]);
+    },
+    /** Create Column string transformation sentence. */
+    stringTransformPhrase(args) {
+      const config = app("atlasStringTransformConfig")?.(paramsOf(args[0]));
+      const phrase = app("atlasStringTransformAnalystPhrase");
+      return config && phrase ? text(phrase(config, "create_column")) : "";
+    },
+    /** The column a string transformation writes; blank when none is named. */
+    stringTransformTarget(args) {
+      return text(
+        app("atlasStringTransformConfig")?.(paramsOf(args[0]))
+          ?.destinationColumn,
+      );
+    },
+    /** A string transformation's value in the current dialect. */
+    stringTransformFormula(args, _hash, { format }) {
+      const config = app("atlasDevStringTransformConfig")?.(paramsOf(args[0]));
+      return text(app("atlasDevStringTransform")?.(config || {}, format));
+    },
+    /** One dialect of a Create Column split, or one of its notes (note=N). */
+    splitColumnsFormula(args, hash, { format }) {
+      const config = app("atlasDevStringTransformConfig")?.(paramsOf(args[0]));
+      const result = app("atlasDevSplitColumns")?.(config || {}) || {};
+      if (hash.note !== undefined)
+        return text((result.notes || [])[Number(hash.note)]);
+      return text(result[format]);
+    },
+    /** Whether a source field value has math operations or rounding. */
+    mathActive(args) {
+      const values = paramsOf(args[0]);
+      return Boolean(
+        mathOperations(values.source_math_json).length ||
+        (values.rounding_mode && values.rounding_mode !== "none"),
+      );
+    },
+    /** "file "wd" column "Pay" times 2, then round to ..." for analyst text. */
+    mathPhrase(args) {
+      const values = paramsOf(args[0]);
+      const base = text(
+        app("tableColumnPlain")?.(
+          values.source_file,
+          values.source_alias,
+          values.field_name,
+        ),
+      );
+      const word = app("compareMathOperatorWord");
+      const operand = app("compareMathOperandPlain");
+      const math = mathOperations(values.source_math_json)
+        .map(
+          (operation) =>
+            `${word?.(operation.operator) ?? ""} ${operand?.(operation, values.source_file) ?? ""}`,
+        )
+        .filter(Boolean)
+        .join(" ");
+      const rounding = text(
+        app("atlasMathRoundingPhrase")?.(
+          values.rounding_mode,
+          values.rounding_decimal_places,
+        ),
+      );
+      return `${base}${math ? ` ${math}` : ""}${rounding}`;
+    },
+    /** A source field value with its math and rounding in the current dialect. */
+    mathFormula(args, _hash, { format }) {
+      const values = paramsOf(args[0]);
+      const field = app("atlasDevFieldSpec")?.(
+        values.source_file,
+        values.source_alias,
+        values.field_name,
+      );
+      const rounding = app("atlasDevRoundingMode")?.(
+        values.rounding_mode || values.rounding_method,
+      );
+      const places = app("atlasDevDecimalPlaces")?.(
+        values.rounding_decimal_places,
+      );
+      return text(
+        app("atlasDevCalculation")?.(
+          field,
+          mathOperations(values.source_math_json || []),
+          rounding,
+          places,
+          format,
+        ),
+      );
+    },
+    /** A text literal as the developer formulas write it in each dialect. */
+    literal(args, _hash, { format }) {
+      const appString = app("atlasDevString");
+      if (appString) return appString(text(args[0]), format);
+      return JSON.stringify(text(args[0]));
+    },
+    /** A written expression without its leading "=", or [expression]. */
+    writtenExpression(args) {
+      return (
+        text(args[0]).trim().replace(/^=/, "") ||
+        placeholder("expression", "[expression]")
+      );
+    },
+    /** The columns a Create Column step adds (see createColumnOutputs). */
+    createColumnOutputs(args) {
+      return createColumnOutputs(args[0], args[1]);
+    },
+    /** Quoted names joined with ", ", or "" when there are none. */
+    quotedNames(args) {
+      const quote = app("quotePhraseValue") || ((value) => `"${value}"`);
+      const names = Array.isArray(args[0]) ? args[0] : [];
+      return names.map((name) => quote(text(name))).join(", ") || '""';
+    },
     /** Excel table of a key list's first key, else of the step's source. */
     firstKeyTable(args) {
       const [keys, source, alias] = args;
@@ -514,6 +663,13 @@
     /** Writes the structured Split Field settings and their split_on mirror. */
     sync_split_field(_step, { params }) {
       app("atlasNormalizeSplitFieldParams")?.(params);
+    },
+    /**
+     * Create Column defaults: the column name from the step's field, the
+     * value type, and each Concatenate operand's own source.
+     */
+    sync_create_column(step) {
+      app("atlasNormalizeCreateColumnStep")?.(step);
     },
     /** Rewrites a saved Union Sources step as a UNION Join. */
     union_sources_to_join(step) {
@@ -554,14 +710,6 @@
     duplicate_keys: {
       editor: (step) =>
         app("atlasDuplicateFieldsEditorHtml")?.(step.params || {}),
-    },
-    create_column: {
-      normalize: call("atlasNormalizeCreateColumnStep"),
-      editor: framed("atlasCreateColumnEditorHtml"),
-      english: call("atlasCreateColumnSentence"),
-      formulas: call("atlasDevCreateColumn"),
-      createdColumns: call("atlasCreateColumnOutputNames"),
-      qtestOutcomes: call("atlasQtestCreateColumnOutcomes"),
     },
     if_then: {
       normalize: call("atlasNormalizeIfThenStep"),
@@ -612,6 +760,7 @@
   const replacedBlocks = Object.freeze({
     format_field: "format_field",
     split_field: "split_field",
+    create_column: "create_column",
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({

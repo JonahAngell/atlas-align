@@ -102,7 +102,7 @@ read. It also rejects a control the runtime cannot render, which covers the
 `planned` ones. Each planned control is implemented in the branch that first
 uses it:
 
-- `condition_group`, `action`, `math` and `string_transform` with `if_then`
+- `condition_group` and `action` with `if_then`
 - `join_keys` with `join`
 
 Field additions:
@@ -128,6 +128,49 @@ latest field-based definition, and a test renders the snapshot corpus pinned
 to v2 against v3. Every later conversion keeps a shim for each block it
 removes. Engine version 1.6.0. Stored param names and option
 values never change, and snapshots are identical.
+
+Create Column is version 2, made of fields (issue #5011, engine version
+1.7.0). The
+`sync_create_column` handler keeps its parameters normalized, and the
+`create_column` block stays as a shim, tested with the corpus pinned to v1.
+It added these ordinary field features:
+
+- `optionsFrom` on a `choice` reads the option order from a phrase catalog
+  list (here `app_config.logic_options.create_value_modes`). Listed values come
+  first, labelled and described by the matching `options` entry; options the
+  list leaves out follow. Without the catalog, `options` is used as written.
+- `clearable` on a `field_picker` adds a Clear button that removes the value
+  and its `sourceParam`.
+- `layout: "pair"` puts adjacent fields side by side.
+- The `readout` control shows a fixed, read-only value with help.
+- A `choice`'s `help` shows below the choice.
+- The condition test `positiveWholeNumber`.
+- qTest outcome templates can read `record`, the audit record's name.
+
+Two composite controls, `math` (calculations with rounding) and
+`string_transform` (characters, counts and splits), are drawn by the app's own
+editors (`atlasSourceFieldModeInputs`, `atlasStringTransformModeInputs`). The
+builder treats them as opaque: it can place and show or hide them, but cannot
+change what is inside them. Their palette `params` count as the type's params,
+so `visibleWhen` can read what they write.
+
+Some features exist only so that saved steps keep the markup the old editor
+wrote. They are marked `internal` in `controls.json`, and the builder does not
+offer them:
+
+- `sharesParam` lets two fields write the same param. Create Column needs it
+  for `column_name` (hidden when a split names its columns, a text input
+  otherwise), `expression` (hidden for a written expression, a textarea in the
+  legacy expression form) and `column_description` (with a different hint for
+  a written expression).
+- `clearKey` on a clearable field picker writes the old
+  `data-clear-concat-field` button the Concatenate fields editor had.
+- `legacyOptionSpacing` on a select-style choice writes `<option value="x" >`
+  for unselected options, as the legacy expression form (value mode
+  "Expression" or an unknown mode) did.
+
+The value mode "Expression / calculation" is hidden for new steps and left out
+of the catalog list; a saved written expression still shows it.
 
 ## Goal
 

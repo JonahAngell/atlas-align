@@ -21,8 +21,27 @@
     "step",
     "format",
   ]);
+  /** Extra values qTest outcome templates may read: the record wording. */
+  const OUTCOME_ROOTS = Object.freeze(["record"]);
   const SUBJECT_KEYS = ["param", "stepField"];
-  const TEST_KEYS = ["equals", "notEquals", "in", "blank", "notBlank"];
+  /** Controls that write params of their own besides their field's param. */
+  const COMPOSITE_CONTROLS = Object.freeze([
+    "sort_keys",
+    "duplicate_keys",
+    "condition_group",
+    "action",
+    "math",
+    "string_transform",
+    "join_keys",
+  ]);
+  const TEST_KEYS = [
+    "equals",
+    "notEquals",
+    "in",
+    "blank",
+    "notBlank",
+    "positiveWholeNumber",
+  ];
   const GROUP_KEYS = ["all", "any", "not"];
 
   const own = (target, key) =>
@@ -56,6 +75,10 @@
         : own(step, condition.stepField);
     if (condition.blank) return isBlank(value);
     if (condition.notBlank) return !isBlank(value);
+    if (condition.positiveWholeNumber) {
+      const typed = scalarText(value).trim();
+      return /^\d+$/.test(typed) && Number(typed) > 0;
+    }
     if (Object.prototype.hasOwnProperty.call(condition, "equals"))
       return scalarText(value) === scalarText(condition.equals);
     if (Object.prototype.hasOwnProperty.call(condition, "notEquals"))
@@ -102,7 +125,7 @@
         path,
         code: "condition",
         message:
-          "needs exactly one of equals, notEquals, in, blank or notBlank",
+          "needs exactly one of equals, notEquals, in, blank, notBlank or positiveWholeNumber",
       });
   }
 
@@ -321,6 +344,7 @@
       ...ALWAYS_ALLOWED,
       ...(palette.commonProperties || []).map((item) => item.name),
       ...(control.properties || []),
+      ...(control.internalProperties || []),
       ...(control.features?.length ? ["features"] : []),
     ]);
     Object.keys(field).forEach((key) => {
@@ -426,7 +450,9 @@
     const checkFields = (list, path) => {
       const seen = new Set();
       list.forEach((field, index) => {
-        if (seen.has(field.param))
+        // sharesParam (internal) lets a second field show the same param in
+        // another mode, as some built-in editors did.
+        if (seen.has(field.param) && !field.sharesParam)
           add(
             `${path}/${index}/param`,
             `"${field.param}" is used by two fields`,
@@ -494,11 +520,26 @@
         ]),
       ),
     ];
+    // A composite control writes the params its palette entry lists. Without
+    // a palette those are unknown, so conditions may name any param.
+    const allFields = [
+      ...definition.fields,
+      ...(subtypes?.options || []).flatMap((option) => option.fields || []),
+    ];
+    let openParams = false;
+    allFields.forEach((field) => {
+      if (!COMPOSITE_CONTROLS.includes(field.control)) return;
+      const entry = options.palette?.controls?.find(
+        (item) => item.name === field.control,
+      );
+      if (!entry) openParams = true;
+      else (entry.params || []).forEach((param) => params.add(param));
+    });
     const checkConditionParams = (condition, path) => {
       conditionProblems(condition, path, errors);
       // A behavior block owns params the definition does not list.
       conditionParams(condition).forEach((param) => {
-        if (!params.has(param) && !definition.block)
+        if (!params.has(param) && !definition.block && !openParams)
           add(path, `"${param}" is not a field of this step type`);
       });
     };
@@ -623,7 +664,9 @@
       templateApi
         .check(source, {
           helpers: options.helpers || [],
-          roots: TEMPLATE_ROOTS,
+          roots: path.startsWith("/export/qtest/outcomes/")
+            ? [...TEMPLATE_ROOTS, ...OUTCOME_ROOTS]
+            : TEMPLATE_ROOTS,
         })
         .forEach((problem) =>
           errors.push({

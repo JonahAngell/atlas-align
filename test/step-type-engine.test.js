@@ -528,7 +528,7 @@ test("definitions: cross-reference checks catch what the schema cannot", () => {
     '/subtypes/options/0/fields "field_name" is already a base field',
     '/fields/1/sourceParam "nowhere" is not a field of this step type',
     '/fields/2/visibleWhen "ghost" is not a field of this step type',
-    "/fields/6/enabledWhen needs exactly one of equals, notEquals, in, blank or notBlank",
+    "/fields/6/enabledWhen needs exactly one of equals, notEquals, in, blank, notBlank or positiveWholeNumber",
     '/validation/0/require "absent" is not a field of this step type',
     "/validation/1 a rule needs require, check or builtIn",
     '/export/rules/0/when "ghost2" is not a field of this step type',

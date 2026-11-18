@@ -554,13 +554,6 @@ document.addEventListener(
   true,
 );
 
-function atlasDescribedChoices(options, descriptions = {}) {
-  return (Array.isArray(options) ? options : []).map((option) => {
-    const value = Array.isArray(option) ? option[0] : option;
-    const label = Array.isArray(option) ? option[1] : option;
-    return [value, label, descriptions[value] || ""];
-  });
-}
 /**
  * Renders hidden source alias input markup.
  * @param {any} params - Step params object.
@@ -644,67 +637,6 @@ function renderGuidedBuilder(step) {
 }
 
 /** The Create Column form (the create_column behavior block). */
-function atlasCreateColumnEditorHtml(step) {
-  const p = step.params || {};
-  const valueModes = catalogArrayFromOptions({
-    path: "app_config.logic_options.create_value_modes",
-    fallback: [
-      "Static value",
-      "Source field value",
-      ATLAS_STRING_TRANSFORM_VALUE_MODE,
-      "Concatenate fields",
-      ATLAS_DATE_DIFFERENCE_VALUE_MODE,
-    ],
-  }).filter(
-    (value) =>
-      value !== "Expression / calculation" &&
-      value !== "Expression/Calculation",
-  );
-  // A legacy written expression keeps its own (legacy) choice so the
-  // picker does not claim another type; new steps can't choose it.
-  const writtenExpression = atlasCreateColumnIsWrittenExpression(p);
-  if (writtenExpression)
-    valueModes.push([p.value_mode, "Written expression (legacy)"]);
-  const selectedValueMode =
-    !writtenExpression &&
-    (p.value_mode === "Expression / calculation" ||
-      p.value_mode === "Expression/Calculation")
-      ? ""
-      : p.value_mode;
-  const namedSplit =
-    p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
-    p.string_operation === "split" &&
-    atlasStringTransformConfig(p).named;
-  const columnNameInput = namedSplit
-    ? `<input type="hidden" data-param="column_name" value="${esc(p.column_name || "")}">`
-    : `<label>New Column Name<input data-param="column_name" value="${esc(p.column_name || "")}" placeholder="e.g., Error Message"></label>`;
-  return `<div class="guided-builder"><h4>Create Column</h4>${columnNameInput}<div class="atlas-choice-field">${atlasChoiceControl(
-    {
-      options: atlasDescribedChoices(valueModes, {
-        "Static value": "Write a fixed value into the new column.",
-        "Source field value": "Copy or calculate from a source field.",
-        [ATLAS_STRING_TRANSFORM_VALUE_MODE]:
-          "Take characters, a character count, or split parts from a field.",
-        "Concatenate fields": "Join two fields into one value.",
-        [ATLAS_DATE_DIFFERENCE_VALUE_MODE]:
-          "Count the days between a date field and the run date.",
-        ...(writtenExpression
-          ? {
-              [p.value_mode]:
-                "Written in words (legacy). Choose a structured type.",
-            }
-          : {}),
-      }),
-      selected: selectedValueMode,
-      variant: "cards",
-      label: "Column Value Type",
-      heading: "Column Value Type",
-      popover: "pills",
-      attributes: 'data-param="value_mode"',
-    },
-  )}</div>${renderCreateModeInputs(p)}</div>`;
-}
-
 /** The Filter Rows and Flag Records form (their behavior blocks). */
 function atlasLegacyConditionEditorHtml(step) {
   const p = step.params || {};
@@ -774,48 +706,6 @@ function atlasLegacyConditionEditorHtml(step) {
         )}</label>`
   }</div>`;
 }
-/**
- * Renders Create Column inputs for the selected value mode.
- * @param {any} p - Input used by renderCreateModeInputs.
- */
-function renderCreateModeInputs(p) {
-  if (p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE)
-    return atlasStringTransformModeInputs(p);
-  if (p.value_mode === "Source field value")
-    return atlasSourceFieldModeInputs(p);
-  return atlasCreateModeInputsBase(p);
-}
-
-/** Static value, Concatenate fields and the old expression inputs. */
-function atlasCreateModeInputsBase(p) {
-  if (p.value_mode === "Static value")
-    return `<label>Static Value<input data-param="static_value" value="${esc(p.static_value || "")}"></label>`;
-  if (p.value_mode === "Concatenate fields")
-    return `<div class="logic-picker-pair"><input type="hidden" data-param="concat_source_1" value="${esc(p.concat_field_1 ? p.concat_source_1 || "" : "")}"><label>First Field${fieldInputFromOptions(
-      {
-        name: "concat_field_1",
-        value: p.concat_field_1,
-        placeholder: "Select first field",
-        sourceFile: p.concat_field_1 ? p.concat_source_1 || "" : "",
-      },
-    )}<button type="button" class="secondary small" data-clear-concat-field="1" aria-label="Clear First Field" ${p.concat_field_1 ? "" : "disabled"}>Clear</button></label><input type="hidden" data-param="concat_source_2" value="${esc(p.concat_field_2 ? p.concat_source_2 || "" : "")}"><label>Second Field${fieldInputFromOptions(
-      {
-        name: "concat_field_2",
-        value: p.concat_field_2,
-        placeholder: "Select second field",
-        sourceFile: p.concat_field_2 ? p.concat_source_2 || "" : "",
-      },
-    )}<button type="button" class="secondary small" data-clear-concat-field="2" aria-label="Clear Second Field" ${p.concat_field_2 ? "" : "disabled"}>Clear</button></label></div>`;
-  return `<label>Expression Type<select data-param="expression_type"><option value="custom_expression" ${p.expression_type === "custom_expression" ? "selected" : ""}>Custom Expression</option><option value="first_characters" ${p.expression_type === "first_characters" ? "selected" : ""}>First Characters</option><option value="character_count" ${p.expression_type === "character_count" ? "selected" : ""}>Character Count</option></select></label><label>Expression / Calculation<textarea data-param="expression">${esc(p.expression || "")}</textarea></label><input type="hidden" data-param="source_file" value="${esc(p.source_file || "")}">${sourceAliasHidden(p)}<label>Expression Source Field${fieldInputFromOptions(
-    {
-      name: "expression_source_field",
-      value: p.expression_source_field,
-      placeholder: "Select field",
-      sourceFile: p.source_file,
-    },
-  )}</label><label>Number of Characters<input data-param="character_count" value="${esc(p.character_count || "")}"></label>`;
-}
-
 // -----------------------------------------------------------------------------
 // Base catalog-driven rules rendering
 // -----------------------------------------------------------------------------
@@ -1528,21 +1418,6 @@ function atlasCreatedColumnNames(step) {
 }
 
 /** Column names a Create Column step adds (the create_column block). */
-function atlasCreateColumnOutputNames(step) {
-  if (!step) return [];
-  const p = step.params || {};
-  if (
-    p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE &&
-    String(p.string_operation || "").trim() === "split"
-  ) {
-    const c = atlasStringTransformConfig(p);
-    const names = c.named ? c.outputColumns : [c.outputPattern];
-    return [...new Set(names.filter(Boolean))];
-  }
-  const name = String(p.column_name || step.field || "").trim();
-  return name ? [name] : [];
-}
-
 function atlasStringCharacterCountControl({
   operation = "",
   paramName = "",
@@ -2521,51 +2396,6 @@ normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
   return normalized;
 };
 
-/** Optional description of the column, shown when one is stored. */
-function atlasColumnDescriptionHtml(p, { force = false } = {}) {
-  const text = String(p.column_description || "");
-  if (!force && !text.trim()) return "";
-  const hint = force
-    ? "For readers only. It is not run as a formula."
-    : "For readers only. The column's value comes from the settings above.";
-  return `<label class="full">Description (not run)<textarea data-param="column_description" placeholder="What this column is for" aria-describedby="atlas-column-description-hint">${esc(text)}</textarea><small id="atlas-column-description-hint" class="hint">${hint}</small></label>`;
-}
-
-const atlasRenderCreateModeInputsBeforeStructuredEditors =
-  renderCreateModeInputs;
-renderCreateModeInputs = function renderCreateModeInputsStructured(p) {
-  if (atlasCreateColumnIsWrittenExpression(p))
-    return `<div class="logic-editor-callout full" role="note">This column is written as an expression. Choose a value type above, such as String transformation or ${ATLAS_DATE_DIFFERENCE_VALUE_MODE}, so it runs the same way every time. The written text is kept below as the description.</div><input type="hidden" data-param="expression" value="${esc(p.expression || "")}">${atlasColumnDescriptionHtml(
-      { column_description: p.column_description || p.expression || "" },
-      { force: true },
-    )}`;
-  if (p.value_mode === ATLAS_DATE_DIFFERENCE_VALUE_MODE) {
-    const c = atlasDateDifferenceConfig(p);
-    return `<input type="hidden" data-param="date_diff_source_file" value="${esc(c.sourceFile)}"><input type="hidden" data-param="date_diff_parameter" value="runDate"><input type="hidden" data-param="date_diff_unit" value="days"><label>Date Field${fieldInputFromOptions(
-      {
-        name: "date_diff_field",
-        value: c.fieldName,
-        placeholder: "Select date field",
-        sourceFile: c.sourceFile,
-      },
-    )}</label><label>Compared With<input value="Run date" readonly aria-describedby="atlas-date-diff-hint"><small id="atlas-date-diff-hint" class="hint">The date the audit is run.</small></label><div class="atlas-choice-field full"><span class="atlas-choice-heading">Result (days)</span>${atlasChoiceControl(
-      {
-        options: [
-          ["parameter_minus_field", "Run date minus field"],
-          ["field_minus_parameter", "Field minus run date"],
-        ],
-        selected: c.direction,
-        variant: "segment",
-        label: "Result in days",
-        attributes: 'data-param="date_diff_direction"',
-      },
-    )}<small class="hint">Run date minus field counts days since the date, for example days since hire. Field minus run date counts days until it.</small></div>${atlasColumnDescriptionHtml(p)}`;
-  }
-  const base = atlasRenderCreateModeInputsBeforeStructuredEditors(p);
-  if (p.value_mode === "Concatenate fields")
-    return `${base}<label>Separator<input data-param="concat_separator" value="${esc(p.concat_separator ?? "")}" maxlength="${ATLAS_CONCAT_MAX_SEPARATOR}" placeholder='e.g., " - " (blank joins directly)' aria-describedby="atlas-concat-separator-hint"><small id="atlas-concat-separator-hint" class="hint">Placed between the two values. Spaces count.</small></label>${atlasColumnDescriptionHtml(p)}`;
-  return `${base}${atlasColumnDescriptionHtml(p)}`;
-};
 // Conditions: one operator vocabulary, a run parameter mode and value arrays.
 const ATLAS_RUN_PARAMETERS = [
   ["runDate", "Run Date", "The date the audit is run."],

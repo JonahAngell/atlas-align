@@ -207,7 +207,7 @@
       }
     },
     "condition": {
-      "description": "a condition: {param|stepField, equals|notEquals|in|blank|notBlank} or {all|any: [...]} or {not: condition}",
+      "description": "a condition: {param|stepField, equals|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -224,6 +224,10 @@
         },
         "blank": { "const": true },
         "notBlank": { "const": true },
+        "positiveWholeNumber": {
+          "const": true,
+          "description": "Holds when the value is a whole number greater than 0, such as 3 or 012."
+        },
         "all": {
           "type": "array",
           "minItems": 1,
@@ -302,6 +306,7 @@
             "hidden",
             "hint",
             "callout",
+            "readout",
             "block",
             "sort_keys",
             "duplicate_keys",
@@ -334,8 +339,28 @@
         "visibleWhen": { "$ref": "#/$defs/condition" },
         "enabledWhen": { "$ref": "#/$defs/condition" },
         "sourceParam": { "$ref": "#/$defs/paramName" },
+        "clearable": {
+          "type": "boolean",
+          "description": "A field picker's Clear button, which empties the field and its sourceParam."
+        },
+        "clearKey": {
+          "type": "string",
+          "pattern": "^[a-z0-9_]{1,40}$",
+          "description": "Internal: writes the legacy data-clear-concat-field button instead."
+        },
+        "legacyOptionSpacing": {
+          "type": "boolean",
+          "description": "Internal: a select writes <option value=\"x\" > as the legacy editors did."
+        },
         "group": { "$ref": "#/$defs/identifier" },
-        "layout": { "enum": ["full"] },
+        "sharesParam": {
+          "type": "boolean",
+          "description": "Internal: lets this field show a param another field also shows, in another mode."
+        },
+        "layout": {
+          "enum": ["full", "pair"],
+          "description": "full spans the editor row; pair puts shown fields next to each other in one row."
+        },
         "display": { "enum": ["cards", "chips", "segment", "list", "select"] },
         "heading": { "$ref": "#/$defs/label" },
         "popover": { "enum": ["list", "pills", "grid"] },

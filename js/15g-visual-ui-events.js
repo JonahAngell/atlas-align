@@ -2172,8 +2172,7 @@ document.addEventListener(
   (event) => {
     if (
       event.target.matches(
-        '[data-param="value_mode"], [data-param="string_operation"], [data-param="then_string_operation"], ' +
-          '[data-param="string_split_mode"], [data-param="string_split_delimiter"], [data-param="string_split_column_count"], ' +
+        '[data-param="then_string_operation"], [data-param="string_split_delimiter"], ' +
           '[data-param="then_exclude_scope"]',
       )
     )
@@ -3037,6 +3036,44 @@ document.addEventListener(
       editor?.dataset.liveEditorStepId || state.selectedStepId,
     );
     atlasClearConcatenateField(step, clear.dataset.clearConcatField || "1");
+  },
+  true,
+);
+
+/**
+ * Clears a definition field picker's value and the source it was picked
+ * from, then redraws the step (a field with "clearable" in its definition).
+ */
+document.addEventListener(
+  "click",
+  (event) => {
+    const clear = event.target.closest?.("[data-clear-param]");
+    if (!clear) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const editor = clear.closest("[data-live-editor-step-id]");
+    const step = stepById?.(
+      editor?.dataset.liveEditorStepId || state.selectedStepId,
+    );
+    const param = clear.dataset.clearParam;
+    if (!step || !param) return;
+    step.params = step.params || {};
+    delete step.params[param];
+    delete step.params[`${param}_field_ref`];
+    if (clear.dataset.clearSourceParam)
+      delete step.params[clear.dataset.clearSourceParam];
+    atlasMarkLogicIssuesDirty?.();
+    atlasRequestRender?.({
+      selectedStep: true,
+      logicTable: true,
+      preview: true,
+      validation: true,
+    });
+    scheduleAutosave?.();
+    status?.(
+      `${String(clear.getAttribute("aria-label") || "Field").replace(/^Clear /, "")} cleared.`,
+      "ok",
+    );
   },
   true,
 );

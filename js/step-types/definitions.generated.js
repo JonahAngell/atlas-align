@@ -230,7 +230,7 @@
         },
         condition: {
           description:
-            "a condition: {param|stepField, equals|notEquals|in|blank|notBlank} or {all|any: [...]} or {not: condition}",
+            "a condition: {param|stepField, equals|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
           type: "object",
           additionalProperties: false,
           minProperties: 1,
@@ -247,6 +247,11 @@
             },
             blank: { const: true },
             notBlank: { const: true },
+            positiveWholeNumber: {
+              const: true,
+              description:
+                "Holds when the value is a whole number greater than 0, such as 3 or 012.",
+            },
             all: {
               type: "array",
               minItems: 1,
@@ -326,6 +331,7 @@
                 "hidden",
                 "hint",
                 "callout",
+                "readout",
                 "block",
                 "sort_keys",
                 "duplicate_keys",
@@ -361,8 +367,33 @@
             visibleWhen: { $ref: "#/$defs/condition" },
             enabledWhen: { $ref: "#/$defs/condition" },
             sourceParam: { $ref: "#/$defs/paramName" },
+            clearable: {
+              type: "boolean",
+              description:
+                "A field picker's Clear button, which empties the field and its sourceParam.",
+            },
+            clearKey: {
+              type: "string",
+              pattern: "^[a-z0-9_]{1,40}$",
+              description:
+                "Internal: writes the legacy data-clear-concat-field button instead.",
+            },
+            legacyOptionSpacing: {
+              type: "boolean",
+              description:
+                'Internal: a select writes <option value="x" > as the legacy editors did.',
+            },
             group: { $ref: "#/$defs/identifier" },
-            layout: { enum: ["full"] },
+            sharesParam: {
+              type: "boolean",
+              description:
+                "Internal: lets this field show a param another field also shows, in another mode.",
+            },
+            layout: {
+              enum: ["full", "pair"],
+              description:
+                "full spans the editor row; pair puts shown fields next to each other in one row.",
+            },
             display: { enum: ["cards", "chips", "segment", "list", "select"] },
             heading: { $ref: "#/$defs/label" },
             popover: { enum: ["list", "pills", "grid"] },
@@ -560,7 +591,7 @@
     },
     controls: {
       $comment:
-        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only.",
+        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties` exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
       paletteVersion: 1,
       commonProperties: [
         {
@@ -618,13 +649,21 @@
         {
           name: "layout",
           type: "enum",
-          values: ["full"],
-          description: "full spans the whole editor row.",
+          values: ["full", "pair"],
+          description:
+            "full spans the whole editor row. pair puts shown fields that are next to each other in one row, as two pickers side by side.",
         },
         {
           name: "group",
           type: "identifier",
           description: "Groups related fields in the builder.",
+        },
+        {
+          name: "sharesParam",
+          type: "boolean",
+          internal: true,
+          description:
+            "Internal, never offered by the builder. Lets a second field show a param another field already shows, in another mode. Kept for Create Column, whose editor shows column_name, expression and column_description in two forms each.",
         },
       ],
       controls: [
@@ -644,7 +683,13 @@
           status: "available",
           description:
             "Chooses a field of a source, or any field and created column when no source is linked.",
-          properties: ["placeholder", "sourceParam", "valueTemplate"],
+          properties: [
+            "placeholder",
+            "sourceParam",
+            "valueTemplate",
+            "clearable",
+          ],
+          internalProperties: ["clearKey"],
           features: [],
         },
         {
@@ -653,7 +698,7 @@
           category: "choice",
           status: "available",
           description:
-            "One value from a fixed list, as cards, chips, a segmented control or a select. Each option can be hidden for new steps; a saved step that uses a hidden option still shows it.",
+            "One value from a fixed list, as cards, chips, a segmented control or a select. Each option can be hidden for new steps; a saved step that uses a hidden option still shows it. optionsFrom names a catalog list (such as app_config.logic_options.create_value_modes) that decides which values are offered and in what order; options with the same value give their label and description.",
           properties: [
             "options",
             "optionsFrom",
@@ -662,6 +707,7 @@
             "popover",
             "placeholder",
           ],
+          internalProperties: ["legacyOptionSpacing"],
           features: [],
           optionProperties: [
             "value",
@@ -738,6 +784,16 @@
           status: "available",
           description:
             "A highlighted note built from a template, usually shown with visibleWhen. Writes no parameter; param only names it.",
+          properties: ["message"],
+          features: [],
+        },
+        {
+          name: "readout",
+          label: "Read-only value",
+          category: "layout",
+          status: "available",
+          description:
+            "Shows a fixed setting as read-only text, built from a template `message`. Writes no parameter; param only names it.",
           properties: ["message"],
           features: [],
         },
@@ -883,50 +939,40 @@
           name: "math",
           label: "Calculation",
           category: "composite",
-          status: "planned",
+          status: "available",
           description:
-            "A structured calculation of fields and numbers with optional rounding. Stores the expression as JSON in its param.",
-          params: [],
-          properties: [],
-          features: [
-            {
-              name: "rounding",
-              label: "Rounding",
-              description: "Round the result to a number of places.",
-            },
+            "A source field with math operations and rounding. Stores the operations as JSON in source_math_json. Drawn by the app's own editor for now, so the builder cannot change its parts.",
+          params: [
+            "source_file",
+            "source_alias",
+            "field_name",
+            "source_math_json",
+            "rounding_mode",
+            "rounding_decimal_places",
           ],
+          properties: [],
+          features: [],
         },
         {
           name: "string_transform",
           label: "String transformation",
           category: "composite",
-          status: "planned",
+          status: "available",
           description:
-            "Part of a text value: first or last characters, character count, or a split into columns.",
-          params: [],
-          properties: ["prefix"],
-          features: [
-            {
-              name: "first_characters",
-              label: "First characters",
-              description: "Keep the first N characters.",
-            },
-            {
-              name: "last_characters",
-              label: "Last characters",
-              description: "Keep the last N characters.",
-            },
-            {
-              name: "character_count",
-              label: "Character count",
-              description: "Count the characters.",
-            },
-            {
-              name: "split",
-              label: "Split into columns",
-              description: "Split on a delimiter into several columns.",
-            },
+            "Part of a text value: first or last characters, character count, or a split into columns named string_split_column_1, string_split_column_2... Drawn by the app's own editor for now, so the builder cannot change its parts.",
+          params: [
+            "string_operation",
+            "string_position",
+            "string_source_file",
+            "string_source_field",
+            "string_character_count",
+            "string_split_mode",
+            "string_split_delimiter",
+            "string_split_custom_delimiter",
+            "string_split_column_count",
           ],
+          properties: [],
+          features: [],
         },
         {
           name: "join_keys",
@@ -951,7 +997,7 @@
       {
         schemaVersion: 1,
         id: "create_column",
-        version: 1,
+        version: 2,
         label: "Create Column",
         category: "column",
         order: 20,
@@ -959,15 +1005,524 @@
         status: "active",
         legacyType: "create",
         aliases: { step_type: [], type: ["create"] },
-        migrations: [],
-        fields: [],
-        block: "create_column",
-        english: { default: "" },
-        formulas: { shape: "none" },
+        migrations: [{ op: "handler", name: "sync_create_column" }],
+        fields: [
+          {
+            param: "column_name",
+            control: "hidden",
+            visibleWhen: {
+              all: [
+                { param: "value_mode", equals: "String transformation" },
+                { param: "string_operation", equals: "split" },
+                {
+                  any: [
+                    { param: "string_split_mode", in: ["first", "last"] },
+                    {
+                      param: "string_split_column_count",
+                      positiveWholeNumber: true,
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+          {
+            param: "column_name",
+            control: "text",
+            label: "New Column Name",
+            placeholder: "e.g., Error Message",
+            sharesParam: true,
+            visibleWhen: {
+              not: {
+                all: [
+                  { param: "value_mode", equals: "String transformation" },
+                  { param: "string_operation", equals: "split" },
+                  {
+                    any: [
+                      { param: "string_split_mode", in: ["first", "last"] },
+                      {
+                        param: "string_split_column_count",
+                        positiveWholeNumber: true,
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          {
+            param: "value_mode",
+            control: "choice",
+            label: "Column Value Type",
+            heading: "Column Value Type",
+            display: "cards",
+            popover: "pills",
+            optionsFrom: "app_config.logic_options.create_value_modes",
+            options: [
+              {
+                value: "Static value",
+                label: "Static value",
+                description: "Write a fixed value into the new column.",
+              },
+              {
+                value: "Source field value",
+                label: "Source field value",
+                description: "Copy or calculate from a source field.",
+              },
+              {
+                value: "String transformation",
+                label: "String transformation",
+                description:
+                  "Take characters, a character count, or split parts from a field.",
+              },
+              {
+                value: "Concatenate fields",
+                label: "Concatenate fields",
+                description: "Join two fields into one value.",
+              },
+              {
+                value: "Date difference",
+                label: "Date difference",
+                description:
+                  "Count the days between a date field and the run date.",
+              },
+              {
+                value: "Expression / calculation",
+                label: "Written expression (legacy)",
+                description:
+                  "Written in words (legacy). Choose a structured type.",
+                hidden: true,
+              },
+              {
+                value: "Expression/Calculation",
+                label: "Written expression (legacy)",
+                description:
+                  "Written in words (legacy). Choose a structured type.",
+                hidden: true,
+              },
+            ],
+          },
+          {
+            param: "written_expression_note",
+            control: "callout",
+            layout: "full",
+            visibleWhen: {
+              param: "value_mode",
+              in: ["Expression / calculation", "Expression/Calculation"],
+            },
+            message:
+              "This column is written as an expression. Choose a value type above, such as String transformation or Date difference, so it runs the same way every time. The written text is kept below as the description.",
+          },
+          {
+            param: "expression",
+            control: "hidden",
+            visibleWhen: {
+              param: "value_mode",
+              in: ["Expression / calculation", "Expression/Calculation"],
+            },
+          },
+          {
+            param: "column_description",
+            control: "textarea",
+            label: "Description (not run)",
+            placeholder: "What this column is for",
+            layout: "full",
+            help: "For readers only. It is not run as a formula.",
+            helpId: "atlas-column-description-hint",
+            valueTemplate: "{{param.expression}}",
+            visibleWhen: {
+              param: "value_mode",
+              in: ["Expression / calculation", "Expression/Calculation"],
+            },
+          },
+          {
+            param: "date_diff_source_file",
+            control: "hidden",
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "date_diff_parameter",
+            control: "hidden",
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "date_diff_unit",
+            control: "hidden",
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "date_diff_field",
+            control: "field_picker",
+            label: "Date Field",
+            placeholder: "Select date field",
+            sourceParam: "date_diff_source_file",
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "date_diff_compared_with",
+            control: "readout",
+            label: "Compared With",
+            message: "Run date",
+            help: "The date the audit is run.",
+            helpId: "atlas-date-diff-hint",
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "date_diff_direction",
+            control: "choice",
+            label: "Result in days",
+            heading: "Result (days)",
+            display: "segment",
+            layout: "full",
+            help: "Run date minus field counts days since the date, for example days since hire. Field minus run date counts days until it.",
+            options: [
+              { value: "parameter_minus_field", label: "Run date minus field" },
+              { value: "field_minus_parameter", label: "Field minus run date" },
+            ],
+            visibleWhen: { param: "value_mode", equals: "Date difference" },
+          },
+          {
+            param: "concat_source_1",
+            control: "hidden",
+            layout: "pair",
+            visibleWhen: { param: "value_mode", equals: "Concatenate fields" },
+          },
+          {
+            param: "concat_field_1",
+            control: "field_picker",
+            label: "First Field",
+            placeholder: "Select first field",
+            sourceParam: "concat_source_1",
+            clearable: true,
+            clearKey: "1",
+            layout: "pair",
+            visibleWhen: { param: "value_mode", equals: "Concatenate fields" },
+          },
+          {
+            param: "concat_source_2",
+            control: "hidden",
+            layout: "pair",
+            visibleWhen: { param: "value_mode", equals: "Concatenate fields" },
+          },
+          {
+            param: "concat_field_2",
+            control: "field_picker",
+            label: "Second Field",
+            placeholder: "Select second field",
+            sourceParam: "concat_source_2",
+            clearable: true,
+            clearKey: "2",
+            layout: "pair",
+            visibleWhen: { param: "value_mode", equals: "Concatenate fields" },
+          },
+          {
+            param: "concat_separator",
+            control: "text",
+            label: "Separator",
+            placeholder: 'e.g., " - " (blank joins directly)',
+            maxLength: 20,
+            help: "Placed between the two values. Spaces count.",
+            helpId: "atlas-concat-separator-hint",
+            visibleWhen: { param: "value_mode", equals: "Concatenate fields" },
+          },
+          {
+            param: "static_value",
+            control: "text",
+            label: "Static Value",
+            visibleWhen: { param: "value_mode", equals: "Static value" },
+          },
+          {
+            param: "source_math_json",
+            control: "math",
+            label: "Calculation",
+            visibleWhen: { param: "value_mode", equals: "Source field value" },
+          },
+          {
+            param: "string_operation",
+            control: "string_transform",
+            label: "String transformation",
+            visibleWhen: {
+              param: "value_mode",
+              equals: "String transformation",
+            },
+          },
+          {
+            param: "expression_type",
+            control: "choice",
+            display: "select",
+            legacyOptionSpacing: true,
+            label: "Expression Type",
+            options: [
+              { value: "custom_expression", label: "Custom Expression" },
+              { value: "first_characters", label: "First Characters" },
+              { value: "character_count", label: "Character Count" },
+            ],
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "expression",
+            control: "textarea",
+            label: "Expression / Calculation",
+            sharesParam: true,
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "source_file",
+            control: "hidden",
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "source_alias",
+            control: "hidden",
+            valueTemplate: "{{sourceAliasFor param.source_file}}",
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "expression_source_field",
+            control: "field_picker",
+            label: "Expression Source Field",
+            placeholder: "Select field",
+            sourceParam: "source_file",
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "character_count",
+            control: "text",
+            label: "Number of Characters",
+            visibleWhen: {
+              not: {
+                param: "value_mode",
+                in: [
+                  "Static value",
+                  "Source field value",
+                  "String transformation",
+                  "Concatenate fields",
+                  "Date difference",
+                  "Expression / calculation",
+                  "Expression/Calculation",
+                ],
+              },
+            },
+          },
+          {
+            param: "column_description",
+            control: "textarea",
+            label: "Description (not run)",
+            placeholder: "What this column is for",
+            layout: "full",
+            help: "For readers only. The column's value comes from the settings above.",
+            helpId: "atlas-column-description-hint",
+            sharesParam: true,
+            visibleWhen: {
+              all: [
+                {
+                  not: {
+                    param: "value_mode",
+                    in: ["Expression / calculation", "Expression/Calculation"],
+                  },
+                },
+                { param: "column_description", notBlank: true },
+              ],
+            },
+          },
+        ],
+        english: {
+          default:
+            '{{phrase "analyst_logic.create_column.default" column_name=(quote (orEmpty param.column_name step.field))}}',
+          variants: [
+            {
+              when: { param: "value_mode", equals: "String transformation" },
+              template: "{{stringTransformPhrase param}}",
+            },
+            {
+              when: { param: "value_mode", equals: "Source field value" },
+              template:
+                '{{#if (mathActive param)}}{{phrase "analyst_logic.create_column.source_field_calculation" column_name=(quote (orEmpty param.column_name step.field)) calculation=(mathPhrase param)}}{{else}}{{phrase "analyst_logic.create_column.source_field" column_name=(quote (orEmpty param.column_name step.field)) table_column=(tableColumn param.source_file param.source_alias param.field_name)}}{{/if}}',
+            },
+            {
+              when: {
+                any: [
+                  { param: "value_mode", equals: "Static value" },
+                  { param: "value_mode", blank: true },
+                ],
+              },
+              template:
+                '{{#if (present param.static_value)}}{{#if (eq param.value_mode "Static value")}}{{phrase "analyst_logic.create_column.static_value" column_name=(quote (orEmpty param.column_name step.field)) static_value=(quote param.static_value)}}{{else}}{{phrase "analyst_logic.create_column.default" column_name=(quote (orEmpty param.column_name step.field))}}{{/if}}{{else}}{{phrase "analyst_logic.create_column.blank" column_name=(quote (orEmpty param.column_name step.field))}}{{/if}}',
+            },
+            {
+              when: { param: "value_mode", equals: "Concatenate fields" },
+              template:
+                '{{#if (ne param.concat_separator "")}}{{phrase "analyst_logic.create_column.concatenate_fields_separator" column_name=(quote (orEmpty param.column_name step.field)) first_column=(tableColumn (orEmpty param.concat_source_1 param.source_file) (sourceAliasFor (orEmpty param.concat_source_1 param.source_file)) param.concat_field_1) second_column=(tableColumn (orEmpty param.concat_source_2 param.source_file) (sourceAliasFor (orEmpty param.concat_source_2 param.source_file)) param.concat_field_2) separator=(separatorPhrase param.concat_separator)}}{{else}}{{phrase "analyst_logic.create_column.concatenate_fields" column_name=(quote (orEmpty param.column_name step.field)) first_column=(tableColumn (orEmpty param.concat_source_1 param.source_file) (sourceAliasFor (orEmpty param.concat_source_1 param.source_file)) param.concat_field_1) second_column=(tableColumn (orEmpty param.concat_source_2 param.source_file) (sourceAliasFor (orEmpty param.concat_source_2 param.source_file)) param.concat_field_2)}}{{/if}}',
+            },
+            {
+              when: { param: "value_mode", equals: "Date difference" },
+              template:
+                '{{#if (eq param.date_diff_direction "field_minus_parameter")}}{{phrase "analyst_logic.create_column.date_difference_until" column_name=(quote (orEmpty param.column_name step.field)) date_column=(tableColumn param.date_diff_source_file param.date_diff_source_alias (orEmpty param.date_diff_field ""))}}{{else}}{{phrase "analyst_logic.create_column.date_difference_since" column_name=(quote (orEmpty param.column_name step.field)) date_column=(tableColumn param.date_diff_source_file param.date_diff_source_alias (orEmpty param.date_diff_field ""))}}{{/if}}',
+            },
+            {
+              when: { param: "value_mode", equals: "Expression / calculation" },
+              template:
+                '{{phrase "analyst_logic.create_column.expression" column_name=(quote (orEmpty param.column_name step.field)) expression=param.expression}}',
+            },
+          ],
+        },
+        formulas: {
+          shape: "assignment",
+          target: "{{orEmpty param.column_name step.field}}",
+          default: {
+            excel:
+              '{{#if (present param.static_value)}}{{literal param.static_value}}{{else}}""{{/if}}',
+            sql: "{{#if (present param.static_value)}}{{literal param.static_value}}{{else}}NULL{{/if}}",
+            python:
+              "{{#if (present param.static_value)}}{{literal param.static_value}}{{else}}pd.NA{{/if}}",
+          },
+          notes: [],
+          variants: [
+            {
+              when: {
+                all: [
+                  { param: "value_mode", equals: "String transformation" },
+                  { param: "string_operation", equals: "split" },
+                ],
+              },
+              shape: "frame",
+              excel: "{{splitColumnsFormula param}}",
+              sql: "{{splitColumnsFormula param}}",
+              python: "{{splitColumnsFormula param}}",
+              notes: [
+                "{{splitColumnsFormula param note=0}}",
+                "{{splitColumnsFormula param note=1}}",
+                "{{splitColumnsFormula param note=2}}",
+              ],
+            },
+            {
+              when: { param: "value_mode", equals: "String transformation" },
+              target:
+                "{{default (stringTransformTarget param) (orEmpty param.column_name step.field)}}",
+              excel: "{{stringTransformFormula param}}",
+              sql: "{{stringTransformFormula param}}",
+              python: "{{stringTransformFormula param}}",
+            },
+            {
+              when: { param: "value_mode", equals: "Source field value" },
+              excel: "{{mathFormula param}}",
+              sql: "{{mathFormula param}}",
+              python: "{{mathFormula param}}",
+            },
+            {
+              when: { param: "value_mode", equals: "Concatenate fields" },
+              excel:
+                '{{#if (ne param.concat_separator "")}}{{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}&{{literal param.concat_separator}}&{{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}{{else}}{{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}&{{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}{{/if}}',
+              sql: '{{#if (ne param.concat_separator "")}}CONCAT({{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}, {{literal param.concat_separator}}, {{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}){{else}}CONCAT({{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}, {{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}){{/if}}',
+              python:
+                '{{#if (ne param.concat_separator "")}}{{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}.fillna("").astype(str) + {{literal param.concat_separator}} + {{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}.fillna("").astype(str){{else}}{{field (orEmpty param.concat_source_1 param.source_file) param.concat_field_1 alias=param.concat_source_alias_1}}.fillna("").astype(str) + {{field (orEmpty param.concat_source_2 param.source_file) param.concat_field_2 alias=param.concat_source_alias_2}}.fillna("").astype(str){{/if}}',
+            },
+            {
+              when: { param: "value_mode", equals: "Date difference" },
+              excel:
+                '{{#if (ne param.date_diff_direction "field_minus_parameter")}}RunDate-{{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}{{else}}{{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}-RunDate{{/if}}',
+              sql: '{{#if (ne param.date_diff_direction "field_minus_parameter")}}DATEDIFF(day, {{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}, @RunDate){{else}}DATEDIFF(day, @RunDate, {{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}){{/if}}',
+              python:
+                '{{#if (ne param.date_diff_direction "field_minus_parameter")}}(run_date - pd.to_datetime({{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}, errors="coerce")).dt.days{{else}}(pd.to_datetime({{field (orEmpty param.date_diff_source_file param.source_file) param.date_diff_field alias=param.date_diff_source_alias}}, errors="coerce") - run_date).dt.days{{/if}}',
+              notes: ['{{phrase "developer_logic.notes.run_date"}}'],
+            },
+            {
+              when: {
+                param: "value_mode",
+                in: ["Expression / calculation", "Expression"],
+              },
+              excel: "{{writtenExpression param.expression}}",
+              sql: "{{writtenExpression param.expression}}",
+              python: "{{writtenExpression param.expression}}",
+              notes: [
+                '{{phrase "developer_logic.notes.free_text_expression"}}',
+              ],
+            },
+          ],
+        },
         autoNotes: null,
+        outputs: {
+          creates: [
+            '{{join (createColumnOutputs param step.field) separator="\n"}}',
+          ],
+        },
         export: {
           scriptRole: "column",
-          qtest: { section: "D", testType: "Data Validation" },
+          qtest: {
+            section: "D",
+            testType: "Data Validation",
+            outcomes: {
+              atlas:
+                '{{#if (or (gt (count (createColumnOutputs param step.field)) 1) (eq param.string_operation "split"))}}Columns {{quotedNames (createColumnOutputs param step.field)}} are created from the parts of the split source value.{{else if (and (or (eq param.value_mode "Static value") (blank param.value_mode)) (blank param.static_value))}}Column {{quote (orEmpty param.column_name step.field)}} is added to the {{record}} for later logic steps to populate.{{else}}Column {{quote (orEmpty param.column_name step.field)}} is created and populated as defined in this step.{{/if}}',
+              source:
+                '{{#if (or (gt (count (createColumnOutputs param step.field)) 1) (eq param.string_operation "split"))}}Each of columns {{quotedNames (createColumnOutputs param step.field)}} holds the matching part of the source value, and parts that do not exist are blank.{{else if (and (or (eq param.value_mode "Static value") (blank param.value_mode)) (blank param.static_value))}}Column {{quote (orEmpty param.column_name step.field)}} is present in the output.{{else}}Values in column {{quote (orEmpty param.column_name step.field)}} reconcile to the source fields and rule in this step.{{/if}}',
+            },
+          },
         },
         textImport: { fromEnglish: false },
         validation: [
