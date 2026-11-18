@@ -564,6 +564,7 @@
 │   ├── source-versions.test.js
 │   ├── startup-parallel.test.js
 │   ├── startup-recovery.test.js
+│   ├── step-editor-step-type.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
 │   ├── step-type-pinned-versions.test.js
