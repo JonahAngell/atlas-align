@@ -479,6 +479,17 @@
             "atlas": { "$ref": "#/$defs/template" },
             "source": { "$ref": "#/$defs/template" }
           }
+        },
+        "action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "description": "The outcome qTest tests for a type without an action field: hide the record, or write a message to a column. message and outputColumn are plain templates. An action field takes its place.",
+          "properties": {
+            "kind": { "enum": ["display_text", "do_not_display"] },
+            "message": { "$ref": "#/$defs/template" },
+            "outputColumn": { "$ref": "#/$defs/template" }
+          }
         }
       }
     },

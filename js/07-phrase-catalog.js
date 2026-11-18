@@ -1006,29 +1006,6 @@ function analystLogic(step) {
   return `[Missing phrase path: analyst_logic.${step.step_type || "unknown"}]`;
 }
 
-/** Filter Rows sentence (the filter_rows behavior block). */
-function atlasFilterRowsSentence(step) {
-  const params = step.params || {};
-  return renderCatalogPhrase("analyst_logic.filter_rows.default", {
-    table_column: tableColumnPlain(
-      params.source_file,
-      params.source_alias,
-      params.field_name,
-    ),
-    operator: params.operator || "is equal to",
-    compare_value: params.compare_value
-      ? ` ${formattedValueList(params.compare_value)}`
-      : "",
-    filter_action: params.filter_action || "Keep matching rows",
-  });
-}
-
-/** Flag Records sentence (the flag_records behavior block). */
-function atlasFlagRecordsSentence(step) {
-  const params = step.params || {};
-  return `${renderCatalogPhrase("analyst_logic.flag_records.condition", { table_column: tableColumnPlain(params.source_file, params.source_alias, params.field_name), operator: params.operator || "is equal to", compare_value: params.compare_value ? ` ${formattedValueList(params.compare_value)}` : "" })} ${params.flag_action === "do_not_display" ? renderCatalogPhrase("analyst_logic.flag_records.do_not_display", {}) : renderCatalogPhrase("analyst_logic.flag_records.display_text", { message: quotePhraseValue(params.message || ""), output_column: quotePhraseValue(params.output_column || phrasePlaceholder("error_message_column", "Error Message")) })}`;
-}
-
 /**
  * Generates notes for a step when manual notes are not provided.
  * @param {any} step - Logic step object being read or modified.

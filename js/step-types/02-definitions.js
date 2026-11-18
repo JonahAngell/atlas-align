@@ -308,6 +308,8 @@
     const addOutcomes = (path, qtest) => {
       add(`${path}/outcomes/atlas`, qtest?.outcomes?.atlas);
       add(`${path}/outcomes/source`, qtest?.outcomes?.source);
+      add(`${path}/action/message`, qtest?.action?.message);
+      add(`${path}/action/outputColumn`, qtest?.action?.outputColumn);
     };
     addOutcomes("/export/qtest", definition.export?.qtest);
     (definition.export?.rules || []).forEach((rule, index) =>

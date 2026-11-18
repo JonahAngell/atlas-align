@@ -251,23 +251,6 @@ function qtestErrorColumn() {
   return phrasePlaceholder("error_message_column", "Error Message");
 }
 
-/** The outcome of a Flag Records step (legacy). */
-function atlasQtestFlagAction(step) {
-  const params = step.params || {};
-  return params.flag_action === "do_not_display"
-    ? { kind: "do_not_display" }
-    : {
-        kind: "display_text",
-        message: params.message || "",
-        outputColumn: params.output_column || qtestErrorColumn(),
-      };
-}
-
-/** The outcome of a Filter Rows step (legacy). */
-function atlasQtestFilterAction() {
-  return { kind: "do_not_display" };
-}
-
 /**
  * The THEN/ELSE outcome of an IF/THEN or ELSE step, including legacy
  * free-text actions.

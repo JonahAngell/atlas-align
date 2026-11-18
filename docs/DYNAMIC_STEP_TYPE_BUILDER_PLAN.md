@@ -244,6 +244,26 @@ offer them):
 - `className` on the ELSE frame adds `else-action-builder`, and its hint is
   an ordinary `hint` field.
 
+Filter Rows and Flag Records (both legacy) are version 2, made of fields
+(issue #5014, engine version 1.10.0). They use only controls the builder
+already offers: hidden `source_file` and `source_alias` (whose
+`valueTemplate` shows the audit's alias), a `field_picker`, the operator as
+a `choice` read from the catalog's operator list, a `textarea` for compare
+values, and the Filter Action or Flag Action `choice`. Flag Records adds the
+Message `text` and an Output Column `field_picker` that shows the default
+error column until one is named. `copy_step_source` copies a legacy step's
+source and field. The `filter_rows` and `flag_records` blocks stay as shims,
+tested with the corpus pinned to v1, so no behavior block is left in the
+types that came with ATLAS Align. They added:
+
+- `export.qtest.action`, the outcome qTest tests for a type without an
+  `action` field: `kind` (`display_text` or `do_not_display`) and, for
+  `display_text`, `message` and `outputColumn` as plain templates. Export
+  rules can replace it, so Flag Records hides the record when its action is
+  `do_not_display`. An `action` field still takes its place.
+- Helpers `valueList` (compare values as quoted text, with `lead=" "`) and
+  `conditionFormula` (the formulas of the IF / THEN the step stands for).
+
 ## Goal
 
 Every Logic Builder step type is one data record, not code spread across

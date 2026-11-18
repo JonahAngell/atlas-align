@@ -44,6 +44,8 @@
  *   actionText param step branch=ELSE             THEN / ELSE action in words
  *   ifPrefix text                                 IF + text unless it has one
  *   ifThenFormula / elseFormula param step part=lead note=N   IF and ELSE formulas
+ *   valueList value lead=" "                      compare values as quoted text
+ *   conditionFormula param step note=N            Filter Rows / Flag Records formulas
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
  * sync_format_field, sync_split_field, sync_create_column, sync_join,
@@ -54,12 +56,12 @@
  * the app's own code: normalize(step, index) on the real step, editor(step)
  * markup, english(step), notes(step), formulas(step), createdColumns(step),
  * qtestAction(step) (the THEN outcome qTest tests) and
- * qtestOutcomes(step, { record }) (the two expected outcomes). The types
- * that came with ATLAS Align use them:
- *   filter_rows, flag_records   single-condition steps (legacy)
+ * qtestOutcomes(step, { record }) (the two expected outcomes). No type that
+ * came with ATLAS Align uses one any more.
  * Replaced blocks (replacedBlocks below) are the ones a later version
  * rebuilt with fields: format_field, split_field, create_column, join,
- * union_sources, if_then and else. Only definitions pinned to their old
+ * union_sources, if_then, else, filter_rows and flag_records. Only
+ * definitions pinned to their old
  * versions name them; they render through the field-based definition.
  * A new type can name one of them and change its label, order and export.
  */
@@ -740,6 +742,35 @@
     elseFormula(args, hash, { format }) {
       return formulaPart(app("atlasDevElse")?.(stepOf(args)), hash, format);
     },
+    /**
+     * Compare values, one per line, as quoted text: "A", "A" or "B", and
+     * so on. Blank when there are none; lead=" " goes in front otherwise.
+     */
+    valueList(args, hash) {
+      const value = args[0];
+      if (!value) return "";
+      const list = app("formattedValueList");
+      const shown = list
+        ? list(value)
+        : text(value)
+            .split(/\r?\n/)
+            .map((item) => item.trim())
+            .filter(Boolean)
+            .map((item) => `"${item}"`)
+            .join(", ");
+      return `${text(hash.lead)}${text(shown)}`;
+    },
+    /**
+     * One dialect or a note (note=N) of a single-condition step: Filter
+     * Rows or Flag Records, built as the IF / THEN they stand for.
+     */
+    conditionFormula(args, hash, { format }) {
+      return formulaPart(
+        app("atlasDevLegacyCondition")?.(stepOf(args)),
+        hash,
+        format,
+      );
+    },
     /** Excel table of a key list's first key, else of the step's source. */
     firstKeyTable(args) {
       const [keys, source, alias] = args;
@@ -804,28 +835,6 @@
   // Editor blocks: markup is built and escaped by the app's own editors.
   // ---------------------------------------------------------------------------
 
-  /** Calls an app function by name; undefined when it is not loaded. */
-  const call =
-    (name) =>
-    (...args) =>
-      app(name)?.(...args);
-
-  /** The frame the built-in forms sit in, as the step type forms do. */
-  const framed = (name) => (step) => {
-    const html = app(name)?.(step);
-    return typeof html === "string"
-      ? `<div class="selected-source-only-builder">${html}</div>`
-      : html;
-  };
-
-  const legacyCondition = (sentence, qtestAction) => ({
-    normalize: call("atlasCopyStepSourceParams"),
-    editor: framed("atlasLegacyConditionEditorHtml"),
-    english: call(sentence),
-    formulas: call("atlasDevLegacyCondition"),
-    qtestAction: call(qtestAction),
-  });
-
   const blocks = Object.freeze({
     sort_keys: {
       editor: (step) => app("atlasSortFieldsEditorHtml")?.(step.params || {}),
@@ -834,14 +843,6 @@
       editor: (step) =>
         app("atlasDuplicateFieldsEditorHtml")?.(step.params || {}),
     },
-    filter_rows: legacyCondition(
-      "atlasFilterRowsSentence",
-      "atlasQtestFilterAction",
-    ),
-    flag_records: legacyCondition(
-      "atlasFlagRecordsSentence",
-      "atlasQtestFlagAction",
-    ),
   });
 
   /**
@@ -858,6 +859,8 @@
     union_sources: "union_sources",
     if_then: "if_then",
     else: "else",
+    filter_rows: "filter_rows",
+    flag_records: "flag_records",
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({
