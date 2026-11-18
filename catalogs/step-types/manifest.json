@@ -40,9 +40,9 @@
     },
     {
       "id": "join",
-      "version": 1,
+      "version": 2,
       "file": "join.json",
-      "hash": "b0ed6d0470bd83ebeac43bc1b9a930d82dbe221a7036822e455f7d65c156e8e9"
+      "hash": "dfdfb5e62d59b33e1925728b5a0a8a6f0103cebaf37a73e65b991c8d18a6ee75"
     },
     {
       "id": "reference_source",
@@ -70,9 +70,9 @@
     },
     {
       "id": "union_sources",
-      "version": 1,
+      "version": 2,
       "file": "union_sources.json",
-      "hash": "94023916eec45065a8d6c5ba9f898df0ceb59d986ccfc663969c1314e33620f1"
+      "hash": "cbc42f8766cb99c8f363fb03b4d217e96f45fc9e5a63fad0e6b784751312ac87"
     }
   ]
 }

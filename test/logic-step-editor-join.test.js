@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadApp } from "./support/step-type-harness.js";
 
 // Loads the shared join key helpers from 02-logic-rendering.js into a sandbox.
 function runJoinKeyHelpers(sandbox) {
@@ -56,9 +57,37 @@ function loadJoinEditor() {
   return sandbox;
 }
 
-test("Join steps render editable controls instead of calling removed picker helpers", () => {
-  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
-  const html = atlasJoinEditorHtml({
+/**
+ * The Join editor drawn by the join definition through the step type
+ * runtime, in the loaded app with its source and field pickers recorded.
+ */
+async function renderJoinEditor(step) {
+  const context = await loadApp();
+  const calls = [];
+  context.__calls = calls;
+  vm.runInContext(
+    `(() => {
+      sourceInputFromOptions = (options) => {
+        __calls.push(["source", options]);
+        return "SOURCE:" + options.name;
+      };
+      fieldInputFromOptions = (options) => {
+        __calls.push(["field", options]);
+        return "FIELD:" + options.name + ":" + (options.sourceFile || "");
+      };
+    })()`,
+    context,
+  );
+  context.__step = step;
+  const html = vm.runInContext(
+    "ATLASStepTypeRuntime.renderEditor(normalizeCatalogStep(__step))",
+    context,
+  );
+  return { html, calls };
+}
+
+test("Join steps render editable controls instead of calling removed picker helpers", async () => {
+  const { html, calls } = await renderJoinEditor({
     id: "step-join",
     step_type: "join",
     params: {
@@ -70,7 +99,10 @@ test("Join steps render editable controls instead of calling removed picker help
     },
   });
 
-  assert.match(html, /class="guided-builder join-guided-builder"/);
+  assert.match(
+    html,
+    /^<div class="guided-builder join-guided-builder"><h4>Join</,
+  );
   assert.match(html, /data-open-join-picker="step-join"/);
   assert.match(html, /data-param="join_type" value="LEFT JOIN"/);
   assert.match(html, /data-param="left_source" value="employees.csv"/);
@@ -79,6 +111,7 @@ test("Join steps render editable controls instead of calling removed picker help
   assert.match(html, /data-add-join-key/);
   assert.match(html, /FIELD:join_left_field:employees.csv/);
   assert.match(html, /FIELD:join_right_field:roster.csv/);
+  assert.doesNotMatch(html, /SOURCE:/);
   assert.deepEqual(
     JSON.parse(
       JSON.stringify(
@@ -104,9 +137,8 @@ test("Join steps render editable controls instead of calling removed picker help
   );
 });
 
-test("Join steps render one key pair row per saved join key", () => {
-  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
-  const html = atlasJoinEditorHtml({
+test("Join steps render one key pair row per saved join key", async () => {
+  const { html, calls } = await renderJoinEditor({
     id: "step-join",
     step_type: "join",
     params: {
@@ -191,9 +223,8 @@ test("join key helpers mirror the first pair and keep older single-key audits", 
   assert.equal(sandbox.atlasJoinKeyPairsFromParams(params)[0].left_field, "B2");
 });
 
-test("Union steps render source pickers through the current source helper", () => {
-  const { atlasJoinEditorHtml, calls } = loadJoinEditor();
-  const html = atlasJoinEditorHtml({
+test("Union steps render source pickers through the current source helper", async () => {
+  const { html, calls } = await renderJoinEditor({
     id: "step-union",
     step_type: "join",
     params: {
@@ -204,10 +235,14 @@ test("Union steps render source pickers through the current source helper", () =
     },
   });
 
-  assert.match(html, /Union Sources/);
-  assert.match(html, /SOURCE:left_source/);
-  assert.match(html, /SOURCE:right_source/);
-  assert.match(html, /SOURCE:output_source/);
+  assert.match(html, /<h4>Union Sources<\/h4>/);
+  assert.match(
+    html,
+    /<div class="logic-picker-pair join-union-input-pair"><label>Left SourceSOURCE:left_source<\/label><label>Right SourceSOURCE:right_source<\/label><\/div>/,
+  );
+  assert.match(html, /<label>Output SourceSOURCE:output_source<\/label>/);
+  assert.match(html, /<p class="hint join-builder-union-hint">/);
+  assert.doesNotMatch(html, /data-join-keys-editor/);
   assert.equal(calls.filter(([kind]) => kind === "field").length, 0);
 });
 

@@ -32,6 +32,7 @@
     "action",
     "math",
     "string_transform",
+    "join_type",
     "join_keys",
   ]);
   const TEST_KEYS = [
@@ -41,6 +42,7 @@
     "blank",
     "notBlank",
     "positiveWholeNumber",
+    "equalsIgnoreCase",
   ];
   const GROUP_KEYS = ["all", "any", "not"];
 
@@ -79,6 +81,11 @@
       const typed = scalarText(value).trim();
       return /^\d+$/.test(typed) && Number(typed) > 0;
     }
+    if (Object.prototype.hasOwnProperty.call(condition, "equalsIgnoreCase"))
+      return (
+        scalarText(value).toUpperCase() ===
+        scalarText(condition.equalsIgnoreCase).toUpperCase()
+      );
     if (Object.prototype.hasOwnProperty.call(condition, "equals"))
       return scalarText(value) === scalarText(condition.equals);
     if (Object.prototype.hasOwnProperty.call(condition, "notEquals"))
@@ -125,7 +132,7 @@
         path,
         code: "condition",
         message:
-          "needs exactly one of equals, notEquals, in, blank, notBlank or positiveWholeNumber",
+          "needs exactly one of equals, equalsIgnoreCase, notEquals, in, blank, notBlank or positiveWholeNumber",
       });
   }
 
@@ -294,6 +301,7 @@
         add(`${path}/${index}/message`, field.message);
       });
     addFields("/fields", definition.fields);
+    add("/editorFrame/heading", definition.editorFrame?.heading);
     (definition.subtypes?.options || []).forEach((option, index) =>
       addFields(`/subtypes/options/${index}/fields`, option.fields),
     );

@@ -1172,27 +1172,13 @@ function atlasDevJoinKeptRows(joinType) {
   return atlasDevPhrase(`developer_logic.kept_rows.${key || "inner"}`);
 }
 
-function atlasDevUnion(params = {}) {
-  const left = atlasDevSourceAlias(
-    params.left_source || params.union_left_source,
-    params.left_alias || params.union_left_alias,
-  );
-  const right = atlasDevSourceAlias(
-    params.right_source || params.union_right_source,
-    params.right_alias || params.union_right_alias,
-  );
-  return {
-    excel: `=VSTACK(${atlasDevExcelTable(left)}, ${atlasDevExcelTable(right)})`,
-    sql: `SELECT * FROM ${atlasDevSqlSource(left)}\nUNION ALL\nSELECT * FROM ${atlasDevSqlSource(right)}`,
-    python: `df = pd.concat([${atlasDevPySource(left)}, ${atlasDevPySource(right)}], ignore_index=True)`,
-    notes: [],
-  };
-}
-
+/**
+ * A key-matched Join's formulas: { lead, excel, sql, python, notes }. The
+ * join definition reads them through the joinFormula helper; a UNION join
+ * writes its own formulas.
+ */
 function atlasDevJoin(step) {
   const params = step.params || {};
-  if (String(params.join_type || "").toUpperCase() === "UNION")
-    return atlasDevUnion(params);
   const joinType = atlasDevJoinTypeName(params.join_type);
   const leftAlias =
     atlasDevSourceAlias(params.left_source, params.left_alias) ||

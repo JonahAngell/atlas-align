@@ -79,6 +79,18 @@
         return part(definition, step, ...rest);
       };
     return Object.freeze({
+      // The latest definition's migration handlers bring the step up to date.
+      normalize: through((definition, step) => {
+        step.params = step.params || {};
+        (definition.migrations || [])
+          .filter((migration) => migration.op === "handler")
+          .forEach((migration) =>
+            HANDLERS[migration.name]?.(step, {
+              definition,
+              params: step.params,
+            }),
+          );
+      }),
       editor: through((definition, step) => renderEditorWith(definition, step)),
       english: through((definition, step) => englishWith(definition, step)),
       formulas: through((definition, step) => formulasWith(definition, step)),
@@ -113,6 +125,8 @@
     "readout",
     "math",
     "string_transform",
+    "join_type",
+    "join_keys",
   ]);
 
   let registry = null;
@@ -1206,10 +1220,18 @@
     return `<button type="button" class="secondary small" data-clear-param="${escapeHtml(field.param)}"${source} ${aria}${value ? "" : " disabled"}>Clear</button>`;
   }
 
-  /** Markup of a composite control drawn by an app editor, by control. */
+  /**
+   * Markup of a composite control drawn by an app editor, by control: the
+   * app function and whether it reads the step's params or the whole step.
+   */
   const COMPOSITE_EDITORS = Object.freeze({
-    math: "atlasSourceFieldModeInputs",
-    string_transform: "atlasStringTransformModeInputs",
+    math: { name: "atlasSourceFieldModeInputs", reads: "params" },
+    string_transform: {
+      name: "atlasStringTransformModeInputs",
+      reads: "params",
+    },
+    join_type: { name: "atlasRenderJoinTypePickerButton", reads: "step" },
+    join_keys: { name: "atlasJoinKeysEditorHtml", reads: "step" },
   });
 
   /** The parameter's value, or the field's valueTemplate while it is blank. */
@@ -1307,7 +1329,7 @@
       case "hidden":
         return `<input type="hidden" ${bind} value="${escapeHtml(value)}">`;
       case "hint":
-        return `<p class="hint${full}">${escapeText(field.help || field.label || "")}</p>`;
+        return `<p class="hint${full}${field.className ? ` ${escapeHtml(field.className)}` : ""}">${escapeText(field.help || field.label || "")}</p>`;
       case "callout": {
         // The template's own text is escaped as text and each value fully,
         // so a value cannot add markup.
@@ -1337,8 +1359,13 @@
         return `<label>${escapeHtml(label)}<input value="${escapeHtml(shown)}" readonly${describedBy(field)}>${helpHtml(field)}</label>`;
       }
       case "math":
-      case "string_transform": {
-        const html = app(COMPOSITE_EDITORS[field.control])?.(params);
+      case "string_transform":
+      case "join_type":
+      case "join_keys": {
+        const editor = COMPOSITE_EDITORS[field.control];
+        const html = app(editor.name)?.(
+          editor.reads === "step" ? { ...step, params } : params,
+        );
         return typeof html === "string"
           ? html
           : `<p class="hint">The ${escapeHtml(field.control)} editor is not available in this version of ATLAS Align.</p>`;
@@ -1433,23 +1460,42 @@
       );
     // Shown fields with layout "pair" next to each other share one row.
     let pair = [];
+    let pairClass = "";
     const flushPair = () => {
       if (pair.length)
-        parts.push(`<div class="logic-picker-pair">${pair.join("")}</div>`);
+        parts.push(
+          `<div class="logic-picker-pair${pairClass ? ` ${escapeHtml(pairClass)}` : ""}">${pair.join("")}</div>`,
+        );
       pair = [];
+      pairClass = "";
     };
     definitions.fields(definition, subtype).forEach((field) => {
       const html = fieldHtml(field, step, definition);
       if (!html) return;
-      if (field.layout === "pair") pair.push(html);
-      else {
+      if (field.layout === "pair") {
+        if (!pair.length) pairClass = field.pairClass || "";
+        pair.push(html);
+      } else {
         flushPair();
         parts.push(html);
       }
     });
     flushPair();
     // The same markup as the built-in editors, so the look does not change.
-    return `<div class="selected-source-only-builder"><div class="guided-builder"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div></div>`;
+    const frame = definition.editorFrame || {};
+    let heading = definition.label;
+    if (frame.heading) {
+      try {
+        heading = text(render(frame.heading, step, definition, "plain"));
+      } catch (error) {
+        heading = renderFailure(definition, "heading", error);
+      }
+    }
+    const className = frame.className ? ` ${escapeHtml(frame.className)}` : "";
+    const form = `<div class="guided-builder${className}"><h4>${escapeHtml(heading)}</h4>${parts.join("")}</div>`;
+    return frame.standalone
+      ? form
+      : `<div class="selected-source-only-builder">${form}</div>`;
   }
 
   // ---------------------------------------------------------------------------

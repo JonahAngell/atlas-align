@@ -254,16 +254,6 @@ function atlasRenderJoinTypePickerButton(step) {
   return `<div class="join-type-trigger"><span>Join Type</span><input type="hidden" data-param="join_type" value="${esc(joinType)}"><div class="join-type-trigger-row"><span class="join-type-value-pill">${esc(joinType)}</span><button type="button" class="btn secondary small" data-open-join-picker="${esc(step.id)}">Choose Join Type</button></div><p class="hint">${esc(atlasJoinKeptRowsDescription(joinType))}</p></div>`;
 }
 
-/** The Join / Union form with the join type picker (the join behavior block). */
-function atlasJoinEditorHtml(step) {
-  const p = step.params || {};
-  const union = atlasJoinTypeDisplayName(p.join_type) === "UNION";
-  const inputPair = union
-    ? `<div class="logic-picker-pair join-union-input-pair"><label>Left Source${sourceInputFromOptions({ name: "left_source", value: p.left_source, placeholder: "Select source file" })}</label><label>Right Source${sourceInputFromOptions({ name: "right_source", value: p.right_source, placeholder: "Select source file" })}</label></div>`
-    : atlasJoinKeysEditorHtml(step);
-  return `<div class="guided-builder join-guided-builder"><h4>${union ? "Union Sources" : "Join"}</h4>${atlasRenderJoinTypePickerButton(step)}${inputPair}${union ? `<label>Output Source${sourceInputFromOptions({ name: "output_source", value: p.output_source, placeholder: "Select source file" })}</label><p class="hint join-builder-union-hint">Union appends rows from both files into one combined output. No matching key is needed.</p>` : ""}</div>`;
-}
-
 function atlasOpenJoinPicker(stepId) {
   const root = document.querySelector("[data-live-editor-step-id]");
   if (root) atlasCommitLiveEditor?.({ rerender: false });

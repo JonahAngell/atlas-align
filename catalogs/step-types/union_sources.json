@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "union_sources",
-  "version": 1,
+  "version": 2,
   "label": "Union Sources",
   "category": "combine",
   "description": "Append the rows of two sources. Saved steps open as a UNION Join.",
@@ -21,20 +21,49 @@
       "to": "join"
     }
   ],
-  "fields": [],
-  "block": "union_sources",
+  "fields": [
+    {
+      "param": "union_left_source",
+      "control": "source_picker",
+      "label": "Left Source",
+      "layout": "pair"
+    },
+    {
+      "param": "union_right_source",
+      "control": "source_picker",
+      "label": "Right Source",
+      "layout": "pair"
+    },
+    {
+      "param": "output_source",
+      "control": "source_picker",
+      "label": "Output Source"
+    }
+  ],
   "english": {
-    "default": ""
+    "default": "{{phrase \"analyst_logic.union_sources.default\" left_source=(quote (orEmpty param.union_left_source \"\")) right_source=(quote (orEmpty param.union_right_source \"\")) output_source=(quote (orEmpty (orEmpty param.output_source step.source) \"\"))}}"
   },
   "formulas": {
-    "shape": "none"
+    "shape": "frame",
+    "default": {
+      "excel": "=VSTACK({{excelTable (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{excelTable (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}})",
+      "sql": "SELECT * FROM {{sqlSource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}\nUNION ALL\nSELECT * FROM {{sqlSource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}",
+      "python": "df = pd.concat([{{pySource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{pySource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}], ignore_index=True)"
+    },
+    "notes": []
   },
-  "autoNotes": null,
+  "autoNotes": {
+    "default": "{{phrase \"notes.union\" left_source=(orEmpty param.union_left_source (placeholder \"file_1\" \"[file 1]\")) right_source=(orEmpty param.union_right_source (placeholder \"file_2\" \"[file 2]\")) output_source=(orEmpty param.output_source (placeholder \"combined_file\" \"[combined file]\"))}}"
+  },
   "export": {
     "scriptRole": "union",
     "qtest": {
       "section": "D",
-      "testType": "Integration"
+      "testType": "Integration",
+      "outcomes": {
+        "atlas": "Records from {{quote (orEmpty (orEmpty param.left_source param.union_left_source) \"\")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) \"\")}} are combined into {{quote (orEmpty (orEmpty param.output_source step.source) \"\")}}.",
+        "source": "The combined record count reconciles to the records in {{quote (orEmpty (orEmpty param.left_source param.union_left_source) \"\")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) \"\")}}."
+      }
     }
   },
   "textImport": {
