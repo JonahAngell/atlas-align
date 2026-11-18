@@ -1180,6 +1180,18 @@
     );
   }
 
+  /**
+   * Options with a saved value no option lists, such as an operator saved
+   * as "is blank/null" or "EQUALS" by older audits. The control saves what
+   * it shows, so without this a saved step took the first option on its
+   * next edit and changed what it does.
+   */
+  function withSavedValue(options, selected) {
+    if (!selected || options.some((option) => option.value === selected))
+      return options;
+    return [...options, { value: selected, label: selected }];
+  }
+
   function choiceHtml({
     param,
     label,
@@ -1358,7 +1370,10 @@
       }
       case "choice": {
         const selected = value || text(field.default);
-        const options = shownOptions(choiceOptions(field), step, selected);
+        const options = withSavedValue(
+          shownOptions(choiceOptions(field), step, selected),
+          selected,
+        );
         if (field.display === "select")
           return `${selectHtml({
             param: field.param,
