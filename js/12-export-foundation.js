@@ -529,40 +529,6 @@ function atlasQtestJoinOutcomes(step, { record } = {}) {
   ];
 }
 
-/**
- * Expected outcomes for a Create Column step: split columns, an empty
- * column, or a populated one.
- * @param {any} step - Logic step object being read.
- * @param {any} context - `record`, the audit record the outcome names.
- */
-function atlasQtestCreateColumnOutcomes(step, { record } = {}) {
-  const params = step.params || {};
-  const created =
-    typeof atlasCreatedColumnNames === "function"
-      ? atlasCreatedColumnNames(step)
-      : [];
-  if (created.length > 1 || params.string_operation === "split") {
-    const names = created.map(quotePhraseValue).join(", ") || '""';
-    return [
-      `Columns ${names} are created from the parts of the split source value.`,
-      `Each of columns ${names} holds the matching part of the source value, and parts that do not exist are blank.`,
-    ];
-  }
-  const name = quotePhraseValue(params.column_name || step.field || "");
-  const blank =
-    (params.value_mode === "Static value" || !params.value_mode) &&
-    !String(params.static_value || "").trim();
-  if (blank)
-    return [
-      `Column ${name} is added to the ${record} for later logic steps to populate.`,
-      `Column ${name} is present in the output.`,
-    ];
-  return [
-    `Column ${name} is created and populated as defined in this step.`,
-    `Values in column ${name} reconcile to the source fields and rule in this step.`,
-  ];
-}
-
 /** The script role of a step's definition: "condition", "else" and so on. */
 function qtestStepRole(step) {
   return globalThis.ATLASStepTypeRuntime?.scriptRole?.(step) || "none";

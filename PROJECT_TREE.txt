@@ -468,6 +468,7 @@
 │   │   │   │   └── synthetic-transforms.json
 │   │   │   └── synthetic-audits.js
 │   │   ├── step-types-pinned
+│   │   │   ├── create_column.v1.json
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
 │   │   │   ├── split_field.v1.json

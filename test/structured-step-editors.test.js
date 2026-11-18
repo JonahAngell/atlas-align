@@ -35,7 +35,6 @@ function load() {
       step.params = step.params || {};
       step.params.conditions_json = JSON.stringify(conditions);
     },
-    renderCreateModeInputs: (p) => `<base mode="${p.value_mode}">`,
     esc: (value) => String(value ?? ""),
     fieldInputFromOptions: ({ name, value }) =>
       `<picker name="${name}" value="${value ?? ""}">`,
@@ -247,15 +246,6 @@ test("date difference keeps its settings and reads in both logics", () => {
   assert.equal(params.date_diff_unit, "days");
   assert.equal(params.date_diff_source_alias, "alias.PA0041");
   assert.deepEqual(plain(ctx.atlasCreateColumnStructuredProblems(params)), []);
-  const step = { id: "c1", step_type: "create_column", params };
-  assert.match(
-    ctx.atlasCreateColumnSentence(step),
-    /days from .*Hire Date.* to the run date/,
-  );
-  assert.match(
-    ctx.atlasDevCreateColumn(step).sql,
-    /DATEDIFF\(day, .*@RunDate\)/,
-  );
 
   const other = ctx.atlasNormalizeCreateColumnStructuredParams({
     value_mode: "Static value",
@@ -264,28 +254,6 @@ test("date difference keeps its settings and reads in both logics", () => {
   });
   assert.equal(other.date_diff_field, undefined);
   assert.equal(other.concat_separator, undefined);
-});
-
-test("concatenate separator reads in analyst and developer logic", () => {
-  const ctx = load();
-  const step = {
-    id: "c2",
-    step_type: "create_column",
-    params: {
-      column_name: "Full Name",
-      value_mode: "Concatenate fields",
-      concat_source_1: "PA",
-      concat_field_1: "First",
-      concat_source_2: "PA",
-      concat_field_2: "Last",
-      concat_separator: " ",
-    },
-  };
-  assert.match(
-    ctx.atlasCreateColumnSentence(step),
-    /with a space between them/,
-  );
-  assert.match(ctx.atlasDevCreateColumn(step).sql, /CONCAT\(.*, ' ', .*\)/);
 });
 
 test("a written expression becomes a description and is flagged", () => {
@@ -298,10 +266,6 @@ test("a written expression becomes a description and is flagged", () => {
   assert.equal(params.column_description, "Hourly rate times standard hours");
   assert.equal(params.expression, "Hourly rate times standard hours");
   assert.equal(ctx.atlasCreateColumnStructuredProblems(params).length, 1);
-  assert.match(
-    ctx.renderCreateModeInputs(params),
-    /written as an expression[\s\S]*data-param="column_description"/,
-  );
   const runnable = {
     value_mode: "Expression / calculation",
     expression_type: "first_characters",

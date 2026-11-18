@@ -70,18 +70,23 @@
 
   function replacedBlockShim(typeId) {
     const latest = () => registry?.resolve(typeId) || null;
-    const through = (part) => (step) => {
-      const definition = latest();
-      // A latest definition that is itself a block cannot stand in.
-      if (!definition || definition.block) return undefined;
-      return part(definition, step);
-    };
+    const through =
+      (part) =>
+      (step, ...rest) => {
+        const definition = latest();
+        // A latest definition that is itself a block cannot stand in.
+        if (!definition || definition.block) return undefined;
+        return part(definition, step, ...rest);
+      };
     return Object.freeze({
       editor: through((definition, step) => renderEditorWith(definition, step)),
       english: through((definition, step) => englishWith(definition, step)),
       formulas: through((definition, step) => formulasWith(definition, step)),
       createdColumns: through(
         (definition, step) => createdColumnsWith(definition, step) || [],
+      ),
+      qtestOutcomes: through((definition, step, context) =>
+        qtestOutcomesWith(definition, step, context),
       ),
     });
   }
@@ -105,6 +110,9 @@
     "block",
     "sort_keys",
     "duplicate_keys",
+    "readout",
+    "math",
+    "string_transform",
   ]);
 
   let registry = null;
@@ -537,8 +545,9 @@
       : null;
   }
 
-  function templateData(step, definition, format) {
+  function templateData(step, definition, format, extra = {}) {
     return {
+      ...extra,
       param: { ...(step.params || {}) },
       subtype: engine().definitions.subtypeOf(definition, step),
       stepNumber: stepNumberFor(step),
@@ -556,11 +565,11 @@
     };
   }
 
-  function render(template, step, definition, format, escapes = {}) {
+  function render(template, step, definition, format, escapes = {}, extra) {
     if (typeof template !== "string") return null;
     return engine().templates.render(
       template,
-      templateData(step, definition, format),
+      templateData(step, definition, format, extra),
       { helpers: TEMPLATE_HELPERS, format, ...escapes },
     );
   }
@@ -773,11 +782,14 @@
     if (!definition) return null;
     const fromBlock = blockPart(definition, "createdColumns");
     if (fromBlock) return [...new Set((fromBlock(step) || []).filter(Boolean))];
-    const names = (definition.outputs?.creates || []).map((template) => {
+    // A template can write several names, one per line.
+    const names = (definition.outputs?.creates || []).flatMap((template) => {
       try {
-        return text(render(template, step, definition, "plain")).trim();
+        return text(render(template, step, definition, "plain"))
+          .split("\n")
+          .map((name) => name.trim());
       } catch (_error) {
-        return "";
+        return [];
       }
     });
     return [...new Set(names.filter(Boolean))];
@@ -827,12 +839,19 @@
       const found = fromBlock(step, context);
       return Array.isArray(found) ? found.map(text) : null;
     }
-    const outcomes = exportSettings(step)?.qtest?.outcomes;
+    return qtestOutcomesWith(definition, step, context);
+  }
+
+  function qtestOutcomesWith(definition, step, context = {}) {
+    const outcomes = engine().definitions.exportFor(definition, step)?.qtest
+      ?.outcomes;
     if (!outcomes) return null;
     try {
+      // `record` names the audit record ("Payroll audit record").
+      const extra = { record: text(context.record) };
       return [
-        render(outcomes.atlas, step, definition, "english"),
-        render(outcomes.source, step, definition, "english"),
+        render(outcomes.atlas, step, definition, "english", {}, extra),
+        render(outcomes.source, step, definition, "english", {}, extra),
       ].map((value) => text(value).trim());
     } catch (error) {
       const failure = renderFailure(definition, "qTest outcome", error);
@@ -1093,6 +1112,8 @@
     display,
     disabled,
     layout,
+    help,
+    legacyOptionSpacing,
   }) {
     const choice = app("atlasChoiceControl");
     const attributes = `data-param="${escapeHtml(param)}"${disabled ? " disabled" : ""}`;
@@ -1111,8 +1132,15 @@
         attributes,
         ...(heading && !above ? { heading } : {}),
         ...(popover ? { popover } : {}),
-      })}</div>`;
-    return selectHtml({ param, label, options, selected, disabled });
+      })}${help ? `<small class="hint">${escapeText(help)}</small>` : ""}</div>`;
+    return selectHtml({
+      param,
+      label,
+      options,
+      selected,
+      disabled,
+      legacyOptionSpacing,
+    });
   }
 
   function selectHtml({
@@ -1123,7 +1151,10 @@
     disabled,
     required,
     placeholder: prompt,
+    legacyOptionSpacing,
   }) {
+    // The legacy editors wrote `<option value="x" >` for an unselected option.
+    const unselected = legacyOptionSpacing ? " " : "";
     const first =
       prompt != null && prompt !== ""
         ? `<option value="">${escapeHtml(prompt)}</option>`
@@ -1131,10 +1162,55 @@
     return `<label>${escapeHtml(label)}<select data-param="${escapeHtml(param)}"${required ? " required" : ""}${disabled ? " disabled" : ""}>${first}${options
       .map(
         (option) =>
-          `<option value="${escapeHtml(option.value)}"${option.value === selected ? " selected" : ""}>${escapeHtml(option.label)}</option>`,
+          `<option value="${escapeHtml(option.value)}"${option.value === selected ? " selected" : unselected}>${escapeHtml(option.label)}</option>`,
       )
       .join("")}</select></label>`;
   }
+
+  /**
+   * A choice field's options. With optionsFrom, the catalog list at that
+   * path decides which values are offered and in what order; an option of
+   * the field with the same value gives its label, description and
+   * visibility. Field options the catalog does not list follow, so hidden
+   * legacy values still show on saved steps. Without the catalog the
+   * field's own options are used.
+   */
+  function choiceOptions(field) {
+    const own = field.options || [];
+    if (!field.optionsFrom) return own;
+    const read = app("getCatalogValue");
+    const listed = read ? read(field.optionsFrom, undefined) : undefined;
+    if (!Array.isArray(listed)) return own;
+    const byValue = new Map(own.map((option) => [option.value, option]));
+    const fromCatalog = listed.map((entry) => {
+      const value = text(Array.isArray(entry) ? entry[0] : entry);
+      const label = text(Array.isArray(entry) ? entry[1] : entry);
+      return byValue.get(value) || { value, label };
+    });
+    const seen = new Set(fromCatalog.map((option) => option.value));
+    return [...fromCatalog, ...own.filter((option) => !seen.has(option.value))];
+  }
+
+  /**
+   * A field picker's Clear button. clearKey (internal) writes the
+   * data-clear-concat-field button the Concatenate editor always had.
+   */
+  function clearButtonHtml(field, value, label) {
+    if (!field.clearable) return "";
+    const aria = `aria-label="Clear ${escapeHtml(label)}"`;
+    if (field.clearKey)
+      return `<button type="button" class="secondary small" data-clear-concat-field="${escapeHtml(field.clearKey)}" ${aria} ${value ? "" : "disabled"}>Clear</button>`;
+    const source = field.sourceParam
+      ? ` data-clear-source-param="${escapeHtml(field.sourceParam)}"`
+      : "";
+    return `<button type="button" class="secondary small" data-clear-param="${escapeHtml(field.param)}"${source} ${aria}${value ? "" : " disabled"}>Clear</button>`;
+  }
+
+  /** Markup of a composite control drawn by an app editor, by control. */
+  const COMPOSITE_EDITORS = Object.freeze({
+    math: "atlasSourceFieldModeInputs",
+    string_transform: "atlasStringTransformModeInputs",
+  });
 
   /** The parameter's value, or the field's valueTemplate while it is blank. */
   function shownValue(field, step, definition) {
@@ -1189,11 +1265,11 @@
                 : "",
             })
           : `<input ${bind} value="${escapeHtml(value)}"${placeholderText}${required}${off}>`;
-        return `<label>${escapeHtml(label)}${input}${helpHtml(field)}</label>`;
+        return `<label>${escapeHtml(label)}${input}${clearButtonHtml(field, value, label)}${helpHtml(field)}</label>`;
       }
       case "choice": {
         const selected = value || text(field.default);
-        const options = shownOptions(field.options, step, selected);
+        const options = shownOptions(choiceOptions(field), step, selected);
         if (field.display === "select")
           return `${selectHtml({
             param: field.param,
@@ -1203,6 +1279,7 @@
             disabled,
             required: field.required,
             placeholder: field.placeholder,
+            legacyOptionSpacing: field.legacyOptionSpacing === true,
           })}${helpHtml(field)}`;
         return `${choiceHtml({
           param: field.param,
@@ -1214,7 +1291,9 @@
           display: field.display,
           disabled,
           layout: field.layout,
-        })}${helpHtml(field)}`;
+          help: field.help,
+          legacyOptionSpacing: field.legacyOptionSpacing === true,
+        })}`;
       }
       case "textarea":
         return `<label${full ? ' class="full"' : ""}>${escapeHtml(label)}<textarea ${bind}${placeholderText}${required}${describedBy(field)}${off}>${escapeHtml(value)}</textarea>${helpHtml(field)}</label>`;
@@ -1246,6 +1325,23 @@
         return message.trim()
           ? `<div class="logic-editor-callout${full}" role="note">${message}</div>`
           : "";
+      }
+      case "readout": {
+        // Read-only text that tells the reader what a fixed setting is.
+        let shown = "";
+        try {
+          shown = text(render(field.message, step, definition, "plain"));
+        } catch (error) {
+          shown = renderFailure(definition, "readout", error);
+        }
+        return `<label>${escapeHtml(label)}<input value="${escapeHtml(shown)}" readonly${describedBy(field)}>${helpHtml(field)}</label>`;
+      }
+      case "math":
+      case "string_transform": {
+        const html = app(COMPOSITE_EDITORS[field.control])?.(params);
+        return typeof html === "string"
+          ? html
+          : `<p class="hint">The ${escapeHtml(field.control)} editor is not available in this version of ATLAS Align.</p>`;
       }
       case "block":
         return blockHtml(field.block, field, step);
@@ -1335,9 +1431,23 @@
           display: subtypes.control === "list" ? "cards" : subtypes.control,
         }),
       );
-    definitions
-      .fields(definition, subtype)
-      .forEach((field) => parts.push(fieldHtml(field, step, definition)));
+    // Shown fields with layout "pair" next to each other share one row.
+    let pair = [];
+    const flushPair = () => {
+      if (pair.length)
+        parts.push(`<div class="logic-picker-pair">${pair.join("")}</div>`);
+      pair = [];
+    };
+    definitions.fields(definition, subtype).forEach((field) => {
+      const html = fieldHtml(field, step, definition);
+      if (!html) return;
+      if (field.layout === "pair") pair.push(html);
+      else {
+        flushPair();
+        parts.push(html);
+      }
+    });
+    flushPair();
     // The same markup as the built-in editors, so the look does not change.
     return `<div class="selected-source-only-builder"><div class="guided-builder"><h4>${escapeHtml(definition.label)}</h4>${parts.join("")}</div></div>`;
   }

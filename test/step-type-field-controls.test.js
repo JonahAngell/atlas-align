@@ -41,7 +41,11 @@ test("palette, schema and runtime list the same controls", () => {
 
 test("every bundled definition passes the palette check", () => {
   const { engine, options } = loadStepTypeEngine();
-  for (const file of ["format_field.json", "split_field.json"]) {
+  for (const file of [
+    "format_field.json",
+    "split_field.json",
+    "create_column.json",
+  ]) {
     const result = engine.definitions.validate(readJson(file), {
       ...options,
       schema,
@@ -205,7 +209,15 @@ test("a hidden option is kept for a saved step that uses it", async () => {
 test("the editor redraws on params that decide what it shows", async () => {
   const { context } = await app();
   const params = context.ATLASStepTypeRuntime.rerenderParams();
-  for (const param of ["format_kind", "split_by", "split_mode"])
+  for (const param of [
+    "format_kind",
+    "split_by",
+    "split_mode",
+    "value_mode",
+    "string_operation",
+    "string_split_mode",
+    "string_split_column_count",
+  ])
     assert.ok(params.includes(param), param);
 });
 
@@ -223,4 +235,91 @@ test("an unknown format shows an escaped callout and no format choice", async ()
     html,
     /role="note">This step's format is written as "&lt;b&gt;&amp;&quot;&#39;x", which is not a known format\./,
   );
+});
+
+test("create column reads in analyst and developer logic", async () => {
+  const { step, run } = await app();
+  const since = step("create_column", {
+    column_name: "Days Since Hire",
+    value_mode: "Date difference",
+    date_diff_source_file: "PA0041",
+    date_diff_field: "Hire Date",
+  });
+  assert.match(
+    run("analystLogic(__step)", since),
+    /days from .*Hire Date.* to the run date/,
+  );
+  assert.match(
+    run("atlasDeveloperFormulas(__step)", since).sql,
+    /DATEDIFF\(day, .*@RunDate\)/,
+  );
+  const joined = step("create_column", {
+    column_name: "Full Name",
+    value_mode: "Concatenate fields",
+    concat_source_1: "PA",
+    concat_field_1: "First",
+    concat_source_2: "PA",
+    concat_field_2: "Last",
+    concat_separator: " ",
+  });
+  assert.match(
+    run("analystLogic(__step)", joined),
+    /with a space between them/,
+  );
+  assert.match(
+    run("atlasDeveloperFormulas(__step)", joined).sql,
+    /CONCAT\(.*, ' ', .*\)/,
+  );
+});
+
+test("a written create column expression shows as a description", async () => {
+  const { context, step } = await app();
+  const html = context.ATLASStepTypeRuntime.renderEditor(
+    step("create_column", {
+      column_name: "Rate",
+      value_mode: "Expression / calculation",
+      expression_type: "custom_expression",
+      expression: "Hourly rate times standard hours",
+    }),
+  );
+  assert.match(
+    html,
+    /written as an expression[\s\S]*data-param="column_description"[^>]*>Hourly rate times standard hours</,
+  );
+  assert.match(html, /value="Expression \/ calculation"/);
+  const fresh = context.ATLASStepTypeRuntime.renderEditor(
+    step("create_column", { column_name: "Rate", value_mode: "Static value" }),
+  );
+  assert.doesNotMatch(fresh, /Expression \/ calculation/);
+});
+
+test("a clearable field picker without a clear key clears by param", async () => {
+  const { context, step } = await app();
+  const html = vm.runInContext(
+    `(() => {
+      const bundled = ATLASStepTypes.bundled;
+      const definitions = bundled.definitions.map((definition) => {
+        if (definition.id !== "create_column") return definition;
+        const copy = structuredClone(definition);
+        delete copy.fields.find((field) => field.param === "concat_field_2")
+          .clearKey;
+        return copy;
+      });
+      ATLASStepTypeRuntime.loadBundled({ ...bundled, definitions });
+      return ATLASStepTypeRuntime.renderEditor(__step);
+    })()`,
+    Object.assign(context, {
+      __step: step("create_column", {
+        column_name: "C",
+        value_mode: "Concatenate fields",
+        concat_source_2: "PA",
+        concat_field_2: "Last",
+      }),
+    }),
+  );
+  assert.match(
+    html,
+    /data-clear-param="concat_field_2" data-clear-source-param="concat_source_2" aria-label="Clear Second Field">Clear</,
+  );
+  assert.match(html, /data-clear-concat-field="1"[^>]*disabled/);
 });

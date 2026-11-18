@@ -940,32 +940,6 @@ function atlasSplitDelimiterPlain(split) {
 }
 
 /**
- * Selects the phrase path for a Create Column step.
- * @param {any} params - Step params object.
- */
-function createColumnPhrasePath(params) {
-  if (params.value_mode === "Static value")
-    return "analyst_logic.create_column.static_value";
-  if (params.value_mode === "Source field value")
-    return "analyst_logic.create_column.source_field";
-  if (params.value_mode === "Concatenate fields")
-    return String(params.concat_separator ?? "") !== ""
-      ? "analyst_logic.create_column.concatenate_fields_separator"
-      : "analyst_logic.create_column.concatenate_fields";
-  if (params.value_mode === "Date difference")
-    return params.date_diff_direction === "field_minus_parameter"
-      ? "analyst_logic.create_column.date_difference_until"
-      : "analyst_logic.create_column.date_difference_since";
-  if (params.expression_type === "first_characters")
-    return "analyst_logic.create_column.first_characters";
-  if (params.expression_type === "character_count")
-    return "analyst_logic.create_column.character_count";
-  if (params.value_mode === "Expression / calculation")
-    return "analyst_logic.create_column.expression";
-  return "analyst_logic.create_column.default";
-}
-
-/**
  * Returns true when a join type represents a Union.
  * @param {any} joinType - Input used by phraseIsUnionJoinType.
  */
@@ -1060,52 +1034,6 @@ function analystLogic(step) {
   const english = globalThis.ATLASStepTypeRuntime?.english?.(step);
   if (english != null) return english;
   return `[Missing phrase path: analyst_logic.${step.step_type || "unknown"}]`;
-}
-
-/** Create Column sentence (the create_column behavior block). */
-function atlasCreateColumnSentence(step) {
-  const params = step.params || {};
-  const special =
-    atlasCreateColumnStringSentence(step) ??
-    atlasCreateColumnMathSentence(step);
-  if (special != null) return special;
-  const columnName = params.column_name || step.field || "";
-  if (
-    (params.value_mode === "Static value" || !params.value_mode) &&
-    !String(params.static_value || "").trim()
-  ) {
-    return renderCatalogPhrase("analyst_logic.create_column.blank", {
-      column_name: quotePhraseValue(columnName),
-    });
-  }
-  const tableColumn = tableColumnPlain(
-    params.source_file,
-    params.source_alias,
-    params.field_name,
-  );
-  return renderCatalogPhrase(createColumnPhrasePath(params), {
-    column_name: quotePhraseValue(columnName),
-    static_value: quotePhraseValue(params.static_value || ""),
-    table_column: tableColumn,
-    expression: params.expression || "",
-    character_count: params.character_count || "",
-    first_column: tableColumnPlain(
-      params.concat_source_1 || params.source_file,
-      sourceAliasFor(params.concat_source_1 || params.source_file),
-      params.concat_field_1,
-    ),
-    second_column: tableColumnPlain(
-      params.concat_source_2 || params.source_file,
-      sourceAliasFor(params.concat_source_2 || params.source_file),
-      params.concat_field_2,
-    ),
-    separator: separatorPlain(params.concat_separator),
-    date_column: tableColumnPlain(
-      params.date_diff_source_file,
-      params.date_diff_source_alias,
-      params.date_diff_field || "",
-    ),
-  });
 }
 
 /** IF / THEN sentence (the if_then behavior block). */
@@ -1314,34 +1242,6 @@ thenActionPlain = function thenActionPlainWithMath(step) {
   );
 };
 
-/** Create Column sentence for a calculated source field, else null. */
-function atlasCreateColumnMathSentence(step) {
-  const p = step.params || {};
-  if (
-    step.step_type === "create_column" &&
-    p.value_mode === "Source field value" &&
-    (parseSourceMathOperations(p.source_math_json || []).length ||
-      (p.rounding_mode && p.rounding_mode !== "none"))
-  ) {
-    const base = tableColumnPlain(p.source_file, p.source_alias, p.field_name);
-    const operations = parseSourceMathOperations(p.source_math_json || []);
-    const math = operations
-      .map(
-        (operation) =>
-          `${compareMathOperatorWord(operation.operator)} ${compareMathOperandPlain(operation, p.source_file)}`,
-      )
-      .filter(Boolean)
-      .join(" ");
-    return renderCatalogPhrase(
-      "analyst_logic.create_column.source_field_calculation",
-      {
-        column_name: quotePhraseValue(p.column_name || step.field || ""),
-        calculation: `${base}${math ? ` ${math}` : ""}${atlasMathRoundingPhrase(p.rounding_mode, p.rounding_decimal_places)}`,
-      },
-    );
-  }
-  return null;
-}
 // ATLAS-MATH-OPERATIONS-UPDATE:END
 
 // ATLAS-STRING-TRANSFORM-UPDATE:BEGIN
@@ -1428,13 +1328,4 @@ elseActionPlain = function elseActionPlainWithStringTransform(step) {
     });
   return atlasElseActionPlainBeforeStringTransform(step);
 };
-/** Create Column sentence for a string transformation, else null. */
-function atlasCreateColumnStringSentence(step) {
-  if (step.params?.value_mode !== ATLAS_STRING_TRANSFORM_VALUE_MODE)
-    return null;
-  return atlasStringTransformAnalystPhrase(
-    atlasStringTransformConfig(step.params),
-    "create_column",
-  );
-}
 // ATLAS-STRING-TRANSFORM-UPDATE:END

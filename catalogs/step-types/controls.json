@@ -1,5 +1,5 @@
 {
-  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only.",
+  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties` exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
   "paletteVersion": 1,
   "commonProperties": [
     {
@@ -55,13 +55,19 @@
     {
       "name": "layout",
       "type": "enum",
-      "values": ["full"],
-      "description": "full spans the whole editor row."
+      "values": ["full", "pair"],
+      "description": "full spans the whole editor row. pair puts shown fields that are next to each other in one row, as two pickers side by side."
     },
     {
       "name": "group",
       "type": "identifier",
       "description": "Groups related fields in the builder."
+    },
+    {
+      "name": "sharesParam",
+      "type": "boolean",
+      "internal": true,
+      "description": "Internal, never offered by the builder. Lets a second field show a param another field already shows, in another mode. Kept for Create Column, whose editor shows column_name, expression and column_description in two forms each."
     }
   ],
   "controls": [
@@ -80,7 +86,13 @@
       "category": "input",
       "status": "available",
       "description": "Chooses a field of a source, or any field and created column when no source is linked.",
-      "properties": ["placeholder", "sourceParam", "valueTemplate"],
+      "properties": [
+        "placeholder",
+        "sourceParam",
+        "valueTemplate",
+        "clearable"
+      ],
+      "internalProperties": ["clearKey"],
       "features": []
     },
     {
@@ -88,7 +100,7 @@
       "label": "Choice",
       "category": "choice",
       "status": "available",
-      "description": "One value from a fixed list, as cards, chips, a segmented control or a select. Each option can be hidden for new steps; a saved step that uses a hidden option still shows it.",
+      "description": "One value from a fixed list, as cards, chips, a segmented control or a select. Each option can be hidden for new steps; a saved step that uses a hidden option still shows it. optionsFrom names a catalog list (such as app_config.logic_options.create_value_modes) that decides which values are offered and in what order; options with the same value give their label and description.",
       "properties": [
         "options",
         "optionsFrom",
@@ -97,6 +109,7 @@
         "popover",
         "placeholder"
       ],
+      "internalProperties": ["legacyOptionSpacing"],
       "features": [],
       "optionProperties": [
         "value",
@@ -171,6 +184,15 @@
       "category": "layout",
       "status": "available",
       "description": "A highlighted note built from a template, usually shown with visibleWhen. Writes no parameter; param only names it.",
+      "properties": ["message"],
+      "features": []
+    },
+    {
+      "name": "readout",
+      "label": "Read-only value",
+      "category": "layout",
+      "status": "available",
+      "description": "Shows a fixed setting as read-only text, built from a template `message`. Writes no parameter; param only names it.",
       "properties": ["message"],
       "features": []
     },
@@ -310,48 +332,38 @@
       "name": "math",
       "label": "Calculation",
       "category": "composite",
-      "status": "planned",
-      "description": "A structured calculation of fields and numbers with optional rounding. Stores the expression as JSON in its param.",
-      "params": [],
+      "status": "available",
+      "description": "A source field with math operations and rounding. Stores the operations as JSON in source_math_json. Drawn by the app's own editor for now, so the builder cannot change its parts.",
+      "params": [
+        "source_file",
+        "source_alias",
+        "field_name",
+        "source_math_json",
+        "rounding_mode",
+        "rounding_decimal_places"
+      ],
       "properties": [],
-      "features": [
-        {
-          "name": "rounding",
-          "label": "Rounding",
-          "description": "Round the result to a number of places."
-        }
-      ]
+      "features": []
     },
     {
       "name": "string_transform",
       "label": "String transformation",
       "category": "composite",
-      "status": "planned",
-      "description": "Part of a text value: first or last characters, character count, or a split into columns.",
-      "params": [],
-      "properties": ["prefix"],
-      "features": [
-        {
-          "name": "first_characters",
-          "label": "First characters",
-          "description": "Keep the first N characters."
-        },
-        {
-          "name": "last_characters",
-          "label": "Last characters",
-          "description": "Keep the last N characters."
-        },
-        {
-          "name": "character_count",
-          "label": "Character count",
-          "description": "Count the characters."
-        },
-        {
-          "name": "split",
-          "label": "Split into columns",
-          "description": "Split on a delimiter into several columns."
-        }
-      ]
+      "status": "available",
+      "description": "Part of a text value: first or last characters, character count, or a split into columns named string_split_column_1, string_split_column_2... Drawn by the app's own editor for now, so the builder cannot change its parts.",
+      "params": [
+        "string_operation",
+        "string_position",
+        "string_source_file",
+        "string_source_field",
+        "string_character_count",
+        "string_split_mode",
+        "string_split_delimiter",
+        "string_split_custom_delimiter",
+        "string_split_column_count"
+      ],
+      "properties": [],
+      "features": []
     },
     {
       "name": "join_keys",
