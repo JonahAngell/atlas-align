@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "id": "union_sources",
+  "version": 1,
+  "label": "Union Sources",
+  "category": "combine",
+  "description": "Append the rows of two sources. Saved steps open as a UNION Join.",
+  "status": "legacy",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "handler",
+      "name": "union_sources_to_join"
+    },
+    {
+      "op": "setStepType",
+      "to": "join"
+    }
+  ],
+  "fields": [],
+  "block": "union_sources",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "union",
+    "qtest": {
+      "section": "D",
+      "testType": "Integration"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

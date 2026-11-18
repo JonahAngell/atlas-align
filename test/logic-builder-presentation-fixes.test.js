@@ -101,7 +101,7 @@ test("Character Count omits explanatory UI copy without changing transform behav
 });
 
 test("Concatenate controls use the responsive two-column layout", () => {
-  assert.match(runtimeSource, /<div class="logic-picker-pair">/);
+  assert.match(runtimeSource, /<div class="logic-picker-pair\$\{/);
   for (const param of ["concat_field_1", "concat_field_2"])
     assert.equal(
       createColumnDefinition.fields.find((field) => field.param === param)

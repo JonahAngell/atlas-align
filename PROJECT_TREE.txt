@@ -471,8 +471,10 @@
 │   │   │   ├── create_column.v1.json
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
+│   │   │   ├── join.v1.json
 │   │   │   ├── split_field.v1.json
-│   │   │   └── split_field.v2.json
+│   │   │   ├── split_field.v2.json
+│   │   │   └── union_sources.v1.json
 │   │   ├── authorization-role-matrix.fixture.json
 │   │   └── file-utility-compile-verdicts.json
 │   ├── support

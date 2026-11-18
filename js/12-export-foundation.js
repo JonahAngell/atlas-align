@@ -474,61 +474,6 @@ function qtestExpectedOutcomes(step, action, { auditName, ifNumber }) {
   ];
 }
 
-/**
- * Builds expected outcomes for a union step.
- * @param {any} params - Step params object.
- * @param {any} step - Logic step object being read.
- */
-function qtestUnionOutcomes(params, step) {
-  const left = quotePhraseValue(
-    params.left_source || params.union_left_source || "",
-  );
-  const right = quotePhraseValue(
-    params.right_source || params.union_right_source || "",
-  );
-  const output = quotePhraseValue(params.output_source || step.source || "");
-  return [
-    `Records from ${left} and ${right} are combined into ${output}.`,
-    `The combined record count reconciles to the records in ${left} and ${right}.`,
-  ];
-}
-
-/**
- * Expected outcomes for a Join step; a UNION join reads like Union Sources.
- * @param {any} step - Logic step object being read.
- * @param {any} context - `record`, the audit record the outcome names.
- */
-function atlasQtestJoinOutcomes(step, { record } = {}) {
-  const params = step.params || {};
-  if (phraseIsUnionJoinType(params.join_type))
-    return qtestUnionOutcomes(params, step);
-  const keyPairs = atlasJoinKeyPairsForText(params);
-  const pairs = (
-    keyPairs.length ? keyPairs : [{ left_field: "", right_field: "" }]
-  ).map((pair) => ({
-    left: tableColumnPlain(
-      params.left_source,
-      params.left_alias,
-      pair.left_field,
-    ),
-    right: tableColumnPlain(
-      params.right_source,
-      params.right_alias,
-      pair.right_field,
-    ),
-  }));
-  const matched = pairs
-    .map(({ left, right }) => `${left} equals ${right}`)
-    .join(" and ");
-  const agreed = pairs
-    .map(({ left, right }) => `${left} and ${right}`)
-    .join(", ");
-  return [
-    `Records are matched where ${matched}; joined values display on the ${record}.`,
-    `Source values for ${agreed} agree for each joined record.`,
-  ];
-}
-
 /** The script role of a step's definition: "condition", "else" and so on. */
 function qtestStepRole(step) {
   return globalThis.ATLASStepTypeRuntime?.scriptRole?.(step) || "none";

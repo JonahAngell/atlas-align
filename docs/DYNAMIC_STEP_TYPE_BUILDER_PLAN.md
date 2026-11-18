@@ -103,7 +103,6 @@ read. It also rejects a control the runtime cannot render, which covers the
 uses it:
 
 - `condition_group` and `action` with `if_then`
-- `join_keys` with `join`
 
 Field additions:
 
@@ -171,6 +170,40 @@ offer them:
 
 The value mode "Expression / calculation" is hidden for new steps and left out
 of the catalog list; a saved written expression still shows it.
+
+Join is version 2 and Union Sources (legacy) version 2, both made of fields
+(issue #5012, engine version 1.8.0). The `sync_join` handler copies the source
+params and defaults the join type to INNER JOIN. The `join` and
+`union_sources` blocks stay as shims, tested with the corpus pinned to v1.
+Saved Union Sources steps still open as a UNION Join through the
+`union_sources_to_join` handler. A shim now also runs the latest definition's
+migration handlers, so a step pinned to an old block version is normalized
+as before. Join added:
+
+- The condition test `equalsIgnoreCase`, which compares in any upper or lower
+  case without trimming. The editor and the formulas use it to tell a UNION
+  join from a key-matched one; the English and notes trim the value first, as
+  before, with `(eq (upper (trim param.join_type)) "UNION")`.
+- Two composite controls drawn by the app's own editors: `join_type` (the
+  join type, its kept-rows hint and the Choose Join Type button that opens the
+  picker, `atlasRenderJoinTypePickerButton`) and `join_keys` (the key pair
+  list, `atlasJoinKeysEditorHtml`). Like `math`, the builder can place and
+  show or hide them but not change their parts.
+- Helpers `joinKeyPairs`, `joinKeyList` and `joinFormula`. The key-matched
+  join formulas still come from `atlasDevJoin` through `joinFormula`; the
+  UNION formulas, English, notes and qTest outcomes are templates.
+
+Internal features for the old Join markup (the builder does not offer them):
+
+- `editorFrame` on a definition: `standalone` leaves out the outer
+  `selected-source-only-builder` frame, `className` adds
+  `join-guided-builder`, and `heading` is a template, so the heading reads
+  "Union Sources" for a UNION join and "Join" otherwise.
+- `pairClass` on a paired `source_picker` adds `join-union-input-pair` to the
+  Left and Right Source row.
+- `className` on a `hint` adds `join-builder-union-hint`.
+- `sharesParam` lets the UNION Left and Right Source pickers show
+  `left_source` and `right_source`, which `join_keys` also keeps.
 
 ## Goal
 

@@ -37,9 +37,12 @@
  *   mathActive / mathPhrase / mathFormula params Create Column calculations
  *   literal value / writtenExpression value      quoted text, written formula
  *   createColumnOutputs params field / quotedNames list   created columns
+ *   joinKeyPairs params from=N blank=true         Join key pairs in use
+ *   joinKeyList params style=notes|additional     Join key pairs as text
+ *   joinFormula params part=lead note=N           Join formulas
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
- * sync_format_field, sync_split_field, sync_create_column,
+ * sync_format_field, sync_split_field, sync_create_column, sync_join,
  * union_sources_to_join.
  * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
  *
@@ -50,11 +53,10 @@
  * qtestOutcomes(step, { record }) (the two expected outcomes). The types that came with ATLAS Align use them:
  *   if_then         condition tree and THEN actions
  *   else            ELSE actions (legacy)
- *   join            Join and Union, with the join type picker
- *   union_sources   saved Union Sources steps (legacy; normalize makes a Join)
  *   filter_rows, flag_records   single-condition steps (legacy)
  * Replaced blocks (replacedBlocks below) are the ones a later version
- * rebuilt with fields: format_field, split_field and create_column. Only definitions pinned
+ * rebuilt with fields: format_field, split_field, create_column, join and
+ * union_sources. Only definitions pinned
  * to their old versions name them; they render through the field-based
  * definition.
  * A new type can name one of them and change its label, order and export.
@@ -384,6 +386,24 @@
     return name ? [name] : [];
   }
 
+  /**
+   * A Join's key pairs in use: [{ left_field, right_field }]. The first pair
+   * always counts; later ones only when they name a field.
+   */
+  function joinKeyPairs(params) {
+    const values = paramsOf(params);
+    const inUse = app("atlasJoinKeyPairsInUse");
+    if (inUse) return inUse(values);
+    return values.left_field || values.right_field
+      ? [
+          {
+            left_field: text(values.left_field),
+            right_field: text(values.right_field),
+          },
+        ]
+      : [];
+  }
+
   // ---------------------------------------------------------------------------
   // Template helpers.
   // ---------------------------------------------------------------------------
@@ -629,6 +649,52 @@
       const names = Array.isArray(args[0]) ? args[0] : [];
       return names.map((name) => quote(text(name))).join(", ") || '""';
     },
+    /**
+     * A Join's key pairs (see joinKeyPairs); from=N skips the first N, and
+     * blank=true gives one blank pair when there are none.
+     */
+    joinKeyPairs(args, hash) {
+      const pairs = joinKeyPairs(args[0]).slice(Number(hash.from) || 0);
+      return pairs.length || hash.blank !== true
+        ? pairs
+        : [{ left_field: "", right_field: "" }];
+    },
+    /**
+     * A Join's key pairs as one phrase value: style="notes" gives
+     * "L" / "R", ... and style="additional" the pairs after the first as
+     * file "a" column "L" with file "b" column "R", and ...
+     */
+    joinKeyList(args, hash) {
+      const values = paramsOf(args[0]);
+      const quote = app("quotePhraseValue") || ((value) => `"${value}"`);
+      const column = (source, alias, field) =>
+        text(app("tableColumnPlain")?.(source, alias, field));
+      if (hash.style === "additional")
+        return joinKeyPairs(values)
+          .slice(1)
+          .map(
+            (pair) =>
+              `${column(values.left_source, values.left_alias, pair.left_field) || placeholder("left_key", "[left key]")} with ${column(values.right_source, values.right_alias, pair.right_field) || placeholder("right_key", "[right key]")}`,
+          )
+          .join(", and ");
+      const pairs = joinKeyPairs(values);
+      return (pairs.length ? pairs : [{ left_field: "", right_field: "" }])
+        .map(
+          (pair) =>
+            `${quote(pair.left_field || placeholder("file_1_key", "[file 1 key]"))} / ${quote(pair.right_field || placeholder("file_2_key", "[file 2 key]"))}`,
+        )
+        .join(", ");
+    },
+    /**
+     * One dialect of a Join's formulas, its lead (part="lead") or one of its
+     * notes (note=N), from the app's join formulas.
+     */
+    joinFormula(args, hash, { format }) {
+      const result = app("atlasDevJoin")?.({ params: paramsOf(args[0]) }) || {};
+      if (hash.note !== undefined)
+        return text((result.notes || [])[Number(hash.note)]);
+      return text(result[hash.part === "lead" ? "lead" : format]);
+    },
     /** Excel table of a key list's first key, else of the step's source. */
     firstKeyTable(args) {
       const [keys, source, alias] = args;
@@ -670,6 +736,10 @@
      */
     sync_create_column(step) {
       app("atlasNormalizeCreateColumnStep")?.(step);
+    },
+    /** Join defaults: the source params and an INNER JOIN. */
+    sync_join(step) {
+      app("atlasNormalizeJoinStep")?.(step);
     },
     /** Rewrites a saved Union Sources step as a UNION Join. */
     union_sources_to_join(step) {
@@ -726,21 +796,6 @@
       formulas: call("atlasDevElse"),
       qtestAction: call("atlasQtestThenAction"),
     },
-    join: {
-      normalize: call("atlasNormalizeJoinStep"),
-      editor: call("atlasJoinEditorHtml"),
-      english: call("atlasJoinSentence"),
-      notes: call("atlasJoinNotes"),
-      formulas: call("atlasDevJoin"),
-      qtestOutcomes: call("atlasQtestJoinOutcomes"),
-    },
-    union_sources: {
-      english: call("atlasUnionSourcesSentence"),
-      notes: call("atlasUnionSourcesNotes"),
-      formulas: (step) => app("atlasDevUnion")?.(step.params || {}),
-      qtestOutcomes: (step) =>
-        app("qtestUnionOutcomes")?.(step.params || {}, step),
-    },
     filter_rows: legacyCondition(
       "atlasFilterRowsSentence",
       "atlasQtestFilterAction",
@@ -761,6 +816,8 @@
     format_field: "format_field",
     split_field: "split_field",
     create_column: "create_column",
+    join: "join",
+    union_sources: "union_sources",
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({

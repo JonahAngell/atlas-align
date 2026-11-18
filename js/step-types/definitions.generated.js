@@ -57,6 +57,29 @@
           description: "null or a subtype list",
         },
         fields: { $ref: "#/$defs/fieldList" },
+        editorFrame: {
+          type: "object",
+          additionalProperties: false,
+          description:
+            "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type.",
+          properties: {
+            standalone: {
+              const: true,
+              description:
+                "Leaves out the outer selected-source-only-builder frame.",
+            },
+            className: {
+              type: "string",
+              pattern: "^[a-z][a-z0-9-]{0,59}$",
+              description: "An extra class on the guided-builder frame.",
+            },
+            heading: {
+              $ref: "#/$defs/template",
+              description:
+                "The heading, as a plain template, in place of the label.",
+            },
+          },
+        },
         block: {
           $ref: "#/$defs/identifier",
           description:
@@ -230,7 +253,7 @@
         },
         condition: {
           description:
-            "a condition: {param|stepField, equals|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
+            "a condition: {param|stepField, equals|equalsIgnoreCase|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
           type: "object",
           additionalProperties: false,
           minProperties: 1,
@@ -238,6 +261,11 @@
             param: { $ref: "#/$defs/paramName" },
             stepField: { $ref: "#/$defs/stepField" },
             equals: { $ref: "#/$defs/scalar" },
+            equalsIgnoreCase: {
+              $ref: "#/$defs/scalar",
+              description:
+                "Holds when the value equals this one, ignoring upper and lower case.",
+            },
             notEquals: { $ref: "#/$defs/scalar" },
             in: {
               type: "array",
@@ -339,6 +367,7 @@
                 "action",
                 "math",
                 "string_transform",
+                "join_type",
                 "join_keys",
               ],
               description: "A control from catalogs/step-types/controls.json.",
@@ -382,6 +411,17 @@
               type: "boolean",
               description:
                 'Internal: a select writes <option value="x" > as the legacy editors did.',
+            },
+            pairClass: {
+              type: "string",
+              pattern: "^[a-z][a-z0-9-]{0,59}$",
+              description:
+                "Internal: an extra class on the row a pair field starts.",
+            },
+            className: {
+              type: "string",
+              pattern: "^[a-z][a-z0-9-]{0,59}$",
+              description: "Internal: an extra class on a hint.",
             },
             group: { $ref: "#/$defs/identifier" },
             sharesParam: {
@@ -591,7 +631,7 @@
     },
     controls: {
       $comment:
-        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties` exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
+        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame`, exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
       paletteVersion: 1,
       commonProperties: [
         {
@@ -675,6 +715,7 @@
           description: "Chooses one of the audit's source files.",
           properties: ["placeholder"],
           features: [],
+          internalProperties: ["pairClass"],
         },
         {
           name: "field_picker",
@@ -776,6 +817,7 @@
             "A line of help text. Writes no parameter; param only names it.",
           properties: [],
           features: [],
+          internalProperties: ["className"],
         },
         {
           name: "callout",
@@ -975,13 +1017,30 @@
           features: [],
         },
         {
+          name: "join_type",
+          label: "Join type",
+          category: "composite",
+          status: "available",
+          description:
+            "The join type (INNER, LEFT, RIGHT, FULL OUTER or UNION) with a Choose Join Type button that opens the join type picker. Stores join_type. Drawn by the app's own editor for now, so the builder cannot change its parts.",
+          params: ["join_type"],
+          properties: [],
+          features: [],
+        },
+        {
           name: "join_keys",
           label: "Join keys",
           category: "composite",
-          status: "planned",
+          status: "available",
           description:
-            "Pairs of fields that match records of two sources. Stores join_keys_json and mirrors the first pair to left_field and right_field.",
-          params: ["join_keys_json", "left_field", "right_field"],
+            "Pairs of fields that match records of two sources. Stores join_keys_json, mirrors the first pair to left_field and right_field, and keeps left_source and right_source. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+          params: [
+            "join_keys_json",
+            "left_field",
+            "right_field",
+            "left_source",
+            "right_source",
+          ],
           properties: [],
           features: [
             {
@@ -1813,7 +1872,7 @@
       {
         schemaVersion: 1,
         id: "join",
-        version: 1,
+        version: 2,
         label: "Join / Union Sources",
         category: "combine",
         order: 40,
@@ -1821,15 +1880,95 @@
         status: "active",
         legacyType: "join",
         aliases: { step_type: [], type: [] },
-        migrations: [],
-        fields: [],
-        block: "join",
-        english: { default: "" },
-        formulas: { shape: "none" },
-        autoNotes: null,
+        migrations: [{ op: "handler", name: "sync_join" }],
+        editorFrame: {
+          standalone: true,
+          className: "join-guided-builder",
+          heading:
+            '{{#if (eq (upper (default param.join_type "INNER JOIN")) "UNION")}}Union Sources{{else}}Join{{/if}}',
+        },
+        fields: [
+          { param: "join_type", control: "join_type", label: "Join Type" },
+          {
+            param: "join_keys_json",
+            control: "join_keys",
+            label: "Join Keys",
+            visibleWhen: {
+              not: { param: "join_type", equalsIgnoreCase: "UNION" },
+            },
+          },
+          {
+            param: "left_source",
+            control: "source_picker",
+            label: "Left Source",
+            layout: "pair",
+            pairClass: "join-union-input-pair",
+            sharesParam: true,
+            visibleWhen: { param: "join_type", equalsIgnoreCase: "UNION" },
+          },
+          {
+            param: "right_source",
+            control: "source_picker",
+            label: "Right Source",
+            layout: "pair",
+            sharesParam: true,
+            visibleWhen: { param: "join_type", equalsIgnoreCase: "UNION" },
+          },
+          {
+            param: "output_source",
+            control: "source_picker",
+            label: "Output Source",
+            visibleWhen: { param: "join_type", equalsIgnoreCase: "UNION" },
+          },
+          {
+            param: "union_hint",
+            control: "hint",
+            help: "Union appends rows from both files into one combined output. No matching key is needed.",
+            className: "join-builder-union-hint",
+            visibleWhen: { param: "join_type", equalsIgnoreCase: "UNION" },
+          },
+        ],
+        english: {
+          default:
+            '{{#if (eq (upper (trim param.join_type)) "UNION")}}{{phrase "analyst_logic.union_sources.default" left_source=(quote (orEmpty (orEmpty param.left_source param.union_left_source) "")) right_source=(quote (orEmpty (orEmpty param.right_source param.union_right_source) "")) output_source=(quote (orEmpty (orEmpty param.output_source step.source) ""))}}{{else if (gt (count (joinKeyPairs param)) 1)}}{{phrase "analyst_logic.join.multi" left_column=(tableColumn param.left_source param.left_alias param.left_field) right_column=(tableColumn param.right_source param.right_alias param.right_field) additional_keys=(joinKeyList param style="additional")}}{{else}}{{phrase "analyst_logic.join.default" left_column=(tableColumn param.left_source param.left_alias param.left_field) right_column=(tableColumn param.right_source param.right_alias param.right_field)}}{{/if}}',
+        },
+        autoNotes: {
+          default:
+            '{{#if (eq (upper (trim param.join_type)) "UNION")}}{{phrase "notes.union" left_source=(orEmpty (orEmpty param.left_source param.union_left_source) (placeholder "file_1" "[file 1]")) right_source=(orEmpty (orEmpty param.right_source param.union_right_source) (placeholder "file_2" "[file 2]")) output_source=(orEmpty param.output_source (placeholder "combined_file" "[combined file]"))}}{{else}}{{phrase (concat "notes.join." (orEmpty param.join_type "DEFAULT")) left_alias=(orEmpty (orEmpty param.left_alias param.left_source) (placeholder "file_1" "[file 1]")) right_alias=(orEmpty (orEmpty param.right_alias param.right_source) (placeholder "file_2" "[file 2]")) keys=(joinKeyList param style="notes")}}{{/if}}',
+        },
+        formulas: {
+          shape: "frame",
+          lead: '{{#unless (eq (upper param.join_type) "UNION")}}{{joinFormula param part="lead"}}{{/unless}}',
+          default: {
+            excel: "{{joinFormula param}}",
+            sql: "{{joinFormula param}}",
+            python: "{{joinFormula param}}",
+          },
+          notes: ["{{joinFormula param note=0}}"],
+          variants: [
+            {
+              when: { param: "join_type", equalsIgnoreCase: "UNION" },
+              excel:
+                "=VSTACK({{excelTable (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{excelTable (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}})",
+              sql: "SELECT * FROM {{sqlSource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}\nUNION ALL\nSELECT * FROM {{sqlSource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}",
+              python:
+                "df = pd.concat([{{pySource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{pySource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}], ignore_index=True)",
+              notes: [],
+            },
+          ],
+        },
         export: {
           scriptRole: "join",
-          qtest: { section: "D", testType: "Integration" },
+          qtest: {
+            section: "D",
+            testType: "Integration",
+            outcomes: {
+              atlas:
+                '{{#if (eq (upper (trim param.join_type)) "UNION")}}Records from {{quote (orEmpty (orEmpty param.left_source param.union_left_source) "")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) "")}} are combined into {{quote (orEmpty (orEmpty param.output_source step.source) "")}}.{{else}}Records are matched where {{#each (joinKeyPairs param blank=true) separator=" and "}}{{tableColumn @root.param.left_source @root.param.left_alias this.left_field}} equals {{tableColumn @root.param.right_source @root.param.right_alias this.right_field}}{{/each}}; joined values display on the {{record}}.{{/if}}',
+              source:
+                '{{#if (eq (upper (trim param.join_type)) "UNION")}}The combined record count reconciles to the records in {{quote (orEmpty (orEmpty param.left_source param.union_left_source) "")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) "")}}.{{else}}Source values for {{#each (joinKeyPairs param blank=true) separator=", "}}{{tableColumn @root.param.left_source @root.param.left_alias this.left_field}} and {{tableColumn @root.param.right_source @root.param.right_alias this.right_field}}{{/each}} agree for each joined record.{{/if}}',
+            },
+          },
         },
         textImport: { fromEnglish: false },
         validation: [{ builtIn: "join" }],
@@ -2335,7 +2474,7 @@
       {
         schemaVersion: 1,
         id: "union_sources",
-        version: 1,
+        version: 2,
         label: "Union Sources",
         category: "combine",
         description:
@@ -2347,14 +2486,56 @@
           { op: "handler", name: "union_sources_to_join" },
           { op: "setStepType", to: "join" },
         ],
-        fields: [],
-        block: "union_sources",
-        english: { default: "" },
-        formulas: { shape: "none" },
-        autoNotes: null,
+        fields: [
+          {
+            param: "union_left_source",
+            control: "source_picker",
+            label: "Left Source",
+            layout: "pair",
+          },
+          {
+            param: "union_right_source",
+            control: "source_picker",
+            label: "Right Source",
+            layout: "pair",
+          },
+          {
+            param: "output_source",
+            control: "source_picker",
+            label: "Output Source",
+          },
+        ],
+        english: {
+          default:
+            '{{phrase "analyst_logic.union_sources.default" left_source=(quote (orEmpty param.union_left_source "")) right_source=(quote (orEmpty param.union_right_source "")) output_source=(quote (orEmpty (orEmpty param.output_source step.source) ""))}}',
+        },
+        formulas: {
+          shape: "frame",
+          default: {
+            excel:
+              "=VSTACK({{excelTable (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{excelTable (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}})",
+            sql: "SELECT * FROM {{sqlSource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}\nUNION ALL\nSELECT * FROM {{sqlSource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}",
+            python:
+              "df = pd.concat([{{pySource (alias (orEmpty param.left_source param.union_left_source) (orEmpty param.left_alias param.union_left_alias))}}, {{pySource (alias (orEmpty param.right_source param.union_right_source) (orEmpty param.right_alias param.union_right_alias))}}], ignore_index=True)",
+          },
+          notes: [],
+        },
+        autoNotes: {
+          default:
+            '{{phrase "notes.union" left_source=(orEmpty param.union_left_source (placeholder "file_1" "[file 1]")) right_source=(orEmpty param.union_right_source (placeholder "file_2" "[file 2]")) output_source=(orEmpty param.output_source (placeholder "combined_file" "[combined file]"))}}',
+        },
         export: {
           scriptRole: "union",
-          qtest: { section: "D", testType: "Integration" },
+          qtest: {
+            section: "D",
+            testType: "Integration",
+            outcomes: {
+              atlas:
+                'Records from {{quote (orEmpty (orEmpty param.left_source param.union_left_source) "")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) "")}} are combined into {{quote (orEmpty (orEmpty param.output_source step.source) "")}}.',
+              source:
+                'The combined record count reconciles to the records in {{quote (orEmpty (orEmpty param.left_source param.union_left_source) "")}} and {{quote (orEmpty (orEmpty param.right_source param.union_right_source) "")}}.',
+            },
+          },
         },
         textImport: { fromEnglish: false },
       },

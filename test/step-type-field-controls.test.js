@@ -2,7 +2,8 @@
  * Field controls: the palette in catalogs/step-types/controls.json, the
  * schema's control list and the runtime's FIELD_CONTROLS agree, the palette
  * check rejects what a control does not read, and the field-based Format
- * Field and Split Field definitions read as the block editors did.
+ * Field, Split Field, Create Column and Join definitions read as the block
+ * editors did.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -45,6 +46,8 @@ test("every bundled definition passes the palette check", () => {
     "format_field.json",
     "split_field.json",
     "create_column.json",
+    "join.json",
+    "union_sources.json",
   ]) {
     const result = engine.definitions.validate(readJson(file), {
       ...options,
@@ -322,4 +325,72 @@ test("a clearable field picker without a clear key clears by param", async () =>
     /data-clear-param="concat_field_2" data-clear-source-param="concat_source_2" aria-label="Clear Second Field">Clear</,
   );
   assert.match(html, /data-clear-concat-field="1"[^>]*disabled/);
+});
+
+test("equalsIgnoreCase matches a value in any case, without trimming", () => {
+  const { engine } = loadStepTypeEngine();
+  const condition = { param: "join_type", equalsIgnoreCase: "UNION" };
+  const holds = (value) =>
+    engine.definitions.matches(condition, { params: { join_type: value } });
+  assert.equal(holds("union"), true);
+  assert.equal(holds("Union"), true);
+  assert.equal(holds("UNION"), true);
+  assert.equal(holds(" UNION"), false);
+  assert.equal(holds(undefined), false);
+});
+
+test("join reads in analyst and developer logic", async () => {
+  const { step, run } = await app();
+  const keys = step("join", {
+    join_type: "RIGHT JOIN",
+    left_source: "wd",
+    right_source: "sap",
+    left_field: "Worker ID",
+    right_field: "Pernr",
+    join_keys_json: JSON.stringify([
+      { id: "k1", left_field: "Worker ID", right_field: "Pernr" },
+      { id: "k2", left_field: "Company", right_field: "BUKRS" },
+    ]),
+  });
+  assert.match(
+    run("analystLogic(__step)", keys),
+    /column "Worker ID".*column "Pernr".*column "Company" with .*column "BUKRS"/,
+  );
+  const formulas = run("atlasDeveloperFormulas(__step)", keys);
+  assert.match(formulas.lead, /^RIGHT JOIN/);
+  assert.match(formulas.sql, /RIGHT JOIN \[sap\]\n {2}ON .* AND /);
+  assert.match(formulas.python, /how="right"/);
+  assert.equal(formulas.notes.length, 1);
+  const union = step("join", {
+    join_type: "union",
+    left_source: "wd",
+    right_source: "sap",
+    output_source: "all",
+  });
+  assert.match(run("analystLogic(__step)", union), /^UNION file "wd"/);
+  const unionFormulas = run("atlasDeveloperFormulas(__step)", union);
+  assert.equal(unionFormulas.lead, undefined);
+  assert.match(unionFormulas.excel, /^=VSTACK\(/);
+  assert.match(unionFormulas.sql, /UNION ALL/);
+});
+
+test("the join editor keeps its own frame and follows the join type", async () => {
+  const { context, step } = await app();
+  const render = (params) =>
+    context.ATLASStepTypeRuntime.renderEditor(step("join", params));
+  const join = render({ join_type: "LEFT JOIN" });
+  assert.match(
+    join,
+    /^<div class="guided-builder join-guided-builder"><h4>Join<\/h4>/,
+  );
+  assert.match(join, /data-join-keys-editor/);
+  assert.doesNotMatch(join, /join-union-input-pair/);
+  const union = render({ join_type: "Union" });
+  assert.match(union, /<h4>Union Sources<\/h4>/);
+  assert.match(union, /class="logic-picker-pair join-union-input-pair"/);
+  assert.doesNotMatch(union, /data-join-keys-editor/);
+  assert.equal(
+    context.ATLASStepTypeRuntime.rerenderParams().includes("join_type"),
+    true,
+  );
 });

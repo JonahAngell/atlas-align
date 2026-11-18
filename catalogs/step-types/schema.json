@@ -45,6 +45,26 @@
       "description": "null or a subtype list"
     },
     "fields": { "$ref": "#/$defs/fieldList" },
+    "editorFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type.",
+      "properties": {
+        "standalone": {
+          "const": true,
+          "description": "Leaves out the outer selected-source-only-builder frame."
+        },
+        "className": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,59}$",
+          "description": "An extra class on the guided-builder frame."
+        },
+        "heading": {
+          "$ref": "#/$defs/template",
+          "description": "The heading, as a plain template, in place of the label."
+        }
+      }
+    },
     "block": {
       "$ref": "#/$defs/identifier",
       "description": "A behavior block from js/13-step-type-library.js. It supplies the editor, English, notes, formulas, created columns and normalization it has; the definition supplies the rest."
@@ -207,7 +227,7 @@
       }
     },
     "condition": {
-      "description": "a condition: {param|stepField, equals|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
+      "description": "a condition: {param|stepField, equals|equalsIgnoreCase|notEquals|in|blank|notBlank|positiveWholeNumber} or {all|any: [...]} or {not: condition}",
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
@@ -215,6 +235,10 @@
         "param": { "$ref": "#/$defs/paramName" },
         "stepField": { "$ref": "#/$defs/stepField" },
         "equals": { "$ref": "#/$defs/scalar" },
+        "equalsIgnoreCase": {
+          "$ref": "#/$defs/scalar",
+          "description": "Holds when the value equals this one, ignoring upper and lower case."
+        },
         "notEquals": { "$ref": "#/$defs/scalar" },
         "in": {
           "type": "array",
@@ -314,6 +338,7 @@
             "action",
             "math",
             "string_transform",
+            "join_type",
             "join_keys"
           ],
           "description": "A control from catalogs/step-types/controls.json."
@@ -351,6 +376,16 @@
         "legacyOptionSpacing": {
           "type": "boolean",
           "description": "Internal: a select writes <option value=\"x\" > as the legacy editors did."
+        },
+        "pairClass": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,59}$",
+          "description": "Internal: an extra class on the row a pair field starts."
+        },
+        "className": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,59}$",
+          "description": "Internal: an extra class on a hint."
         },
         "group": { "$ref": "#/$defs/identifier" },
         "sharesParam": {

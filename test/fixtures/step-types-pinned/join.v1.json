@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "join",
+  "version": 1,
+  "label": "Join / Union Sources",
+  "category": "combine",
+  "order": 40,
+  "description": "Combine sources with Join or Union logic.",
+  "status": "active",
+  "legacyType": "join",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "join",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "join",
+    "qtest": {
+      "section": "D",
+      "testType": "Integration"
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "validation": [
+    {
+      "builtIn": "join"
+    }
+  ]
+}

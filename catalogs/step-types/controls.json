@@ -1,5 +1,5 @@
 {
-  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties` exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
+  "$comment": "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame`, exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
   "paletteVersion": 1,
   "commonProperties": [
     {
@@ -78,7 +78,8 @@
       "status": "available",
       "description": "Chooses one of the audit's source files.",
       "properties": ["placeholder"],
-      "features": []
+      "features": [],
+      "internalProperties": ["pairClass"]
     },
     {
       "name": "field_picker",
@@ -176,7 +177,8 @@
       "status": "available",
       "description": "A line of help text. Writes no parameter; param only names it.",
       "properties": [],
-      "features": []
+      "features": [],
+      "internalProperties": ["className"]
     },
     {
       "name": "callout",
@@ -366,12 +368,28 @@
       "features": []
     },
     {
+      "name": "join_type",
+      "label": "Join type",
+      "category": "composite",
+      "status": "available",
+      "description": "The join type (INNER, LEFT, RIGHT, FULL OUTER or UNION) with a Choose Join Type button that opens the join type picker. Stores join_type. Drawn by the app's own editor for now, so the builder cannot change its parts.",
+      "params": ["join_type"],
+      "properties": [],
+      "features": []
+    },
+    {
       "name": "join_keys",
       "label": "Join keys",
       "category": "composite",
-      "status": "planned",
-      "description": "Pairs of fields that match records of two sources. Stores join_keys_json and mirrors the first pair to left_field and right_field.",
-      "params": ["join_keys_json", "left_field", "right_field"],
+      "status": "available",
+      "description": "Pairs of fields that match records of two sources. Stores join_keys_json, mirrors the first pair to left_field and right_field, and keeps left_source and right_source. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+      "params": [
+        "join_keys_json",
+        "left_field",
+        "right_field",
+        "left_source",
+        "right_source"
+      ],
       "properties": [],
       "features": [
         {
