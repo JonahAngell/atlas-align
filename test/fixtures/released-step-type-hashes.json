@@ -1,0 +1,115 @@
+{
+  "$comment": "The canonical-JSON hash each repository step type version was first released with. ATLAS Align never overwrites a stored version, so a definition file whose hash differs from its entry here would be ignored in production: bump its version instead. Add a line for each new version.",
+  "released": [
+    {
+      "id": "create_column",
+      "version": 1,
+      "hash": "7f0a1d2b0432fe484f3289d2f522938a3f0dab08247e0516a82fbc10033a1cf5"
+    },
+    {
+      "id": "create_column",
+      "version": 2,
+      "hash": "b416dcea707bbe3803c37b6f48119e757bf7444c22da9c7563487948139ea661"
+    },
+    {
+      "id": "else",
+      "version": 1,
+      "hash": "232a028f81d19ba30aa5a8b3626b6971bc7d7dd1b63857efca6799da7841bff7"
+    },
+    {
+      "id": "else",
+      "version": 2,
+      "hash": "dbd75b0bd04bd2e7a7773497985fb815f71b963531e3e88e7c20abee0aead059"
+    },
+    {
+      "id": "filter_rows",
+      "version": 1,
+      "hash": "686675bdfe2059c3efb0731aa49eda7ca0b3ca76703b85df7b070a642677f096"
+    },
+    {
+      "id": "filter_rows",
+      "version": 2,
+      "hash": "be686263fd6150968630a3adfae73036972d9e78b693b8e40b51cb96238d2106"
+    },
+    {
+      "id": "flag_records",
+      "version": 1,
+      "hash": "0f0c9fc431b396a0b582c3c847682c784f1601199c11126ccf9c314ff3d0d7ea"
+    },
+    {
+      "id": "flag_records",
+      "version": 2,
+      "hash": "6ca49ef9b41d0a4282718e1c4baaa55e2aedef949f5f8705f3e69d3f4952aca8"
+    },
+    {
+      "id": "flag_records",
+      "version": 3,
+      "hash": "dccdc553a0e7d0bb53626ee037db0a765c0b10a8f1165478a73a1bbbb520761e"
+    },
+    {
+      "id": "format_field",
+      "version": 2,
+      "hash": "d12811b69399ce3f671609448ea3827d72a34fd86cca56c4bff250d57eb8cbcd"
+    },
+    {
+      "id": "format_field",
+      "version": 3,
+      "hash": "4e2cbdf5060c75d39e4053b4ce17ebed15626aed59d48baad4b64572e044fedb"
+    },
+    {
+      "id": "if_then",
+      "version": 1,
+      "hash": "4bc131e52be563f90128f3619ca52f3d77e21315f98c4a197dca2e33245648b5"
+    },
+    {
+      "id": "if_then",
+      "version": 2,
+      "hash": "7e9a1248c8a746963bebe2de69152077d4ee638765847bcd9ded9eaefe83a674"
+    },
+    {
+      "id": "join",
+      "version": 1,
+      "hash": "b0ed6d0470bd83ebeac43bc1b9a930d82dbe221a7036822e455f7d65c156e8e9"
+    },
+    {
+      "id": "join",
+      "version": 2,
+      "hash": "dfdfb5e62d59b33e1925728b5a0a8a6f0103cebaf37a73e65b991c8d18a6ee75"
+    },
+    {
+      "id": "reference_source",
+      "version": 1,
+      "hash": "e8b758d5d6660b625edddeed70ce7a1c101092936cdf0312ac1fe601eaf96e6f"
+    },
+    {
+      "id": "remove_duplicates",
+      "version": 1,
+      "hash": "61742a1ae995fde85ae67cf49d05fae4578d77b7e6fdce32ff6e619e4417d2f7"
+    },
+    {
+      "id": "sort_records",
+      "version": 1,
+      "hash": "1203abc677d3044b4ddd07fc74017ea3baf77a992f9271e8f022b37b1d7b9e4c"
+    },
+    {
+      "id": "split_field",
+      "version": 2,
+      "hash": "178040e86c05b66497ab5aecefb013b41295fb25689e80dc32351d0763a75a4d"
+    },
+    {
+      "id": "split_field",
+      "version": 3,
+      "hash": "4c046603e3aaa5b81676cafd167ba9cbd8a431a9fd921d4353912a4543b2ac23"
+    },
+    {
+      "id": "union_sources",
+      "version": 1,
+      "hash": "94023916eec45065a8d6c5ba9f898df0ceb59d986ccfc663969c1314e33620f1"
+    },
+    {
+      "id": "union_sources",
+      "version": 2,
+      "hash": "cbc42f8766cb99c8f363fb03b4d217e96f45fc9e5a63fad0e6b784751312ac87"
+    }
+  ]
+}
