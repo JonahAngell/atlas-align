@@ -1798,7 +1798,7 @@
       {
         schemaVersion: 1,
         id: "flag_records",
-        version: 2,
+        version: 3,
         label: "Flag Records",
         category: "logic",
         description: "Flag matching records or hide them.",

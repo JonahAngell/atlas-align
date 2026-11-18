@@ -480,7 +480,8 @@
 │   │   │   ├── split_field.v2.json
 │   │   │   └── union_sources.v1.json
 │   │   ├── authorization-role-matrix.fixture.json
-│   │   └── file-utility-compile-verdicts.json
+│   │   ├── file-utility-compile-verdicts.json
+│   │   └── released-step-type-hashes.json
 │   ├── support
 │   │   ├── step-type-corpus.js
 │   │   ├── step-type-harness.js
@@ -571,6 +572,7 @@
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js
 │   ├── step-type-publishing.test.js
+│   ├── step-type-released-versions.test.js
 │   ├── step-type-repository.test.js
 │   ├── step-type-runtime.test.js
 │   ├── step-type-snapshots.test.js

@@ -22,9 +22,9 @@
     },
     {
       "id": "flag_records",
-      "version": 2,
+      "version": 3,
       "file": "flag_records.json",
-      "hash": "522b0fd45a2fc38c51643cfccf6a42a755b4f8f28efcb3215e67bf4ff564c575"
+      "hash": "dccdc553a0e7d0bb53626ee037db0a765c0b10a8f1165478a73a1bbbb520761e"
     },
     {
       "id": "format_field",
