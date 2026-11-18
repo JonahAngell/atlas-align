@@ -674,6 +674,12 @@ capture = function captureCatalogDriven() {
         paramName === "then_string_character_count"
       ) {
         const normalized = atlasPositiveWholeNumber(input.value);
+        if (!String(input.value ?? "").trim()) {
+          input.setAttribute("aria-invalid", "false");
+          input.setCustomValidity?.("");
+          step.params[paramName] = "";
+          return;
+        }
         if (!normalized) {
           input.setAttribute("aria-invalid", "true");
           input.setCustomValidity?.(

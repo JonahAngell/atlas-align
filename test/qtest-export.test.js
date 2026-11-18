@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 import { STEP_TYPE_SCRIPTS } from "./support/step-type-scripts.js";
 
@@ -192,7 +193,7 @@ let template;
 test.before(async () => {
   exported = await runExport(managementChainAudit());
   template = new ExcelJS.Workbook();
-  await template.xlsx.readFile(TEMPLATE_URL.pathname);
+  await template.xlsx.readFile(fileURLToPath(TEMPLATE_URL));
 });
 
 test("Qtest export keeps only the two template sheets", () => {

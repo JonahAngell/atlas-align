@@ -61,3 +61,14 @@ test("its steps render like the recorded Filter Rows and Flag Records steps", as
     assert.ok(actual.editorHtml && !actual.editorHtml.error, `${id} editor`);
   }
 });
+
+test("a Flag Records step that hides the record has no Message or Output Column field", async () => {
+  const context = await loadApp();
+  const recorded = JSON.parse(JSON.stringify(await recordAudit(context, json)));
+  const html = (id) => recorded.steps.find((step) => step.id === id).editorHtml;
+  assert.match(html("flag-text"), /data-param="message"/);
+  assert.match(html("flag-text"), /data-param(-name)?="output_column"/);
+  assert.match(html("flag-hide"), /data-param="flag_action"/);
+  assert.doesNotMatch(html("flag-hide"), /data-param="message"/);
+  assert.doesNotMatch(html("flag-hide"), /data-param(-name)?="output_column"/);
+});
