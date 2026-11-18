@@ -48,7 +48,7 @@
     "editorFrame": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type.",
+      "description": "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type, and for IF / THEN and ELSE, whose forms have no heading and, for IF / THEN, two tabs.",
       "properties": {
         "standalone": {
           "const": true,
@@ -60,8 +60,23 @@
           "description": "An extra class on the guided-builder frame."
         },
         "heading": {
-          "$ref": "#/$defs/template",
-          "description": "The heading, as a plain template, in place of the label."
+          "oneOf": [{ "$ref": "#/$defs/template" }, { "const": false }],
+          "description": "The heading, as a plain template, in place of the label. false leaves the heading out."
+        },
+        "tabs": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 6,
+          "description": "Tabs that each show the fields whose `tab` names them; the first opens until one is chosen. Fields without a tab come before the tabs.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "label": { "$ref": "#/$defs/label" }
+            }
+          }
         }
       }
     },
@@ -388,6 +403,14 @@
           "description": "Internal: an extra class on a hint."
         },
         "group": { "$ref": "#/$defs/identifier" },
+        "tab": {
+          "$ref": "#/$defs/identifier",
+          "description": "Internal: the editorFrame tab that shows this field."
+        },
+        "branch": {
+          "enum": ["THEN", "ELSE"],
+          "description": "The branch an action field writes: THEN (the default) or ELSE."
+        },
         "sharesParam": {
           "type": "boolean",
           "description": "Internal: lets this field show a param another field also shows, in another mode."

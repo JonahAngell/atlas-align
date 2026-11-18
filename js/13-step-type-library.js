@@ -40,25 +40,27 @@
  *   joinKeyPairs params from=N blank=true         Join key pairs in use
  *   joinKeyList params style=notes|additional     Join key pairs as text
  *   joinFormula params part=lead note=N           Join formulas
+ *   conditionText param step                      IF conditions in words
+ *   actionText param step branch=ELSE             THEN / ELSE action in words
+ *   ifPrefix text                                 IF + text unless it has one
+ *   ifThenFormula / elseFormula param step part=lead note=N   IF and ELSE formulas
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
  * sync_format_field, sync_split_field, sync_create_column, sync_join,
- * union_sources_to_join.
+ * union_sources_to_join, sync_if_then, copy_step_source.
  * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
  *
  * Behavior blocks (a definition's `block`) supply whole parts of a type from
  * the app's own code: normalize(step, index) on the real step, editor(step)
  * markup, english(step), notes(step), formulas(step), createdColumns(step),
  * qtestAction(step) (the THEN outcome qTest tests) and
- * qtestOutcomes(step, { record }) (the two expected outcomes). The types that came with ATLAS Align use them:
- *   if_then         condition tree and THEN actions
- *   else            ELSE actions (legacy)
+ * qtestOutcomes(step, { record }) (the two expected outcomes). The types
+ * that came with ATLAS Align use them:
  *   filter_rows, flag_records   single-condition steps (legacy)
  * Replaced blocks (replacedBlocks below) are the ones a later version
- * rebuilt with fields: format_field, split_field, create_column, join and
- * union_sources. Only definitions pinned
- * to their old versions name them; they render through the field-based
- * definition.
+ * rebuilt with fields: format_field, split_field, create_column, join,
+ * union_sources, if_then and else. Only definitions pinned to their old
+ * versions name them; they render through the field-based definition.
  * A new type can name one of them and change its label, order and export.
  */
 (function initializeStepTypeLibrary(global) {
@@ -195,6 +197,20 @@
     params && typeof params === "object" && !Array.isArray(params)
       ? params
       : {};
+
+  /** A step from a helper's `param step` arguments, for the app's own code. */
+  const stepOf = (args) => ({
+    ...paramsOf(args[1]),
+    params: { ...paramsOf(args[0]) },
+  });
+
+  /** One part of an app formula result: a note=N, the lead or a dialect. */
+  function formulaPart(result, hash, format) {
+    const formulas = result || {};
+    if (hash.note !== undefined)
+      return text((formulas.notes || [])[Number(hash.note)]);
+    return text(formulas[hash.part === "lead" ? "lead" : format]);
+  }
 
   /** The structured Format Field settings, or null for a legacy format. */
   function formatConfig(params) {
@@ -690,10 +706,39 @@
      * notes (note=N), from the app's join formulas.
      */
     joinFormula(args, hash, { format }) {
-      const result = app("atlasDevJoin")?.({ params: paramsOf(args[0]) }) || {};
-      if (hash.note !== undefined)
-        return text((result.notes || [])[Number(hash.note)]);
-      return text(result[hash.part === "lead" ? "lead" : format]);
+      return formulaPart(
+        app("atlasDevJoin")?.({ params: paramsOf(args[0]) }),
+        hash,
+        format,
+      );
+    },
+    /** IF + the step's condition tree in words (the condition_group control). */
+    conditionText(args) {
+      const step = stepOf(args);
+      return text(
+        app("ensureIfThenPrefix")?.(app("conditionGroupPlain")?.(step)),
+      );
+    },
+    /** The THEN action in words, or the ELSE action with branch="ELSE". */
+    actionText(args, hash) {
+      const name =
+        hash.branch === "ELSE" ? "elseActionPlain" : "thenActionPlain";
+      return text(app(name)?.(stepOf(args)));
+    },
+    /** Text that starts with IF, ELSE IF or ELSE, else IF + the text. */
+    ifPrefix(args) {
+      return text(app("ensureIfThenPrefix")?.(text(args[0])));
+    },
+    /**
+     * One dialect of an IF / THEN step's formulas, or one of its notes
+     * (note=N), from the app's condition and action formulas.
+     */
+    ifThenFormula(args, hash, { format }) {
+      return formulaPart(app("atlasDevIfThen")?.(stepOf(args)), hash, format);
+    },
+    /** One dialect, the lead (part="lead") or a note of an ELSE step. */
+    elseFormula(args, hash, { format }) {
+      return formulaPart(app("atlasDevElse")?.(stepOf(args)), hash, format);
     },
     /** Excel table of a key list's first key, else of the step's source. */
     firstKeyTable(args) {
@@ -741,6 +786,14 @@
     sync_join(step) {
       app("atlasNormalizeJoinStep")?.(step);
     },
+    /** IF / THEN defaults: the source params and the action type. */
+    sync_if_then(step) {
+      app("atlasNormalizeIfThenStep")?.(step);
+    },
+    /** Copies the legacy step source and field into the source params. */
+    copy_step_source(step) {
+      app("atlasCopyStepSourceParams")?.(step);
+    },
     /** Rewrites a saved Union Sources step as a UNION Join. */
     union_sources_to_join(step) {
       app("atlasConvertUnionSourcesStep")?.(step);
@@ -781,21 +834,6 @@
       editor: (step) =>
         app("atlasDuplicateFieldsEditorHtml")?.(step.params || {}),
     },
-    if_then: {
-      normalize: call("atlasNormalizeIfThenStep"),
-      editor: call("atlasRenderIfThenTabbedBuilder"),
-      english: call("atlasIfThenSentence"),
-      formulas: call("atlasDevIfThen"),
-      qtestAction: call("atlasQtestThenAction"),
-    },
-    else: {
-      normalize: call("atlasCopyStepSourceParams"),
-      editor: call("atlasElseEditorHtml"),
-      english: call("elseActionPlain"),
-      notes: () => app("renderCatalogPhrase")?.("notes.else.default", {}),
-      formulas: call("atlasDevElse"),
-      qtestAction: call("atlasQtestThenAction"),
-    },
     filter_rows: legacyCondition(
       "atlasFilterRowsSentence",
       "atlasQtestFilterAction",
@@ -818,6 +856,8 @@
     create_column: "create_column",
     join: "join",
     union_sources: "union_sources",
+    if_then: "if_then",
+    else: "else",
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({

@@ -205,6 +205,45 @@ Internal features for the old Join markup (the builder does not offer them):
 - `sharesParam` lets the UNION Left and Right Source pickers show
   `left_source` and `right_source`, which `join_keys` also keeps.
 
+IF / THEN is version 2 and ELSE (legacy) version 2, both made of fields
+(issue #5013, engine version 1.9.0). The `sync_if_then` handler copies the
+source params and defaults the action type; `copy_step_source` copies them
+for ELSE. The `if_then` and `else` blocks stay as shims, tested with the
+corpus pinned to v1. They added:
+
+- The composite control `condition_group` (the condition tree,
+  `atlasConditionGroupEditorHtml`). It keeps `conditions_json` and the step's
+  `conditions` mirror in step on the real step, and gives a step without
+  conditions one blank condition (`atlasNormalizeConditionGroup`). The
+  runtime runs such composite normalizers after the field defaults, and a
+  shim runs them too.
+- The composite control `action` (the THEN or ELSE action form,
+  `atlasActionEditorHtml`), with the ordinary property `branch` (THEN or
+  ELSE). A definition with an action field gets its qTest outcome from it
+  (`atlasQtestThenAction`). Both composites list their features in
+  `controls.json` but cannot switch them off yet; like `math`, the builder
+  can place and show or hide them but not change their parts.
+- Helpers `conditionText`, `actionText` (with `branch="ELSE"`), `ifPrefix`,
+  `ifThenFormula` and `elseFormula`. The English is a template that joins the
+  condition and action phrases; the condition, action and formula text still
+  come from the app's condition and action code through these helpers. The
+  `step` template root now also has `conditions` and `action`, the saved
+  legacy conditions and free-text action those helpers read.
+- A formula set that writes only a lead (an ELSE folded into its IF's
+  formulas) gives only the lead, without an empty notes list.
+
+Internal features for the old IF / THEN and ELSE markup (the builder does not
+offer them):
+
+- `editorFrame.heading: false` leaves out the heading.
+- `editorFrame.tabs` and a field's `tab` put the conditions and the action on
+  the Condition Builder and Action Builder tabs. The tab last chosen stays
+  open across steps; the first opens until one is chosen. The markup is the
+  old one, which has no tab roles, so the builder does not offer tabs until
+  they get the tablist, tab and tabpanel roles and arrow-key navigation.
+- `className` on the ELSE frame adds `else-action-builder`, and its hint is
+  an ordinary `hint` field.
+
 ## Goal
 
 Every Logic Builder step type is one data record, not code spread across

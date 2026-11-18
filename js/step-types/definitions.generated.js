@@ -61,7 +61,7 @@
           type: "object",
           additionalProperties: false,
           description:
-            "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type.",
+            "Internal, never offered by the builder: the frame of an editor that came with ATLAS Align and did not use the standard one. Kept for Join, whose form has its own class and a heading that follows the join type, and for IF / THEN and ELSE, whose forms have no heading and, for IF / THEN, two tabs.",
           properties: {
             standalone: {
               const: true,
@@ -74,9 +74,25 @@
               description: "An extra class on the guided-builder frame.",
             },
             heading: {
-              $ref: "#/$defs/template",
+              oneOf: [{ $ref: "#/$defs/template" }, { const: false }],
               description:
-                "The heading, as a plain template, in place of the label.",
+                "The heading, as a plain template, in place of the label. false leaves the heading out.",
+            },
+            tabs: {
+              type: "array",
+              minItems: 2,
+              maxItems: 6,
+              description:
+                "Tabs that each show the fields whose `tab` names them; the first opens until one is chosen. Fields without a tab come before the tabs.",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                required: ["id", "label"],
+                properties: {
+                  id: { $ref: "#/$defs/identifier" },
+                  label: { $ref: "#/$defs/label" },
+                },
+              },
             },
           },
         },
@@ -424,6 +440,16 @@
               description: "Internal: an extra class on a hint.",
             },
             group: { $ref: "#/$defs/identifier" },
+            tab: {
+              $ref: "#/$defs/identifier",
+              description:
+                "Internal: the editorFrame tab that shows this field.",
+            },
+            branch: {
+              enum: ["THEN", "ELSE"],
+              description:
+                "The branch an action field writes: THEN (the default) or ELSE.",
+            },
             sharesParam: {
               type: "boolean",
               description:
@@ -631,7 +657,7 @@
     },
     controls: {
       $comment:
-        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame`, exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
+        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame` (its class, heading and tabs), exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
       paletteVersion: 1,
       commonProperties: [
         {
@@ -697,6 +723,13 @@
           name: "group",
           type: "identifier",
           description: "Groups related fields in the builder.",
+        },
+        {
+          name: "tab",
+          type: "identifier",
+          internal: true,
+          description:
+            "Internal, never offered by the builder. The editorFrame tab that shows the field. Kept for IF / THEN, whose editor shows the conditions and the action on two tabs.",
         },
         {
           name: "sharesParam",
@@ -886,9 +919,9 @@
           name: "condition_group",
           label: "Conditions",
           category: "composite",
-          status: "planned",
+          status: "available",
           description:
-            "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json.",
+            "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json and keeps the step's conditions list in step with it; a step without conditions gets one blank condition. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
           params: ["conditions_json"],
           properties: [],
           features: [
@@ -934,10 +967,41 @@
           name: "action",
           label: "Action",
           category: "composite",
-          status: "planned",
+          status: "available",
           description:
-            "What a THEN or ELSE branch does. Stores then_action_type and the parameters of the chosen action.",
-          params: ["then_action_type"],
+            "What a THEN or ELSE branch does: display or leave out the records, write text, a field, a calculation or part of a text value into a column, or describe the action in words. Stores then_action_type and the parameters of the chosen action, and gives the outcome qTest tests. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+          params: [
+            "then_action_type",
+            "then_action",
+            "then_text",
+            "then_output_column",
+            "then_output_source_file",
+            "then_output_source_alias",
+            "then_text_separator",
+            "then_display_mode",
+            "then_target_column",
+            "then_value_source_file",
+            "then_value_source_alias",
+            "then_value_field",
+            "then_math_json",
+            "then_rounding_mode",
+            "then_rounding_decimal_places",
+            "then_string_operation",
+            "then_string_position",
+            "then_string_source_file",
+            "then_string_source_alias",
+            "then_string_source_field",
+            "then_string_character_count",
+            "then_string_split_mode",
+            "then_string_split_delimiter",
+            "then_string_split_custom_delimiter",
+            "then_string_split_column_count",
+            "then_exclude_scope",
+            "then_exclude_key_source_file",
+            "then_exclude_key_source_alias",
+            "then_exclude_key_field",
+            "then_exclude_key_fields_json",
+          ],
           properties: ["branch"],
           features: [
             {
@@ -1599,19 +1663,44 @@
       {
         schemaVersion: 1,
         id: "else",
-        version: 1,
+        version: 2,
         label: "ELSE",
         category: "logic",
         description: "What happens when the IF conditions are not met.",
         status: "legacy",
         legacyType: "if",
         aliases: { step_type: [], type: [] },
-        migrations: [],
-        fields: [],
-        block: "else",
-        english: { default: "" },
-        formulas: { shape: "none" },
-        autoNotes: null,
+        migrations: [{ op: "handler", name: "copy_step_source" }],
+        editorFrame: {
+          standalone: true,
+          className: "else-action-builder",
+          heading: false,
+        },
+        fields: [
+          {
+            param: "else_hint",
+            control: "hint",
+            label: "Configure what happens when the IF conditions are not met.",
+          },
+          {
+            param: "then_action_type",
+            control: "action",
+            label: "ELSE action",
+            branch: "ELSE",
+          },
+        ],
+        english: { default: '{{actionText param step branch="ELSE"}}' },
+        formulas: {
+          shape: "frame",
+          lead: '{{elseFormula param step part="lead"}}',
+          default: {
+            excel: "{{elseFormula param step}}",
+            sql: "{{elseFormula param step}}",
+            python: "{{elseFormula param step}}",
+          },
+          notes: ["{{elseFormula param step note=0}}"],
+        },
+        autoNotes: { default: '{{phrase "notes.else.default"}}' },
         export: { scriptRole: "else" },
         textImport: { fromEnglish: false },
         validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
@@ -1833,7 +1922,7 @@
       {
         schemaVersion: 1,
         id: "if_then",
-        version: 1,
+        version: 2,
         label: "IF / THEN",
         category: "logic",
         order: 30,
@@ -1841,11 +1930,44 @@
         status: "active",
         legacyType: "if",
         aliases: { step_type: [], type: ["if", "compare"] },
-        migrations: [],
-        fields: [],
-        block: "if_then",
-        english: { default: "" },
-        formulas: { shape: "none" },
+        migrations: [{ op: "handler", name: "sync_if_then" }],
+        editorFrame: {
+          standalone: true,
+          className: "if-then-tabbed-builder",
+          heading: false,
+          tabs: [
+            { id: "conditions", label: "Condition Builder" },
+            { id: "actions", label: "Action Builder" },
+          ],
+        },
+        fields: [
+          {
+            param: "conditions_json",
+            control: "condition_group",
+            label: "Conditions",
+            tab: "conditions",
+          },
+          {
+            param: "then_action_type",
+            control: "action",
+            label: "THEN action",
+            branch: "THEN",
+            tab: "actions",
+          },
+        ],
+        english: {
+          default:
+            '{{#if (actionText param step)}}{{ifPrefix (phrase "analyst_logic.if_then.condition_group_with_action" condition_group=(conditionText param step) then_action=(actionText param step))}}{{else}}{{ifPrefix (phrase "analyst_logic.if_then.condition_group_without_action" condition_group=(conditionText param step))}}{{/if}}',
+        },
+        formulas: {
+          shape: "frame",
+          default: {
+            excel: "{{ifThenFormula param step}}",
+            sql: "{{ifThenFormula param step}}",
+            python: "{{ifThenFormula param step}}",
+          },
+          notes: ["{{ifThenFormula param step note=0}}"],
+        },
         autoNotes: null,
         export: { scriptRole: "condition" },
         textImport: { fromEnglish: false },

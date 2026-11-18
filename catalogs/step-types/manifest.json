@@ -10,9 +10,9 @@
     },
     {
       "id": "else",
-      "version": 1,
+      "version": 2,
       "file": "else.json",
-      "hash": "232a028f81d19ba30aa5a8b3626b6971bc7d7dd1b63857efca6799da7841bff7"
+      "hash": "dbd75b0bd04bd2e7a7773497985fb815f71b963531e3e88e7c20abee0aead059"
     },
     {
       "id": "filter_rows",
@@ -34,9 +34,9 @@
     },
     {
       "id": "if_then",
-      "version": 1,
+      "version": 2,
       "file": "if_then.json",
-      "hash": "4bc131e52be563f90128f3619ca52f3d77e21315f98c4a197dca2e33245648b5"
+      "hash": "7e9a1248c8a746963bebe2de69152077d4ee638765847bcd9ded9eaefe83a674"
     },
     {
       "id": "join",

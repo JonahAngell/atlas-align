@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "if_then",
-  "version": 1,
+  "version": 2,
   "label": "IF / THEN",
   "category": "logic",
   "order": 30,
@@ -12,14 +12,53 @@
     "step_type": [],
     "type": ["if", "compare"]
   },
-  "migrations": [],
-  "fields": [],
-  "block": "if_then",
+  "migrations": [
+    {
+      "op": "handler",
+      "name": "sync_if_then"
+    }
+  ],
+  "editorFrame": {
+    "standalone": true,
+    "className": "if-then-tabbed-builder",
+    "heading": false,
+    "tabs": [
+      {
+        "id": "conditions",
+        "label": "Condition Builder"
+      },
+      {
+        "id": "actions",
+        "label": "Action Builder"
+      }
+    ]
+  },
+  "fields": [
+    {
+      "param": "conditions_json",
+      "control": "condition_group",
+      "label": "Conditions",
+      "tab": "conditions"
+    },
+    {
+      "param": "then_action_type",
+      "control": "action",
+      "label": "THEN action",
+      "branch": "THEN",
+      "tab": "actions"
+    }
+  ],
   "english": {
-    "default": ""
+    "default": "{{#if (actionText param step)}}{{ifPrefix (phrase \"analyst_logic.if_then.condition_group_with_action\" condition_group=(conditionText param step) then_action=(actionText param step))}}{{else}}{{ifPrefix (phrase \"analyst_logic.if_then.condition_group_without_action\" condition_group=(conditionText param step))}}{{/if}}"
   },
   "formulas": {
-    "shape": "none"
+    "shape": "frame",
+    "default": {
+      "excel": "{{ifThenFormula param step}}",
+      "sql": "{{ifThenFormula param step}}",
+      "python": "{{ifThenFormula param step}}"
+    },
+    "notes": ["{{ifThenFormula param step note=0}}"]
   },
   "autoNotes": null,
   "export": {

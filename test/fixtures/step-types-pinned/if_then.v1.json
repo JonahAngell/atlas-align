@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "id": "if_then",
+  "version": 1,
+  "label": "IF / THEN",
+  "category": "logic",
+  "order": 30,
+  "description": "Add conditional IF / THEN logic.",
+  "status": "active",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": ["if", "compare"]
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "if_then",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "condition"
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "fieldRelationships"
+    },
+    {
+      "builtIn": "action"
+    },
+    {
+      "builtIn": "thenMath",
+      "when": {
+        "param": "then_action_type",
+        "equals": "set_column_calculation"
+      }
+    },
+    {
+      "builtIn": "thenStringTransform",
+      "when": {
+        "param": "then_action_type",
+        "equals": "set_column_string_transform"
+      }
+    }
+  ]
+}
