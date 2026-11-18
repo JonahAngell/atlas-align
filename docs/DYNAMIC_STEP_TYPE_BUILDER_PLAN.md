@@ -463,7 +463,7 @@ with these properties:
   `buildAuditPythonScript()` and `qtestSectionsFromLogicSteps()` on a one-step
   `state.audit`. `test/step-type-preview-scripts.test.js` loads only these
   files on a bare page and checks every step type renders, and that the
-  outputs equal the whole app's snapshots. Engine version 1.5.0 adds the list.
+  outputs equal the whole app's snapshots. Engine version 1.5.0 adds the list; 1.5.1 adds js/08-step-templates-validation.js, which declares renderValidationPanel.
 
 - **Drafts** live in `atlas_step_type_drafts`
   (`.launch/migrations/20261117130000_create_atlas_step_type_drafts.sql`):

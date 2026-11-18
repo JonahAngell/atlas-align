@@ -146,6 +146,19 @@ test("the preview scripts load on a bare page and fetch only the phrase catalog"
   );
 });
 
+test("the preview declares the page hooks its editor code calls", async () => {
+  // renderValidationPanel?.() still throws when the name was never declared,
+  // so the file that declares it has to be on the list.
+  const { context } = await loadPreview();
+  assert.equal(
+    vm.runInContext("typeof renderValidationPanel", context),
+    "function",
+  );
+  assert.doesNotThrow(() =>
+    vm.runInContext("renderValidationPanel()", context),
+  );
+});
+
 const STEP_OUTPUTS = [
   "english",
   "autoNotes",
