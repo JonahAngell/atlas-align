@@ -876,13 +876,31 @@
     return definition ? qtestActionWith(definition, step) : null;
   }
 
-  /** The outcome of the definition's action field, which qTest tests. */
+  /**
+   * The outcome qTest tests: the definition's action field, else its
+   * `export.qtest.action` (a message and column are plain templates).
+   */
   function qtestActionWith(definition, step) {
     const { definitions } = engine();
     const hasAction = definitions
       .fields(definition, definitions.subtypeOf(definition, step))
       .some((field) => field.control === "action");
-    return hasAction ? app("atlasQtestThenAction")?.(step) || null : null;
+    if (hasAction) return app("atlasQtestThenAction")?.(step) || null;
+    const action = definitions.exportFor(definition, step)?.qtest?.action;
+    if (!action?.kind) return null;
+    if (action.kind !== "display_text") return { kind: action.kind };
+    const part = (name, template) => {
+      try {
+        return text(render(template || "", step, definition, "plain"));
+      } catch (error) {
+        return renderFailure(definition, `qTest ${name}`, error);
+      }
+    };
+    return {
+      kind: action.kind,
+      message: part("message", action.message),
+      outputColumn: part("output column", action.outputColumn),
+    };
   }
 
   /**

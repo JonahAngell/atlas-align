@@ -470,6 +470,8 @@
 │   │   ├── step-types-pinned
 │   │   │   ├── create_column.v1.json
 │   │   │   ├── else.v1.json
+│   │   │   ├── filter_rows.v1.json
+│   │   │   ├── flag_records.v1.json
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
 │   │   │   ├── if_then.v1.json

@@ -16,15 +16,15 @@
     },
     {
       "id": "filter_rows",
-      "version": 1,
+      "version": 2,
       "file": "filter_rows.json",
-      "hash": "686675bdfe2059c3efb0731aa49eda7ca0b3ca76703b85df7b070a642677f096"
+      "hash": "be686263fd6150968630a3adfae73036972d9e78b693b8e40b51cb96238d2106"
     },
     {
       "id": "flag_records",
-      "version": 1,
+      "version": 2,
       "file": "flag_records.json",
-      "hash": "0f0c9fc431b396a0b582c3c847682c784f1601199c11126ccf9c314ff3d0d7ea"
+      "hash": "6ca49ef9b41d0a4282718e1c4baaa55e2aedef949f5f8705f3e69d3f4952aca8"
     },
     {
       "id": "format_field",

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "flag_records",
+  "version": 1,
+  "label": "Flag Records",
+  "category": "logic",
+  "description": "Flag matching records or hide them.",
+  "status": "legacy",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [],
+  "fields": [],
+  "block": "flag_records",
+  "english": {
+    "default": ""
+  },
+  "formulas": {
+    "shape": "none"
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "flag"
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "action"
+    }
+  ]
+}

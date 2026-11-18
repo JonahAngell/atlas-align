@@ -50,6 +50,8 @@ test("every bundled definition passes the palette check", () => {
     "union_sources.json",
     "if_then.json",
     "else.json",
+    "filter_rows.json",
+    "flag_records.json",
   ]) {
     const result = engine.definitions.validate(readJson(file), {
       ...options,
@@ -486,5 +488,89 @@ test("if then reads in analyst and developer logic", async () => {
   assert.equal(
     run("ATLASStepTypeRuntime.qtestAction(__step)", saved).kind,
     "display_text",
+  );
+});
+
+test("filter rows reads in analyst and developer logic and hides rows", async () => {
+  const { context, step, run } = await app();
+  const saved = step("filter_rows", {
+    source_file: "wd",
+    field_name: "Status",
+    operator: "is equal to",
+    compare_value: "Active\nLeave",
+    filter_action: "Exclude matching rows",
+  });
+  const html = context.ATLASStepTypeRuntime.renderEditor(saved);
+  assert.match(
+    html,
+    /^<div class="selected-source-only-builder"><div class="guided-builder"><h4>Filter Rows<\/h4><input type="hidden" data-param="source_file" value="wd">/,
+  );
+  assert.match(
+    html,
+    /<span class="atlas-choice-heading">Filter Action<\/span>/,
+  );
+  assert.match(
+    run("analystLogic(__step)", saved),
+    /^IF .*Status.* is equal to "Active" or "Leave", THEN Exclude matching rows\.$/,
+  );
+  assert.equal(
+    run("atlasDeveloperFormulas(__step)", saved).excel,
+    '=NOT(OR([@[Status]]="Active", [@[Status]]="Leave"))',
+  );
+  assert.deepEqual(
+    { ...run("ATLASStepTypeRuntime.qtestAction(__step)", saved) },
+    { kind: "do_not_display" },
+  );
+});
+
+test("flag records takes its qTest action from the export", async () => {
+  const { context, step, run } = await app();
+  const shown = step("flag_records", {
+    source_file: "wd",
+    field_name: "Email",
+    operator: "is blank",
+    message: "Missing email",
+  });
+  assert.deepEqual(
+    { ...run("ATLASStepTypeRuntime.qtestAction(__step)", shown) },
+    {
+      kind: "display_text",
+      message: "Missing email",
+      outputColumn: "Error Message",
+    },
+  );
+  // The output column shows the default column until one is named.
+  assert.match(
+    context.ATLASStepTypeRuntime.renderEditor(shown),
+    /<label>Output Column<button[^>]*data-param-name="output_column"[^>]*><span class="visual-picker-trigger-copy"><strong>Error Message<\/strong>/,
+  );
+  assert.match(
+    run("analystLogic(__step)", shown),
+    /THEN display text response "Missing email" in column "Error Message"\.$/,
+  );
+  const hidden = step("flag_records", { flag_action: "do_not_display" });
+  assert.deepEqual(
+    { ...run("ATLASStepTypeRuntime.qtestAction(__step)", hidden) },
+    { kind: "do_not_display" },
+  );
+  assert.match(
+    run("analystLogic(__step)", hidden),
+    /THEN do NOT display record\.$/,
+  );
+});
+
+test("a qTest action without an action field is checked as a template", () => {
+  const { engine, options } = loadStepTypeEngine();
+  const definition = readJson("flag_records.json");
+  definition.export.qtest.action.message = "{{nope param.message}}";
+  const result = engine.definitions.validate(definition, {
+    ...options,
+    schema,
+  });
+  assert.ok(
+    (result.errors || []).some(
+      (error) => error.path === "/export/qtest/action/message",
+    ),
+    JSON.stringify(result.errors),
   );
 });
