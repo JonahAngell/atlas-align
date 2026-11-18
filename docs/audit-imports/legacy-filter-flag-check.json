@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "id": "legacy-filter-flag-check",
+  "name": "Legacy Filter Rows and Flag Records check",
+  "purpose": "Import this audit to check the legacy Filter Rows and Flag Records steps in the app. New rules can't add these step types, so this audit gives you saved steps of each form: keep and exclude filters, a flag that displays text, and a flag that hides the record.",
+  "sources": [
+    {
+      "id": "source_wd",
+      "name": "WD_Workers",
+      "sourceFile": "WD_Workers",
+      "alias": "wd",
+      "color": "#b3f5ff",
+      "description": "Alias: wd"
+    }
+  ],
+  "fields": [
+    {
+      "id": "field_worker_id",
+      "name": "Worker ID",
+      "type": "Source",
+      "sourceFile": "WD_Workers",
+      "sourceAlias": "wd",
+      "rawFieldName": "Worker ID",
+      "vanityLabel": "Worker ID",
+      "description": "WD_Workers / Worker ID"
+    },
+    {
+      "id": "field_status",
+      "name": "Status",
+      "type": "Source",
+      "sourceFile": "WD_Workers",
+      "sourceAlias": "wd",
+      "rawFieldName": "Status",
+      "vanityLabel": "Status",
+      "description": "WD_Workers / Status"
+    },
+    {
+      "id": "field_email",
+      "name": "Email",
+      "type": "Source",
+      "sourceFile": "WD_Workers",
+      "sourceAlias": "wd",
+      "rawFieldName": "Email",
+      "vanityLabel": "Email",
+      "description": "WD_Workers / Email"
+    },
+    {
+      "id": "field_error_message",
+      "name": "Error Message",
+      "type": "Custom",
+      "sourceFile": "Calculated Field",
+      "sourceAlias": "Calculated Field",
+      "rawFieldName": "Error Message",
+      "vanityLabel": "Error Message",
+      "description": "Calculated Field / Error Message"
+    }
+  ],
+  "steps": [
+    {
+      "id": "ref-wd",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 1,
+      "title": "Reference WD_Workers",
+      "step_type": "reference_source",
+      "notes": "",
+      "conditions": [],
+      "params": { "source_file": "wd", "source_alias": "wd" }
+    },
+    {
+      "id": "filter-keep",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 2,
+      "title": "Filter Rows: keep active workers",
+      "step_type": "filter_rows",
+      "notes": "",
+      "conditions": [],
+      "params": {
+        "source_file": "wd",
+        "field_name": "Status",
+        "operator": "is equal to",
+        "compare_value": "Active",
+        "filter_action": "Keep matching rows"
+      }
+    },
+    {
+      "id": "filter-exclude",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 3,
+      "title": "Filter Rows: exclude inactive workers",
+      "step_type": "filter_rows",
+      "notes": "",
+      "conditions": [],
+      "params": {
+        "source_file": "wd",
+        "field_name": "Status",
+        "operator": "is not equal to",
+        "compare_value": "Active",
+        "filter_action": "Exclude matching rows"
+      }
+    },
+    {
+      "id": "flag-text",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 4,
+      "title": "Flag Records: display text for a missing email",
+      "step_type": "flag_records",
+      "notes": "",
+      "conditions": [],
+      "params": {
+        "source_file": "wd",
+        "field_name": "Email",
+        "operator": "is blank/null",
+        "flag_action": "display_text",
+        "message": "Missing email",
+        "output_column": "Error Message"
+      }
+    },
+    {
+      "id": "flag-hide",
+      "enabled": true,
+      "parentId": null,
+      "branchType": "root",
+      "sortOrder": 5,
+      "title": "Flag Records: hide terminated workers",
+      "step_type": "flag_records",
+      "notes": "",
+      "conditions": [],
+      "params": {
+        "source_file": "wd",
+        "field_name": "Status",
+        "operator": "is equal to",
+        "compare_value": "Terminated",
+        "flag_action": "do_not_display"
+      }
+    }
+  ]
+}
