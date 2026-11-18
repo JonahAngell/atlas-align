@@ -26,7 +26,69 @@ const SQL = Object.freeze({
   listStepTypes: sqlResource("list-step-types"),
   listRetiredStepTypes: sqlResource("list-retired-step-types"),
   retireDefinition: sqlResource("retire-definition"),
+  lockPublishedVersions: sqlResource("lock-published-versions"),
 });
+
+/**
+ * {param: {label, values}} for the subtype list and every choice field of a
+ * definition, nested option fields included. Saved steps store these values.
+ */
+export function stepTypeOptionValues(definition) {
+  const groups = new Map();
+  const add = (param, label, options) => {
+    if (!param || !Array.isArray(options) || !options.length) return;
+    const group = groups.get(param) || { label, values: new Set() };
+    options.forEach((option) => group.values.add(String(option?.value ?? "")));
+    groups.set(param, group);
+  };
+  const walk = (fields) =>
+    (Array.isArray(fields) ? fields : []).forEach((field) => {
+      add(
+        field?.param,
+        field?.label || field?.heading || field?.param,
+        field?.options,
+      );
+      (field?.options || []).forEach((option) => walk(option?.fields));
+    });
+  const subtypes = definition?.subtypes;
+  if (subtypes?.param) {
+    add(subtypes.param, subtypes.label || "Type", subtypes.options);
+    (subtypes.options || []).forEach((option) => walk(option?.fields));
+  }
+  walk(definition?.fields);
+  return groups;
+}
+
+/**
+ * Option values `from` offers that `to` lacks: [{param, label, value}]. A
+ * control `to` drops altogether counts too, since its saved values would
+ * lose their meaning the same way.
+ */
+export function removedStepTypeOptionValues(from, to) {
+  const after = stepTypeOptionValues(to);
+  const removed = [];
+  for (const [param, group] of stepTypeOptionValues(from))
+    for (const value of group.values)
+      if (!after.get(param)?.values.has(value))
+        removed.push({ param, label: group.label, value });
+  return removed;
+}
+
+/** Thrown when retiring a version would strand option values steps store. */
+export class StepTypeRetireBlockedError extends Error {
+  constructor({ typeId, version, fallbackVersion, removed }) {
+    const list = removed.map((item) => `"${item.value}" (${item.label})`);
+    super(
+      `${typeId} version ${version} can't be retired: editable audits would switch to version ${fallbackVersion}, which doesn't have ${list.join(", ")}, and saved steps may use them. Publish a new version that keeps those options instead.`,
+    );
+    this.name = "StepTypeRetireBlockedError";
+    this.code = "option_removed";
+    this.typeId = typeId;
+    this.version = version;
+    this.fallbackVersion = fallbackVersion;
+    this.removed = removed;
+  }
+}
 
 /** The author recorded on rows the server imports from the repository. */
 export const REPOSITORY_ACTOR = Object.freeze({
@@ -178,8 +240,15 @@ export async function listStepTypes(pool) {
  * Retires one published version (the Step Type Builder's Retire action) and
  * records a 'retired' event in the same transaction. Publications pinned to
  * it keep rendering with it; when no published version of the type is left
- * the type leaves the picker. Returns the retired row, or null when that
- * version is not published (missing, a draft, or already retired).
+ * the type leaves the picker, and its steps render with this version.
+ * Returns the retired row, or null when that version is not published
+ * (missing, a draft, or already retired).
+ *
+ * Saved steps don't record a version, so retiring the latest version while an
+ * older one is still published moves editable audits to that older version.
+ * When it lacks option values the retired one offers, steps that stored them
+ * would lose their meaning, so the retire is refused with a
+ * StepTypeRetireBlockedError (the same rule as removing an option on publish).
  */
 export async function retireStepTypeVersion(
   pool,
@@ -188,6 +257,24 @@ export async function retireStepTypeVersion(
   if (!actor?.userId || !actor?.username || !actor?.fullName)
     throw new Error("retireStepTypeVersion() needs the acting user");
   return withTransaction(pool, async (client) => {
+    const published = (
+      await client.query(SQL.lockPublishedVersions, [typeId])
+    ).rows.map((row) => ({ ...row, version: Number(row.version) }));
+    const target = published.find((row) => row.version === Number(version));
+    const fallback = published.find((row) => row.version < Number(version));
+    if (target && fallback && published[0] === target) {
+      const removed = removedStepTypeOptionValues(
+        target.definition,
+        fallback.definition,
+      );
+      if (removed.length)
+        throw new StepTypeRetireBlockedError({
+          typeId,
+          version: target.version,
+          fallbackVersion: fallback.version,
+          removed,
+        });
+    }
     const retired = (
       await client.query(SQL.retireDefinition, [
         typeId,

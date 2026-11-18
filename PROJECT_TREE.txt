@@ -395,6 +395,7 @@
 │   │   ├── insert-definition.sql
 │   │   ├── list-retired-step-types.sql
 │   │   ├── list-step-types.sql
+│   │   ├── lock-published-versions.sql
 │   │   ├── record-event.sql
 │   │   └── retire-definition.sql
 │   ├── user-impersonation
