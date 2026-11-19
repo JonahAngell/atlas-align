@@ -135,6 +135,25 @@ const ACTION_PROBE = {
   },
 };
 
+/** The selected action kind's value formula, as if_then v5 includes it. */
+const KIND_VALUE_PROBE = {
+  schemaVersion: 2,
+  id: "kind_value_probe",
+  version: 1,
+  label: "Kind Value Probe",
+  order: 92,
+  status: "active",
+  legacyType: "transform",
+  fields: [{ param: "then_action_type", control: "hidden" }],
+  partials: { value: '{{action "actionValue"}}' },
+  english: { default: "Kind value" },
+  formulas: { shape: "frame", default: {} },
+  export: {
+    scriptRole: "column",
+    qtest: { section: "D", testType: "Data Validation" },
+  },
+};
+
 /** A fresh app with the bundled definitions plus `extra` in its registry. */
 async function appWith(extra = []) {
   const context = await loadApp();
@@ -287,7 +306,13 @@ test("helpers: compare values become number or text literals by the app's rule",
   );
   // A cataloged number field compares as a number, without leading zeros.
   assert.deepEqual(
-    helper(context, "compareLiteral", [["040", "10"], condition("Pay")], {}, "sql"),
+    helper(
+      context,
+      "compareLiteral",
+      [["040", "10"], condition("Pay")],
+      {},
+      "sql",
+    ),
     ["40", "10"],
   );
   // A code in a text field stays text, unless the operator is < or >.
@@ -310,11 +335,23 @@ test("helpers: compare values become number or text literals by the app's rule",
     ['""'],
   );
   assert.deepEqual(
-    helper(context, "compare", ["[Pay]", "is less than", ["1", "2"]], {}, "sql"),
+    helper(
+      context,
+      "compare",
+      ["[Pay]", "is less than", ["1", "2"]],
+      {},
+      "sql",
+    ),
     ["[Pay] < 1", "[Pay] < 2"],
   );
   assert.equal(
-    helper(context, "compare", ['df["Pay"]', "is not equal to", "3"], {}, "python"),
+    helper(
+      context,
+      "compare",
+      ['df["Pay"]', "is not equal to", "3"],
+      {},
+      "python",
+    ),
     '(df["Pay"] != 3)',
   );
 });
@@ -322,11 +359,23 @@ test("helpers: compare values become number or text literals by the app's rule",
 test("helpers: textMatch, blankTest, runParameter and json", async () => {
   const context = await appWith();
   assert.equal(
-    helper(context, "textMatch", ["[Code]", "contains", ["50%_off"]], {}, "sql"),
+    helper(
+      context,
+      "textMatch",
+      ["[Code]", "contains", ["50%_off"]],
+      {},
+      "sql",
+    ),
     "[Code] LIKE '%50[%][_]off%'",
   );
   assert.equal(
-    helper(context, "textMatch", ["[@[Code]]", "does not start with", "AB"], {}, "excel"),
+    helper(
+      context,
+      "textMatch",
+      ["[@[Code]]", "does not start with", "AB"],
+      {},
+      "excel",
+    ),
     'NOT(LEFT([@[Code]], 2)="AB")',
   );
   assert.equal(
@@ -339,7 +388,10 @@ test("helpers: textMatch, blankTest, runParameter and json", async () => {
     ),
     'df.apply(lambda row: str(row["Code"]).lower().endswith(str(row["Other"]).lower()), axis=1)',
   );
-  assert.equal(helper(context, "textMatch", ["[Code]", "is equal to", "x"]), "");
+  assert.equal(
+    helper(context, "textMatch", ["[Code]", "is equal to", "x"]),
+    "",
+  );
   assert.equal(
     helper(context, "blankTest", ["[Status]", "is not blank"], {}, "sql"),
     "NULLIF(LTRIM(RTRIM([Status])), '') IS NOT NULL",
@@ -368,12 +420,7 @@ test("helpers: freeformOutcome reads a sentence as the qTest action does", async
   ];
   for (const sentence of sentences) {
     context.__sentence = sentence;
-    const expected = plain(
-      run(
-        context,
-        `qtestFreeformOutcome(__sentence)`,
-      ),
-    );
+    const expected = plain(run(context, `qtestFreeformOutcome(__sentence)`));
     assert.deepEqual(helper(context, "freeformOutcome", [sentence]), expected);
     assert.equal(
       helper(context, "freeformOutcome", [sentence], { part: "kind" }),
@@ -428,7 +475,13 @@ test("helpers: math helpers take list arguments and string transforms a prefix",
   context.__thenParams = thenParams;
   for (const format of DIALECTS)
     assert.equal(
-      helper(context, "stringTransformFormula", [thenParams], { prefix: "then_" }, format),
+      helper(
+        context,
+        "stringTransformFormula",
+        [thenParams],
+        { prefix: "then_" },
+        format,
+      ),
       plain(
         run(
           context,
@@ -452,7 +505,13 @@ test("helpers: math helpers take list arguments and string transforms a prefix",
     ),
   );
   assert.notEqual(
-    helper(context, "stringTransformFormula", [thenParams], { prefix: "then_" }, "sql"),
+    helper(
+      context,
+      "stringTransformFormula",
+      [thenParams],
+      { prefix: "then_" },
+      "sql",
+    ),
     helper(context, "stringTransformFormula", [thenParams], {}, "sql"),
   );
 });
@@ -509,7 +568,7 @@ test("matrix: the condition partial matches the if_then condition for every cond
   assert.deepEqual(differences.slice(0, 5), []);
 });
 
-test("matrix: the action helpers match the if_then action value for every action", async () => {
+test("matrix: the action helpers match the action kind's value for every action", async () => {
   const items = matrixSteps(["actions"]).filter(({ step }) =>
     ["set_column_calculation", "set_column_string_transform"].includes(
       step.params.then_action_type,
@@ -517,7 +576,7 @@ test("matrix: the action helpers match the if_then action value for every action
   );
   assert.ok(items.length >= 4, `only ${items.length} action steps`);
   for (const { document, step } of items) {
-    const context = await appWith([ACTION_PROBE]);
+    const context = await appWith([ACTION_PROBE, KIND_VALUE_PROBE]);
     useAudit(context, document);
     context.__probeId = step.id;
     const result = plain(
@@ -529,7 +588,7 @@ test("matrix: the action helpers match the if_then action value for every action
           const formulas = ATLASStepTypeRuntime.formulas(probe);
           const expected = {};
           ["excel", "sql", "python"].forEach((dialect) => {
-            expected[dialect] = ATLASStepTypeRuntime.partial("if_then", "actionValue", step, dialect);
+            expected[dialect] = ATLASStepTypeRuntime.partial("kind_value_probe", "value", step, dialect);
           });
           const english = ATLASStepTypeRuntime.english(probe);
           const config = atlasStringTransformConfig(step.params, "then_");
@@ -545,7 +604,11 @@ test("matrix: the action helpers match the if_then action value for every action
       ),
     );
     for (const dialect of DIALECTS)
-      assert.equal(result.formulas[dialect], result.expected[dialect], `${document.id} ${dialect}`);
+      assert.equal(
+        result.formulas[dialect],
+        result.expected[dialect],
+        `${document.id} ${dialect}`,
+      );
     assert.equal(result.english, result.phrase, document.id);
   }
 });
@@ -628,7 +691,11 @@ const SHAPE_SAMPLE = (sql, extra = {}) => ({
     qtest: { section: "D", testType: "Data Validation" },
   },
   tests: [
-    { name: "one", params: { field_name: "Status" }, expect: { english: "Sample." } },
+    {
+      name: "one",
+      params: { field_name: "Status" },
+      expect: { english: "Sample." },
+    },
     { name: "two", params: {}, expect: { english: "Sample." } },
   ],
   ...extra,
@@ -692,7 +759,9 @@ test("export shape: the runtime renders a definition's tests with its formulas",
   assert.equal(warnings.length, 2);
   context.__definition = SHAPE_SAMPLE("WHERE [{{param.field_name}}] = 'A'");
   assert.deepEqual(
-    plain(run(context, "ATLASStepTypeRuntime.exportShapeWarnings(__definition)")),
+    plain(
+      run(context, "ATLASStepTypeRuntime.exportShapeWarnings(__definition)"),
+    ),
     [],
   );
   context.__definition = SHAPE_SAMPLE("[x]", {
@@ -703,7 +772,9 @@ test("export shape: the runtime renders a definition's tests with its formulas",
     },
   });
   assert.deepEqual(
-    plain(run(context, "ATLASStepTypeRuntime.exportShapeWarnings(__definition)")),
+    plain(
+      run(context, "ATLASStepTypeRuntime.exportShapeWarnings(__definition)"),
+    ),
     [],
   );
 });

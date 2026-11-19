@@ -20,6 +20,7 @@
       "label": "Calculation"
     }
   ],
+  "complete": ["then_target_column", "then_value_field"],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_set_column_calculation\" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}",
     "elseEnglish": "{{#if (present param.then_action)}}{{phrase \"analyst_logic.else.freeform\" action=param.then_action}}{{else}}{{phrase \"analyst_logic.else.default\"}}{{/if}}",

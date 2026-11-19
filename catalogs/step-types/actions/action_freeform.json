@@ -22,6 +22,7 @@
       "placeholder": "e.g., display records in the audit"
     }
   ],
+  "complete": ["then_action"],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_freeform\" action=(default param.then_action step.action)}}",
     "elseEnglish": "{{#if (present param.then_action)}}{{phrase \"analyst_logic.else.freeform\" action=param.then_action}}{{else}}{{phrase \"analyst_logic.else.default\"}}{{/if}}",

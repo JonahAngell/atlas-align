@@ -138,30 +138,16 @@
     return array(step.conditions);
   }
 
+  /**
+   * Whether a step has an action of its own: free text in step.action, or
+   * every param its action kind lists in `complete`.
+   */
   function meaningfulAction(step) {
     const item = object(step);
     const params = object(item.params);
     const type = string(params.then_action_type || params.action_type).trim();
     if (string(item.action).trim()) return true;
-    if (type === "do_not_display" || type === "display") return true;
-    if (type === "display_text")
-      return !blank(params.then_text) && !blank(params.then_output_column);
-    if (type === "set_column_value")
-      return (
-        !blank(params.then_target_column) && !blank(params.then_value_field)
-      );
-    if (type === "set_column_calculation")
-      return (
-        !blank(params.then_target_column) && !blank(params.then_value_field)
-      );
-    if (type === "set_column_string_transform")
-      return (
-        !blank(params.then_target_column) &&
-        !blank(params.then_string_source_field) &&
-        !blank(params.then_string_operation)
-      );
-    if (type === "freeform") return !blank(params.then_action);
-    return false;
+    return global.ATLASStepTypeRuntime?.actionComplete?.(type, params) === true;
   }
 
   function stepNeedsAction(step) {

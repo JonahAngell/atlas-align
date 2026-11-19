@@ -21,6 +21,7 @@ function checkRule() {
   definition.label = "Check Rule";
   definition.order = 35;
   delete definition.aliases;
+  delete definition.referenceChild; // only IF / THEN is offered there
   return definition;
 }
 

@@ -1819,7 +1819,7 @@
       {
         schemaVersion: 2,
         id: "else",
-        version: 4,
+        version: 5,
         label: "ELSE",
         category: "logic",
         description: "What happens when the IF conditions are not met.",
@@ -1862,16 +1862,13 @@
           fileUtility: { compiler: "else" },
           qtest: {
             action: {
-              kind: '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text" "do_not_display"}}{{default param.then_action_type "freeform"}}{{/case}}{{#case "set_column_value" "set_column_calculation" "set_column_string_transform"}}set_column{{/case}}{{#default}}{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}{{/default}}{{/switch}}',
-              message:
-                '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{param.then_text}}{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="message"}}{{/if}}',
-              outputColumn:
-                '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="outputColumn"}}{{/if}}',
-              targetColumn: "{{param.then_target_column}}",
-              valueField: "{{param.then_value_field}}",
-              calculated:
-                '{{ne (default param.then_action_type "freeform") "set_column_value"}}',
-              text: '{{freeformOutcome (trim (default param.then_action step.action)) part="text"}}',
+              kind: '{{action "qtest" part="kind"}}',
+              message: '{{action "qtest" part="message"}}',
+              outputColumn: '{{action "qtest" part="outputColumn"}}',
+              targetColumn: '{{action "qtest" part="targetColumn"}}',
+              valueField: '{{action "qtest" part="valueField"}}',
+              calculated: '{{action "qtest" part="calculated"}}',
+              text: '{{action "qtest" part="text"}}',
             },
           },
         },
@@ -1897,38 +1894,9 @@
             '{{#if (ne (replace this.operator "not" "") this.operator)}}{{phrase "analyst_logic.blank_comparison.is_not_blank"}}{{else}}{{phrase "analyst_logic.blank_comparison.is_blank"}}{{/if}}',
           conditionValue:
             '{{#if (eq this.valueMode "blank")}}{{phrase "analyst_logic.blank_comparison.value"}}{{else if (eq this.valueMode "field")}}{{trim (mathPhrase (default this.compareSourceFile this.sourceFile) (default this.compareSourceAlias this.sourceAlias) this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) complete=true)}}{{else if (eq this.valueMode "expression")}}{{trim this.expression}}{{else if (eq this.compareParameter "runDate")}}{{phrase "analyst_logic.run_parameter.runDate"}}{{else}}{{valueList (default this.compareValues this.compareValue this.value)}}{{/if}}',
-          separatorClause:
-            '{{#if (ne (textSeparator param) "||")}}{{phrase "analyst_logic.if_then.then_display_text_separator" separator=(concat "\\"" (replace (textSeparator param) "\\"" "\\\\\\"") "\\"")}}{{/if}}',
-          excludeKeyColumn:
-            '{{#if (eq param.then_exclude_scope "key")}}{{tableColumn (default param.then_exclude_key_source_file this.sourceFile param.source_file) (default param.then_exclude_key_source_alias this.sourceAlias param.source_alias) (default param.then_exclude_key_field this.fieldName)}}{{/if}}',
-          actionTarget:
-            '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text"}}{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}{{/case}}{{#case "set_column_value" "set_column_calculation"}}{{default param.then_target_column (placeholder "target_column" "[target column]")}}{{/case}}{{#case "set_column_string_transform"}}{{default (stringTransformTarget param prefix="then_") (placeholder "destination_column" "[destination column]")}}{{/case}}{{/switch}}',
-          actionValue: {
-            default:
-              '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text"}}{{literal param.then_text}}{{/case}}{{#case "set_column_value"}}{{field (default param.then_value_source_file param.source_file) param.then_value_field alias=param.then_value_source_alias}}{{/case}}{{#case "set_column_calculation"}}{{mathFormula (default param.then_value_source_file param.source_file) param.then_value_source_alias param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places}}{{/case}}{{#case "set_column_string_transform"}}{{stringTransformFormula param prefix="then_"}}{{/case}}{{/switch}}',
-          },
-          actionExpression: {
-            excel:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}IF([@[{{excelColumn (include "actionTarget")}}]]="", {{> actionValue}}, [@[{{excelColumn (include "actionTarget")}}]]&{{literal (textSeparator param)}}&{{> actionValue}}){{else}}{{> actionValue}}{{/if}}',
-            sql: '{{#if (eq (default param.then_action_type "freeform") "display_text")}}CONCAT_WS({{literal (textSeparator param)}}, NULLIF({{sqlName (include "actionTarget")}}, \'\'), {{> actionValue}}){{else}}{{> actionValue}}{{/if}}',
-          },
-          unmatched: {
-            excel:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}[@[{{excelColumn (include "actionTarget")}}]]{{else}}""{{/if}}',
-            sql: '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{sqlName (include "actionTarget")}}{{/if}}',
-          },
-          matchedLines: {
-            python:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}{{else}}df.loc[mask, {{quote (include "actionTarget")}}] = {{> actionValue}}{{/if}}',
-          },
-          unmatchedLines: {
-            python:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[~mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[~mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}{{else}}df.loc[~mask, {{quote (include "actionTarget")}}] = {{> actionValue}}{{/if}}',
-          },
           condition:
             '{{conditionTree ifStep.storedConditions leaf="leaf" style="precedence"}}',
-          elseAction:
-            '{{#switch (default param.then_action_type "freeform")}}{{#case "set_column_string_transform"}}{{phrase "analyst_logic.else.string_transform" phrase=(stringTransformPhrase param prefix="then_" context="if_then")}}{{/case}}{{#case "display_text"}}{{phrase "analyst_logic.else.display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}{{/case}}{{#case "set_column_value"}}{{phrase "analyst_logic.else.set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}{{/case}}{{#case "display"}}{{phrase "analyst_logic.else.display"}}{{/case}}{{#case "do_not_display"}}{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.else.do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.else.do_not_display"}}{{/if}}{{/case}}{{#default}}{{#if (present param.then_action)}}{{phrase "analyst_logic.else.freeform" action=param.then_action}}{{else}}{{phrase "analyst_logic.else.default"}}{{/if}}{{/default}}{{/switch}}',
+          elseAction: '{{action "elseEnglish"}}',
           filter: {
             excel:
               '{{#if (eq (default param.then_action_type "freeform") "do_not_display")}}={{> condition}}{{else}}={{negate (include "condition")}}{{/if}}',
@@ -1938,9 +1906,9 @@
           },
           valueFormula: {
             excel:
-              '=IF({{negate (include "condition")}}, {{> actionExpression}}, {{> unmatched}})',
-            sql: 'CASE WHEN {{negate (include "condition")}} THEN {{> actionExpression}}{{#if (eq (default param.then_action_type "freeform") "display_text")}} ELSE {{> unmatched}}{{/if}} END AS {{sqlName (include "actionTarget")}}',
-            python: "mask = {{> condition}}\n{{> unmatchedLines}}",
+              '=IF({{negate (include "condition")}}, {{action "actionExpression"}}, {{action "unmatched"}})',
+            sql: 'CASE WHEN {{negate (include "condition")}} THEN {{action "actionExpression"}}{{#if (eq (default param.then_action_type "freeform") "display_text")}} ELSE {{action "unmatched"}}{{/if}} END AS {{sqlName (action "actionTarget")}}',
+            python: 'mask = {{> condition}}\n{{action "unmatchedLines"}}',
           },
           freeformFormula: {
             excel: '={{negate (include "condition")}}',
@@ -1949,15 +1917,15 @@
           },
           formula: {
             excel:
-              '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (in (default ifStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" ifStep) (include "actionTarget")))))}}{{#if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}{{/if}}',
-            sql: '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (in (default ifStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" ifStep) (include "actionTarget")))))}}{{#if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}{{/if}}',
+              '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))))}}{{action "elseFormula"}}{{/if}}',
+            sql: '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))))}}{{action "elseFormula"}}{{/if}}',
             python:
-              '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (in (default ifStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" ifStep) (include "actionTarget")))))}}{{#if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}{{/if}}',
+              '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))))}}{{action "elseFormula"}}{{/if}}',
           },
           formulaLead:
-            '{{#if (and (eq ifStep.step_type "if_then") (in (default ifStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" ifStep) (include "actionTarget")))}}{{phrase "developer_logic.else_included" step_number=(default ifStep.stepNumber "?")}}{{else}}{{phrase "developer_logic.else_step" step_number=(default ifStep.stepNumber "?")}}{{/if}}',
+            '{{#if (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))}}{{phrase "developer_logic.else_included" step_number=(default ifStep.stepNumber "?")}}{{else}}{{phrase "developer_logic.else_step" step_number=(default ifStep.stepNumber "?")}}{{/if}}',
           formulaNote:
-            '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (in (default ifStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" ifStep) (include "actionTarget")))))}}{{#if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{#if (eq (default param.then_action_type "freeform") "display")}}{{phrase "developer_logic.display_notes.else_display"}}{{else}}{{phrase "developer_logic.display_notes.else_do_not_display"}}{{/if}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}{{/if}}{{else if (present (trim param.then_action))}}{{phrase "developer_logic.notes.freeform_action" action=(trim param.then_action)}}{{/if}}{{/if}}',
+            '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))))}}{{action "elseFormulaNote"}}{{/if}}',
         },
         validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
       },
@@ -2392,7 +2360,7 @@
       {
         schemaVersion: 2,
         id: "if_then",
-        version: 4,
+        version: 5,
         label: "IF / THEN",
         category: "logic",
         order: 30,
@@ -2400,6 +2368,9 @@
         status: "active",
         legacyType: "if",
         aliases: { step_type: [], type: ["if", "compare"] },
+        branches: ["then", "else"],
+        inverse: true,
+        referenceChild: true,
         migrations: [{ op: "handler", name: "sync_if_then" }],
         editorFrame: {
           standalone: true,
@@ -2432,11 +2403,11 @@
         formulas: {
           shape: "frame",
           default: {
-            excel: "{{> formula}}",
-            sql: "{{> formula}}",
-            python: "{{> formula}}",
+            excel: '{{action "formula"}}',
+            sql: '{{action "formula"}}',
+            python: '{{action "formula"}}',
           },
-          notes: ["{{> formulaNote}}"],
+          notes: ['{{action "formulaNote"}}'],
         },
         autoNotes: null,
         export: {
@@ -2444,16 +2415,13 @@
           fileUtility: { compiler: "if_then" },
           qtest: {
             action: {
-              kind: '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text" "do_not_display"}}{{default param.then_action_type "freeform"}}{{/case}}{{#case "set_column_value" "set_column_calculation" "set_column_string_transform"}}set_column{{/case}}{{#default}}{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}{{/default}}{{/switch}}',
-              message:
-                '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{param.then_text}}{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="message"}}{{/if}}',
-              outputColumn:
-                '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="outputColumn"}}{{/if}}',
-              targetColumn: "{{param.then_target_column}}",
-              valueField: "{{param.then_value_field}}",
-              calculated:
-                '{{ne (default param.then_action_type "freeform") "set_column_value"}}',
-              text: '{{freeformOutcome (trim (default param.then_action step.action)) part="text"}}',
+              kind: '{{action "qtest" part="kind"}}',
+              message: '{{action "qtest" part="message"}}',
+              outputColumn: '{{action "qtest" part="outputColumn"}}',
+              targetColumn: '{{action "qtest" part="targetColumn"}}',
+              valueField: '{{action "qtest" part="valueField"}}',
+              calculated: '{{action "qtest" part="calculated"}}',
+              text: '{{action "qtest" part="text"}}',
             },
           },
         },
@@ -2479,53 +2447,11 @@
             '{{#if (ne (replace this.operator "not" "") this.operator)}}{{phrase "analyst_logic.blank_comparison.is_not_blank"}}{{else}}{{phrase "analyst_logic.blank_comparison.is_blank"}}{{/if}}',
           conditionValue:
             '{{#if (eq this.valueMode "blank")}}{{phrase "analyst_logic.blank_comparison.value"}}{{else if (eq this.valueMode "field")}}{{trim (mathPhrase (default this.compareSourceFile this.sourceFile) (default this.compareSourceAlias this.sourceAlias) this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) complete=true)}}{{else if (eq this.valueMode "expression")}}{{trim this.expression}}{{else if (eq this.compareParameter "runDate")}}{{phrase "analyst_logic.run_parameter.runDate"}}{{else}}{{valueList (default this.compareValues this.compareValue this.value)}}{{/if}}',
-          separatorClause:
-            '{{#if (ne (textSeparator param) "||")}}{{phrase "analyst_logic.if_then.then_display_text_separator" separator=(concat "\\"" (replace (textSeparator param) "\\"" "\\\\\\"") "\\"")}}{{/if}}',
-          excludeKeyColumn:
-            '{{#if (eq param.then_exclude_scope "key")}}{{tableColumn (default param.then_exclude_key_source_file this.sourceFile param.source_file) (default param.then_exclude_key_source_alias this.sourceAlias param.source_alias) (default param.then_exclude_key_field this.fieldName)}}{{/if}}',
-          actionTarget:
-            '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text"}}{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}{{/case}}{{#case "set_column_value" "set_column_calculation"}}{{default param.then_target_column (placeholder "target_column" "[target column]")}}{{/case}}{{#case "set_column_string_transform"}}{{default (stringTransformTarget param prefix="then_") (placeholder "destination_column" "[destination column]")}}{{/case}}{{/switch}}',
-          actionValue: {
-            default:
-              '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text"}}{{literal param.then_text}}{{/case}}{{#case "set_column_value"}}{{field (default param.then_value_source_file param.source_file) param.then_value_field alias=param.then_value_source_alias}}{{/case}}{{#case "set_column_calculation"}}{{mathFormula (default param.then_value_source_file param.source_file) param.then_value_source_alias param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places}}{{/case}}{{#case "set_column_string_transform"}}{{stringTransformFormula param prefix="then_"}}{{/case}}{{/switch}}',
-          },
-          actionExpression: {
-            excel:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}IF([@[{{excelColumn (include "actionTarget")}}]]="", {{> actionValue}}, [@[{{excelColumn (include "actionTarget")}}]]&{{literal (textSeparator param)}}&{{> actionValue}}){{else}}{{> actionValue}}{{/if}}',
-            sql: '{{#if (eq (default param.then_action_type "freeform") "display_text")}}CONCAT_WS({{literal (textSeparator param)}}, NULLIF({{sqlName (include "actionTarget")}}, \'\'), {{> actionValue}}){{else}}{{> actionValue}}{{/if}}',
-          },
-          unmatched: {
-            excel:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}[@[{{excelColumn (include "actionTarget")}}]]{{else}}""{{/if}}',
-            sql: '{{#if (eq (default param.then_action_type "freeform") "display_text")}}{{sqlName (include "actionTarget")}}{{/if}}',
-          },
-          matchedLines: {
-            python:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}{{else}}df.loc[mask, {{quote (include "actionTarget")}}] = {{> actionValue}}{{/if}}',
-          },
-          unmatchedLines: {
-            python:
-              '{{#if (eq (default param.then_action_type "freeform") "display_text")}}df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[~mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[~mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}{{else}}df.loc[~mask, {{quote (include "actionTarget")}}] = {{> actionValue}}{{/if}}',
-          },
           condition:
             '{{conditionTree storedConditions leaf="leaf" style="precedence"}}',
           conditionText:
             '{{ifPrefix (conditionTree storedConditions leaf="leaf" style="bullets")}}',
-          thenAction:
-            '{{#switch (default param.then_action_type "freeform")}}{{#case "set_column_string_transform"}}{{stringTransformPhrase param prefix="then_" context="if_then"}}{{/case}}{{#case "set_column_calculation"}}{{phrase "analyst_logic.if_then.then_set_column_calculation" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}{{/case}}{{#case "display_text"}}{{phrase "analyst_logic.if_then.then_display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}{{/case}}{{#case "set_column_value"}}{{phrase "analyst_logic.if_then.then_set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}{{/case}}{{#case "display"}}{{phrase "analyst_logic.if_then.then_display"}}{{/case}}{{#case "do_not_display"}}{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.if_then.then_do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.if_then.then_do_not_display"}}{{/if}}{{/case}}{{#default}}{{phrase "analyst_logic.if_then.then_freeform" action=(default param.then_action step.action)}}{{/default}}{{/switch}}',
-          excludeKeyName:
-            "{{trim (default param.then_exclude_key_field this.fieldName)}}",
-          excludeKey: {
-            default:
-              "{{field (default param.then_exclude_key_source_file this.sourceFile) (default param.then_exclude_key_field this.fieldName) alias=(default param.then_exclude_key_source_alias this.sourceAlias)}}",
-          },
-          groupExclude: {
-            excel:
-              'Matches: ={{> condition}}\nKeep: =COUNTIFS({{replace (include "excludeKey") "[@[" "[["}}, {{> excludeKey}}, [[Matches]], TRUE)=0',
-            sql: "WHERE {{> excludeKey}} NOT IN (SELECT {{> excludeKey}} WHERE {{> condition}})",
-            python:
-              "mask = {{> condition}}\nexcluded_keys = {{> excludeKey}}[mask].unique()\ndf = df[~{{> excludeKey}}.isin(excluded_keys)]",
-          },
+          thenAction: '{{action "english"}}',
           filter: {
             excel:
               '{{#if (eq (default param.then_action_type "freeform") "display")}}={{> condition}}{{else}}={{negate (include "condition")}}{{/if}}',
@@ -2535,25 +2461,16 @@
           },
           valueFormula: {
             excel:
-              '=IF({{> condition}}, {{> actionExpression}}, {{#if (and (in (default elseStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" elseStep) (include "actionTarget")))}}{{include "actionExpression" elseStep}}{{else}}{{> unmatched}}{{/if}})',
-            sql: 'CASE WHEN {{> condition}} THEN {{> actionExpression}}{{#if (and (in (default elseStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" elseStep) (include "actionTarget")))}} ELSE {{include "actionExpression" elseStep}}{{else if (eq (default param.then_action_type "freeform") "display_text")}} ELSE {{> unmatched}}{{/if}} END AS {{sqlName (include "actionTarget")}}',
+              '=IF({{> condition}}, {{action "actionExpression"}}, {{#if (and (eq (action "shape" elseStep) "value") (eq (action "actionTarget" elseStep) (action "actionTarget")))}}{{action "actionExpression" elseStep}}{{else}}{{action "unmatched"}}{{/if}})',
+            sql: 'CASE WHEN {{> condition}} THEN {{action "actionExpression"}}{{#if (and (eq (action "shape" elseStep) "value") (eq (action "actionTarget" elseStep) (action "actionTarget")))}} ELSE {{action "actionExpression" elseStep}}{{else if (eq (default param.then_action_type "freeform") "display_text")}} ELSE {{action "unmatched"}}{{/if}} END AS {{sqlName (action "actionTarget")}}',
             python:
-              'mask = {{> condition}}\n{{> matchedLines}}{{#if (and (in (default elseStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" elseStep) (include "actionTarget")))}}\n{{include "unmatchedLines" elseStep}}{{/if}}',
+              'mask = {{> condition}}\n{{action "matchedLines"}}{{#if (and (eq (action "shape" elseStep) "value") (eq (action "actionTarget" elseStep) (action "actionTarget")))}}\n{{action "unmatchedLines" elseStep}}{{/if}}',
           },
           freeformFormula: {
             excel: "={{> condition}}",
             sql: "CASE WHEN {{> condition}} THEN 1 ELSE 0 END",
             python: "mask = {{> condition}}",
           },
-          formula: {
-            excel:
-              '{{#if (and (eq (default param.then_action_type "freeform") "do_not_display") (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{> groupExclude (first (json param.then_exclude_key_fields_json))}}{{else if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}',
-            sql: '{{#if (and (eq (default param.then_action_type "freeform") "do_not_display") (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{> groupExclude (first (json param.then_exclude_key_fields_json))}}{{else if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}',
-            python:
-              '{{#if (and (eq (default param.then_action_type "freeform") "do_not_display") (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{> groupExclude (first (json param.then_exclude_key_fields_json))}}{{else if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{> filter}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{> valueFormula}}{{else}}{{> freeformFormula}}{{/if}}',
-          },
-          formulaNote:
-            '{{#if (and (eq (default param.then_action_type "freeform") "do_not_display") (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{phrase "developer_logic.display_notes.do_not_display_key" key_column=(include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))}}{{else if (in (default param.then_action_type "freeform") "display" "do_not_display")}}{{#if (eq (default param.then_action_type "freeform") "display")}}{{phrase "developer_logic.display_notes.display"}}{{else}}{{phrase "developer_logic.display_notes.do_not_display"}}{{/if}}{{else if (in (default param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform")}}{{#if (or (eq (default param.then_action_type "freeform") "display_text") (and (and (in (default elseStep.param.then_action_type "freeform") "display_text" "set_column_value" "set_column_calculation" "set_column_string_transform") (eq (include "actionTarget" elseStep) (include "actionTarget"))) (eq elseStep.param.then_action_type "display_text")))}}{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}{{/if}}{{else if (present (trim (default param.then_action step.action)))}}{{phrase "developer_logic.notes.freeform_action" action=(trim (default param.then_action step.action))}}{{else}}{{phrase "developer_logic.notes.matching_rows"}}{{/if}}',
         },
         validation: [
           { builtIn: "conditions" },
@@ -3289,6 +3206,7 @@
             label: "Matching records",
           },
         ],
+        complete: [],
         partials: {
           english: '{{phrase "analyst_logic.if_then.then_display"}}',
           elseEnglish: '{{phrase "analyst_logic.else.display"}}',
@@ -3338,6 +3256,7 @@
             label: "Message",
           },
         ],
+        complete: ["then_text", "then_output_column"],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}',
@@ -3404,6 +3323,7 @@
             label: "Matching records",
           },
         ],
+        complete: [],
         partials: {
           english:
             '{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.if_then.then_do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.if_then.then_do_not_display"}}{{/if}}',
@@ -3463,6 +3383,7 @@
             placeholder: "e.g., display records in the audit",
           },
         ],
+        complete: ["then_action"],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_freeform" action=(default param.then_action step.action)}}',
@@ -3515,6 +3436,7 @@
             label: "Calculation",
           },
         ],
+        complete: ["then_target_column", "then_value_field"],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_set_column_calculation" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}',
@@ -3580,6 +3502,11 @@
             label: "Operation",
           },
         ],
+        complete: [
+          "then_target_column",
+          "then_string_source_field",
+          "then_string_operation",
+        ],
         partials: {
           english:
             '{{stringTransformPhrase param prefix="then_" context="if_then"}}',
@@ -3643,6 +3570,7 @@
             label: "Value Field",
           },
         ],
+        complete: ["then_target_column", "then_value_field"],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}',

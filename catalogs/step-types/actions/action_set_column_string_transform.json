@@ -24,6 +24,11 @@
       "label": "Operation"
     }
   ],
+  "complete": [
+    "then_target_column",
+    "then_string_source_field",
+    "then_string_operation"
+  ],
   "partials": {
     "english": "{{stringTransformPhrase param prefix=\"then_\" context=\"if_then\"}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.string_transform\" phrase=(stringTransformPhrase param prefix=\"then_\" context=\"if_then\")}}",

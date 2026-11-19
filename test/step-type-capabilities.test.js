@@ -35,6 +35,7 @@ function checkRule() {
   definition.id = "check_rule";
   definition.label = "Check Rule";
   delete definition.aliases; // "if" and "compare" belong to if_then
+  delete definition.referenceChild;
   definition.branches = ["then", "else"];
   definition.inverse = true;
   return definition;
