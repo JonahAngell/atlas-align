@@ -745,10 +745,19 @@ rate-limited, and actions are logged without definition bodies or tokens.
 ## Phases
 
 Each phase is its own branch and merge request, with no visible change to
-ATLAS behavior until phase 7. Phase 0 used issue 5000. Later branches take the
+ATLAS behavior until phase 7. Phase 0 used issue 5000. Later work takes the
 next issue number in order, starting at 5001 (decision D), for example
-`feature-5001-step-types-engine`. A phase that needs more than one branch uses
-one number per branch. Phase 7 is built in the builder's own repository
+`feature-5001-step-types-engine`. A phase that needs more than one piece of
+work uses one issue number per piece.
+
+From 5042 on, each piece is one commit, not one branch. The pieces a phase has
+in one repository land together: one branch named after the first issue, one
+pull request that closes every issue in it, and one engine version raise for
+the whole pull request. ATLAS Align merges by rebase, so each commit still
+lands on `main` on its own. A piece gets its own pull request only when it
+needs another repository's merged change first (the contract pairs, ATLAS
+Align before File Utility and the builder). Decided 2026-11-19, after #71 to
+#73. Phase 7 is built in the builder's own repository
 (decision C), so its branches and merge requests live there.
 
 | Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Done when                                                                                                                                                              |
@@ -1203,6 +1212,11 @@ compiling through `legacyStepTypes`.
 5038 goes first. 5039 and 5043 change the contract and merge as a pair,
 ATLAS Align first. 5040 needs 5039. 5042 needs 5038 and 5041. 5044 goes last.
 
+5038 to 5041 merged one pull request each (File Utility #33, ATLAS Align #71
+to #73). Under the batching rule in "Phases", 5042 and 5043 land as one File
+Utility pull request on `feature-5042-compile-from-definitions`, one commit
+each, and 5044 is one builder pull request.
+
 ### Risks
 
 - **Database code off `main`.** Until 5038 lands, File Utility `main` can't
@@ -1481,6 +1495,15 @@ All of these follow Phase 9. 5045–5047 are independent of each other.
 5048–5050 form one stack. 5051 needs 5048. 5052 can go any time but touches
 `js/23`. 5053 pairs with 5047 and 5050 (contract v3, ATLAS Align first). 5054
 goes last.
+
+Under the batching rule in "Phases", 5045 to 5052 land as one ATLAS Align pull
+request on `feature-5045-condition-action-catalogs`, one commit each, in the
+order above, and the engine goes from 1.17.1 to 1.18.0 once for the whole pull
+request; the Engine column is the order the changes come in, not separate
+releases. If it grows too large to review, it splits after 5047 (capabilities,
+defaults and operators; then the action kinds). Then 5053 is one File Utility
+pull request and 5054 one builder pull request. This plan change is the first
+commit on that branch.
 
 ### Risks
 
