@@ -4,8 +4,8 @@ Status: approved (2026-11-16). Phases 0–7 are merged (Phase 0 was
 JonahAngell/atlas-align#37, issue #5000), and so are the field-control
 conversions (issues #5010–#5014). Phase 8, condition and action templates
 (issue #5026), is merged: ATLAS Align #62–#69 and builder #8. Phase 9,
-condition and action catalogs, is planned below (issue #5037). Phase 10
-(docs) has not started.
+File Utility on the step type engine, and Phase 10, condition and action
+catalogs, are planned below (issue #5037). Phase 11 (docs) has not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -751,19 +751,20 @@ next issue number in order, starting at 5001 (decision D), for example
 one number per branch. Phase 7 is built in the builder's own repository
 (decision C), so its branches and merge requests live there.
 
-| Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                                                                                                              | Done when                                                                                                                                                              |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **0. Snapshot current output** (done, #5000) | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                                                                                                                    | `npm test` stores and compares the snapshots. No app change.                                                                                                           |
-| **1. Engine**                                | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files in `js/step-types/`, listed in `engine-manifest.json`, loaded early in `index.html` and testable through `node:vm`.                                                                                                                                                                                                                     | Unit tests cover every template feature, schema errors and migrations.                                                                                                 |
-| **2. Registry entry points**                 | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                                                                                                         | Snapshots unchanged.                                                                                                                                                   |
-| **3. Simple types**                          | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                                                                                                          | Snapshots identical for these types.                                                                                                                                   |
-| **4. Blocks and complex types**              | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`.                                                                                      | Snapshots identical; Playwright Logic Builder checks pass.                                                                                                             |
-| **5. Exports and validation**                | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                                                                                                           | Snapshots identical, Audit Issues tests pass.                                                                                                                          |
-| **6. Postgres**                              | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications (decision B).                                                                                                                                                                                                      | Contract tests for import, conflict rejection, fallback and pinned rendering.                                                                                          |
-| **7. Builder app**                           | In the builder's own repository: the app, `atlas-engine.lock` and the engine copy step, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                                                                                                               | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production.                                                          |
-| **8. Condition and action templates**        | Condition and action text and formulas move from app code into definition partials (see "Phase 8" below): template partials, a condition tree helper, `if_then` v3, `else` v3, `filter_rows` v3, `flag_records` v4, switchable composite features, `schemaVersion: 2` for definitions with partials, an export shape warning, then the old app code is deleted. Branches 5029–5035, plus 5036 in the builder repository.                                          | Snapshots and the condition/action matrix identical; v1 and v2 pins render; a builder type can switch parts off; unplaceable condition formulas warn.                  |
-| **9. Condition and action catalogs**         | Action kinds become shared, versioned definitions that draw the Action editor and carry the wording, formulas, qTest outcome and checks; the operator list is read from one catalog; carrying conditions, THEN / ELSE branches, the linked inverse and the order group are read from the definition; composites seed new steps; definition sentences import Conditions and Action (see "Phase 9" below). Branches 5038–5045, plus 5046 in the builder repository. | Snapshots, matrix and pinned tests identical; a builder type with Conditions and Action behaves like IF / THEN, including import; a new action kind is one definition. |
-| **10. Docs**                                 | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                                                                                                               | Docs reviewed.                                                                                                                                                         |
+| Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Done when                                                                                                                                                              |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0. Snapshot current output** (done, #5000) | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                                                                                                                                              | `npm test` stores and compares the snapshots. No app change.                                                                                                           |
+| **1. Engine**                                | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files in `js/step-types/`, listed in `engine-manifest.json`, loaded early in `index.html` and testable through `node:vm`.                                                                                                                                                                                                                                               | Unit tests cover every template feature, schema errors and migrations.                                                                                                 |
+| **2. Registry entry points**                 | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                                                                                                                                   | Snapshots unchanged.                                                                                                                                                   |
+| **3. Simple types**                          | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                                                                                                                                    | Snapshots identical for these types.                                                                                                                                   |
+| **4. Blocks and complex types**              | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`.                                                                                                                | Snapshots identical; Playwright Logic Builder checks pass.                                                                                                             |
+| **5. Exports and validation**                | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                                                                                                                                     | Snapshots identical, Audit Issues tests pass.                                                                                                                          |
+| **6. Postgres**                              | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications (decision B).                                                                                                                                                                                                                                | Contract tests for import, conflict rejection, fallback and pinned rendering.                                                                                          |
+| **7. Builder app**                           | In the builder's own repository: the app, `atlas-engine.lock` and the engine copy step, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                                                                                                                                         | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production.                                                          |
+| **8. Condition and action templates**        | Condition and action text and formulas move from app code into definition partials (see "Phase 8" below): template partials, a condition tree helper, `if_then` v3, `else` v3, `filter_rows` v3, `flag_records` v4, switchable composite features, `schemaVersion: 2` for definitions with partials, an export shape warning, then the old app code is deleted. Branches 5029–5035, plus 5036 in the builder repository.                                                                    | Snapshots and the condition/action matrix identical; v1 and v2 pins render; a builder type can switch parts off; unplaceable condition formulas warn.                  |
+| **9. File Utility on the engine**            | File Utility reads step type definitions and the publication's pinned versions from the shared database and decides what runs from each definition's `export.fileUtility` block; contract v2; ATLAS readiness reads the same block; runs record the versions (see "Phase 9" below). Branches 5038–5044 across ATLAS Align, File Utility and the builder.                                                                                                                                    | Fixture audits compile and report readiness as before; a builder type that names a compiler runs in File Utility with no Python change; old pins still compile.        |
+| **10. Condition and action catalogs**        | Action kinds become shared, versioned definitions that draw the Action editor and carry the wording, formulas, qTest outcome and checks; the operator list is read from one catalog; carrying conditions, THEN / ELSE branches, the linked inverse and the order group are read from the definition; composites seed new steps; definition sentences import Conditions and Action (see "Phase 10" below). Branches 5045–5052, plus 5053 in File Utility and 5054 in the builder repository. | Snapshots, matrix and pinned tests identical; a builder type with Conditions and Action behaves like IF / THEN, including import; a new action kind is one definition. |
+| **11. Docs**                                 | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                                                                                                                                         | Docs reviewed.                                                                                                                                                         |
 
 Phases 0–5 are a refactor that keeps output identical. The phase 0 snapshots
 are what make it safe to delete the old per-type code.
@@ -1064,10 +1065,164 @@ two composites' features become switchable, and `firstAvailable` and
 4. Definitions that use `partials` declare `schemaVersion: 2`.
 5. Group structure stays in a fixed `conditionTree` helper with three styles.
 6. A switched-off part still needs its partials, for saved and imported steps.
-7. This phase is Phase 8, before Docs, which stays the last phase (now Phase 10, after Phase 9).
+7. This phase is Phase 8, before Docs, which stays the last phase (now Phase 11, after Phases 9 and 10).
 8. Validation warns when a condition-role formula has a shape the code export cannot place.
 
-## Phase 9: Condition and action catalogs (planned, issue #5037)
+## Phase 9: File Utility on the step type engine (planned, issue #5037)
+
+File Utility (`JonahAngell/audit-file-utility`) runs published ATLAS Align
+audits. Today it knows each step type by name: `atlas_compile.py` has one
+`c_<type>` handler per type, rewrites `filter_rows` and `flag_records` into
+`if_then`, and lists the types it can run in the contract
+`atlas/executable-steps.json`. ATLAS Align's readiness check
+(`js/22a-file-utility-readiness.js`) mirrors that by name. So a type built in
+the Step Type Builder can't run in File Utility until someone edits Python. This phase makes File Utility read the
+step type definitions and the publication's pinned versions from the shared
+database, and decide what runs from the definition. It comes before the
+catalogs phase (Phase 10) and the docs (Phase 11), by decision.
+
+### What exists today
+
+Surveyed on File Utility `main` at c7f1c03 and ATLAS Align `main` at
+20f62b3.
+
+| What            | Where                                                                                                                                                                                                                                                                                | Problem                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| Database access | `atlas_db.py` and `sql/atlas/*.sql` read audits and publications from `STUDIOSHARE_DB_URL` and write only `atlas_audit_runs`. They came in File Utility #28, which merged into the `atlas-engine-compiler` branch after that branch had merged (#27), so they are **not on `main`**. | File Utility `main` has no database connection.                             |
+| Step types      | `compile_step` in `atlas_compile.py` calls `c_<step_type>`; `SHAPE_TYPES` lists the types that add or remove rows; `legacy_condition` rewrites `filter_rows` and `flag_records`.                                                                                                     | A new type, or a type built in the builder, is "can't run in File Utility". |
+| Versions        | `get-publication.sql` reads the snapshot but not `step_type_versions`.                                                                                                                                                                                                               | File Utility ignores which definition version a publication was made with.  |
+| Contract        | `atlas/executable-steps.json` (byte-for-byte `catalogs/file-utility/executable-steps.json` here, checked by a test in each repo): `stepTypes` by type id, operators, run tokens, rounding, duplicate actions.                                                                        | Readiness is keyed by type id.                                              |
+| ATLAS readiness | `js/22a-file-utility-readiness.js:850–890` checks each type by name; `:570–592` checks action kinds.                                                                                                                                                                                 | Same as File Utility, in JavaScript.                                        |
+| Run record      | `atlas_audit_runs` stores the document hash, compiler and engine versions.                                                                                                                                                                                                           | Not the step type versions the run compiled against.                        |
+
+### Design
+
+1. **No second template engine.** File Utility does not render English,
+   formulas or qTest, so it does not run the JavaScript engine or a Python
+   port of it. It reads definitions as data: the `export.fileUtility` block,
+   `export.scriptRole`, the fields and the `migrations`. That keeps the
+   Python side small and leaves one renderer.
+2. **The `export.fileUtility` block.** Each definition says how File Utility
+   runs it:
+
+   ```json
+   "fileUtility": {
+     "compiler": "if_then",
+     "status": "supported",
+     "when": "",
+     "changesRows": false,
+     "params": { "conditions_json": "conditions_json" }
+   }
+   ```
+
+   `compiler` names one of File Utility's handlers (today's `c_<type>`
+   functions, plus `legacy_condition` for `filter_rows` and `flag_records`).
+   `params` maps the handler's params to this type's params, so a builder
+   type with differently named fields can reuse a handler. `changesRows`
+   replaces `SHAPE_TYPES`. `status` and `when` replace the contract's
+   `stepTypes` entry. A definition with no block can't run in File Utility,
+   and the readiness message says so. Checks that depend on values (free-text
+   expressions in `create_column`, the formats of `format_field`) stay in the
+   handlers, keyed by compiler instead of type id.
+
+3. **Contract v2.** `contractVersion` 2 adds `compilers` (each handler with
+   the params it reads and whether it changes rows) and renames `stepTypes`
+   to `legacyStepTypes`, used only for pinned definition versions written
+   before the block existed. The engine checks a block against `compilers`
+   the way it checks fields against the palette: only when the caller passes
+   the contract, which ATLAS Align and the builder do. Both repos still keep
+   the file identical and check it by hash.
+4. **Reading definitions from the database.** `get-publication.sql` also
+   returns `step_type_versions`. A new `get-step-type-definitions.sql` reads
+   `(type_id, version, definition, content_hash, status)` for the pinned
+   pairs. A draft run, and a publication made before pinning, uses the
+   versions ATLAS Align's editor would use (the latest published, the same
+   rule as `sql/step-type-repository/list-step-types.sql`). File Utility
+   still only reads: the SQL rule test gains `atlas_step_type_definitions` as
+   a table it may read. A missing pinned version is a blocker naming the type
+   and version, never a silent fallback to another version.
+5. **Migrations.** A step saved with an older definition version is brought
+   up to the pinned version with the definition's declarative migration ops
+   (`set`, `default`, `rename`, `remove`, `mapValue`, `setStepType`), ported
+   to Python. A `handler` op is ported only where a bundled definition uses
+   one; otherwise the step is a blocker. A shared fixture file of
+   before/after params, kept identical in both repos like the contract, runs
+   in both test suites so the two runners can't drift.
+6. **Readiness from the same data.** `22a` looks up each step's pinned
+   definition and reads its block, falling back to `legacyStepTypes` for an
+   old version. Its value checks are keyed by compiler. ATLAS readiness and
+   the File Utility compiler then agree for builder types too.
+7. **Run record.** `atlas_audit_runs` gains a nullable `step_type_versions`
+   column: `{type_id: {version, contentHash}}` for what the run compiled
+   against. The migration lives in ATLAS Align (File Utility never runs
+   migrations); File Utility writes the column only when it exists, as it
+   already does for the runs table.
+
+### Definitions and versions
+
+Every bundled type gets a new version that adds only `export.fileUtility`:
+`reference_source` 2, `create_column` 3, `if_then` 4, `else` 4, `join` 3,
+`union_sources` 3, `format_field` 4, `split_field` 4, `sort_records` 2,
+`remove_duplicates` 2, `filter_rows` 4, `flag_records` 5. Templates are
+unchanged, so the snapshots, the matrix and the pinned tests stay identical.
+`released-step-type-hashes.json` gains the new versions; older pins keep
+compiling through `legacyStepTypes`.
+
+### Tests
+
+- File Utility: every fixture audit compiles to the same v3 procedure before
+  and after (its existing compile tests); a builder-style definition whose
+  block names `if_then` with a param map compiles to the same procedure as
+  the equivalent `if_then` step; a missing pinned version blocks; the
+  migration fixtures; the SQL rule test; database tests against the seeded
+  schema (`tests/atlas_db_seed.py`) for pinned, draft and unpinned reads.
+- ATLAS Align: readiness gives the same answers for the fixture audits;
+  the engine refuses a block with an unknown compiler or an unmapped param;
+  the contract and migration-fixture hash tests.
+- File Utility reads the definitions it tests against from a vendored copy of
+  ATLAS Align's `catalogs/step-types/`, refreshed by a sync script with a lock
+  file like the builder's `atlas-engine.lock`. Production reads only the
+  database.
+
+### Branches
+
+| Branch                                                   | Work                                                                                                                                                                                | Engine |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `feature-5038-atlas-db-on-main` (File Utility)           | Land the database access from #28 on `main`, rebased, with its tests.                                                                                                               | —      |
+| `feature-5039-file-utility-definition-block`             | Schema and engine check for `export.fileUtility`; contract v2; the twelve new bundled versions; the migration fixture file.                                                         | 1.17.0 |
+| `feature-5040-readiness-from-definitions`                | `22a` reads the pinned definition's block, with `legacyStepTypes` for old versions; value checks keyed by compiler.                                                                 | 1.17.1 |
+| `feature-5041-run-step-type-versions`                    | Migration adding `step_type_versions` to `atlas_audit_runs`.                                                                                                                        | —      |
+| `feature-5042-read-step-type-definitions` (File Utility) | Read the pin map and the pinned definitions; the draft and unpinned rule; the SQL rule test; the vendored definitions and sync script.                                              | —      |
+| `feature-5043-compile-from-definitions` (File Utility)   | Contract v2; `compile_step` dispatches on the block; `SHAPE_TYPES` and `legacy_condition`'s type checks go; the migration runner; the run record.                                   | —      |
+| `feature-5044-builder-file-utility` (builder repository) | Bump `atlas-engine.lock` and copy the contract; an Export setting to pick a compiler and map params, checked by the engine; "Runs in File Utility" or the reason it can't in Tests. | —      |
+
+5038 goes first. 5039 and 5043 change the contract and merge as a pair,
+ATLAS Align first. 5040 needs 5039. 5042 needs 5038 and 5041. 5044 goes last.
+
+### Risks
+
+- **Database code off `main`.** Until 5038 lands, File Utility `main` can't
+  read audits at all. Its local checkout is on `atlas-db-access`.
+- **Two repos, one contract.** A contract change merged on one side only
+  makes ATLAS readiness and File Utility disagree. The pair rule and the hash
+  tests guard it.
+- **Twelve new versions at once.** New versions add one block each; the
+  pinned and released-hash tests prove the templates did not change.
+- **Two migration runners.** The shared fixtures catch drift; a new
+  migration op must be added to both, or File Utility blocks the step.
+- **Builder types with bad param maps.** The engine refuses a block that maps
+  to a param the type doesn't have, so the builder can't publish one.
+
+### Decisions
+
+1. File Utility moves onto the definitions before the catalogs phase and the
+   docs (owner's decision).
+2. File Utility reads definitions as data and does not port the template
+   engine (design 1).
+3. The production source is the shared database; the vendored definitions
+   are for tests only.
+
+## Phase 10: Condition and action catalogs (planned, issue #5037)
 
 Phase 8 moved the wording and formulas of conditions and actions into the
 definitions. The rest of the app still decides per type and per action kind:
@@ -1117,12 +1272,14 @@ In scope:
 - Per-type parameter clean-up and Audit Issues inline fixes as field and
   check settings.
 - The builder catching up (engine lock, action kinds shown, import test).
+- **File Utility catching up.** Phase 9 made step types data there; this
+  phase does the same for action kinds (each kind's `export.fileUtility`
+  names File Utility's action handler, replacing `22a:570–592` and the
+  per-kind code in `atlas_compile.py`) and operators (the contract's
+  `operators` are generated from the operator catalog). Contract v3.
 
 Not in scope:
 
-- File Utility readiness and its contract. They mirror File Utility's own
-  compiler (`atlas_compile.py`), so making them data needs a matching change
-  there (open question 3). A builder type stays "can't run in File Utility".
 - Rewriting the bundled types' text-import parsers. They keep
   `fromEnglish: false`; only definition sentences gain the new captures.
 - Building `firstAvailable` and `groupChecks`.
@@ -1163,7 +1320,7 @@ existing `^[a-z][a-z0-9_]*$` check allows it, so no migration).
     "qtest": "…"
   },
   "validation": [{ "builtIn": "action" }],
-  "export": { "fileUtility": true },
+  "export": { "fileUtility": { "action": "display_text" } },
   "complete": ["then_text", "then_output_column"]
 }
 ```
@@ -1187,12 +1344,12 @@ existing `^[a-z][a-z0-9_]*$` check allows it, so no migration).
   palette test checks the catalog and `controls.json` agree.
 - **Pinning** (decision B): a publication's `step_type_versions` map also
   records the action kind versions it used, under their `action_*` ids. A
-  pinned `if_then` v3 keeps its own copied partials, so it is unaffected. The
+  pinned `if_then` v3 or v4 keeps its own copied partials, so it is unaffected. The
   new step type versions that call `{{action}}` (below) render the pinned
   kind versions.
 
 This replaces Phase 8 decision 1 for the action partials of new versions,
-and Phase 8 decision 3 (open question 1).
+and Phase 8 decision 3 (decision 1 below).
 
 ### 2. Operator catalog
 
@@ -1269,15 +1426,16 @@ title}` or `{choices}`), so the per-type field problems in
 
 | Definition                                                                                                                                                                            | Now        | New  | What changes                                                                         |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---- | ------------------------------------------------------------------------------------ |
-| `action_display`, `action_do_not_display`, `action_display_text`, `action_set_column_value`, `action_set_column_calculation`, `action_set_column_string_transform`, `action_freeform` | —          | 1    | New, with the partials moved from `if_then` v3 and `else` v3.                        |
-| `if_then`                                                                                                                                                                             | 3          | 4    | `{{action}}` instead of the action partials; `branches`, `inverse`; normalize names. |
-| `else`                                                                                                                                                                                | 3          | 4    | `{{action "elseEnglish"}}` and the formulas through `{{action}}`.                    |
-| `filter_rows`, `flag_records`                                                                                                                                                         | 3, 4       | 4, 5 | Their display and display-text partials through `{{action}}`.                        |
-| `create_column`, `split_field`, `format_field`, `remove_duplicates`                                                                                                                   | 2, 3, 3, 1 | +1   | `normalize` and the inline-fix rules only; templates unchanged.                      |
+| `action_display`, `action_do_not_display`, `action_display_text`, `action_set_column_value`, `action_set_column_calculation`, `action_set_column_string_transform`, `action_freeform` | —          | 1    | New, with the partials moved from `if_then` v4 and `else` v4.                        |
+| `if_then`                                                                                                                                                                             | 4          | 5    | `{{action}}` instead of the action partials; `branches`, `inverse`; normalize names. |
+| `else`                                                                                                                                                                                | 4          | 5    | `{{action "elseEnglish"}}` and the formulas through `{{action}}`.                    |
+| `filter_rows`, `flag_records`                                                                                                                                                         | 4, 5       | 5, 6 | Their display and display-text partials through `{{action}}`.                        |
+| `create_column`, `split_field`, `format_field`, `remove_duplicates`                                                                                                                   | 3, 4, 4, 2 | +1   | `normalize` and the inline-fix rules only; templates unchanged.                      |
 
 Released files are never edited; `released-step-type-hashes.json` gains the
-new versions. Pinned fixtures for `if_then` v3, `else` v3, `filter_rows` v3
-and `flag_records` v4 prove the old versions still render.
+new versions. Pinned fixtures for `if_then` v3 and v4, `else` v3 and v4,
+`filter_rows` v3 and v4 and `flag_records` v4 and v5 prove the old versions
+still render.
 
 ### Snapshot strategy
 
@@ -1296,54 +1454,53 @@ matrix, the pinned test and the preview-scripts test stay identical without
 
 ### Branches
 
-| Branch                                               | Work                                                                                                                                                                             | Engine |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `feature-5037-condition-action-catalogs-plan`        | This plan.                                                                                                                                                                       | —      |
-| `feature-5038-step-capabilities`                     | `carriesConditions`, `branches`, `inverse`, `orderGroup`; the fixed lists and IF-only checks read them; `if_then` v4 declares `branches` and `inverse`; the builder-type matrix. | 1.17.0 |
-| `feature-5039-new-step-defaults`                     | Composite `defaults`, one new-step builder, the menus and Audit Issues "Add logic step" from the registry.                                                                       | 1.17.1 |
-| `feature-5040-operator-catalog`                      | The full operator list in the phrase catalog and every reader moved to it.                                                                                                       | 1.17.2 |
-| `feature-5041-action-kind-registry`                  | `kind: "action"` in the schema and registry, the `{{action}}` helper, pinning of action kind versions, and the seven kinds as definitions (partials moved, not changed).         | 1.18.0 |
-| `feature-5042-action-editor-from-fields`             | The Action editor drawn from the kind's fields; delete the three builder layers, the parameter clean-up per kind and the string-transform wrapper.                               | 1.18.1 |
-| `feature-5043-action-definitions`                    | `if_then` v4, `else` v4, `filter_rows` v4 and `flag_records` v5 through `{{action}}`; `complete` replaces the per-kind checks; pinned fixtures.                                  | 1.18.2 |
-| `feature-5044-condition-action-text-import`          | The two `sentenceMatcher` captures and `importConditions` / `importAction`.                                                                                                      | 1.19.0 |
-| `feature-5045-normalize-and-fixes`                   | Field `normalize` and validation `param` / `message` / `fix`; the per-type code in `15g`, `14` and `23` goes.                                                                    | 1.19.1 |
-| `feature-5046-builder-catalogs` (builder repository) | Bump `atlas-engine.lock`; show action kinds and operators in the palette help, `branches` / `inverse` in Basics, and an import check in Tests.                                   | —      |
+| Branch                                                  | Work                                                                                                                                                                             | Engine |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `feature-5037-condition-action-catalogs-plan`           | This plan (Phases 9 and 10).                                                                                                                                                     | —      |
+| `feature-5045-step-capabilities`                        | `carriesConditions`, `branches`, `inverse`, `orderGroup`; the fixed lists and IF-only checks read them; `if_then` v5 declares `branches` and `inverse`; the builder-type matrix. | 1.18.0 |
+| `feature-5046-new-step-defaults`                        | Composite `defaults`, one new-step builder, the menus and Audit Issues "Add logic step" from the registry.                                                                       | 1.18.1 |
+| `feature-5047-operator-catalog`                         | The full operator list in the phrase catalog and every reader moved to it.                                                                                                       | 1.18.2 |
+| `feature-5048-action-kind-registry`                     | `kind: "action"` in the schema and registry, the `{{action}}` helper, pinning of action kind versions, and the seven kinds as definitions (partials moved, not changed).         | 1.19.0 |
+| `feature-5049-action-editor-from-fields`                | The Action editor drawn from the kind's fields; delete the three builder layers, the parameter clean-up per kind and the string-transform wrapper.                               | 1.19.1 |
+| `feature-5050-action-definitions`                       | `if_then` v5, `else` v5, `filter_rows` v5 and `flag_records` v6 through `{{action}}`; `complete` replaces the per-kind checks; pinned fixtures.                                  | 1.19.2 |
+| `feature-5051-condition-action-text-import`             | The two `sentenceMatcher` captures and `importConditions` / `importAction`.                                                                                                      | 1.20.0 |
+| `feature-5052-normalize-and-fixes`                      | Field `normalize` and validation `param` / `message` / `fix`; the per-type code in `15g`, `14` and `23` goes.                                                                    | 1.20.1 |
+| `feature-5053-file-utility-action-kinds` (File Utility) | Contract v3; action handlers dispatch on the kind's `export.fileUtility.action`; operators from the generated contract list.                                                     | —      |
+| `feature-5054-builder-catalogs` (builder repository)    | Bump `atlas-engine.lock`; show action kinds and operators in the palette help, `branches` / `inverse` in Basics, and an import check in Tests.                                   | —      |
 
-5038–5040 are independent of each other. 5041–5043 form one stack. 5044
-needs 5041. 5045 can go any time but touches `js/23`. 5046 goes last.
+All of these follow Phase 9. 5045–5047 are independent of each other.
+5048–5050 form one stack. 5051 needs 5048. 5052 can go any time but touches
+`js/23`. 5053 pairs with 5047 and 5050 (contract v3, ATLAS Align first). 5054
+goes last.
 
 ### Risks
 
 - **Audit Issues has uncommitted work.** The main checkout has changes in
-  `js/23-atlas-audit-issues.js` and its test. 5039, 5043 and 5045 touch that
+  `js/23-atlas-audit-issues.js` and its test. 5046, 5050 and 5052 touch that
   file, so that work should land first.
 - **Action partial moves.** Moving partials into kinds must not change a
-  character of output. 5041 moves them; 5043 switches the types over. The
+  character of output. 5048 moves them; 5050 switches the types over. The
   matrix and pinned tests guard both.
-- **Pin maps grow.** Publications made before 5041 have no `action_*`
+- **Pin maps grow.** Publications made before 5048 have no `action_*`
   entries. They render with the latest kind versions, which match the
-  pre-5041 copies exactly, so their output does not change.
+  pre-5048 copies exactly, so their output does not change.
 - **Kinds in the library.** Action kind rows sit in the step type table. The
   library, picker, export and builder filter them by `kind`, or they would
   show as step types.
 - **Text import ambiguity.** A definition sentence and a bundled parser can
   both read a sentence. The bundled parser keeps priority, as today.
-- **File Utility.** Builder types and new action kinds still report as not
-  runnable until open question 3 is settled.
+- **File Utility.** A new action kind can't run in File Utility until 5053
+  gives it a handler; the readiness check says so instead of guessing.
 
-### Open questions
+### Decisions
 
-1. **Shared action kinds.** Recommended: kinds are versioned definitions
-   shared by the step types that use them (section 1), which ends the
-   copies. The alternative keeps Phase 8 decision 1 (copies in each
-   definition) and only generates the copies from one source file.
-2. **Builder editing of kinds and operators.** Recommended: this phase only
-   shows them in the builder; adding action kinds or operators in the
-   builder is a later phase, because a kind's form and formulas touch every
-   type that uses it.
-3. **File Utility.** Recommended: leave readiness as it is, and agree with
-   the File Utility owners on an `export.fileUtility` shape before either
-   side changes.
-4. **`else`, `filter_rows` and `flag_records`.** They are hidden legacy
-   types. Recommended: give them new versions only for `{{action}}`, and no
-   `branches` or `inverse`.
+1. **Shared action kinds.** Action kinds are versioned definitions shared by
+   the step types that use them (section 1), which ends the copies.
+2. **Builder editing of kinds and operators.** This phase only shows them in
+   the builder; adding action kinds or operators in the builder is a later
+   phase, because a kind's form and formulas touch every type that uses it.
+3. **File Utility.** Settled by Phase 9, which comes first; 5053 covers
+   action kinds and operators.
+4. **`else`, `filter_rows` and `flag_records`.** They stay hidden legacy
+   types and get new versions only for `{{action}}`, with no `branches` or
+   `inverse`.
