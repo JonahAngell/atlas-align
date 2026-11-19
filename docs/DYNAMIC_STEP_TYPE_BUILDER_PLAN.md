@@ -1424,6 +1424,31 @@ As built (5049):
   exclude and the then_ string transform) waits for 5052, which adds the
   normalize handlers that replace it.
 
+As built (5050):
+
+- `if_then` v5 and `else` v5 render the action with `{{action}}`: English,
+  formulas, notes and the qTest outcome. Their frames (`filter`,
+  `valueFormula`, `freeformFormula`) stay with the step type and read the
+  kind's parts with `{{action "actionExpression"}}` and so on; the ELSE's
+  parts come from the ELSE's kind (`{{action "actionTarget" elseStep}}`), and
+  "both write the same column" is `(eq (action "shape" elseStep) "value")`
+  plus the targets. `thenAction` and `elseAction` stay as one-line partials,
+  because the replaced `actionText` helper (the v1 and v2 pins) renders them.
+  `if_then` v5 declares `branches`, `inverse` and `referenceChild`. v4 of
+  both are pinned fixtures.
+- `complete` is in each kind and `ATLASStepTypeRuntime.actionComplete(type,
+params)` reads it; Audit Issues' `meaningfulAction` uses it. The Logic
+  view's `completeStatementHasIndependentAction` keeps its own rules: it
+  asks whether an IF acts on its own rather than only gating its children
+  (Display does not, and one filled field is enough), which is a different
+  question from "has every param it needs", and changing it would change
+  the complete statements.
+- `filter_rows` and `flag_records` keep their versions. Their templates
+  read their own params (`filter_action`, `flag_action`, `message`,
+  `output_column`), not the kinds', so they hold no copy of the action
+  partials; going through `{{action}}` would mean building a stand-in step
+  for each call.
+
 ### 2. Operator catalog
 
 `app_config.logic_options` in the phrase catalog becomes the only list:

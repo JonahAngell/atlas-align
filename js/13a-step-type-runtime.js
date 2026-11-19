@@ -378,6 +378,21 @@
     return (isBlank(value) ? null : find(text(value))) || find("freeform");
   }
 
+  /**
+   * Whether a step's action has every param its kind lists in `complete`
+   * (Audit Issues' "has an action"). null when `type` names no action kind.
+   */
+  function actionComplete(type, params = {}) {
+    const name = text(type).trim();
+    const definition = /^[a-z][a-z0-9_]*$/.test(name)
+      ? registry?.get(`action_${name}`)
+      : null;
+    if (definition?.kind !== "action") return null;
+    return (pinned(definition).complete || []).every(
+      (param) => text(params?.[param]).trim() !== "",
+    );
+  }
+
   /** The latest action kinds, ordered for the action kind picker. */
   function actionKinds() {
     return registry?.actions ? registry.actions() : [];
@@ -2093,6 +2108,7 @@
     pinnedVersions: () => pinnedVersions,
     actionKind,
     actionKinds,
+    actionComplete,
     actionEditorHtml,
     revision: () => revision,
     registry: () => registry,

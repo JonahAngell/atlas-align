@@ -19,6 +19,7 @@
       "label": "Matching records"
     }
   ],
+  "complete": [],
   "partials": {
     "english": "{{#if (present (include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json))))}}{{phrase \"analyst_logic.if_then.then_do_not_display_key\" key_column=(include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase \"analyst_logic.if_then.then_do_not_display\"}}{{/if}}",
     "elseEnglish": "{{#if (present (include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json))))}}{{phrase \"analyst_logic.else.do_not_display_key\" key_column=(include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase \"analyst_logic.else.do_not_display\"}}{{/if}}",

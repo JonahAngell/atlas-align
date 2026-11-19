@@ -20,6 +20,7 @@
       "label": "Message"
     }
   ],
+  "complete": ["then_text", "then_output_column"],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",

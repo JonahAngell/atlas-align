@@ -491,6 +491,7 @@
 │   │   │   ├── else.v1.json
 │   │   │   ├── else.v2.json
 │   │   │   ├── else.v3.json
+│   │   │   ├── else.v4.json
 │   │   │   ├── filter_rows.v1.json
 │   │   │   ├── filter_rows.v2.json
 │   │   │   ├── filter_rows.v3.json
@@ -503,6 +504,7 @@
 │   │   │   ├── if_then.v1.json
 │   │   │   ├── if_then.v2.json
 │   │   │   ├── if_then.v3.json
+│   │   │   ├── if_then.v4.json
 │   │   │   ├── join.v1.json
 │   │   │   ├── join.v2.json
 │   │   │   ├── reference_source.v1.json

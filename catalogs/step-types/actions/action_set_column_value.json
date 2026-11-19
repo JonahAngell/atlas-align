@@ -20,6 +20,7 @@
       "label": "Value Field"
     }
   ],
+  "complete": ["then_target_column", "then_value_field"],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_set_column_value\" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.set_column_value\" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}",

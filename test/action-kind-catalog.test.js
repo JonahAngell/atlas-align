@@ -31,7 +31,9 @@ const KINDS = [
   "do_not_display",
 ];
 const DIALECTS = ["excel", "sql", "python"];
-const QTEST = read("catalogs/step-types/if_then.json").export.qtest.action;
+// The step types as they were before {{action}}: if_then v4 and else v4.
+const V4 = (id) => read(`test/fixtures/step-types-pinned/${id}.v4.json`);
+const QTEST = V4("if_then").export.qtest.action;
 
 /** The part of else v4's formula (or note) that picks the action's frame. */
 function elseInner(template) {
@@ -43,8 +45,9 @@ function elseInner(template) {
 }
 
 /**
- * if_then and else with probe partials: each pair renders one part the old
- * way (the step type's own partials) and the new way ({{action}}).
+ * if_then v4 and else v4 with probe partials: each pair renders one part
+ * the old way (the step type's own partials) and the new way ({{action}}).
+ * The probed v4 stands in for the bundled latest version.
  */
 function probed(definition) {
   const copy = structuredClone(definition);
@@ -102,9 +105,7 @@ function probed(definition) {
 
 async function app() {
   const context = await loadApp();
-  context.__probed = ["if_then", "else"].map((id) =>
-    probed(read(`catalogs/step-types/${id}.json`)),
-  );
+  context.__probed = ["if_then", "else"].map((id) => probed(V4(id)));
   run(
     context,
     `(() => {
@@ -494,4 +495,71 @@ test("the Action editor draws the selected kind's fields", async () => {
   assert.match(html, /Message/);
   assert.match(html, /data-param="then_text"/);
   assert.match(html, /value="Check"/);
+});
+
+test("if_then v5 and else v5 read the action from its kind", () => {
+  const moved = [
+    "actionTarget",
+    "actionValue",
+    "actionExpression",
+    "unmatched",
+    "matchedLines",
+    "unmatchedLines",
+    "separatorClause",
+    "excludeKeyColumn",
+    "groupExclude",
+  ];
+  for (const id of ["if_then", "else"]) {
+    const definition = read(`catalogs/step-types/${id}.json`);
+    assert.equal(definition.version, 5, id);
+    moved.forEach((name) =>
+      assert.equal(definition.partials[name], undefined, `${id} ${name}`),
+    );
+    const qtest = definition.export.qtest.action;
+    Object.entries(qtest).forEach(([part, template]) =>
+      assert.equal(template, `{{action "qtest" part="${part}"}}`, id),
+    );
+  }
+  const ifThen = read("catalogs/step-types/if_then.json");
+  assert.deepEqual(ifThen.branches, ["then", "else"]);
+  assert.equal(ifThen.inverse, true);
+  assert.equal(ifThen.referenceChild, true);
+  // The replaced actionText helper (if_then v1 and v2 pins) renders these.
+  assert.equal(ifThen.partials.thenAction, '{{action "english"}}');
+  assert.equal(
+    read("catalogs/step-types/else.json").partials.elseAction,
+    '{{action "elseEnglish"}}',
+  );
+});
+
+test("a kind's complete list says whether a step has its own action", async () => {
+  const context = await loadApp();
+  const complete = (type, params) => {
+    context.__params = params;
+    return run(
+      context,
+      `ATLASStepTypeRuntime.actionComplete(${JSON.stringify(type)}, __params)`,
+    );
+  };
+  assert.equal(complete("display", {}), true);
+  assert.equal(complete("do_not_display", {}), true);
+  assert.equal(complete("display_text", { then_text: "Check" }), false);
+  assert.equal(
+    complete("display_text", {
+      then_text: "Check",
+      then_output_column: "Error Message",
+    }),
+    true,
+  );
+  assert.equal(
+    complete("set_column_value", {
+      then_target_column: "A",
+      then_value_field: " ",
+    }),
+    false,
+  );
+  assert.equal(complete("freeform", { then_action: "flag it" }), true);
+  // No kind: blank or unknown types have no action of their own.
+  assert.equal(complete("", { then_action: "flag it" }), null);
+  assert.equal(complete("other", {}), null);
 });
