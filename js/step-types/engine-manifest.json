@@ -40,6 +40,7 @@
       "js/13a-step-type-runtime.js",
       "js/14-catalog-driven-builder.js",
       "js/15a-audit-library-ui.js",
+      "js/15c-source-field-picker.js",
       "js/15d-logic-rules-list.js",
       "js/15e-logic-step-editor.js",
       "js/15f-join-picker.js",
