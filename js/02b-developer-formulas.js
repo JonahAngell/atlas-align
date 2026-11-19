@@ -26,7 +26,10 @@ const ATLAS_DEV_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 function atlasDevOperatorMeaning(kind, operator) {
   const meanings =
     typeof getCatalogValue === "function"
-      ? getCatalogValue(`app_config.logic_options.operator_meanings.${kind}`, null)
+      ? getCatalogValue(
+          `app_config.logic_options.operator_meanings.${kind}`,
+          null,
+        )
       : null;
   return meanings &&
     typeof meanings === "object" &&
@@ -756,7 +759,7 @@ function atlasDeveloperFormulas(step) {
     const lead = atlasDevPhrase("developer_logic.else_step", {
       step_number: atlasDevStepNumber(params.inverse_of_step_id),
     });
-    return step.step_type === "if_then"
+    return atlasStepCapabilities(step).inverse
       ? { ...(globalThis.ATLASStepTypeRuntime?.formulas?.(step) || {}), lead }
       : { lead };
   }

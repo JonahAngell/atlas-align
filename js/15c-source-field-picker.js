@@ -161,12 +161,7 @@ document.addEventListener("click", (event) => {
     step.step_type = stepTypeButton.dataset.liveStepType;
     step.type = legacyTypeFromStepType?.(step.step_type) || step.type;
     step.params = {};
-    if (
-      !["if_then", "else", "filter_rows", "flag_records"].includes(
-        step.step_type,
-      )
-    )
-      step.conditions = [];
+    if (!atlasStepCapabilities(step).carriesConditions) step.conditions = [];
     normalizeCatalogStep?.(step);
     renderAll();
     scheduleAutosave();

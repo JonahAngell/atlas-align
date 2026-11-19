@@ -279,6 +279,63 @@
 
   // The handler File Utility used for a type before definitions carried an
   // export.fileUtility block: its own id, except these two.
+  /**
+   * What the rest of ATLAS asks of a step type, for versions written before
+   * the definition said so itself: the types that carry a stored condition
+   * without a condition_group field, IF / THEN's THEN and ELSE children and
+   * linked inverse, and the business order groups.
+   */
+  const LEGACY_CAPABILITIES = Object.freeze({
+    // IF / THEN's version 1 was a behavior block with no condition_group.
+    conditionGroup: Object.freeze(["if_then"]),
+    storedConditions: Object.freeze(["else", "filter_rows", "flag_records"]),
+    branches: Object.freeze({ if_then: Object.freeze(["then", "else"]) }),
+    inverse: Object.freeze(["if_then"]),
+    orderGroups: Object.freeze({
+      reference_source: 10,
+      join: 20,
+      create_column: 30,
+    }),
+  });
+  const DEFAULT_ORDER_GROUP = 40;
+
+  /**
+   * { carriesConditions, storesConditions, branches, inverse, orderGroup }
+   * for `definition` (or, with no definition, for the type id `typeId`).
+   * storesConditions: the step keeps its conditions in a condition_group
+   * field; carriesConditions also covers the legacy types that store one
+   * condition in their own params. branches lists the children it has
+   * ("then", "else"); inverse turns on Create or Open Linked Inverse.
+   * Definition keys win over the legacy answers.
+   */
+  function capabilities(definition, typeId = definition?.id) {
+    const id = typeof typeId === "string" ? typeId : "";
+    const own = definition && typeof definition === "object" ? definition : {};
+    const allFields = [
+      ...(own.fields || []),
+      ...(own.subtypes?.options || []).flatMap((option) => option.fields || []),
+    ];
+    const storesConditions =
+      allFields.some((field) => field?.control === "condition_group") ||
+      LEGACY_CAPABILITIES.conditionGroup.includes(id);
+    const branches = Array.isArray(own.branches)
+      ? [...own.branches]
+      : [...(LEGACY_CAPABILITIES.branches[id] || [])];
+    return {
+      carriesConditions:
+        storesConditions || LEGACY_CAPABILITIES.storedConditions.includes(id),
+      storesConditions,
+      branches,
+      inverse:
+        typeof own.inverse === "boolean"
+          ? own.inverse
+          : LEGACY_CAPABILITIES.inverse.includes(id),
+      orderGroup: Number.isInteger(own.orderGroup)
+        ? own.orderGroup
+        : LEGACY_CAPABILITIES.orderGroups[id] || DEFAULT_ORDER_GROUP,
+    };
+  }
+
   const LEGACY_FILE_UTILITY_COMPILERS = Object.freeze({
     filter_rows: "legacy_condition",
     flag_records: "legacy_condition",
@@ -743,6 +800,13 @@
         checkConditionParams(rule.when, `${path}/when`);
       if (rule.check) checkConditionParams(rule.check, `${path}/check`);
     });
+    if (definition.inverse === true) {
+      const own = capabilities(definition);
+      if (!own.branches.length)
+        add("/inverse", "a linked inverse needs branches");
+      if (!own.storesConditions)
+        add("/inverse", "a linked inverse needs a Conditions field");
+    }
     const fileUtility = definition.export.fileUtility;
     if (fileUtility) {
       if (
@@ -919,6 +983,8 @@
     fields,
     exportFor,
     fileUtilityFor,
+    capabilities,
+    LEGACY_CAPABILITIES,
     ROW_TEST_ROLES,
     exportShapeProblems,
     exportShapeWarnings,

@@ -96,6 +96,21 @@
         }
       }
     },
+    "branches": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 2,
+      "items": { "enum": ["then", "else"] },
+      "description": "The children a step of this type has: THEN children run when its conditions are met, ELSE children when they are not. IF / THEN has both. A type without branches has no THEN / ELSE children."
+    },
+    "inverse": {
+      "type": "boolean",
+      "description": "Offers Create or Open Linked Inverse: a step of the same type under the opposite conditions. Needs branches and a Conditions field."
+    },
+    "orderGroup": {
+      "enum": [10, 20, 30, 40],
+      "description": "Where the step sorts among its siblings: 10 sources, 20 joins, 30 created columns, 40 everything else (the default)."
+    },
     "english": { "$ref": "#/$defs/templateSet" },
     "formulas": { "$ref": "#/$defs/formulas" },
     "autoNotes": {

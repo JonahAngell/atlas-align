@@ -105,12 +105,7 @@ function atlasCommitLiveEditor({ rerender = false } = {}) {
   step.type = legacyTypeFromStepType?.(step.step_type) || step.type;
   if (typeChanged) {
     step.params = {};
-    if (
-      !["if_then", "else", "filter_rows", "flag_records"].includes(
-        step.step_type,
-      )
-    )
-      step.conditions = [];
+    if (!atlasStepCapabilities(step).carriesConditions) step.conditions = [];
     normalizeCatalogStep?.(step);
     if (typeof atlasRequestStructuralStepRender === "function") {
       atlasRequestStructuralStepRender();

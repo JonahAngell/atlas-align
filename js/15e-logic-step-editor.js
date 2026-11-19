@@ -713,7 +713,7 @@ function renderLogicRuleCard(entry) {
               : '<button type="button" role="menuitem" data-add-child-step>Add Child</button>'
             : ""
         }
-        ${step.step_type === "if_then" && !linkedInverse ? `<button type="button" role="menuitem" data-create-inverse-else-step="${esc(step.id)}">Create or Open Linked Inverse</button>` : ""}
+        ${atlasStepCapabilities(step).inverse && !linkedInverse ? `<button type="button" role="menuitem" data-create-inverse-else-step="${esc(step.id)}">Create or Open Linked Inverse</button>` : ""}
         ${availability.addAfter ? '<button type="button" role="menuitem" data-add-step-after>Add Step After</button>' : ""}
         ${availability.duplicate ? '<button type="button" role="menuitem" data-duplicate-logic-step>Duplicate</button>' : ""}
         ${availability.delete ? '<button type="button" role="menuitem" class="danger-menu-action" data-delete-step>Delete</button>' : ""}

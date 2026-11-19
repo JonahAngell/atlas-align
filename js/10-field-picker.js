@@ -949,7 +949,7 @@ function applyLibraryFieldToSelectedStep(sourceFile, fieldName) {
   step.params.field_name = fieldName;
   const conditions = parseStepConditions?.(step) || [];
   const firstCondition = atlasConditionLeaves(conditions)[0];
-  if (step.step_type === "if_then" && firstCondition) {
+  if (atlasStepCapabilities(step).storesConditions && firstCondition) {
     firstCondition.sourceFile = sourceFile;
     firstCondition.sourceAlias = step.params.source_alias;
     firstCondition.fieldName = fieldName;

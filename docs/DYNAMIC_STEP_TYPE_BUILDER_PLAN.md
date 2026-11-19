@@ -1407,6 +1407,19 @@ conditions as `if_then` does: its THEN children inherit its conditions,
 and its ELSE children their opposite, through
 `completeStatementConditionPartial`.
 
+As built (5045), two rules changed:
+
+- `orderGroup` is an optional definition key (10, 20, 30 or 40), not derived
+  from `export.scriptRole`. The `scriptRole` rule would move `union_sources`,
+  `split_field` and `format_field` steps to a new group and reorder saved
+  audits.
+- The bundled versions do not declare `branches`, `inverse` or `orderGroup`
+  yet. `ATLASStepTypes.definitions.capabilities` answers for them from a
+  legacy table by type id (`LEGACY_CAPABILITIES`), which also covers pinned
+  older versions such as `if_then` v1, which has no Conditions field. `if_then`
+  v5 (5050) declares the keys. A definition with `inverse: true` must also
+  declare `branches` and a Conditions field.
+
 ### 4. New steps
 
 - A composite may declare `defaults` in `controls.json`: one blank
