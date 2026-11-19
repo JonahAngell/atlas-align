@@ -601,6 +601,7 @@
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
 │   ├── step-type-file-utility-block.test.js
+│   ├── step-type-new-steps.test.js
 │   ├── step-type-partials.test.js
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js

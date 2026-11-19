@@ -1432,6 +1432,16 @@ As built (5045), two rules changed:
   ones) and uses the same builder function. The reference step's child menu
   offers the types whose definitions set `referenceChild: true`.
 
+As built (5046): `condition_group` declares `defaults: { blankCondition:
+true }` and `action` declares `defaults: { params: { then_action_type:
+"display" } }`; `ATLASStepTypeRuntime.newStepDefaults(typeId)` collects them
+and `atlasBuildNewStep` (`15g`) applies them for the New Rule menu, Add Step
+After, the Reference step's child menu and Audit Issues "Add logic step". The
+unique Error Message custom field still wins over Display for any type with
+an Action. The menu shows the definitions' labels ("IF / THEN", "Join / Union
+Sources"). `referenceChild` comes from the same legacy table as the other
+capabilities (`if_then`, `create_column`) until those types declare it.
+
 ### 5. Text import of Conditions and Action
 
 `sentenceMatcher` gains two captures:

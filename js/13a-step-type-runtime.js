@@ -716,6 +716,30 @@
     return found;
   }
 
+  /**
+   * What a new step of `typeId` starts with, from the `defaults` of the
+   * palette composites its definition places: { blankCondition, params }.
+   * blankCondition seeds one blank condition; params fill blank parameters.
+   * Field defaults are applied afterwards by normalize().
+   */
+  function newStepDefaults(typeId) {
+    const result = { blankCondition: false, params: {} };
+    const definition = definitionById(typeId);
+    const controls = engine()?.bundled?.controls?.controls;
+    if (!definition || !Array.isArray(controls)) return result;
+    (definition.fields || []).forEach((field) => {
+      const defaults = controls.find(
+        (control) => control.name === field?.control,
+      )?.defaults;
+      if (!defaults) return;
+      if (defaults.blankCondition) result.blankCondition = true;
+      Object.entries(defaults.params || {}).forEach(([param, value]) => {
+        if (!(param in result.params)) result.params[param] = value;
+      });
+    });
+    return result;
+  }
+
   /** The step's condition tree, normalized, as plain data. */
   function conditionsFor(step) {
     const conditions = engine().conditions;
@@ -1999,6 +2023,7 @@
     partial,
     storedConditions: storedConditionsFor,
     capabilities: capabilitiesFor,
+    newStepDefaults,
     autoNotes,
     formulas,
     exportShapeWarnings,

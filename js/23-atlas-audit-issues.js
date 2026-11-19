@@ -2910,11 +2910,7 @@
         `${selectMarkup(
           "stepType",
           "Step type",
-          [
-            { value: "if_then", label: "IF / THEN" },
-            { value: "join", label: "Join sources" },
-            { value: "create_column", label: "Create column" },
-          ],
+          logicStepTypeChoices(),
           "if_then",
         )}${actionRow("Add step")}`,
       );
@@ -2922,50 +2918,13 @@
         const type =
           fix.root.querySelector('[data-fix-field="stepType"]').value ||
           "if_then";
-        const id =
-          typeof global.uid === "function"
-            ? global.uid("step")
-            : `step_${Date.now()}`;
-        const step = {
-          id,
-          enabled: true,
-          parentId: null,
-          branchType: "root",
-          sortOrder: liveSteps().length + 1,
-          title:
-            type === "join"
-              ? "Join sources"
-              : type === "create_column"
-                ? "Create column"
-                : "IF / THEN",
-          type: type === "if_then" ? "if" : type,
-          step_type: type,
-          source: "",
-          field: "",
-          action: "",
-          notes: "",
-          conditions:
-            type === "if_then"
-              ? [
-                  {
-                    id:
-                      typeof global.uid === "function"
-                        ? global.uid("cond")
-                        : `cond_${Date.now()}`,
-                    fieldName: "",
-                    operator: "is equal to",
-                    valueMode: "values",
-                    compareValue: "",
-                  },
-                ]
-              : [],
-          params:
-            type === "join"
-              ? { join_type: "INNER JOIN" }
-              : type === "create_column"
-                ? { column_name: "", value_mode: "Static value" }
-                : { then_action_type: "display" },
-        };
+        const step =
+          typeof global.atlasBuildNewStep === "function"
+            ? global.atlasBuildNewStep(type, {
+                sortOrder: liveSteps().length + 1,
+              })
+            : fallbackLogicStep(type);
+        const id = step.id;
         liveSteps().push(step);
         if (state) state.selectedStepId = id;
         commitAudit("Logic step added.");
@@ -4316,6 +4275,72 @@
   }
 
   // The same business order the logic builder sorts by.
+  /**
+   * The step types "Add logic step" offers: the New Rule menu's types when
+   * the Logic Builder is loaded, otherwise IF / THEN, Join and Create Column.
+   */
+  function logicStepTypeChoices() {
+    const options =
+      typeof global.atlasNewRuleTypeOptions === "function"
+        ? global.atlasNewRuleTypeOptions()
+        : [];
+    if (options.length)
+      return options.map(([value, label]) => ({ value, label }));
+    return [
+      { value: "if_then", label: "IF / THEN" },
+      { value: "join", label: "Join sources" },
+      { value: "create_column", label: "Create column" },
+    ];
+  }
+
+  /** A new step for "Add logic step" when the Logic Builder is not loaded. */
+  function fallbackLogicStep(type) {
+    const id =
+      typeof global.uid === "function"
+        ? global.uid("step")
+        : `step_${Date.now()}`;
+    return {
+      id,
+      enabled: true,
+      parentId: null,
+      branchType: "root",
+      sortOrder: liveSteps().length + 1,
+      title:
+        type === "join"
+          ? "Join sources"
+          : type === "create_column"
+            ? "Create column"
+            : "IF / THEN",
+      type: type === "if_then" ? "if" : type,
+      step_type: type,
+      source: "",
+      field: "",
+      action: "",
+      notes: "",
+      conditions:
+        type === "if_then"
+          ? [
+              {
+                id:
+                  typeof global.uid === "function"
+                    ? global.uid("cond")
+                    : `cond_${Date.now()}`,
+                fieldName: "",
+                operator: "is equal to",
+                valueMode: "values",
+                compareValue: "",
+              },
+            ]
+          : [],
+      params:
+        type === "join"
+          ? { join_type: "INNER JOIN" }
+          : type === "create_column"
+            ? { column_name: "", value_mode: "Static value" }
+            : { then_action_type: "display" },
+    };
+  }
+
   function stepOrderGroup(step) {
     if (!step) return 40;
     return global.atlasStepCapabilities(step).orderGroup;
