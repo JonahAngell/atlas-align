@@ -19,6 +19,7 @@
  *   {{> name}}  {{> name expr}}     include a partial (render's
  *                                   options.partials), optionally with expr
  *                                   as its context ({{this}} inside)
+ *   (include "name" expr)           the same partial as a plain-text value
  *   {{! comment }}  {{~ trims whitespace before, ~}} trims whitespace after
  *   \{{                             a literal "{{"
  *
@@ -641,6 +642,12 @@
         .join(hash.separator == null ? ", " : toText(hash.separator)),
     replace: (args) =>
       toText(args[0]).split(toText(args[1])).join(toText(args[2])),
+    // (include "name" [value]) is {{> name [value]}} as a value: the
+    // partial's plain text, so it can be compared, trimmed or passed on.
+    include: (args, hash, tools) =>
+      tools?.partial
+        ? tools.partial(toText(args[0]), ...(args.length > 1 ? [args[1]] : []))
+        : "",
   });
 
   // ---------------------------------------------------------------------------
@@ -1031,6 +1038,14 @@
               !partialNames.has(String(named.value))
             )
               report(`Unknown partial "${named.value}"`, expression.offset);
+            const included =
+              expression.name === "include" ? expression.args[0] : null;
+            if (
+              partialNames &&
+              included?.type === "literal" &&
+              !partialNames.has(String(included.value))
+            )
+              report(`Unknown partial "${included.value}"`, expression.offset);
             expression.args.forEach(visitExpression);
             Object.values(expression.hash).forEach(visitExpression);
           }

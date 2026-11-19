@@ -17,8 +17,7 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   ├── settings.json
-│   └── settings.local.json
+│   └── settings.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -479,11 +478,13 @@
 │   │   ├── step-types-pinned
 │   │   │   ├── create_column.v1.json
 │   │   │   ├── else.v1.json
+│   │   │   ├── else.v2.json
 │   │   │   ├── filter_rows.v1.json
 │   │   │   ├── flag_records.v1.json
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
 │   │   │   ├── if_then.v1.json
+│   │   │   ├── if_then.v2.json
 │   │   │   ├── join.v1.json
 │   │   │   ├── split_field.v1.json
 │   │   │   ├── split_field.v2.json
@@ -581,6 +582,7 @@
 │   ├── step-type-condition-helpers.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
+│   ├── step-type-if-then-differential.test.js
 │   ├── step-type-partials.test.js
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js

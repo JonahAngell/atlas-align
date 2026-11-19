@@ -782,3 +782,29 @@ test("runtime: elseStep and ifStep reach one step away", async () => {
     "After step 2 (keep_matching): IF Status AND Type OR (Grade AND Band).",
   );
 });
+
+test("include gives a partial's text as a value", () => {
+  const partials = {
+    name: "{{this.first}} {{this.last}}",
+    greeting: { english: "Hello", default: "Hi" },
+  };
+  assert.equal(
+    render(
+      '{{upper (include "name" person)}} / {{#if (eq (include "greeting") "Hello")}}english{{/if}}',
+      { person: { first: "Ada", last: "Lovelace" } },
+      { partials, format: "english" },
+    ),
+    "ADA LOVELACE / english",
+  );
+  assert.equal(render('{{include "greeting"}}', {}, { partials }), "Hi");
+  assert.deepEqual(
+    plain(
+      templates
+        .check('{{include "missing"}} {{include "name"}}', {
+          partials: ["name"],
+        })
+        .map((problem) => problem.message),
+    ),
+    ['Unknown partial "missing"'],
+  );
+});
