@@ -66,27 +66,6 @@ function atlasImportParseDefinedType(text) {
   });
 }
 
-const ATLAS_IMPORT_OPERATORS = [
-  "is not equal to",
-  "is equal to",
-  "does not contain",
-  "does not start with",
-  "does not end with",
-  "starts with",
-  "ends with",
-  "contains",
-  "is greater than or equal to",
-  "is greater than",
-  "is less than or equal to",
-  "is less than",
-  "is not blank/null",
-  "is blank/null",
-  "is not blank",
-  "is blank",
-  "does not match expression",
-  "matches expression",
-];
-
 const ATLAS_IMPORT_JOIN_TYPES = [
   "INNER JOIN",
   "LEFT JOIN",
@@ -219,10 +198,20 @@ function atlasImportReadTableColumn(text) {
   return null;
 }
 
+/**
+ * The condition operators: the phrase catalog's (atlasOperatorCatalog) in
+ * the app, the engine's copy where only the engine is loaded.
+ */
+function atlasImportOperatorCatalog() {
+  return typeof atlasOperatorCatalog === "function"
+    ? atlasOperatorCatalog()
+    : globalThis.ATLASStepTypes.conditions.operatorCatalog();
+}
+
 function atlasImportMatchOperator(text) {
   const source = String(text || "").trimStart();
   const lower = source.toLowerCase();
-  for (const operator of ATLAS_IMPORT_OPERATORS) {
+  for (const operator of atlasImportOperatorCatalog().sentence) {
     if (!lower.startsWith(operator)) continue;
     const next = lower.charAt(operator.length);
     if (next && !/[\s.]/.test(next)) continue;
@@ -236,10 +225,7 @@ function atlasImportMatchOperator(text) {
 
 function atlasImportCanonicalOperator(operator) {
   const value = String(operator || "").toLowerCase();
-  if (value === "is blank" || value === "is blank/null") return "is blank/null";
-  if (value === "is not blank" || value === "is not blank/null")
-    return "is not blank/null";
-  return value;
+  return atlasImportOperatorCatalog().canonical[value] || value;
 }
 
 function atlasImportReadQuotedList(text) {
@@ -594,30 +580,8 @@ function atlasImportConditionDraft(parsed, index, connector) {
 }
 
 function atlasImportOperatorsForMode(valueMode) {
-  if (valueMode === "blank") return ["is blank/null", "is not blank/null"];
-  if (valueMode === "field")
-    return [
-      "is equal to",
-      "is not equal to",
-      "contains",
-      "does not contain",
-      "starts with",
-      "ends with",
-      "is greater than",
-      "is greater than or equal to",
-      "is less than",
-      "is less than or equal to",
-    ];
-  if (valueMode === "expression")
-    return ["matches expression", "does not match expression"];
-  return [
-    "is equal to",
-    "is not equal to",
-    "contains",
-    "does not contain",
-    "starts with",
-    "ends with",
-  ];
+  const sets = atlasImportOperatorCatalog().sets;
+  return [...(sets[valueMode] || sets.values || [])];
 }
 
 const ATLAS_IMPORT_MIXED_CONNECTORS =

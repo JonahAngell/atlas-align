@@ -8,7 +8,8 @@
     "js/step-types/02-definitions.js",
     "js/step-types/03-migrations.js",
     "js/step-types/04-registry.js",
-    "js/step-types/05-conditions.js"
+    "js/step-types/05-conditions.js",
+    "js/step-types/operators.generated.js"
   ],
   "catalogs": [
     "catalogs/step-types/schema.json",
@@ -25,6 +26,7 @@
       "js/step-types/03-migrations.js",
       "js/step-types/04-registry.js",
       "js/step-types/05-conditions.js",
+      "js/step-types/operators.generated.js",
       "js/step-types/definitions.generated.js",
       "js/01-state-dom.js",
       "js/02-hierarchy.js",

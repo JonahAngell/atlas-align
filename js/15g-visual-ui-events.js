@@ -367,21 +367,6 @@ function atlasThenActionTypeControl(prefix, actionType) {
   )}</div>`;
 }
 
-const ATLAS_CONDITION_OPERATORS = [
-  "is equal to",
-  "is not equal to",
-  "contains",
-  "does not contain",
-  "starts with",
-  "does not start with",
-  "ends with",
-  "does not end with",
-  "is greater than",
-  "is greater than or equal to",
-  "is less than",
-  "is less than or equal to",
-];
-
 /** The values to show in the editor: the stored array, else the old text. */
 function atlasConditionValueLines(condition = {}) {
   return Array.isArray(condition.compareValues) &&
@@ -392,35 +377,19 @@ function atlasConditionValueLines(condition = {}) {
 
 function atlasOperatorListForValueMode(valueMode) {
   const mode = valueMode || "values";
-  if (mode === "blank") {
-    return [
+  const sets = atlasOperatorCatalog().sets;
+  if (mode === "blank")
+    return (sets.blank || []).map((operator, index) =>
       catalogOperatorLabel(
-        "analyst_logic.blank_comparison.is_blank",
-        "is blank/null",
+        index === 0
+          ? "analyst_logic.blank_comparison.is_blank"
+          : "analyst_logic.blank_comparison.is_not_blank",
+        operator,
       ),
-      catalogOperatorLabel(
-        "analyst_logic.blank_comparison.is_not_blank",
-        "is not blank/null",
-      ),
-    ];
-  }
-  if (mode === "parameter")
-    return catalogArrayFromOptions({
-      path: "app_config.logic_options.operator_sets.parameter",
-      fallback: ATLAS_PARAMETER_OPERATORS,
-    });
-  if (mode === "expression")
-    return catalogArrayFromOptions({
-      path: "app_config.logic_options.operator_sets.expression",
-      fallback: ["matches expression", "does not match expression"],
-    });
-  // Values and field comparisons share the contract's operator vocabulary.
-  return catalogArrayFromOptions({
-    path: `app_config.logic_options.operator_sets.${
-      mode === "field" ? "field" : "values"
-    }`,
-    fallback: ATLAS_CONDITION_OPERATORS,
-  });
+    );
+  // Field comparisons have their own set; run parameters and expressions
+  // theirs; plain values the rest.
+  return [...(sets[mode] || sets.values || [])];
 }
 
 function atlasOperatorOptionsForValueMode(valueMode, selectedOperator = "") {

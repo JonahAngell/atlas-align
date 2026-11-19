@@ -160,7 +160,8 @@
 │   │   ├── 04-registry.js
 │   │   ├── 05-conditions.js
 │   │   ├── definitions.generated.js
-│   │   └── engine-manifest.json
+│   │   ├── engine-manifest.json
+│   │   └── operators.generated.js
 │   ├── 00-config-utils.js
 │   ├── 00-exceljs-loader.js
 │   ├── 00-html-partials-loader.js
@@ -575,6 +576,7 @@
 │   ├── modal-focus-trap.test.js
 │   ├── my-audits-render.test.js
 │   ├── notebook-wording-import.test.js
+│   ├── operator-catalog.test.js
 │   ├── pending-approval-rescind.test.js
 │   ├── publication-deletion-ui.test.js
 │   ├── published-locking.test.js

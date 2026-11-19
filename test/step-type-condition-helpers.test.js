@@ -13,12 +13,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { loadApp } from "./support/step-type-harness.js";
+import {
+  loadStepTypeScripts,
+  STEP_TYPE_ENGINE_SCRIPTS,
+} from "./support/step-type-scripts.js";
 import { matrixGroups } from "./fixtures/condition-action-matrix/cases.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
 const SCHEMA = JSON.parse(read("catalogs/step-types/schema.json"));
 const CATALOG = JSON.parse(read("catalogs/logic_phrase_catalog.json"));
+/** ATLASStepTypes.conditions from the engine scripts alone. */
+const engineConditions = () =>
+  loadStepTypeScripts(vm.createContext({}), STEP_TYPE_ENGINE_SCRIPTS)
+    .ATLASStepTypes.conditions;
 const DIALECTS = ["excel", "sql", "python"];
 const plain = (value) => JSON.parse(JSON.stringify(value));
 const run = (context, code) => vm.runInContext(code, context);
@@ -180,7 +188,7 @@ const helper = (context, name, args, hash = {}, format = "excel") => {
 
 test("operator meanings: the catalog gives every listed operator a meaning", () => {
   const options = CATALOG.app_config.logic_options;
-  const meanings = options.operator_meanings;
+  const meanings = engineConditions().operatorCatalog(options).meanings;
   const known = new Set(
     ["compare", "text_match", "blank"].flatMap((kind) =>
       Object.keys(meanings[kind]),

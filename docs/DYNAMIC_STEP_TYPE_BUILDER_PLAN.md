@@ -1391,6 +1391,18 @@ and Phase 8 decision 3 (decision 1 below).
   `text_match`, `blank`) needs no template change. A new class needs a new
   case in the `leaf` partials, which is a new definition version.
 
+As built (5047): the list is a new key, `operator_catalog`, with entries
+`{value, inverse, meaning, aliases, formulaAliases}` (aliases are read in
+text, formula aliases only in formulas). `operator_meanings` is derived from
+it and removed from the catalog. `operator_sets` stays as written, since a
+set's order is the editor's order, and gains `blank`. `operators` stays too:
+it is the list Filter Rows and Flag Records offer (their pinned versions
+name it), not a copy of the others. The engine reads a generated copy,
+`js/step-types/operators.generated.js` (an engine script, so the builder
+copies it), and `PARAMETER_OPERATORS` reads its `parameter` set. Text
+import's review lists now offer each mode's editor set, so values mode
+gains the comparisons and the "does not start / end with" operators.
+
 ### 3. Capabilities from the definition
 
 New runtime questions, answered from the definition:

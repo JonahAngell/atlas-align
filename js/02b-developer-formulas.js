@@ -18,18 +18,15 @@
 const ATLAS_DEV_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 
 /**
- * What an operator means in a formula, from the phrase catalog
- * (app_config.logic_options.operator_meanings): kind is "compare" (the
- * symbol, e.g. "<>"), "text_match" ({kind, negated}) or "blank" (true when
- * the operator tests for a value).
+ * What an operator means in a formula, from the phrase catalog's operator
+ * catalog (see atlasOperatorCatalog): kind is "compare" (the symbol, e.g.
+ * "<>"), "text_match" ({kind, negated}) or "blank" (true when the operator
+ * tests for a value).
  */
 function atlasDevOperatorMeaning(kind, operator) {
   const meanings =
-    typeof getCatalogValue === "function"
-      ? getCatalogValue(
-          `app_config.logic_options.operator_meanings.${kind}`,
-          null,
-        )
+    typeof atlasOperatorCatalog === "function"
+      ? atlasOperatorCatalog().meanings?.[kind]
       : null;
   return meanings &&
     typeof meanings === "object" &&
