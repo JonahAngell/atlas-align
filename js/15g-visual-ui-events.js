@@ -262,7 +262,7 @@ function catalogOperatorLabel(path, fallback) {
  */
 function atlasThenActionTypeChoices(current = "") {
   return [
-    ...(current === "freeform"
+    ...(current === "freeform" && !atlasActionFreeformOff
       ? [
           [
             "freeform",
@@ -641,6 +641,8 @@ atlasRenderThenActionBuilder = function atlasRenderThenActionBuilderDynamic(
       message,
     )}<br><span class="hint">Added to Developer Logic: ${esc(devNote)}</span></div><input type="hidden" data-param="then_action" value="${esc(hide ? (byKey ? "Do not display all records for this key" : "Do not display matching records") : "Display matching records")}"></div>`;
   }
+  if (atlasActionFreeformOff)
+    return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<p class="hint full">Choose an action type.</p></div>`;
   return `<div class="then-action-builder refined-action-builder dynamic-action-builder">${typeSelect}<label class="full">Action<textarea data-param="then_action" placeholder="e.g., display records in the audit">${esc(p.then_action || "")}</textarea></label></div>`;
 };
 
@@ -682,8 +684,16 @@ function atlasConditionJoin(connector, listId, position) {
  * @param {number} index - Position in its list.
  * @param {number} depth - Nesting depth (0 = top level).
  * @param {string} connector - Connector of its list.
+ * @param {{nesting?: boolean}} [options] - nesting false drops the
+ *   Sub-condition button, so no new group can start here.
  */
-function atlasRenderConditionListRow(condition, index, depth, connector) {
+function atlasRenderConditionListRow(
+  condition,
+  index,
+  depth,
+  connector,
+  options = {},
+) {
   const template = document.createElement("template");
   template.innerHTML = renderConditionRow(
     condition,
@@ -700,7 +710,10 @@ function atlasRenderConditionListRow(condition, index, depth, connector) {
   if (remove) {
     const actions = document.createElement("div");
     actions.className = "condition-row-actions";
-    actions.innerHTML = `<button type="button" class="secondary small" data-guided-add-sub="${esc(row.dataset.conditionId || "")}">+ Sub-condition</button>`;
+    actions.innerHTML =
+      options.nesting === false
+        ? ""
+        : `<button type="button" class="secondary small" data-guided-add-sub="${esc(row.dataset.conditionId || "")}">+ Sub-condition</button>`;
     remove.replaceWith(actions);
     remove.textContent = "Delete";
     actions.append(remove);
@@ -715,15 +728,16 @@ function atlasRenderConditionListRow(condition, index, depth, connector) {
  * @param {any} group - Group node.
  * @param {number} depth - Nesting depth of the list holding the group.
  * @param {boolean} attached - Whether a condition comes right before it.
+ * @param {{nesting?: boolean}} [options] - Passed to the group's items.
  */
-function atlasRenderConditionGroup(group, depth, attached) {
+function atlasRenderConditionGroup(group, depth, attached, options = {}) {
   const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
   const id = group.id || uid("cond");
   const items = atlasConditionGroupItems(group);
   const count = atlasConditionLeaves(items).length;
   return `<div class="guided-condition-group" role="group" aria-label="Sub-conditions: ${count} joined by ${inner}" data-condition-id="${esc(id)}" data-depth="${depth + 1}">
     <div class="condition-group-header" hidden><input type="hidden" data-condition-field="connector" value="${esc(atlasConditionConnectorOf(group.connector))}"><input type="hidden" data-group-field="groupConnector" value="${esc(inner)}"></div>
-    <div class="condition-guided-stack condition-group-items" data-condition-list data-group-id="${esc(id)}">${atlasRenderConditionNodes(items, depth + 1, inner, id)}</div>
+    <div class="condition-guided-stack condition-group-items" data-condition-list data-group-id="${esc(id)}">${atlasRenderConditionNodes(items, depth + 1, inner, id, options)}</div>
     ${attached ? "" : `<button type="button" class="condition-add-link" data-guided-add-condition="${esc(inner)}" data-target-group="${esc(id)}">+ Add Bullet</button>`}
   </div>`;
 }
@@ -734,8 +748,15 @@ function atlasRenderConditionGroup(group, depth, attached) {
  * @param {number} depth - Nesting depth (0 = top level).
  * @param {string|null} groupConnector - Owning group's connector, or null.
  * @param {string} listId - Owning group id, or "" for the top level.
+ * @param {{nesting?: boolean}} [options] - The condition_group features.
  */
-function atlasRenderConditionNodes(nodes, depth, groupConnector, listId = "") {
+function atlasRenderConditionNodes(
+  nodes,
+  depth,
+  groupConnector,
+  listId = "",
+  options = {},
+) {
   const list = nodes || [];
   const connector = atlasConditionLevelConnector(list, groupConnector);
   return list
@@ -747,23 +768,60 @@ function atlasRenderConditionNodes(nodes, depth, groupConnector, listId = "") {
             node,
             depth,
             index > 0 && !atlasIsConditionGroup(list[index - 1]),
+            options,
           )
-        : atlasRenderConditionListRow(node, index, depth, connector);
+        : atlasRenderConditionListRow(node, index, depth, connector, options);
       return join + body;
     })
     .join("");
 }
 
-/** The THEN or ELSE action form (the action control). */
-function atlasActionEditorHtml(params, branch = "THEN") {
-  return atlasRenderThenActionBuilder(params || {}, branch);
+/**
+ * True while atlasActionEditorHtml draws an action whose definition switched
+ * freeform off and whose step does not use it. The THEN / ELSE builders are
+ * wrapped several times over, so the type choices read this flag instead of
+ * a parameter passed through every wrapper.
+ */
+let atlasActionFreeformOff = false;
+
+/**
+ * Whether a step's action is freeform text: its type says so, or it has no
+ * type but has words in then_action (a step saved before action types).
+ * @param {Record<string, any>} p - Step params.
+ */
+function atlasActionUsesFreeform(p = {}) {
+  const type = String(p.then_action_type || "").trim();
+  if (type) return type === "freeform";
+  return Boolean(String(p.then_action || "").trim());
+}
+
+/**
+ * The THEN or ELSE action form (the action control).
+ * @param {Record<string, any>} params - Step params.
+ * @param {string} branch - THEN or ELSE.
+ * @param {{freeform?: boolean}} [features] - The definition's features.
+ *   freeform false drops the Freeform Text choice unless the step uses it.
+ */
+function atlasActionEditorHtml(params, branch = "THEN", features = {}) {
+  const p = params || {};
+  if (features?.freeform !== false || atlasActionUsesFreeform(p))
+    return atlasRenderThenActionBuilder(p, branch);
+  atlasActionFreeformOff = true;
+  try {
+    return atlasRenderThenActionBuilder(p, branch);
+  } finally {
+    atlasActionFreeformOff = false;
+  }
 }
 
 /**
  * The IF condition list with its Add Condition button (the condition_group
  * control). A step without conditions gets the default one.
+ * @param {any} step - The step.
+ * @param {{nesting?: boolean}} [features] - The definition's features.
+ *   nesting false drops the Sub-condition buttons; saved groups still show.
  */
-function atlasConditionGroupEditorHtml(step) {
+function atlasConditionGroupEditorHtml(step, features = {}) {
   const conditions = parseStepConditions(step);
   if (!conditions.length) {
     conditions.push(defaultGuidedCondition(step));
@@ -774,6 +832,7 @@ function atlasConditionGroupEditorHtml(step) {
     0,
     null,
     "",
+    { nesting: features?.nesting !== false },
   )}</div><div class="row condition-root-actions"><button type="button" class="secondary small" data-guided-add-condition="${atlasConditionLevelConnector(conditions, null)}">+ Add Condition</button></div>`;
 }
 

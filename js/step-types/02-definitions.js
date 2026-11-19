@@ -444,10 +444,23 @@
       if (!allowed.has(key))
         problems.push(`the ${control.name} control does not read "${key}"`);
     });
-    const features = new Set((control.features || []).map((item) => item.name));
+    // Only a feature the app editors honor can be switched. A planned one is
+    // not built, so it is off everywhere and cannot be named.
+    const features = new Map(
+      (control.features || []).map((item) => [item.name, item]),
+    );
     Object.keys(field.features || {}).forEach((name) => {
-      if (!features.has(name))
+      const feature = features.get(name);
+      if (!feature)
         problems.push(`the ${control.name} control has no feature "${name}"`);
+      else if (feature.status === "planned")
+        problems.push(
+          `the ${control.name} feature "${name}" is planned and not built yet`,
+        );
+      else if (feature.switchable !== true)
+        problems.push(
+          `the ${control.name} feature "${name}" cannot be switched off yet`,
+        );
     });
     if (control.optionProperties) {
       const optionKeys = new Set(control.optionProperties);
