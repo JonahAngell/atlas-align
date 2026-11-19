@@ -12,7 +12,11 @@
 (function initializeStepTypeDefinitions(global) {
   "use strict";
 
-  const SUPPORTED_SCHEMA_VERSIONS = Object.freeze([1]);
+  const SUPPORTED_SCHEMA_VERSIONS = Object.freeze([1, 2]);
+  /** Helper hash keys that name a partial: {helper: key}. */
+  const PARTIAL_HASHES = Object.freeze({ conditionTree: "leaf" });
+  /** The schema version that added `partials`. */
+  const PARTIALS_SCHEMA_VERSION = 2;
   const TEMPLATE_ROOTS = Object.freeze([
     "param",
     "subtype",
@@ -20,6 +24,9 @@
     "parent",
     "step",
     "format",
+    "conditions",
+    "elseStep",
+    "ifStep",
   ]);
   /** Extra values qTest outcome templates may read: the record wording. */
   const OUTCOME_ROOTS = Object.freeze(["record"]);
@@ -271,6 +278,13 @@
       Object.entries(triple || {}).forEach(([key, value]) =>
         add(`${path}/${key}`, value),
       );
+    Object.entries(definition.partials || {}).forEach(([name, value]) => {
+      if (typeof value === "string") add(`/partials/${name}`, value);
+      else
+        Object.entries(value || {}).forEach(([form, text]) =>
+          add(`/partials/${name}/${form}`, text),
+        );
+    });
     addSet("/english", definition.english);
     addSet("/autoNotes", definition.autoNotes);
     const formulaSet = definition.formulas || {};
@@ -669,14 +683,31 @@
         `unknown import handler "${definition.textImport.handler}"`,
       );
 
+    if (
+      definition.partials !== undefined &&
+      definition.schemaVersion !== PARTIALS_SCHEMA_VERSION
+    )
+      add(
+        "/partials",
+        `partials need schemaVersion ${PARTIALS_SCHEMA_VERSION}`,
+        "schema",
+      );
     const templateApi = global.ATLASStepTypes.templates;
+    const partialNames = Object.keys(definition.partials || {});
     templates(definition).forEach(({ path, template: source }) => {
+      // A partial can be included with any context, so its values are not
+      // checked against the roots.
+      const roots = path.startsWith("/partials/")
+        ? null
+        : path.startsWith("/export/qtest/outcomes/")
+          ? [...TEMPLATE_ROOTS, ...OUTCOME_ROOTS]
+          : TEMPLATE_ROOTS;
       templateApi
         .check(source, {
           helpers: options.helpers || [],
-          roots: path.startsWith("/export/qtest/outcomes/")
-            ? [...TEMPLATE_ROOTS, ...OUTCOME_ROOTS]
-            : TEMPLATE_ROOTS,
+          partials: partialNames,
+          partialHashes: PARTIAL_HASHES,
+          ...(roots ? { roots } : {}),
         })
         .forEach((problem) =>
           errors.push({
@@ -697,6 +728,7 @@
 
   const api = Object.freeze({
     SUPPORTED_SCHEMA_VERSIONS,
+    PARTIALS_SCHEMA_VERSION,
     TEMPLATE_ROOTS,
     matches,
     isBlank,

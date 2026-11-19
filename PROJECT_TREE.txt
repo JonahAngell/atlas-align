@@ -157,6 +157,7 @@
 │   │   ├── 02-definitions.js
 │   │   ├── 03-migrations.js
 │   │   ├── 04-registry.js
+│   │   ├── 05-conditions.js
 │   │   ├── definitions.generated.js
 │   │   └── engine-manifest.json
 │   ├── 00-config-utils.js
@@ -578,6 +579,7 @@
 │   ├── step-editor-step-type.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
+│   ├── step-type-partials.test.js
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js
 │   ├── step-type-publishing.test.js

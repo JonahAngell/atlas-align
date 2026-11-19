@@ -2340,73 +2340,27 @@ normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
   return normalized;
 };
 
-// Conditions: one operator vocabulary, a run parameter mode and value arrays.
-const ATLAS_RUN_PARAMETERS = [
-  ["runDate", "Run Date", "The date the audit is run."],
-];
-const ATLAS_PARAMETER_OPERATORS = [
-  "is equal to",
-  "is not equal to",
-  "is greater than",
-  "is greater than or equal to",
-  "is less than",
-  "is less than or equal to",
-];
+// Conditions: one operator vocabulary, a run parameter mode and value arrays
+// (js/step-types/05-conditions.js).
+const ATLAS_RUN_PARAMETERS = ATLASStepTypes.conditions.RUN_PARAMETERS;
+const ATLAS_PARAMETER_OPERATORS = ATLASStepTypes.conditions.PARAMETER_OPERATORS;
 /** Text the current compiler reads as the run date (see RUN_TOKENS). */
-const ATLAS_RUN_PARAMETER_MIRROR = { runDate: "run date" };
+const ATLAS_RUN_PARAMETER_MIRROR =
+  ATLASStepTypes.conditions.RUN_PARAMETER_MIRROR;
 
 /** The value mode shown in the editor; a run parameter is stored as values. */
 function atlasConditionUiValueMode(condition = {}) {
-  const mode = condition.valueMode || "values";
-  if (mode === "parameter") return "parameter";
-  if (mode === "values" && condition.compareParameter) return "parameter";
-  return mode;
+  return ATLASStepTypes.conditions.uiValueMode(condition);
 }
 
 /** Splits a stored value list into an array, one value per line. */
 function atlasConditionValueArray(condition = {}) {
-  if (Array.isArray(condition.compareValues))
-    return condition.compareValues
-      .map((value) => String(value ?? "").trim())
-      .filter(Boolean);
-  return String(condition.compareValue ?? "")
-    .split(/\r?\n/)
-    .map((value) => value.trim())
-    .filter(Boolean);
+  return ATLASStepTypes.conditions.valueArray(condition);
 }
 
-/**
- * Normalizes one condition in place.
- * - A run parameter is stored as valueMode "values" plus compareParameter.
- *   compareValue mirrors it as "run date", which the current compiler reads
- *   as the run date. With an operator it cannot use, the mirror is blank so
- *   the current compiler blocks the condition.
- * - A value list is kept in compareValues (an array) and in compareValue
- *   (one value per line), which the current compiler reads.
- */
+/** One condition in its normalized form (a copy); see normalizeLeaf. */
 function atlasNormalizeConditionLeaf(condition = {}) {
-  const next = { ...condition };
-  if (atlasConditionUiValueMode(next) === "parameter") {
-    const parameter = ATLAS_RUN_PARAMETERS.some(
-      ([value]) => value === next.compareParameter,
-    )
-      ? next.compareParameter
-      : "runDate";
-    next.valueMode = "values";
-    next.compareParameter = parameter;
-    next.compareValue = ATLAS_PARAMETER_OPERATORS.includes(next.operator)
-      ? ATLAS_RUN_PARAMETER_MIRROR[parameter]
-      : "";
-    delete next.compareValues;
-    return next;
-  }
-  delete next.compareParameter;
-  if ((next.valueMode || "values") === "values") {
-    const values = atlasConditionValueArray(next);
-    next.compareValues = values;
-    next.compareValue = values.join("\n");
-  } else delete next.compareValues;
-  return next;
+  return ATLASStepTypes.conditions.normalizeLeaf(condition);
 }
 
 /** Problems with one condition's structured settings. */

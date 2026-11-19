@@ -6,7 +6,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import vm from "node:vm";
-import { buildManifest } from "../tools/build-step-type-manifest.mjs";
+import {
+  buildBundle,
+  buildManifest,
+} from "../tools/build-step-type-manifest.mjs";
 
 const read = (path) =>
   readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -398,8 +401,8 @@ test("schema: errors give a JSON pointer and a readable message", () => {
   assert.deepEqual(check({ ...formatField(), subtypes: "text" }), [
     { path: "/subtypes", message: "must be null or a subtype list" },
   ]);
-  assert.deepEqual(check({ ...formatField(), schemaVersion: 2 }), [
-    { path: "/schemaVersion", message: "must be 1" },
+  assert.deepEqual(check({ ...formatField(), schemaVersion: 3 }), [
+    { path: "/schemaVersion", message: "must be one of 1, 2" },
   ]);
   const { fields, ...withoutFields } = formatField();
   assert.ok(fields.length);
@@ -455,7 +458,7 @@ test("definitions: a valid definition passes", () => {
 });
 
 test("definitions: newer schema versions are reported, not loaded", () => {
-  const result = validate(formatField({ schemaVersion: 2 }));
+  const result = validate(formatField({ schemaVersion: 3 }));
   assert.equal(result.ok, false);
   assert.equal(result.errors[0].code, "unsupported_schema_version");
   assert.match(result.errors[0].message, /needs a newer ATLAS Align/);
@@ -1212,5 +1215,13 @@ test("catalogs/step-types/manifest.json matches the definition files", () => {
   assert.deepEqual(
     JSON.parse(read("catalogs/step-types/manifest.json")),
     buildManifest(),
+  );
+});
+
+test("js/step-types/definitions.generated.js matches the schema and definitions", async () => {
+  assert.equal(
+    read("js/step-types/definitions.generated.js"),
+    await buildBundle(),
+    "run npm run step-types:manifest",
   );
 });

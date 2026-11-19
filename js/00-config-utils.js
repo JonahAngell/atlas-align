@@ -10,7 +10,7 @@
 // Application constants
 // -----------------------------------------------------------------------------
 const ATLAS_APP_NAME = "ATLAS Align";
-const ATLAS_APP_VERSION = "v3.5.8";
+const ATLAS_APP_VERSION = "v3.6.0";
 
 /** Populates application-version display targets from the authoritative constant. */
 function atlasRenderAppVersion() {
