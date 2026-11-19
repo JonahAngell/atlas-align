@@ -127,7 +127,13 @@
         const target =
           (hash.branch !== undefined && entry.branches?.[text(hash.branch)]) ||
           entry;
-        const definition = registry?.resolve(target.type) || null;
+        const stepType = text(tools.data?.step?.step_type);
+        const type = target.fromStep
+          ? target.fromStep.includes(stepType)
+            ? stepType
+            : ""
+          : target.type;
+        const definition = (type && registry?.resolve(type)) || null;
         const usable =
           definition &&
           !definition.block &&

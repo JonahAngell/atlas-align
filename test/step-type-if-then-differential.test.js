@@ -11,6 +11,9 @@
  *   - the latest definitions (v3);
  *   - the definitions pinned to v2, whose helpers are now replaced helpers
  *     that render the v3 partials.
+ * Filter Rows v3 and Flag Records v4 do the same for their formulas, against
+ * atlasDevLegacyCondition, with filter_rows v2 and flag_records v3 pinned
+ * through the conditionFormula replaced helper.
  * Branch 5035 deletes this test together with the app functions.
  */
 import test from "node:test";
@@ -20,7 +23,12 @@ import vm from "node:vm";
 import { loadApp } from "./support/step-type-harness.js";
 import { matrixGroups } from "./fixtures/condition-action-matrix/cases.js";
 
-const PINNED = ["if_then.v2.json", "else.v2.json"].map((file) =>
+const PINNED = [
+  "if_then.v2.json",
+  "else.v2.json",
+  "filter_rows.v2.json",
+  "flag_records.v3.json",
+].map((file) =>
   JSON.parse(
     readFileSync(
       new URL(`./fixtures/step-types-pinned/${file}`, import.meta.url),
@@ -92,7 +100,11 @@ const OUTPUTS = `(source) => {
       qtestAction: atlasQtestThenAction(step),
     };
   }
-  runtime.usePinnedVersions(source === "v2" ? { if_then: 2, else: 2 } : null);
+  runtime.usePinnedVersions(
+    source === "v2"
+      ? { if_then: 2, else: 2, filter_rows: 2, flag_records: 3 }
+      : null,
+  );
   try {
     const version = runtime.definitionFor(step)?.version;
     return {
@@ -162,25 +174,31 @@ for (const { group, cases } of matrixGroups()) {
   });
 }
 
-test("v3 needs none of the replaced helpers", async () => {
+test("the latest versions need none of the replaced helpers", async () => {
   const context = await loadApp();
   const replaced = Object.keys(
     run(context, "ATLASStepTypeLibrary.replacedHelpers"),
   );
   assert.deepEqual(replaced.sort(), [
     "actionText",
+    "conditionFormula",
     "conditionText",
     "elseFormula",
     "ifThenFormula",
   ]);
-  for (const id of ["if_then", "else"]) {
+  for (const [id, version] of [
+    ["if_then", 3],
+    ["else", 3],
+    ["filter_rows", 3],
+    ["flag_records", 4],
+  ]) {
     const definition = JSON.parse(
       readFileSync(
         new URL(`../catalogs/step-types/${id}.json`, import.meta.url),
         "utf8",
       ),
     );
-    assert.equal(definition.version, 3);
+    assert.equal(definition.version, version);
     const source = JSON.stringify(definition);
     for (const name of replaced)
       assert.ok(
@@ -251,3 +269,75 @@ test("a replaced helper falls back to the app code when the latest version has n
   assert.equal(result.english, result.app);
   assert.equal(result.excel, result.appExcel);
 });
+
+for (const { group, cases } of matrixGroups().filter(
+  ({ group }) => group === "filter-flag",
+)) {
+  test(`Filter Rows and Flag Records templates match the app code: ${group}`, async () => {
+    const context = await appWithV2();
+    const formulasOf = run(
+      context,
+      `(source) => {
+        const step = __step;
+        const runtime = ATLASStepTypeRuntime;
+        if (source === "app") {
+          const result = atlasDevLegacyCondition(step);
+          return {
+            excel: result.excel,
+            sql: result.sql,
+            python: result.python,
+            notes: (result.notes || []).filter(Boolean),
+          };
+        }
+        runtime.usePinnedVersions(
+          source === "pinned" ? { filter_rows: 2, flag_records: 3 } : null,
+        );
+        try {
+          return {
+            version: runtime.definitionFor(step).version,
+            ...runtime.formulas(step),
+          };
+        } finally {
+          runtime.usePinnedVersions(null);
+        }
+      }`,
+    );
+    const latestVersion = { filter_rows: 3, flag_records: 4 };
+    const pinnedVersion = { filter_rows: 2, flag_records: 3 };
+    let checked = 0;
+    const differences = [];
+    for (const document of cases) {
+      context.__document = structuredClone(document);
+      run(
+        context,
+        `state.audit = normalizeLoadedAudit(__document, "repo"); state.auditSelected = true;`,
+      );
+      const steps = run(
+        context,
+        `state.audit.steps.map((step, index) => ({ type: step.step_type, index }))
+          .filter(({ type }) => type === "filter_rows" || type === "flag_records")`,
+      );
+      for (const { type, index } of steps) {
+        context.__step = run(context, `state.audit.steps[${index}]`);
+        const app = plain(formulasOf("app"));
+        const { version: latest, ...v3 } = plain(formulasOf("latest"));
+        const { version: pinned, ...old } = plain(formulasOf("pinned"));
+        assert.equal(latest, latestVersion[type], `${document.id} latest`);
+        assert.equal(pinned, pinnedVersion[type], `${document.id} pinned`);
+        for (const [name, actual] of [
+          ["latest", v3],
+          ["pinned", old],
+        ])
+          if (JSON.stringify(actual) !== JSON.stringify(app))
+            differences.push({ where: `${document.id} ${name}`, app, actual });
+        checked += 1;
+      }
+    }
+    assert.ok(checked > 0, "the group has Filter Rows and Flag Records steps");
+    assert.deepEqual(
+      differences.slice(0, 3),
+      [],
+      `${differences.length} difference(s) in ${group}`,
+    );
+  });
+}

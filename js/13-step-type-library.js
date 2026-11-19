@@ -48,7 +48,8 @@
  *   textSeparator params                          Display text separator ("||")
  *   first list                                    a list's first item
  *   valueList value lead=" "                      compare values as quoted text
- *   conditionFormula param step note=N            Filter Rows / Flag Records formulas
+ *   conditionFormula param step note=N            Filter Rows / Flag Records formulas (replaced)
+ *   object key=value …                            the pairs as an object
  *   combine list connector / list a b … / negate expr / unwrap expr
  *   operatorKind op / operatorSymbol op / operatorNegated op
  *   conditionValues condition / compareLiteral values condition
@@ -964,6 +965,10 @@
         ? "||"
         : text(value);
     },
+    /** Its key=value pairs as an object, e.g. one condition for conditionTree. */
+    object(_args, hash) {
+      return { ...(hash || {}) };
+    },
     /** The first item of a list, or "" when it is empty or not a list. */
     first(args) {
       return Array.isArray(args[0]) && args[0].length ? args[0][0] : "";
@@ -1104,7 +1109,8 @@
    * Helpers a later version of a type replaced with partials: helper name ->
    * the type whose latest definition renders it, and the partial (or the
    * formulas, for formulas: true) that stands in. actionText with
-   * branch="ELSE" uses `branches.ELSE`. The runtime renders each through the
+   * branch="ELSE" uses `branches.ELSE`; `fromStep` lists the types whose
+   * own latest definition renders it (the calling step's type). The runtime renders each through the
    * latest definition, so a version pinned before the partials still
    * renders; the helpers above are the fallback when the latest definition
    * has no such partial. Never remove an entry while such a version can be
@@ -1121,6 +1127,10 @@
     }),
     ifThenFormula: Object.freeze({ type: "if_then", formulas: true }),
     elseFormula: Object.freeze({ type: "else", formulas: true }),
+    conditionFormula: Object.freeze({
+      fromStep: Object.freeze(["filter_rows", "flag_records"]),
+      formulas: true,
+    }),
   });
 
   global.ATLASStepTypeLibrary = Object.freeze({
