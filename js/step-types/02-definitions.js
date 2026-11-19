@@ -25,8 +25,27 @@
     "step",
     "format",
     "conditions",
+    "storedConditions",
     "elseStep",
     "ifStep",
+  ]);
+  /** The templates of export.qtest.action, each rendered as plain text. */
+  const QTEST_ACTION_TEMPLATES = Object.freeze([
+    "kind",
+    "message",
+    "outputColumn",
+    "targetColumn",
+    "valueField",
+    "calculated",
+    "text",
+  ]);
+  /** The kinds export.qtest.action's kind template may render. */
+  const QTEST_ACTION_KINDS = Object.freeze([
+    "display_text",
+    "do_not_display",
+    "set_column",
+    "freeform",
+    "none",
   ]);
   /** Extra values qTest outcome templates may read: the record wording. */
   const OUTCOME_ROOTS = Object.freeze(["record"]);
@@ -391,8 +410,9 @@
     const addOutcomes = (path, qtest) => {
       add(`${path}/outcomes/atlas`, qtest?.outcomes?.atlas);
       add(`${path}/outcomes/source`, qtest?.outcomes?.source);
-      add(`${path}/action/message`, qtest?.action?.message);
-      add(`${path}/action/outputColumn`, qtest?.action?.outputColumn);
+      QTEST_ACTION_TEMPLATES.forEach((key) =>
+        add(`${path}/action/${key}`, qtest?.action?.[key]),
+      );
     };
     addOutcomes("/export/qtest", definition.export?.qtest);
     (definition.export?.rules || []).forEach((rule, index) =>
@@ -822,6 +842,8 @@
     SUPPORTED_SCHEMA_VERSIONS,
     PARTIALS_SCHEMA_VERSION,
     TEMPLATE_ROOTS,
+    QTEST_ACTION_TEMPLATES,
+    QTEST_ACTION_KINDS,
     matches,
     isBlank,
     subtypeOf,

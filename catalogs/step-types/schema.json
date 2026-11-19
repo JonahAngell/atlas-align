@@ -513,11 +513,15 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["kind"],
-          "description": "The outcome qTest tests for a type without an action field: hide the record, or write a message to a column. message and outputColumn are plain templates. An action field takes its place.",
+          "description": "The outcome qTest tests, as plain templates. kind renders display_text (with message and outputColumn), do_not_display, set_column (with targetColumn, valueField and calculated, true or false), freeform (with text) or none. Without it, a type with an action field reads the outcome from the app's action code.",
           "properties": {
-            "kind": { "enum": ["display_text", "do_not_display"] },
+            "kind": { "$ref": "#/$defs/template" },
             "message": { "$ref": "#/$defs/template" },
-            "outputColumn": { "$ref": "#/$defs/template" }
+            "outputColumn": { "$ref": "#/$defs/template" },
+            "targetColumn": { "$ref": "#/$defs/template" },
+            "valueField": { "$ref": "#/$defs/template" },
+            "calculated": { "$ref": "#/$defs/template" },
+            "text": { "$ref": "#/$defs/template" }
           }
         }
       }

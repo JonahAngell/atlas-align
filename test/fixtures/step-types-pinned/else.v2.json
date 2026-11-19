@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "id": "else",
+  "version": 2,
+  "label": "ELSE",
+  "category": "logic",
+  "description": "What happens when the IF conditions are not met.",
+  "status": "legacy",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "handler",
+      "name": "copy_step_source"
+    }
+  ],
+  "editorFrame": {
+    "standalone": true,
+    "className": "else-action-builder",
+    "heading": false
+  },
+  "fields": [
+    {
+      "param": "else_hint",
+      "control": "hint",
+      "label": "Configure what happens when the IF conditions are not met."
+    },
+    {
+      "param": "then_action_type",
+      "control": "action",
+      "label": "ELSE action",
+      "branch": "ELSE"
+    }
+  ],
+  "english": {
+    "default": "{{actionText param step branch=\"ELSE\"}}"
+  },
+  "formulas": {
+    "shape": "frame",
+    "lead": "{{elseFormula param step part=\"lead\"}}",
+    "default": {
+      "excel": "{{elseFormula param step}}",
+      "sql": "{{elseFormula param step}}",
+      "python": "{{elseFormula param step}}"
+    },
+    "notes": ["{{elseFormula param step note=0}}"]
+  },
+  "autoNotes": {
+    "default": "{{phrase \"notes.else.default\"}}"
+  },
+  "export": {
+    "scriptRole": "else"
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "action"
+    }
+  ]
+}

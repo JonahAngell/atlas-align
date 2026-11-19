@@ -40,10 +40,13 @@
  *   joinKeyPairs params from=N blank=true         Join key pairs in use
  *   joinKeyList params style=notes|additional     Join key pairs as text
  *   joinFormula params part=lead note=N           Join formulas
- *   conditionText param step                      IF conditions in words
- *   actionText param step branch=ELSE             THEN / ELSE action in words
+ *   conditionText param step                      IF conditions in words (replaced)
+ *   actionText param step branch=ELSE             THEN / ELSE action in words (replaced)
  *   ifPrefix text                                 IF + text unless it has one
- *   ifThenFormula / elseFormula param step part=lead note=N   IF and ELSE formulas
+ *   ifThenFormula / elseFormula param step part=lead note=N   IF and ELSE formulas (replaced)
+ *   branchLead text                               text that is only an IF / ELSE lead
+ *   textSeparator params                          Display text separator ("||")
+ *   first list                                    a list's first item
  *   valueList value lead=" "                      compare values as quoted text
  *   conditionFormula param step note=N            Filter Rows / Flag Records formulas
  *   combine list connector / list a b … / negate expr / unwrap expr
@@ -52,7 +55,8 @@
  *   compare left op right / textMatch left op values field=true leftName rightName
  *   blankTest left op / runParameter / json value / freeformOutcome text part=x
  *   (math helpers also take source alias field mathJson rounding places as
- *   list arguments, mathFormula raw=true gives the math without rounding;
+ *   list arguments, mathFormula raw=true gives the math without rounding,
+ *   mathPhrase complete=true drops an operation missing its word or operand;
  *   string transform helpers take prefix="then_", the phrase context=)
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
@@ -658,8 +662,11 @@
         (values.rounding_mode && values.rounding_mode !== "none"),
       );
     },
-    /** "file "wd" column "Pay" times 2, then round to ..." for analyst text. */
-    mathPhrase(args) {
+    /**
+     * "file "wd" column "Pay" times 2, then round to ..." for analyst text;
+     * complete=true leaves out an operation without its word or operand.
+     */
+    mathPhrase(args, hash = {}) {
       const values = mathValues(args);
       const base = text(
         app("tableColumnPlain")?.(
@@ -671,10 +678,12 @@
       const word = app("compareMathOperatorWord");
       const operand = app("compareMathOperandPlain");
       const math = mathOperations(values.source_math_json)
-        .map(
-          (operation) =>
-            `${word?.(operation.operator) ?? ""} ${operand?.(operation, values.source_file) ?? ""}`,
-        )
+        .map((operation) => {
+          const said = text(word?.(operation.operator));
+          const value = text(operand?.(operation, values.source_file));
+          if (hash.complete === true && !(said && value)) return "";
+          return `${said} ${value}`;
+        })
         .filter(Boolean)
         .join(" ");
       const rounding = text(
@@ -937,7 +946,27 @@
     },
     /** Text that starts with IF, ELSE IF or ELSE, else IF + the text. */
     ifPrefix(args) {
-      return text(app("ensureIfThenPrefix")?.(text(args[0])));
+      const value = text(args[0]).trim();
+      if (!value || /^(IF|ELSE IF|ELSE)\b/i.test(value)) return value;
+      return `IF ${value}`;
+    },
+    /**
+     * Whether action text is only an IF or ELSE lead ("ELSE:", "IF ... :"),
+     * which qTest reads as no action.
+     */
+    branchLead(args) {
+      return /^(ELSE\s*:?|(ELSE\s+)?IF\b[\s\S]*:)$/i.test(text(args[0]).trim());
+    },
+    /** The separator a Display text action appends with; blank means "||". */
+    textSeparator(args) {
+      const value = paramsOf(args[0]).then_text_separator;
+      return value === undefined || value === null || value === ""
+        ? "||"
+        : text(value);
+    },
+    /** The first item of a list, or "" when it is empty or not a list. */
+    first(args) {
+      return Array.isArray(args[0]) && args[0].length ? args[0][0] : "";
     },
     /**
      * One dialect of an IF / THEN step's formulas, or one of its notes
@@ -1071,8 +1100,32 @@
     flag_records: "flag_records",
   });
 
+  /**
+   * Helpers a later version of a type replaced with partials: helper name ->
+   * the type whose latest definition renders it, and the partial (or the
+   * formulas, for formulas: true) that stands in. actionText with
+   * branch="ELSE" uses `branches.ELSE`. The runtime renders each through the
+   * latest definition, so a version pinned before the partials still
+   * renders; the helpers above are the fallback when the latest definition
+   * has no such partial. Never remove an entry while such a version can be
+   * pinned.
+   */
+  const replacedHelpers = Object.freeze({
+    conditionText: Object.freeze({ type: "if_then", partial: "conditionText" }),
+    actionText: Object.freeze({
+      type: "if_then",
+      partial: "thenAction",
+      branches: Object.freeze({
+        ELSE: Object.freeze({ type: "else", partial: "elseAction" }),
+      }),
+    }),
+    ifThenFormula: Object.freeze({ type: "if_then", formulas: true }),
+    elseFormula: Object.freeze({ type: "else", formulas: true }),
+  });
+
   global.ATLASStepTypeLibrary = Object.freeze({
     helpers,
+    replacedHelpers,
     handlers,
     blocks,
     replacedBlocks,

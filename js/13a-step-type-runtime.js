@@ -32,8 +32,11 @@
  * inline|precedence, plus the helpers, migration handlers and editor blocks
  * of js/13-step-type-library.js. Besides param, subtype, stepNumber, parent,
  * step and format, templates read conditions (the step's normalized
- * condition tree), elseStep (the managed ELSE of an IF) and ifStep (the IF of
- * an ELSE), and a definition's partials.
+ * condition tree), storedConditions (the tree as stored, which the IF / THEN
+ * text and formulas read), elseStep (the managed ELSE of an IF) and ifStep
+ * (the IF of an ELSE), and a definition's partials. The helpers a later
+ * version replaced with partials (library.replacedHelpers) render the latest
+ * definition of their type, so a pinned version still renders.
  *
  * A definition that names a behavior `block` gets each part the block has
  * (normalize, editor, english, notes, formulas, createdColumns, qtestAction,
@@ -110,6 +113,76 @@
       ),
     });
   }
+  /**
+   * Replaced helpers (library.replacedHelpers): each renders the latest
+   * definition of its type, with the data of the template that called it,
+   * through the partial (or the formulas) named there. The library's own
+   * helper is the fallback when that definition has no such partial.
+   */
+  function replacedHelperShims() {
+    const own = library.helpers || {};
+    let depth = 0;
+    const shim = (name, entry) =>
+      function replacedHelper(args, hash = {}, tools = {}) {
+        const target =
+          (hash.branch !== undefined && entry.branches?.[text(hash.branch)]) ||
+          entry;
+        const definition = registry?.resolve(target.type) || null;
+        const usable =
+          definition &&
+          !definition.block &&
+          depth === 0 &&
+          (target.formulas
+            ? Boolean(definition.formulas)
+            : Object.prototype.hasOwnProperty.call(
+                definition.partials || {},
+                target.partial,
+              ));
+        if (!usable) return own[name] ? own[name](args, hash, tools) : "";
+        const data = {
+          ...(tools.data || {}),
+          ...(args[0] && typeof args[0] === "object" ? { param: args[0] } : {}),
+        };
+        const renderWith = (template, format) =>
+          typeof template === "string"
+            ? text(
+                engine().templates.render(template, data, {
+                  helpers: TEMPLATE_HELPERS,
+                  partials: definition.partials || {},
+                  format,
+                }),
+              ).trim()
+            : "";
+        depth += 1;
+        try {
+          if (!target.formulas)
+            return renderWith(
+              `{{include "${target.partial}"}}`,
+              tools.format || "english",
+            );
+          const set = definition.formulas;
+          if (hash.note !== undefined)
+            return (
+              (set.notes || [])
+                .map((template) => renderWith(template, "english"))
+                .filter(Boolean)[Number(hash.note)] || ""
+            );
+          if (hash.part === "lead") return renderWith(set.lead, "english");
+          return DIALECTS.includes(tools.format)
+            ? renderWith(set.default?.[tools.format], tools.format)
+            : "";
+        } finally {
+          depth -= 1;
+        }
+      };
+    return Object.fromEntries(
+      Object.entries(library.replacedHelpers || {}).map(([name, entry]) => [
+        name,
+        shim(name, entry),
+      ]),
+    );
+  }
+
   /**
    * The field controls renderEditor draws, from the control palette
    * (catalogs/step-types/controls.json). A definition that names any other
@@ -590,6 +663,7 @@
       return unwrap(expression) || placeholder("condition", "[condition]");
     },
     ...(library.helpers || {}),
+    ...replacedHelperShims(),
   });
   const HELPER_NAMES = Object.freeze(Object.keys(TEMPLATE_HELPERS));
 
@@ -630,6 +704,21 @@
     });
   }
 
+  /**
+   * The step's condition tree as stored (parseStepConditions without ids):
+   * not normalized, so value lists and run parameters read as the app's
+   * condition text and formulas read them.
+   */
+  function storedConditionsFor(step) {
+    const conditions = engine().conditions;
+    if (!conditions || !step) return [];
+    const sourceAliasFor = app("sourceAliasFor");
+    return conditions.parse(step, {
+      uid: () => "",
+      ...(sourceAliasFor ? { sourceAliasFor } : {}),
+    });
+  }
+
   /** Another step as templates see it: one step away, read-only. */
   function linkedStepData(item) {
     if (!item) return null;
@@ -639,6 +728,7 @@
       stepNumber: stepNumberFor(item),
       param: { ...(item.params || {}) },
       conditions: conditionsFor(item),
+      storedConditions: storedConditionsFor(item),
     };
   }
 
@@ -676,6 +766,7 @@
       },
       format,
       conditions: conditionsFor(step),
+      storedConditions: storedConditionsFor(step),
       elseStep: elseStepFor(step),
       ifStep: ifStepFor(step),
     };
@@ -984,18 +1075,19 @@
   }
 
   /**
-   * The outcome qTest tests: the definition's action field, else its
-   * `export.qtest.action` (a message and column are plain templates).
+   * The outcome qTest tests: the definition's `export.qtest.action` (plain
+   * templates; kind picks which of the others it has), else, for a type with
+   * an action field, the app's action code.
    */
   function qtestActionWith(definition, step) {
     const { definitions } = engine();
-    const hasAction = definitions
-      .fields(definition, definitions.subtypeOf(definition, step))
-      .some((field) => field.control === "action");
-    if (hasAction) return app("atlasQtestThenAction")?.(step) || null;
     const action = definitions.exportFor(definition, step)?.qtest?.action;
-    if (!action?.kind) return null;
-    if (action.kind !== "display_text") return { kind: action.kind };
+    if (!action?.kind) {
+      const hasAction = definitions
+        .fields(definition, definitions.subtypeOf(definition, step))
+        .some((field) => field.control === "action");
+      return hasAction ? app("atlasQtestThenAction")?.(step) || null : null;
+    }
     const part = (name, template) => {
       try {
         return text(render(template || "", step, definition, "plain"));
@@ -1003,11 +1095,31 @@
         return renderFailure(definition, `qTest ${name}`, error);
       }
     };
-    return {
-      kind: action.kind,
-      message: part("message", action.message),
-      outputColumn: part("output column", action.outputColumn),
-    };
+    const kind = part("kind", action.kind).trim();
+    if (!definitions.QTEST_ACTION_KINDS.includes(kind))
+      return {
+        kind: "freeform",
+        text: renderFailure(
+          definition,
+          "qTest kind",
+          `"${kind}" is not one of ${definitions.QTEST_ACTION_KINDS.join(", ")}`,
+        ),
+      };
+    if (kind === "display_text")
+      return {
+        kind,
+        message: part("message", action.message),
+        outputColumn: part("output column", action.outputColumn),
+      };
+    if (kind === "set_column")
+      return {
+        kind,
+        targetColumn: part("target column", action.targetColumn),
+        valueField: part("value field", action.valueField),
+        calculated: part("calculated", action.calculated).trim() === "true",
+      };
+    if (kind === "freeform") return { kind, text: part("text", action.text) };
+    return { kind };
   }
 
   /**
