@@ -1,9 +1,9 @@
 # Dynamic Step Type Builder: Plan
 
-Status: approved (2026-11-16). Phase 0 is done (JonahAngell/atlas-align#37,
-issue #5000). Phase 1 (issue #5001), Phase 2 (issue #5002), Phase 3 (issue
-#5003), Phase 4 (issue #5004), Phase 5 (issue #5005) and Phase 6 (issue
-#5006) are in review. Later phases have not started.
+Status: approved (2026-11-16). Phases 0–7 are merged (Phase 0 was
+JonahAngell/atlas-align#37, issue #5000), and so are the field-control
+conversions (issues #5010–#5014). Phase 8, condition and action templates, is planned below (issue #5026).
+Phase 9 (docs) has not started.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns
@@ -749,17 +749,317 @@ next issue number in order, starting at 5001 (decision D), for example
 one number per branch. Phase 7 is built in the builder's own repository
 (decision C), so its branches and merge requests live there.
 
-| Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                         | Done when                                                                                                     |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **0. Snapshot current output** (done, #5000) | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                               | `npm test` stores and compares the snapshots. No app change.                                                  |
-| **1. Engine**                                | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files in `js/step-types/`, listed in `engine-manifest.json`, loaded early in `index.html` and testable through `node:vm`.                                                                                                                                | Unit tests cover every template feature, schema errors and migrations.                                        |
-| **2. Registry entry points**                 | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                    | Snapshots unchanged.                                                                                          |
-| **3. Simple types**                          | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                     | Snapshots identical for these types.                                                                          |
-| **4. Blocks and complex types**              | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`. | Snapshots identical; Playwright Logic Builder checks pass.                                                    |
-| **5. Exports and validation**                | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                      | Snapshots identical, Audit Issues tests pass.                                                                 |
-| **6. Postgres**                              | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications (decision B).                                                                                                                 | Contract tests for import, conflict rejection, fallback and pinned rendering.                                 |
-| **7. Builder app**                           | In the builder's own repository: the app, `atlas-engine.lock` and the engine copy step, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                          | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production. |
-| **8. Docs**                                  | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                          | Docs reviewed.                                                                                                |
+| Phase                                        | Work                                                                                                                                                                                                                                                                                                                                                                                                                     | Done when                                                                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0. Snapshot current output** (done, #5000) | For every step in `audits/*.json`, the test fixtures and one generated case per subtype, record the English, automatic notes, Developer Logic, full SQL and Python scripts, qTest rows, workbook rows and text-import results.                                                                                                                                                                                           | `npm test` stores and compares the snapshots. No app change.                                                                                          |
+| **1. Engine**                                | JSON Schema, template parser and renderer, registry loader (repository JSON only), migration runner. Classic-script files in `js/step-types/`, listed in `engine-manifest.json`, loaded early in `index.html` and testable through `node:vm`.                                                                                                                                                                            | Unit tests cover every template feature, schema errors and migrations.                                                                                |
+| **2. Registry entry points**                 | Every owner in "What exists today" asks the registry first and falls back to its current code. `STEP_TYPE_OPTIONS` and `ATLAS_IMPORT_TITLES` are built from the registry.                                                                                                                                                                                                                                                | Snapshots unchanged.                                                                                                                                  |
+| **3. Simple types**                          | Definitions for Reference Source, Format Field, Sort Records, Remove Duplicates and Split Field (legacy). Old code for these is deleted.                                                                                                                                                                                                                                                                                 | Snapshots identical for these types.                                                                                                                  |
+| **4. Blocks and complex types**              | Build the blocks from today's functions; definitions for Create Column (all value modes, math, string transforms), IF/THEN, ELSE (legacy), Join/Union, `union_sources` (legacy), Filter Rows and Flag Records (legacy). Then remove the wrapper chains for `renderGuidedBuilder`, `analystLogic`, `normalizeCatalogStep`, `renderCreateModeInputs` and `renderConditionRow`.                                             | Snapshots identical; Playwright Logic Builder checks pass.                                                                                            |
+| **5. Exports and validation**                | `js/12`, `js/12b` and `js/23` read `export` and `validation` from the definitions. Built-in validation rules move into the definitions.                                                                                                                                                                                                                                                                                  | Snapshots identical, Audit Issues tests pass.                                                                                                         |
+| **6. Postgres**                              | Migration, `src/step-type-repository.js` with `sql/step-type-repository/*.sql`, startup import of repository files, `GET /api/step-types`, ATLAS loading the registry from the API with a repository fallback, version pinning on publications (decision B).                                                                                                                                                             | Contract tests for import, conflict rejection, fallback and pinned rendering.                                                                         |
+| **7. Builder app**                           | In the builder's own repository: the app, `atlas-engine.lock` and the engine copy step, screens, preview, publish, zip export and import, Dockerfile, Launch setup.                                                                                                                                                                                                                                                      | You can build a new type end to end, see it in ATLAS, export the zip, commit it, and deploy it to production.                                         |
+| **8. Condition and action templates**        | Condition and action text and formulas move from app code into definition partials (see "Phase 8" below): template partials, a condition tree helper, `if_then` v3, `else` v3, `filter_rows` v3, `flag_records` v4, switchable composite features, `schemaVersion: 2` for definitions with partials, an export shape warning, then the old app code is deleted. Branches 5029–5035, plus 5036 in the builder repository. | Snapshots and the condition/action matrix identical; v1 and v2 pins render; a builder type can switch parts off; unplaceable condition formulas warn. |
+| **9. Docs**                                  | `PROJECT_CONTEXT.md` and README sections, a "How to add a step type" guide, and a builder tutorial.                                                                                                                                                                                                                                                                                                                      | Docs reviewed.                                                                                                                                        |
 
 Phases 0–5 are a refactor that keeps output identical. The phase 0 snapshots
 are what make it safe to delete the old per-type code.
+
+## Phase 8: Condition and action templates (planned, issue #5026)
+
+Conditions and actions are the last big part of a step type that a
+definition can place but not write. `if_then` v2, `else` v2, `filter_rows` v2
+and `flag_records` v3 get their condition and action text, notes, formulas and
+qTest outcome from app code through helpers. This phase moves that text and
+those formulas into the definitions, so a type built in the Step Type Builder
+can write its own and switch parts off. Output stays identical.
+
+### Where the text and formulas come from today
+
+| Helper (in `js/13-step-type-library.js`) | App code it ends in                                                                                                                                                                                                                                                                                                                           | Used by                             |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `conditionText`                          | `conditionGroupPlain` → `parseStepConditions`, `conditionTreePlain`, `conditionToPlain`, `conditionValuePlain`, `conditionCompareFieldPlain`, `formattedValueList`, then `ensureIfThenPrefix` (`js/07`)                                                                                                                                       | `if_then` v2 English                |
+| `actionText`                             | `thenActionPlain`, wrapped twice (`thenActionPlainWithMath`, `thenActionPlainWithStringTransform`), or with `branch="ELSE"` `elseActionPlain`, wrapped once (`elseActionPlainWithStringTransform`); they use `excludeKeyColumnPlain`, `atlasDisplayTextPhraseValues` and `atlasStringTransformAnalystPhrase` (`js/07`)                        | `if_then` v2 and `else` v2 English  |
+| `ifPrefix`                               | `ensureIfThenPrefix` (`js/07`)                                                                                                                                                                                                                                                                                                                | `if_then` v2 English                |
+| `ifThenFormula`                          | `atlasDevIfThen` → `atlasDevConditionTree`, `atlasDevConditionLeaf`, `atlasDevActionValue`, `atlasDevFilterFormulas`, `atlasDevGroupExcludeFormulas`, `atlasDevActionExpression`, `atlasDevPyActionLines`, `atlasDevAppendNotes`; `atlasDevElseStepFor` reads `state.audit` to fold a matching ELSE into the same `IF(…)` / `CASE` (`js/02b`) | `if_then` v2 formulas and notes     |
+| `elseFormula`                            | `atlasDevElse`, which reads the parent IF's conditions and action from `state.audit` (`js/02b`)                                                                                                                                                                                                                                               | `else` v2 formulas, lead and notes  |
+| `conditionFormula`                       | `atlasDevLegacyCondition`, which builds a one-condition IF / THEN and calls `atlasDevIfThen` (`js/02b`)                                                                                                                                                                                                                                       | `filter_rows` v2, `flag_records` v3 |
+| `valueList`                              | `formattedValueList` (`js/07`)                                                                                                                                                                                                                                                                                                                | `filter_rows` v2, `flag_records` v3 |
+| none (an `action` field)                 | `atlasQtestThenAction` (`js/12`), called by `qtestActionWith` in `js/13a`; for freeform text it parses the sentence for "display … in column …" and "do not display"                                                                                                                                                                          | qTest for `if_then` and `else`      |
+
+The words come from `catalogs/logic_phrase_catalog.json`:
+`analyst_logic.if_then.*`, `analyst_logic.else.*`, `blank_comparison`,
+`run_parameter`, `math`, `rounding`, `list_format`, and
+`developer_logic.display_notes.*`, `developer_logic.notes.*`,
+`developer_logic.else_step` and `else_included`. Operators come from
+`app_config.logic_options.operators` and `operator_sets`; their formulas come
+from `ATLAS_DEV_COMPARE_OPERATORS`, `ATLAS_DEV_TEXT_MATCH_OPERATORS` and
+`ATLAS_DEV_BLANK_OPERATORS` in `js/02b`.
+
+The code export (`js/12b`) does not call the condition code. It takes
+`atlasDeveloperFormulas(step)` and reads the formula text itself: SQL that
+starts with `WHERE ` becomes a filter CTE, `CASE WHEN … AS [x]` becomes a
+column, an ELSE with only a lead becomes a note, and a condition-role step
+whose SQL does neither is reported as a gap. Templates must keep those
+shapes. `atlasCodePrimaryAlias` also reads `parseStepConditions`.
+
+Other callers of the same app code, which this phase reroutes or leaves:
+`qtestConditionText` (`js/12`, uses `conditionGroupPlain`), the complete
+statements in `js/02-logic-rendering.js` (use `conditionToPlain`), the
+`inverse_else` path in `atlasDeveloperFormulas` (calls `atlasDevIfThen`),
+Audit Issues (`js/23`, `parseStepConditions`), File Utility readiness
+(`js/22a`) and text import (`js/15j`).
+
+### Scope
+
+In scope:
+
+- The English, automatic notes, Excel, SQL and Python formulas and the qTest
+  outcome of conditions and actions, written as templates in the
+  definitions.
+- Switching condition parts and action kinds off in a definition, and the two
+  app editors honouring that.
+- Deleting the app code above once nothing calls it, and rerouting the other
+  callers to `ATLASStepTypeRuntime`.
+
+Not in scope:
+
+- The editor markup of condition rows and the action form. They stay the app
+  editors (`atlasConditionGroupEditorHtml`, `atlasActionEditorHtml`), which the
+  builder places but cannot change.
+- Text import of IF / THEN sentences (`js/15j` stays a hand-written parser;
+  the definitions keep `textImport.fromEnglish: false`).
+- Audit Issue checks (`builtIn` `conditions`, `action`, `thenMath`,
+  `thenStringTransform`, `fieldRelationships`) and File Utility readiness.
+- New action kinds or condition value modes defined in the builder (open
+  question 3).
+
+### Condition parts
+
+The `condition_group` palette lists 7 features. Two of them are not built.
+
+| Part             | What it is today                                                                                                                                                                                                                 | Switch off?                                                                                   | What the template language needs                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `nesting`        | Groups (`conditionType: "group"`, `groupConnector`), written as bullets with "ALL OF:" / "ANY OF:" in English and as parentheses in formulas; top-level connectors follow AND-before-OR; a group of one item reads as that item. | Yes. Hides Add Group; saved groups still render.                                              | The `conditionTree` helper, which keeps today's structure rules and renders each single condition with a definition partial. "ALL OF:" / "ANY OF:" move to the phrase catalog. |
+| `fieldCompare`   | Value mode `field`: a compare field, maybe from a second source.                                                                                                                                                                 | Yes. Removes "Compare to Field" from the value modes (and with it `math`).                    | A `{{#case "field"}}` in the leaf partial, `field` on `this.compareSourceFile`, and the field form of the text-match operators (pandas uses `df.apply(lambda row: …)`).        |
+| `valueList`      | Several values with Add Value: `"A", "B" or "C"`; SQL `IN` / `NOT IN`, pandas `isin`, Excel `OR(…)` / `AND(…)`.                                                                                                                  | Yes. One value and no Add Value.                                                              | `valueList` (exists), `{{#each this.compareValues}}`, `combine`, and `compareLiteral` (number or text, the rule from `atlasDevConditionLeaf`).                                 |
+| `runParameters`  | Value mode `parameter`, stored as `values` with `compareParameter: "runDate"`; English "the run date"; formulas `@RunDate`, `run_date`, `RunDate`.                                                                               | Yes. Removes "Run Parameter" from the value modes.                                            | An `{{#if this.compareParameter}}` branch in the leaf partial. No new helper.                                                                                                  |
+| `math`           | `compareMathJson` on a field compare ("plus file … column …"; `atlasDevMath`).                                                                                                                                                   | Yes. Hides the math editor on a field compare.                                                | `mathPhrase` and `mathFormula` taking a list (`json this.compareMathJson`) as well as params.                                                                                  |
+| `firstAvailable` | Not built. Only the phrases `analyst_logic.conditions.first_available_*` exist; no editor, formula or saved data uses them.                                                                                                      | Already off in practice. Mark it `planned` in `controls.json` until it is built (decision 2). | When built: a value mode plus `COALESCE` / `IFS` / `combine_first` formulas, which templates can write once the leaf partial has it.                                           |
+| `groupChecks`    | Not built. Only the phrases `analyst_logic.conditions.group_*` exist. (The action "do not display any record with the same key" is part of `do_not_display`, not this.)                                                          | Same as `firstAvailable`.                                                                     | When built: per-group formulas (`COUNTIFS`, `EXISTS` / window, `groupby().transform`), which need a new helper for the Excel helper column.                                    |
+
+Always on, not features: the blank / null mode, the legacy `expression` mode
+(shown only for saved steps), and the operator list (`optionsFrom` already
+reads it from the catalog).
+
+### Action kinds
+
+| Kind                          | What it is today                                                                                                                                                                                                                                          | Switch off?                                                                                | What the template language needs                                                                  |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `display`                     | "display record" / "ELSE display record."; keep-rows formulas (`=cond`, `WHERE cond`, `mask = …` then `df = df[mask]`) and a note. ELSE keeps the rows that fail the IF.                                                                                  | Yes                                                                                        | `not` (dialect-aware negation) for ELSE.                                                          |
+| `do_not_display`              | As `display` with the rows inverted; with `then_exclude_scope: "key"` it drops every record sharing a key: an Excel helper column and `COUNTIFS`, `NOT IN (SELECT …)`, pandas `isin(excluded_keys)`, and its own note.                                    | Yes                                                                                        | `json` to read `then_exclude_key_fields_json`.                                                    |
+| `display_text`                | Message and output column (default "Error Message"); the separator clause only for a separator other than `\|\|`; appends to an earlier message: `IF(col="", v, col&sep&v)`, `CONCAT_WS(sep, NULLIF(col, ''), v)`, three pandas lines, and an Excel note. | Yes                                                                                        | No new helper: `#if`, `quote`, `column` and multi-line text cover it.                             |
+| `set_column_value`            | Target column and a value field, maybe from another source.                                                                                                                                                                                               | Yes                                                                                        | No new helper.                                                                                    |
+| `set_column_calculation`      | A field with math and rounding (`atlasDevCalculation`).                                                                                                                                                                                                   | Yes                                                                                        | `mathPhrase` / `mathFormula` with `prefix="then_"`.                                               |
+| `set_column_string_transform` | `then_` string transform; English uses the Create Column phrases with context `if_then`, and ELSE wraps it in `else.string_transform`.                                                                                                                    | Yes                                                                                        | `stringTransformPhrase` / `stringTransformFormula` with `prefix="then_"` and `context="if_then"`. |
+| `freeform`                    | The action in words; formulas are the row test only, with the action as a note; qTest parses the sentence.                                                                                                                                                | Yes, for new steps. Saved and imported freeform steps still need it, so its partials stay. | `freeformOutcome`, a fixed sentence reader for the qTest outcome (today's regular expressions).   |
+
+Two parts depend on other steps. An IF folds a managed ELSE that writes the
+same column into one `IF(…)` / `CASE`. An ELSE reads its IF's conditions and
+action, and gives only a lead ("Included in step N") when it was folded.
+Templates reach both through the new `elseStep` and `ifStep` roots.
+
+### Template language additions
+
+All are parsed, never run, and stay inside the existing limits (depth 32,
+10,000 iterations, 200,000 characters of output).
+
+1. **Partials.** A definition gains `partials: {name: template}`. A partial
+   can also be `{english, plain, excel, sql, python}`, and the include picks
+   the current format. `{{> name}}` includes a partial and `{{> name this}}`
+   includes it with a new context. A partial may include itself, bounded by
+   the depth limit. Validation parses every partial and rejects an unknown
+   name.
+2. **`conditions` root.** The parsed, normalized condition tree as plain data
+   (today's `parseStepConditions` and `atlasNormalizeConditionLeaf`). These
+   move into a new engine file, `js/step-types/05-conditions.js`, listed in
+   `engine-manifest.json` (`scripts` and `preview`), so the builder copies
+   them.
+3. **`conditionTree nodes leaf="name" style="bullets|inline|precedence"`.** It
+   walks the tree with today's structure rules (`conditionTreePlain`,
+   `conditionTreeExpression`, `atlasDevConditionTree`), also moved into the
+   engine, and renders each single condition with the named partial.
+   Templates do not rebuild the bullets or the precedence.
+4. **`elseStep` and `ifStep` roots.** The managed ELSE of an IF (the rule in
+   `atlasDevElseStepFor`) and the IF of an ELSE (`parent_if_step_id`), each
+   `{id, step_type, stepNumber, param, conditions}`. They are read-only and
+   one step away, never further.
+5. **Formula helpers.** `combine list connector`, `not expr`, `unwrap expr`,
+   `compareLiteral value field`, `textMatch` (contains, starts and ends with,
+   with Excel `SEARCH` / `LEFT` / `RIGHT`, SQL `LIKE` with escaped
+   wildcards, pandas `.str` or `df.apply`), `blankTest`, `json value` (`[]`
+   for bad JSON) and `freeformOutcome`. The operator meanings move from the
+   `js/02b` constants into the phrase catalog next to the operator list.
+6. **`prefix=` and list arguments** on `mathPhrase`, `mathFormula`,
+   `stringTransformPhrase` and `stringTransformFormula`, so the `then_`
+   params and a condition's `compareMathJson` reuse the Create Column
+   helpers.
+7. **Action qTest outcome as templates.** Each action kind's partial set
+   includes `qtest` (`kind`, `message`, `outputColumn`, `targetColumn`,
+   `valueField`, `calculated`), replacing `atlasQtestThenAction`.
+8. **Switchable composite features.** `features: {nesting: false}` on a
+   `condition_group` field and `features: {freeform: false}` on an `action`
+   field. The runtime passes them to the two app editors, which drop the
+   value mode, button or action choice. A saved step that uses a switched-off
+   part still shows it (the rule for hidden options). Validation still
+   requires the partials for every part, switched off or not, because saved
+   and imported steps can carry any of them (decision 6).
+9. **Schema version 2.** A definition that uses `partials` declares
+   `schemaVersion: 2` (decision 4). The engine supports `[1, 2]`
+   (`SUPPORTED_SCHEMA_VERSIONS` in `js/step-types/02-definitions.js`,
+   `schemaVersions` in `engine-manifest.json`), and `schema.json` allows 2 and
+   permits `partials` only with it. Definitions without partials stay at 1.
+10. **Export shape warning.** `definitions.validate` with sample steps (each
+    `tests` case) renders the formulas of a type whose `export.scriptRole` is
+    `condition`, `else`, `filter` or `flag`. It warns when the code export
+    could not place them (decision 8). The rule is the one `atlasCodeClassify`
+    uses, moved into the engine as `exportShapeProblems`: SQL that neither
+    starts with `WHERE ` nor has `AS [`, or an ELSE with neither code nor a
+    lead. Formulas that carry a note, as freeform actions do, are exempt,
+    because the export shows the note as the reason. A warning does not stop
+    loading or publishing; the builder shows it next to the Formulas tab.
+
+Engine version: 1.11.0 for items 1–4 and 9, then one minor version per later
+branch (see "Branches").
+
+### Deploy
+
+- ATLAS Align deploys the engine that reads `schemaVersion: 2` (branch 5030)
+  before any definition uses it, and before the builder's `atlas-engine.lock`
+  moves to that engine (branch 5036).
+- A deployment that is still on engine 1.10.0 does not load a version 2
+  definition. Its admins see the
+  `audit.logic.step-type-definitions-unavailable` Audit Issue, and the
+  registry keeps the bundled version, so steps still render.
+- The startup import (`src/step-type-engine.js` runs the same engine) checks
+  `schemaVersion` the same way, so a server on the old engine skips a version
+  2 file and logs it instead of storing it.
+
+### Definitions and versions
+
+Each type gets one new version, in the branch that converts it whole
+(conditions and actions together), so no half-converted version is released.
+
+| Definition     | Now | New | What changes                                                                                                                                         |
+| -------------- | --- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `if_then`      | 2   | 3   | Partials for the condition leaf (each format), and for each action kind with THEN wording, formulas, notes and qTest; the ELSE fold uses `elseStep`. |
+| `else`         | 2   | 3   | Action partials with ELSE wording; formulas from `ifStep.conditions`; the lead.                                                                      |
+| `filter_rows`  | 2   | 3   | The leaf partial for its one condition, and `display` / `do_not_display` partials.                                                                   |
+| `flag_records` | 3   | 4   | The leaf partial, and `display_text` / `do_not_display` partials.                                                                                    |
+
+The partials are copied into each definition, because a pinned version must
+be self-contained (decision 1). `test/fixtures/released-step-type-hashes.json`
+gains the four new versions; the released files are never edited
+(`test/step-type-released-versions.test.js`). `controls.json` changes too: the
+two composites' features become switchable, and `firstAvailable` and
+`groupChecks` are marked `planned`.
+
+### Pinned publications
+
+- **v1 pins** already render through block shims (`replacedBlocks`), which
+  use the latest definition. They render through the v3 (or v4) definitions
+  with no change.
+- **v2 pins** (`if_then`, `else`, `filter_rows`) and **v3** (`flag_records`)
+  name the helpers `conditionText`, `actionText`, `ifPrefix`,
+  `ifThenFormula`, `elseFormula`, `conditionFormula` and `valueList`. They
+  stay registered as **replaced helpers**: a new `replacedHelpers` map in
+  `js/13-step-type-library.js`, like `replacedBlocks`. Each keeps its name
+  and arguments but renders the latest definition's partials of its type.
+  `valueList` stays an ordinary helper. This lets the app code go while
+  those pins still render. Never remove an entry while such a version can
+  be pinned.
+- New fixtures `test/fixtures/step-types-pinned/if_then.v2.json`,
+  `else.v2.json`, `filter_rows.v2.json` and `flag_records.v3.json`. The
+  pinned test renders the corpus pinned to v1 and to v2 / v3 and expects it
+  to match the latest output.
+- A builder-made type that used these helpers before this phase keeps
+  rendering the same way, through the same replaced helpers.
+
+### Snapshot strategy
+
+1. **Baseline first** (branch 5029). Commit a condition and action matrix as a
+   test with a recorded fixture. The ie-matrix used in #5013 and #5014 was a
+   scratch script; this makes it permanent. Generated steps cover:
+   - every value mode and every catalog operator, including unknown ones;
+   - one and several values, number and text values, number and text fields,
+     same and second source, and compare math;
+   - groups nested three deep with mixed connectors;
+   - every action kind for THEN and ELSE, the default and custom separators,
+     key-scoped do not display, folded and unfolded ELSE, and `inverse_else`;
+   - Filter Rows and Flag Records with each action, plus legacy
+     `step.source` / `step.field`.
+
+   It records the English, notes, Developer Logic, each formula dialect, the
+   lead and notes, the qTest action, and the SQL and Python scripts of a
+   one-step audit. It is recorded on `main` before anything changes.
+
+2. **Every later branch** keeps the 14 snapshot files, the matrix, the pinned
+   test and the preview-scripts test identical, without
+   `npm run snapshots:record`.
+3. **While both exist**, a differential test runs the old app function and the
+   new template on every matrix step. Branch 5035 deletes it with the app
+   code.
+4. The Playwright Logic Builder specs and a browser check of the IF / THEN
+   tabs, the ELSE editor and the switched-off parts.
+
+### Branches
+
+| Branch                                               | Work                                                                                                                                                                                                                                                                                                                                                                                                           | Engine |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `feature-5029-condition-action-matrix`               | The matrix test and its baseline. No app change.                                                                                                                                                                                                                                                                                                                                                               | 1.10.0 |
+| `feature-5030-template-partials`                     | Partials and `{{> }}`, format-keyed partials, the `conditions`, `elseStep` and `ifStep` roots, `conditionTree`, and `js/step-types/05-conditions.js`. Schema version 2 with `partials`; tests that 1.10.0 rejects a version 2 definition and the server import skips it. Unit tests. No definition changes.                                                                                                    | 1.11.0 |
+| `feature-5031-condition-action-helpers`              | `combine`, `not`, `unwrap`, `compareLiteral`, `textMatch`, `blankTest`, `json`, `freeformOutcome`, `prefix=` on the math and string-transform helpers, and operator meanings in the catalog. A test-only definition proves them against the app code. The export shape warning (`exportShapeProblems`), with tests: placeable and unplaceable samples, freeform exemption, and no warning for any matrix step. | 1.12.0 |
+| `feature-5032-if-then-templates`                     | `if_then` v3 and `else` v3, replaced helpers for the five IF / ELSE helpers, the action qTest partials, and pinned v2 fixtures.                                                                                                                                                                                                                                                                                | 1.13.0 |
+| `feature-5033-filter-flag-templates`                 | `filter_rows` v3 and `flag_records` v4, `conditionFormula` as a replaced helper, and pinned fixtures.                                                                                                                                                                                                                                                                                                          | 1.14.0 |
+| `feature-5034-condition-action-features`             | Switchable features: the runtime passes them to the two app editors, `controls.json` and the palette test are updated, and `firstAvailable` and `groupChecks` are marked `planned`.                                                                                                                                                                                                                            | 1.15.0 |
+| `feature-5035-remove-condition-action-code`          | Delete the `thenActionPlain` and `elseActionPlain` chains, `conditionGroupPlain` and its leaf code, `atlasDevIfThen`, `atlasDevElse`, `atlasDevLegacyCondition` and `atlasQtestThenAction`. Reroute `qtestConditionText`, the complete statements, `inverse_else` and `atlasCodePrimaryAlias` to the runtime.                                                                                                  | 1.15.1 |
+| `feature-5036-builder-partials` (builder repository) | Bump `atlas-engine.lock`, add a partials editor and the feature toggles for the two composites. Coordinate with the session adding the composites to the builder palette.                                                                                                                                                                                                                                      | —      |
+
+5029–5033 form one stack; 5034 needs only 5030. 5035 goes last.
+
+### Risks
+
+- **Exact output.** The bullet English, AND-before-OR precedence and
+  parentheses (`atlasDevUnwrap`) are subtle. They move into the engine as
+  they are, not rewritten as templates. The leaf rules (number or text
+  compare, `LIKE` and `SEARCH` escaping, pandas lower-casing) are where
+  differences would hide, so the matrix must cover them.
+- **The code export reads formula text.** A builder author who writes
+  conditions that don't start with `WHERE ` or end in `AS [x]` gets steps the
+  SQL script reports as gaps. The validation warning in branch 5031 catches it
+  (decision 8).
+- **Shared wording is not versioned.** Partials call `phrase`, so a phrase
+  catalog change still changes pinned publications, as it does today. Replaced
+  helpers and block shims render through the latest definition, so a later
+  `if_then` wording change also reaches v1 and v2 pins.
+- **Copies.** `if_then`, `else`, `filter_rows` and `flag_records` each carry
+  their own action partials. A fix in one must be copied to the others.
+- **Builder preview.** The `elseStep` and `ifStep` roots read the audit; the
+  builder's one-step preview audit has no ELSE, so the fold cannot be
+  previewed until the preview can add a sample ELSE.
+- **Older ATLAS.** A deployment on engine 1.10.0 does not read
+  `schemaVersion: 2` and keeps its bundled version; admins see the
+  definitions-unavailable Audit Issue (see "Deploy").
+- **Text import.** A builder type whose partials change the wording cannot be
+  imported from text, because the IF / THEN parser is hand-written.
+
+### Decisions
+
+1. Partials are copied into each definition, so a pinned version stays self-contained.
+2. `firstAvailable` and `groupChecks` are marked `planned` until they are built.
+3. A builder type can only switch built-in action kinds and condition parts off; it cannot add new ones.
+4. Definitions that use `partials` declare `schemaVersion: 2`.
+5. Group structure stays in a fixed `conditionTree` helper with three styles.
+6. A switched-off part still needs its partials, for saved and imported steps.
+7. This phase is Phase 8, before Docs, which stays the last phase (Phase 9).
+8. Validation warns when a condition-role formula has a shape the code export cannot place.
