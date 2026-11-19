@@ -178,12 +178,13 @@ export async function importStepTypeDefinitions(
  */
 export async function importRepositoryStepTypes(
   pool,
-  { catalog, logger = console } = {},
+  { catalog, logger = console, supportedSchemaVersions } = {},
 ) {
   const repository = readRepositoryStepTypes(catalog);
   const checked = checkStepTypeDefinitions(
     repository.schema,
     repository.definitions.map((entry) => entry.definition),
+    { supportedSchemaVersions },
   );
   const rejected = [...repository.rejected, ...checked.rejected];
   rejected.forEach((entry) =>

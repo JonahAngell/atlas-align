@@ -28,8 +28,12 @@
  *
  * Template helpers (all formats): field source name alias=x, column name,
  * quote value, number value, alias source [alias], source source,
- * placeholder key fallback, plus the helpers, migration handlers and editor
- * blocks of js/13-step-type-library.js.
+ * placeholder key fallback, conditionTree nodes leaf=partial style=bullets|
+ * inline|precedence, plus the helpers, migration handlers and editor blocks
+ * of js/13-step-type-library.js. Besides param, subtype, stepNumber, parent,
+ * step and format, templates read conditions (the step's normalized
+ * condition tree), elseStep (the managed ELSE of an IF) and ifStep (the IF of
+ * an ELSE), and a definition's partials.
  *
  * A definition that names a behavior `block` gets each part the block has
  * (normalize, editor, english, notes, formulas, createdColumns, qtestAction,
@@ -536,6 +540,55 @@
     placeholder(args) {
       return placeholder(text(args[0]), text(args[1] ?? `[${text(args[0])}]`));
     },
+    /**
+     * A condition tree laid out with the app's structure rules, each single
+     * condition rendered by the partial named in leaf= (its context is the
+     * condition). style= is bullets (analyst text, the default), inline (one
+     * expression with parentheses) or precedence (a formula: AND before OR).
+     */
+    conditionTree(args, hash, { format, partial }) {
+      const conditions = engine().conditions;
+      const leafName = text(hash.leaf).trim();
+      if (!leafName)
+        throw new Error(
+          'conditionTree needs leaf="the partial for one condition"',
+        );
+      if (typeof partial !== "function")
+        throw new Error("conditionTree needs an engine with partials");
+      const style = text(hash.style || "bullets").trim();
+      if (!conditions.STYLES.includes(style))
+        throw new Error(
+          `conditionTree style must be ${conditions.STYLES.join(", ")}`,
+        );
+      const nodes = Array.isArray(args[0]) ? args[0] : [];
+      const leaf = (node) => partial(leafName, node);
+      if (style === "inline") return conditions.inline(nodes, { leaf });
+      if (style === "bullets") {
+        const phrase = app("renderCatalogPhrase");
+        return conditions.bullets(nodes, {
+          leaf,
+          line: (connector, conditionText) =>
+            phrase
+              ? phrase("analyst_logic.if_then.condition_line", {
+                  connector,
+                  condition_text: conditionText,
+                })
+              : `${connector} ${conditionText}`.trim(),
+        });
+      }
+      const appCombine = app("atlasDevCombine");
+      const unwrap = app("atlasDevUnwrap") || ((value) => value);
+      const expression = conditions.precedence(nodes, {
+        leaf,
+        ...(appCombine
+          ? {
+              combine: (items, connector) =>
+                appCombine(items, connector, format),
+            }
+          : {}),
+      });
+      return unwrap(expression) || placeholder("condition", "[condition]");
+    },
     ...(library.helpers || {}),
   });
   const HELPER_NAMES = Object.freeze(Object.keys(TEMPLATE_HELPERS));
@@ -565,6 +618,44 @@
       : null;
   }
 
+  /** The step's condition tree, normalized, as plain data. */
+  function conditionsFor(step) {
+    const conditions = engine().conditions;
+    if (!conditions || !step) return [];
+    // No uid: legacy conditions get blank ids rather than using up app ids.
+    const sourceAliasFor = app("sourceAliasFor");
+    return conditions.normalizedTree(step, {
+      uid: () => "",
+      ...(sourceAliasFor ? { sourceAliasFor } : {}),
+    });
+  }
+
+  /** Another step as templates see it: one step away, read-only. */
+  function linkedStepData(item) {
+    if (!item) return null;
+    return {
+      id: item.id,
+      step_type: item.step_type,
+      stepNumber: stepNumberFor(item),
+      param: { ...(item.params || {}) },
+      conditions: conditionsFor(item),
+    };
+  }
+
+  /** The managed ELSE of an IF step (the rule in atlasDevElseStepFor). */
+  function elseStepFor(step) {
+    const find = app("atlasDevElseStepFor");
+    return find ? linkedStepData(find(step)) : null;
+  }
+
+  /** The IF step an ELSE belongs to (params.parent_if_step_id). */
+  function ifStepFor(step) {
+    const parentId = step?.params?.parent_if_step_id;
+    if (!parentId) return null;
+    const steps = app("atlasDevSteps")?.() || [];
+    return linkedStepData(steps.find((item) => item?.id === parentId));
+  }
+
   function templateData(step, definition, format, extra = {}) {
     return {
       ...extra,
@@ -584,6 +675,9 @@
         action: step.action,
       },
       format,
+      conditions: conditionsFor(step),
+      elseStep: elseStepFor(step),
+      ifStep: ifStepFor(step),
     };
   }
 
@@ -592,7 +686,12 @@
     return engine().templates.render(
       template,
       templateData(step, definition, format, extra),
-      { helpers: TEMPLATE_HELPERS, format, ...escapes },
+      {
+        helpers: TEMPLATE_HELPERS,
+        partials: definition?.partials || {},
+        format,
+        ...escapes,
+      },
     );
   }
 

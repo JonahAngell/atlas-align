@@ -50,6 +50,7 @@ function load() {
   };
   vm.createContext(context);
   for (const file of [
+    "js/step-types/05-conditions.js",
     "js/07-phrase-catalog.js",
     "js/02-logic-rendering.js",
     "js/02b-developer-formulas.js",

@@ -340,7 +340,7 @@ function conditionToPlain(condition, omitSource = false) {
  * @param {any} node - Condition node from a step's condition list.
  */
 function atlasIsConditionGroup(node) {
-  return !!node && node.conditionType === "group";
+  return ATLASStepTypes.conditions.isGroup(node);
 }
 
 /**
@@ -349,10 +349,7 @@ function atlasIsConditionGroup(node) {
  * @param {string} fallback - Connector used when the value is not AND/OR.
  */
 function atlasConditionConnectorOf(value, fallback = "AND") {
-  const normalized = String(value || "")
-    .trim()
-    .toUpperCase();
-  return normalized === "OR" || normalized === "AND" ? normalized : fallback;
+  return ATLASStepTypes.conditions.connectorOf(value, fallback);
 }
 
 /**
@@ -360,7 +357,7 @@ function atlasConditionConnectorOf(value, fallback = "AND") {
  * @param {any} group - Bullet group node.
  */
 function atlasConditionGroupItems(group) {
-  return Array.isArray(group?.items) ? group.items : [];
+  return ATLASStepTypes.conditions.groupItems(group);
 }
 
 /**
@@ -368,14 +365,7 @@ function atlasConditionGroupItems(group) {
  * @param {Array<any>} nodes - Condition nodes.
  */
 function atlasConditionLeaves(nodes) {
-  const leaves = [];
-  const visit = (list) =>
-    (Array.isArray(list) ? list : []).forEach((node) => {
-      if (atlasIsConditionGroup(node)) visit(atlasConditionGroupItems(node));
-      else if (node) leaves.push(node);
-    });
-  visit(nodes);
-  return leaves;
+  return ATLASStepTypes.conditions.leaves(nodes);
 }
 
 /**
@@ -487,14 +477,7 @@ function atlasNormalizeConditionTree(nodes, groupConnector = null) {
  * @param {Array<any>} nodes - Condition nodes.
  */
 function atlasCollapseSingleConditionGroups(nodes) {
-  return (Array.isArray(nodes) ? nodes : []).map((node) => {
-    if (!atlasIsConditionGroup(node)) return node;
-    const items = atlasCollapseSingleConditionGroups(
-      atlasConditionGroupItems(node),
-    );
-    if (items.length === 1) return { ...items[0], connector: node.connector };
-    return { ...node, items };
-  });
+  return ATLASStepTypes.conditions.collapseSingleGroups(nodes);
 }
 
 /**
@@ -507,49 +490,14 @@ function atlasCollapseSingleConditionGroups(nodes) {
  * @param {Function} leafText - leafText(condition) returns the condition text.
  */
 function conditionTreePlain(nodes, leafText) {
-  const bulletLines = (group, depth) => {
-    const items = atlasConditionGroupItems(group);
-    const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
-    const lines = [];
-    items.forEach((item, index) => {
-      const indent = "  ".repeat(depth);
-      const trailing = index < items.length - 1 ? ` ${inner}` : "";
-      if (!atlasIsConditionGroup(item)) {
-        lines.push(`${indent}• ${leafText(item)}${trailing}`);
-        return;
-      }
-      const previous = items[index - 1];
-      if (previous && !atlasIsConditionGroup(previous) && lines.length)
-        lines[lines.length - 1] += ":";
-      else
-        lines.push(
-          `${indent}• ${
-            atlasConditionConnectorOf(item.groupConnector, "OR") === "AND"
-              ? "ALL OF:"
-              : "ANY OF:"
-          }`,
-        );
-      const nested = bulletLines(item, depth + 1);
-      if (trailing && nested.length) nested[nested.length - 1] += trailing;
-      lines.push(...nested);
-    });
-    return lines;
-  };
-  let text = "";
-  atlasCollapseSingleConditionGroups(nodes).forEach((node, index) => {
-    const connector =
-      index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
-    if (atlasIsConditionGroup(node)) {
-      text += `${text && !text.endsWith("\n") ? " " : ""}${connector}:\n${bulletLines(node, 1).join("\n")}\n`;
-      return;
-    }
-    const line = renderCatalogPhrase("analyst_logic.if_then.condition_line", {
-      connector,
-      condition_text: leafText(node),
-    });
-    text += `${text && !text.endsWith("\n") ? " " : ""}${line}`;
+  return ATLASStepTypes.conditions.bullets(nodes, {
+    leaf: leafText,
+    line: (connector, text) =>
+      renderCatalogPhrase("analyst_logic.if_then.condition_line", {
+        connector,
+        condition_text: text,
+      }),
   });
-  return text.replace(/\n+$/, "").trim();
 }
 
 /**
@@ -559,21 +507,7 @@ function conditionTreePlain(nodes, leafText) {
  * @param {Function} leafText - leafText(condition) returns the expression.
  */
 function conditionTreeExpression(nodes, leafText) {
-  const groupText = (group) => {
-    const inner = atlasConditionConnectorOf(group.groupConnector, "OR");
-    return `(${atlasConditionGroupItems(group)
-      .map((item) =>
-        atlasIsConditionGroup(item) ? groupText(item) : leafText(item),
-      )
-      .join(` ${inner} `)})`;
-  };
-  return atlasCollapseSingleConditionGroups(nodes)
-    .map((node, index) => {
-      const connector =
-        index === 0 ? "IF" : atlasConditionConnectorOf(node.connector);
-      return `${connector} ${atlasIsConditionGroup(node) ? groupText(node) : leafText(node)}`;
-    })
-    .join(" ");
+  return ATLASStepTypes.conditions.inline(nodes, { leaf: leafText });
 }
 
 // -----------------------------------------------------------------------------
@@ -584,36 +518,7 @@ function conditionTreeExpression(nodes, leafText) {
  * @param {any} step - Logic step object being read or modified.
  */
 function parseStepConditions(step) {
-  const params = step.params || {};
-  if (params.conditions_json) {
-    try {
-      const parsed = JSON.parse(params.conditions_json);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {}
-  }
-  return (step.conditions || []).map((condition, index) => ({
-    id: condition.id || uid("cond"),
-    connector: index === 0 ? "IF" : condition.connector || "AND",
-    sourceFile: condition.sourceFile || step.source || params.source_file || "",
-    sourceAlias:
-      condition.sourceAlias ||
-      params.source_alias ||
-      sourceAliasFor(
-        condition.sourceFile || step.source || params.source_file || "",
-      ),
-    fieldName:
-      condition.fieldName || condition.field || params.field_name || "",
-    operator: condition.operator || params.operator || "is equal to",
-    valueMode: condition.valueMode || "values",
-    compareValue:
-      condition.compareValue || condition.value || params.compare_value || "",
-    compareSourceFile: condition.compareSourceFile || "",
-    compareSourceAlias: condition.compareSourceAlias || "",
-    compareFieldName: condition.compareFieldName || "",
-    expression: condition.expression || "",
-    compareMathJson:
-      condition.compareMathJson || condition.compare_math_json || "",
-  }));
+  return ATLASStepTypes.conditions.parse(step, { uid, sourceAliasFor });
 }
 
 const INVERSE_CONDITION_OPERATOR_MAP = {

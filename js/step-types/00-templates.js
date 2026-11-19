@@ -16,6 +16,9 @@
  *       {{@number}} (index + 1), {{@first}}, {{@last}}, {{@count}}
  *   {{#switch expr}}{{#case "a" "b"}}…{{/case}}{{#default}}…{{/default}}{{/switch}}
  *   {{@root.param.x}}               root lookup from inside a loop
+ *   {{> name}}  {{> name expr}}     include a partial (render's
+ *                                   options.partials), optionally with expr
+ *                                   as its context ({{this}} inside)
  *   {{! comment }}  {{~ trims whitespace before, ~}} trims whitespace after
  *   \{{                             a literal "{{"
  *
@@ -38,6 +41,16 @@
   });
   const BLOCKS = Object.freeze(["if", "unless", "each", "switch"]);
   const FORBIDDEN_KEYS = new Set(["__proto__", "prototype", "constructor"]);
+  /** The forms a format-keyed partial can have; "default" is the fallback. */
+  const PARTIAL_FORMATS = Object.freeze([
+    "english",
+    "plain",
+    "excel",
+    "sql",
+    "python",
+    "default",
+  ]);
+  const PARTIAL_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
   const SPECIAL_VARIABLES = Object.freeze([
     "index",
     "number",
@@ -514,6 +527,35 @@
           text,
           token.offset,
         );
+      if (body.startsWith(">")) {
+        const match = /^>\s*(\S+)\s*([\s\S]*)$/.exec(body);
+        if (!match)
+          throw new TemplateError(
+            "{{>}} needs a partial name",
+            text,
+            token.offset,
+          );
+        if (!PARTIAL_NAME.test(match[1]))
+          throw new TemplateError(
+            `"${match[1]}" is not a partial name`,
+            text,
+            token.offset,
+          );
+        const contextText = match[2].trim();
+        current().children.push({
+          type: "partial",
+          name: match[1],
+          context: contextText
+            ? parseTagExpression(
+                contextText,
+                text,
+                offset + body.indexOf(contextText, 1 + match[1].length),
+              )
+            : null,
+          offset: token.offset,
+        });
+        continue;
+      }
       current().children.push({
         type: "output",
         value: parseTagExpression(body, text, offset),
@@ -610,19 +652,83 @@
     const tree = typeof template === "string" ? parse(template) : template;
     const helpers = { ...BUILTIN_HELPERS, ...(options.helpers || {}) };
     const budget = { output: 0, iterations: 0 };
-    const escapeText =
-      typeof options.escapeText === "function" ? options.escapeText : null;
-    const escapeValue =
-      typeof options.escapeValue === "function" ? options.escapeValue : null;
+    const escapes = {
+      text:
+        typeof options.escapeText === "function" ? options.escapeText : null,
+      value:
+        typeof options.escapeValue === "function" ? options.escapeValue : null,
+    };
+    const partials =
+      options.partials && typeof options.partials === "object"
+        ? options.partials
+        : {};
     const context = {
       data,
       format: options.format || "",
       strict: Boolean(options.strict),
     };
+    // The template whose offsets errors refer to, and how many partials deep
+    // the walk is. Partials share the output and loop budgets.
+    let currentSource = source;
+    let partialDepth = 0;
 
     const fail = (message, offset = 0) => {
-      throw new TemplateError(message, source, offset);
+      throw new TemplateError(message, currentSource, offset);
     };
+
+    /** The text of a partial for the current format. */
+    function partialText(name, offset) {
+      if (!Object.prototype.hasOwnProperty.call(partials, name))
+        fail(`Unknown partial "${name}"`, offset);
+      const value = partials[name];
+      if (typeof value === "string") return value;
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        const form = Object.prototype.hasOwnProperty.call(value, context.format)
+          ? value[context.format]
+          : value.default;
+        if (typeof form === "string") return form;
+        fail(
+          `Partial "${name}" has no ${context.format || "default"} form`,
+          offset,
+        );
+      }
+      return fail(`Partial "${name}" is not a template`, offset);
+    }
+
+    /** Walks a partial with `frames`, adding its output to `parts`. */
+    function includePartial(name, frames, parts, offset) {
+      const text = partialText(name, offset);
+      if (partialDepth >= LIMITS.depth)
+        fail(`Partials are nested more than ${LIMITS.depth} deep`, offset);
+      const outerSource = currentSource;
+      partialDepth += 1;
+      try {
+        currentSource = text;
+        walk(parse(text).children, frames, parts);
+      } catch (error) {
+        if (
+          !(error instanceof TemplateError) ||
+          error.partialDepth > partialDepth
+        )
+          throw error;
+        const wrapped = new TemplateError(
+          `In partial "${name}" (line ${error.line}, column ${error.column}): ${error.reason}`,
+          outerSource,
+          offset,
+        );
+        wrapped.partialDepth = partialDepth;
+        throw wrapped;
+      } finally {
+        partialDepth -= 1;
+        currentSource = outerSource;
+      }
+      return parts;
+    }
+
+    const contextFrames = (value, frames) => [
+      { loop: false, item: value },
+      ...frames,
+    ];
 
     function lookup(node, frames) {
       const [head, ...rest] = node.path;
@@ -686,10 +792,28 @@
       Object.entries(node.hash).forEach(([key, value]) => {
         hash[key] = evaluate(value, frames);
       });
+      // partial(name[, value]) renders a partial as plain text (the caller's
+      // {{output}} escapes the helper's result), with `value` as its context.
+      const partial = (name, ...rest) => {
+        const saved = { ...escapes };
+        escapes.text = null;
+        escapes.value = null;
+        try {
+          return includePartial(
+            String(name),
+            rest.length ? contextFrames(rest[0], frames) : frames,
+            [],
+            node.offset,
+          ).join("");
+        } finally {
+          Object.assign(escapes, saved);
+        }
+      };
       return helpers[node.name](args, hash, {
         format: context.format,
         data,
         item: frames[0]?.item,
+        partial,
       });
     }
 
@@ -703,11 +827,20 @@
     function walk(children, frames, parts) {
       for (const node of children) {
         if (node.type === "text")
-          emit(parts, escapeText ? escapeText(node.value) : node.value);
+          emit(parts, escapes.text ? escapes.text(node.value) : node.value);
         else if (node.type === "output") {
           const value = toText(evaluate(node.value, frames));
-          emit(parts, escapeValue ? toText(escapeValue(value)) : value);
-        } else if (node.type === "if") {
+          emit(parts, escapes.value ? toText(escapes.value(value)) : value);
+        } else if (node.type === "partial")
+          includePartial(
+            node.name,
+            node.context
+              ? contextFrames(evaluate(node.context, frames), frames)
+              : frames,
+            parts,
+            node.offset,
+          );
+        else if (node.type === "if") {
           const branch = node.branches.find((item, index) => {
             const passed = truthy(evaluate(item.test, frames));
             return index === 0 && node.negate ? !passed : passed;
@@ -785,6 +918,7 @@
     const visitChildren = (children = []) =>
       children.forEach((node) => {
         if (node.type === "output") visitExpression(node.value);
+        if (node.type === "partial") visitExpression(node.context);
         if (node.type === "if") {
           node.branches.forEach((branch) => {
             visitExpression(branch.test);
@@ -826,7 +960,10 @@
   /**
    * Returns a list of problems instead of throwing. `helpers` lists the
    * helper names the caller will supply; `roots` lists the allowed first path
-   * segments (loop item properties are not checked).
+   * segments (loop item properties are not checked); `partials` lists the
+   * partial names {{> }} may include (not checked when left out);
+   * `partialHashes` maps a helper name to its hash key that names a partial,
+   * e.g. {conditionTree: "leaf"}, so a literal name there is checked too.
    */
   function check(template, options = {}) {
     let tree;
@@ -848,6 +985,7 @@
       ...(options.helpers || []),
     ]);
     const roots = options.roots ? new Set(options.roots) : null;
+    const partialNames = options.partials ? new Set(options.partials) : null;
     const problems = [];
     const report = (message, offset) => {
       const error = new TemplateError(message, String(template), offset || 0);
@@ -863,6 +1001,11 @@
       children.forEach((node) => {
         const expressions = [];
         if (node.type === "output") expressions.push(node.value);
+        if (node.type === "partial") {
+          if (partialNames && !partialNames.has(node.name))
+            report(`Unknown partial "${node.name}"`, node.offset);
+          if (node.context) expressions.push(node.context);
+        }
         if (node.type === "if")
           node.branches.forEach((branch) => expressions.push(branch.test));
         if (node.type === "each")
@@ -875,6 +1018,19 @@
           if (expression.type === "call") {
             if (!helperNames.has(expression.name))
               report(`Unknown helper "${expression.name}"`, expression.offset);
+            const partialKey = Object.prototype.hasOwnProperty.call(
+              options.partialHashes || {},
+              expression.name,
+            )
+              ? options.partialHashes[expression.name]
+              : null;
+            const named = partialKey ? expression.hash[partialKey] : null;
+            if (
+              partialNames &&
+              named?.type === "literal" &&
+              !partialNames.has(String(named.value))
+            )
+              report(`Unknown partial "${named.value}"`, expression.offset);
             expression.args.forEach(visitExpression);
             Object.values(expression.hash).forEach(visitExpression);
           }
@@ -920,6 +1076,7 @@
 
   const api = Object.freeze({
     LIMITS,
+    PARTIAL_FORMATS,
     BUILTIN_HELPERS,
     TemplateError,
     parse,

@@ -297,7 +297,7 @@ test("GET /api/step-types lists the latest versions and pinned older ones", asyn
   ]);
   const payload = await listStepTypes(pool);
   assert.deepEqual(payload.latest, { sort_records: 2 });
-  assert.deepEqual(payload.schemaVersions, [1]);
+  assert.deepEqual(payload.schemaVersions, [1, 2]);
   assert.equal(typeof payload.engineVersion, "string");
   assert.deepEqual(
     payload.definitions.map((row) => [row.definition.version, row.status]),

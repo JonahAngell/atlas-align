@@ -99,11 +99,20 @@ export function readRepositoryStepTypes(catalog = CATALOG) {
 /**
  * Checks definitions together, as one registry would hold them, so alias
  * clashes between types are caught too. Returns the definitions that passed
- * and the errors of the rest.
+ * and the errors of the rest. `supportedSchemaVersions` narrows the schema
+ * versions this engine reads (tests use it to act as an older engine).
  */
-export function checkStepTypeDefinitions(schema, definitions) {
+export function checkStepTypeDefinitions(
+  schema,
+  definitions,
+  { supportedSchemaVersions } = {},
+) {
   const { engine, options } = loadStepTypeEngine();
-  const registry = engine.registry.createRegistry({ ...options, schema });
+  const registry = engine.registry.createRegistry({
+    ...options,
+    schema,
+    ...(supportedSchemaVersions ? { supportedSchemaVersions } : {}),
+  });
   const accepted = [];
   const rejected = [];
   definitions.forEach((definition) => {

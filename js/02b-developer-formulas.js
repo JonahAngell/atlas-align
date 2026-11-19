@@ -756,18 +756,11 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
 }
 
 function atlasDevIsGroup(node) {
-  if (typeof atlasIsConditionGroup === "function")
-    return atlasIsConditionGroup(node);
-  return !!node && node.conditionType === "group";
+  return ATLASStepTypes.conditions.isGroup(node);
 }
 
 function atlasDevConnector(value, fallback = "AND") {
-  if (typeof atlasConditionConnectorOf === "function")
-    return atlasConditionConnectorOf(value, fallback);
-  const normalized = String(value || "")
-    .trim()
-    .toUpperCase();
-  return normalized === "OR" || normalized === "AND" ? normalized : fallback;
+  return ATLASStepTypes.conditions.connectorOf(value, fallback);
 }
 
 /**
@@ -775,32 +768,10 @@ function atlasDevConnector(value, fallback = "AND") {
  * connector; top-level connectors follow SQL precedence (AND before OR).
  */
 function atlasDevConditionTree(nodes, dialect) {
-  const nodeExpression = (node) => {
-    if (!atlasDevIsGroup(node)) return atlasDevConditionLeaf(node, dialect);
-    const items = Array.isArray(node.items) ? node.items : [];
-    return atlasDevCombine(
-      items.map(nodeExpression),
-      atlasDevConnector(node.groupConnector, "OR"),
-      dialect,
-    );
-  };
-  const list = Array.isArray(nodes) ? nodes : [];
-  const orRuns = [];
-  list.forEach((node, index) => {
-    const expression = nodeExpression(node);
-    if (!expression) return;
-    if (
-      !orRuns.length ||
-      (index > 0 && atlasDevConnector(node.connector) === "OR")
-    )
-      orRuns.push([expression]);
-    else orRuns[orRuns.length - 1].push(expression);
+  const combined = ATLASStepTypes.conditions.precedence(nodes, {
+    leaf: (node) => atlasDevConditionLeaf(node, dialect),
+    combine: (items, connector) => atlasDevCombine(items, connector, dialect),
   });
-  const combined = atlasDevCombine(
-    orRuns.map((run) => atlasDevCombine(run, "AND", dialect)),
-    "OR",
-    dialect,
-  );
   return (
     atlasDevUnwrap(combined) || atlasDevPlaceholder("condition", "[condition]")
   );

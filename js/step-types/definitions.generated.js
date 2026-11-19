@@ -30,7 +30,7 @@
       ],
       properties: {
         $comment: { type: "string" },
-        schemaVersion: { const: 1 },
+        schemaVersion: { enum: [1, 2] },
         id: { $ref: "#/$defs/identifier" },
         version: { type: "integer", minimum: 1 },
         label: { $ref: "#/$defs/label" },
@@ -120,6 +120,18 @@
           description: "null or a template set",
         },
         export: { $ref: "#/$defs/export" },
+        partials: {
+          $comment:
+            "Templates included with {{> name}}. Only with schemaVersion 2 (checked by js/step-types/02-definitions.js).",
+          type: "object",
+          maxProperties: 200,
+          propertyNames: {
+            type: "string",
+            maxLength: 64,
+            pattern: "^[A-Za-z_][A-Za-z0-9_]*$",
+          },
+          additionalProperties: { $ref: "#/$defs/partial" },
+        },
         validation: {
           type: "array",
           maxItems: 100,
@@ -163,6 +175,24 @@
         },
         label: { type: "string", minLength: 1, maxLength: 120 },
         template: { type: "string", maxLength: 20000 },
+        partial: {
+          oneOf: [
+            { $ref: "#/$defs/template" },
+            {
+              type: "object",
+              additionalProperties: false,
+              minProperties: 1,
+              properties: {
+                english: { $ref: "#/$defs/template" },
+                plain: { $ref: "#/$defs/template" },
+                excel: { $ref: "#/$defs/template" },
+                sql: { $ref: "#/$defs/template" },
+                python: { $ref: "#/$defs/template" },
+                default: { $ref: "#/$defs/template" },
+              },
+            },
+          ],
+        },
         scalar: { type: ["string", "number", "boolean", "null"] },
         templateSet: {
           type: "object",

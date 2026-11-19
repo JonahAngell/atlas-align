@@ -15,6 +15,7 @@ function loadPhraseCatalog() {
     console,
   };
   vm.createContext(context);
+  vm.runInContext(read("js/step-types/05-conditions.js"), context);
   vm.runInContext(read("js/07-phrase-catalog.js"), context);
   vm.runInContext(
     `phraseCatalog = ${read("catalogs/logic_phrase_catalog.json")};`,
