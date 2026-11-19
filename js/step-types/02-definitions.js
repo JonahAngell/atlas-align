@@ -277,6 +277,43 @@
     return result;
   }
 
+  // The handler File Utility used for a type before definitions carried an
+  // export.fileUtility block: its own id, except these two.
+  const LEGACY_FILE_UTILITY_COMPILERS = Object.freeze({
+    filter_rows: "legacy_condition",
+    flag_records: "legacy_condition",
+  });
+
+  /**
+   * How File Utility runs `definition`: { compiler, status, when, params,
+   * legacy }, or null when it can't. The definition's export.fileUtility
+   * block decides. A version written before the block existed falls back to
+   * the contract's legacyStepTypes entry for its id (stepTypes in a version
+   * 1 contract), with legacy true. `params` maps the compiler's params to
+   * the step's own.
+   */
+  function fileUtilityFor(definition, contract = {}) {
+    const block = definition?.export?.fileUtility;
+    if (block && typeof block === "object")
+      return {
+        compiler: String(block.compiler || ""),
+        status: block.status || "supported",
+        when: block.when || "",
+        params: { ...(block.params || {}) },
+        legacy: false,
+      };
+    const id = typeof definition?.id === "string" ? definition.id : "";
+    const list = contract?.legacyStepTypes || contract?.stepTypes || {};
+    if (!id || !Object.prototype.hasOwnProperty.call(list, id)) return null;
+    return {
+      compiler: LEGACY_FILE_UTILITY_COMPILERS[id] || id,
+      status: list[id]?.status || "supported",
+      when: list[id]?.when || "",
+      params: {},
+      legacy: true,
+    };
+  }
+
   /** Script roles whose formulas the code export places as a row test. */
   const ROW_TEST_ROLES = Object.freeze(["condition", "else", "filter", "flag"]);
 
@@ -881,6 +918,7 @@
     paletteProblems,
     fields,
     exportFor,
+    fileUtilityFor,
     ROW_TEST_ROLES,
     exportShapeProblems,
     exportShapeWarnings,

@@ -90,7 +90,8 @@
     "sort_records",
     "remove_duplicates",
   ]);
-  const IF_LIKE = new Set(["if_then", "filter_rows", "flag_records"]);
+  // Compilers an ELSE step can follow.
+  const IF_LIKE = new Set(["if_then", "legacy_condition"]);
 
   class Blocked extends Error {}
 
@@ -138,10 +139,82 @@
     return Number.isFinite(value) ? value : order;
   }
 
-  function check(document, contract) {
+  // A version 1 contract keyed readiness by type id; the handler File Utility
+  // used for each id before definitions carried an export.fileUtility block.
+  const LEGACY_COMPILERS = {
+    filter_rows: "legacy_condition",
+    flag_records: "legacy_condition",
+  };
+
+  /**
+   * How File Utility runs `definition` (see fileUtilityFor in
+   * js/step-types/02-definitions.js, used when the engine is loaded):
+   * { compiler, params } from its export.fileUtility block, the contract's
+   * legacyStepTypes entry for an older version, or null.
+   */
+  function runFor(definition, rules) {
+    const engine = global.ATLASStepTypes?.definitions?.fileUtilityFor;
+    if (typeof engine === "function") return engine(definition, rules);
+    const block = definition?.export?.fileUtility;
+    if (block && typeof block === "object")
+      return {
+        compiler: String(block.compiler || ""),
+        params: { ...(block.params || {}) },
+      };
+    const list = dict(rules.legacyStepTypes || rules.stepTypes);
+    const id = text(definition?.id);
+    if (!id || !own(list, id)) return null;
+    return { compiler: LEGACY_COMPILERS[id] || id, params: {} };
+  }
+
+  /**
+   * Options: definitionFor(step), the definition version the step renders
+   * with (ATLASStepTypeRuntime.definitionFor, which applies a publication's
+   * pins). Without it, or for a step it has no definition for, the step type
+   * id is looked up in the contract's legacyStepTypes.
+   */
+  function check(document, contract, options = {}) {
     if (!document || typeof document !== "object" || Array.isArray(document))
       throw new TypeError("The audit is not a JSON object.");
     const rules = dict(contract);
+    const definitionFor =
+      typeof options.definitionFor === "function"
+        ? options.definitionFor
+        : () => null;
+    // Contract version 2 lists each compiler and whether it changes rows.
+    const compilers = own(rules, "compilers") ? dict(rules.compilers) : null;
+    const changesRows = (compiler) =>
+      compilers
+        ? compilers[compiler]?.changesRows === true
+        : SHAPE_TYPES.has(compiler);
+    const runs = new Map();
+    // { compiler, params, label } for a step, or null when it can't run.
+    const stepRun = (step) => {
+      if (runs.has(step)) return runs.get(step);
+      const typeId = text(step.step_type);
+      const definition = definitionFor(step) || { id: typeId };
+      const run = runFor(definition, rules);
+      const result = run
+        ? {
+            compiler: run.compiler,
+            params: dict(run.params),
+            label: text(definition.id) || typeId,
+          }
+        : null;
+      runs.set(step, result);
+      return result;
+    };
+    const compilerOf = (step) => stepRun(step)?.compiler || "";
+    // The step's params under the names its compiler reads.
+    const paramsFor = (step) => {
+      const saved = dict(step.params);
+      const map = stepRun(step)?.params || {};
+      const mapped = { ...saved };
+      Object.entries(map).forEach(([to, from]) => {
+        mapped[to] = saved[from];
+      });
+      return mapped;
+    };
     const operators = new Map(
       Object.entries(dict(rules.operators)).map(([key, value]) => [
         key.toLowerCase(),
@@ -161,8 +234,6 @@
     const pseudoSources = new Set(
       (rules.pseudoSources || []).map((value) => String(value).toLowerCase()),
     );
-    // Contract version 2 renamed stepTypes; version 1 files still read.
-    const stepTypes = dict(rules.legacyStepTypes || rules.stepTypes);
     const thenActions = dict(rules.thenActions);
     const createModes = dict(rules.createColumnModes);
     const valueModes = dict(rules.valueModes);
@@ -218,11 +289,11 @@
     const elseFor = new Map();
     const attached = new Set();
     for (const step of steps) {
-      if (step.step_type !== "else") continue;
+      if (compilerOf(step) !== "else") continue;
       const parent =
         text(dict(step.params).parent_if_step_id) || text(step.parentId);
       const target = byId.get(parent);
-      if (target && IF_LIKE.has(target.step_type) && !elseFor.has(parent)) {
+      if (target && IF_LIKE.has(compilerOf(target)) && !elseFor.has(parent)) {
         elseFor.set(parent, step);
         attached.add(step);
       }
@@ -611,9 +682,14 @@
     }
 
     // ---- steps ------------------------------------------------------------------
-    function legacyCondition(step) {
-      const params = dict(step.params);
-      const isFilter = step.step_type === "filter_rows";
+    function legacyCondition(step, params) {
+      // filter_rows has filter_action and flag_records flag_action; a step
+      // saved before either was set goes by its type.
+      const isFilter = own(params, "filter_action")
+        ? true
+        : own(params, "flag_action")
+          ? false
+          : step.step_type === "filter_rows";
       const kind = isFilter
         ? params.filter_action === "Exclude matching rows"
           ? "do_not_display"
@@ -847,7 +923,8 @@
     function compileStep(original, inBranch) {
       let step = original;
       if (step.enabled === false || attached.has(step)) return;
-      let kind = step.step_type;
+      const run = stepRun(step);
+      let kind = run?.compiler || "";
       if (kind === "else") {
         warn(
           step,
@@ -856,19 +933,24 @@
         return;
       }
       try {
-        if (inBranch && SHAPE_TYPES.has(kind))
+        if (!run)
+          throw new Blocked(
+            `the step type '${text(step.step_type)}' can't run in File Utility.`,
+          );
+        if (compilers && !own(compilers, kind))
+          throw new Blocked(
+            `the step type '${run.label}' names the File Utility compiler '${kind}', which File Utility doesn't have.`,
+          );
+        if (inBranch && changesRows(kind))
           throw new Blocked(
             "steps that add or remove rows can't be inside an IF branch.",
           );
-        if (kind === "filter_rows" || kind === "flag_records") {
-          step = legacyCondition(step);
+        let params = paramsFor(step);
+        if (kind === "legacy_condition") {
+          step = legacyCondition(step, params);
+          params = dict(step.params);
           kind = "if_then";
-        }
-        if (!own(stepTypes, kind) || kind === "else")
-          throw new Blocked(
-            `the step type '${kind}' can't run in File Utility.`,
-          );
-        const params = dict(step.params);
+        } else step = { ...step, params };
         if (kind === "reference_source")
           referenceSource(step, params, inBranch);
         else if (kind === "if_then") return ifThen(original, step, params);
@@ -889,11 +971,15 @@
             );
         } else if (kind === "join") join(step, params);
         else if (kind === "union_sources") union(step, params);
+        else
+          throw new Blocked(
+            `this version of ATLAS Align can't check the File Utility compiler '${kind}'.`,
+          );
       } catch (error) {
         if (!(error instanceof Blocked)) throw error;
         block(original, error.message);
         // A blocked IF skips its child steps; any other step still runs them.
-        if (kind === "if_then") return;
+        if (kind === "if_then" || kind === "legacy_condition") return;
       }
       compileList(branchChildren(original), inBranch);
     }
@@ -912,7 +998,7 @@
         let elseText = null;
         if (elseStep) {
           try {
-            elseText = action(elseStep, dict(elseStep.params));
+            elseText = action(elseStep, paramsFor(elseStep));
           } catch (error) {
             if (!(error instanceof Blocked)) throw error;
             block(elseStep, error.message);
@@ -956,5 +1042,5 @@
   }
 
   if (!global.FileUtilityReadiness)
-    global.FileUtilityReadiness = Object.freeze({ check });
+    global.FileUtilityReadiness = Object.freeze({ check, runFor });
 })(typeof window !== "undefined" ? window : globalThis);
