@@ -18,6 +18,13 @@ globalThis.ATLASStepTypeRuntime?.onChange?.(() => {
   );
 });
 
+// The runtime reads a defined type's Conditions and Action with these parsers
+// (function declarations, so they exist before this line runs).
+globalThis.ATLASStepTypeRuntime?.useImporters?.({
+  conditions: atlasImportParseConditions,
+  action: atlasImportParseThenAction,
+});
+
 /**
  * A draft for a sentence written by a step type definition's English
  * template, or null when no definition reads it.
@@ -25,8 +32,9 @@ globalThis.ATLASStepTypeRuntime?.onChange?.(() => {
 function atlasImportParseDefinedType(text) {
   const parsed = globalThis.ATLASStepTypeRuntime?.parseText?.(text);
   if (!parsed) return null;
-  const references = [];
-  const controls = [];
+  if (parsed.ok === false) return atlasImportFail(parsed.message);
+  const references = [...(parsed.references || [])];
+  const controls = [...(parsed.controls || [])];
   parsed.captures.forEach((capture) => {
     const bind = `params.${capture.param}`;
     if (capture.kind === "source")
@@ -61,6 +69,9 @@ function atlasImportParseDefinedType(text) {
   });
   return atlasImportDraft(parsed.stepType, {
     params: parsed.params,
+    conditions: parsed.conditions,
+    conditionTree: parsed.conditionTree,
+    conditionParam: parsed.conditionParam,
     references,
     controls,
   });
@@ -470,6 +481,11 @@ function atlasImportDraft(stepType, details) {
     params: details.params || {},
     conditions: details.conditions || [],
     ...(details.conditionTree ? { conditionTree: details.conditionTree } : {}),
+    // The param a defined type keeps its Conditions in (if_then's is
+    // conditions_json).
+    ...(details.conditionParam
+      ? { conditionParam: details.conditionParam }
+      : {}),
     references: details.references || [],
     controls: details.controls || [],
   };
@@ -2668,7 +2684,10 @@ function atlasImportMaterialize(draft, choices = {}) {
       label: source.sourceAlias || source.sourceFile || source.sourceKey,
     };
   }
-  if (draft.stepType === "if_then" || draft.stepType === "else") {
+  const conditionParam =
+    draft.conditionParam ||
+    (draft.stepType === "if_then" ? "conditions_json" : "");
+  if (conditionParam || draft.stepType === "else") {
     cloned.conditions = (cloned.conditions || []).map((condition, index) => ({
       id: condition.id || `cond_${index + 1}`,
       connector: index === 0 ? "IF" : condition.connector || "AND",
@@ -2684,8 +2703,8 @@ function atlasImportMaterialize(draft, choices = {}) {
       compareFieldName: condition.compareFieldName || "",
       expression: condition.expression || "",
     }));
-    if (draft.stepType === "if_then")
-      cloned.params.conditions_json = JSON.stringify(
+    if (conditionParam)
+      cloned.params[conditionParam] = JSON.stringify(
         draft.conditionTree
           ? atlasImportAssembleConditionTree(
               draft.conditionTree,
@@ -2718,15 +2737,14 @@ function atlasImportMaterialize(draft, choices = {}) {
       "",
     action: "",
     notes: "",
-    conditions:
-      draft.stepType === "if_then"
-        ? cloned.conditions.map((condition) => ({
-            id: condition.id,
-            field: condition.fieldName,
-            operator: condition.operator,
-            value: condition.compareValue,
-          }))
-        : [],
+    conditions: conditionParam
+      ? cloned.conditions.map((condition) => ({
+          id: condition.id,
+          field: condition.fieldName,
+          operator: condition.operator,
+          value: condition.compareValue,
+        }))
+      : [],
     params,
   };
   if (draft.stepType === "if_then" && !params.then_action_type)
