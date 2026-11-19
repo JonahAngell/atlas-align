@@ -472,7 +472,7 @@
           "$ref": "#/$defs/template"
         },
         "features": {
-          "description": "Switches a control's features on or off (catalogs/step-types/controls.json). Off hides the feature for new steps only.",
+          "description": "Switches a control's features on or off (catalogs/step-types/controls.json). Only features the palette marks switchable can be named. Off hides the feature for new steps only; a saved step that uses it still shows it.",
           "type": "object",
           "additionalProperties": { "type": "boolean" }
         }

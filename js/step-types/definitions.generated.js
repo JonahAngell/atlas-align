@@ -515,7 +515,7 @@
             },
             features: {
               description:
-                "Switches a control's features on or off (catalogs/step-types/controls.json). Off hides the feature for new steps only.",
+                "Switches a control's features on or off (catalogs/step-types/controls.json). Only features the palette marks switchable can be named. Off hides the feature for new steps only; a saved step that uses it still shows it.",
               type: "object",
               additionalProperties: { type: "boolean" },
             },
@@ -699,7 +699,7 @@
     },
     controls: {
       $comment:
-        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame` (its class, heading and tabs), exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
+        "The field controls a step type definition can use: the Step Type Builder's palette. Each control lists the field properties it reads and the features an author can switch off. A definition's field names one control in `control`. js/step-types/02-definitions.js checks fields against this file (validate with `palette`), and ATLAS renders only controls whose status is `available` in the engine it runs. Feature defaults are `true`; a definition switches one off with `features: { name: false }`, which hides it for new steps only. Only features marked `switchable` can be named there; a feature marked `planned` is not built yet, so it is off in every engine. Properties marked `internal` (commonProperties) or listed in a control's `internalProperties`, and a definition's `editorFrame` (its class, heading and tabs), exist only to keep the markup of editors that came with ATLAS Align; the builder never offers them.",
       paletteVersion: 1,
       commonProperties: [
         {
@@ -963,14 +963,16 @@
           category: "composite",
           status: "available",
           description:
-            "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json and keeps the step's conditions list in step with it; a step without conditions gets one blank condition. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+            "IF conditions joined with AND / OR, with nested groups. Stores the tree in conditions_json and keeps the step's conditions list in step with it; a step without conditions gets one blank condition. Drawn by the app's own editor for now, so the builder cannot change its parts; it can switch off nested groups.",
           params: ["conditions_json"],
           properties: [],
           features: [
             {
               name: "nesting",
               label: "Nested groups",
-              description: "AND / OR groups inside the condition list.",
+              description:
+                "AND / OR groups inside the condition list. Off drops the Sub-condition button; a saved step's groups still show.",
+              switchable: true,
             },
             {
               name: "fieldCompare",
@@ -997,11 +999,13 @@
               name: "firstAvailable",
               label: "First available value",
               description: "Use the first field that has a value.",
+              status: "planned",
             },
             {
               name: "groupChecks",
               label: "Group checks",
               description: "Checks across the records of a group.",
+              status: "planned",
             },
           ],
         },
@@ -1011,7 +1015,7 @@
           category: "composite",
           status: "available",
           description:
-            "What a THEN or ELSE branch does: display or leave out the records, write text, a field, a calculation or part of a text value into a column, or describe the action in words. Stores then_action_type and the parameters of the chosen action, and gives the outcome qTest tests. Drawn by the app's own editor for now, so the builder cannot change its parts or switch off its features.",
+            "What a THEN or ELSE branch does: display or leave out the records, write text, a field, a calculation or part of a text value into a column, or describe the action in words. Stores then_action_type and the parameters of the chosen action, and gives the outcome qTest tests. Drawn by the app's own editor for now, so the builder cannot change its parts; it can switch off freeform text.",
           params: [
             "then_action_type",
             "then_action",
@@ -1079,7 +1083,9 @@
             {
               name: "freeform",
               label: "Freeform text",
-              description: "Describe the action in words.",
+              description:
+                "Describe the action in words. Off drops the Freeform Text choice; a saved freeform step still shows it.",
+              switchable: true,
             },
           ],
         },

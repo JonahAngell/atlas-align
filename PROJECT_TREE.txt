@@ -17,7 +17,8 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   └── settings.json
+│   ├── settings.json
+│   └── settings.local.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -588,6 +589,7 @@
 │   ├── step-type-repository.test.js
 │   ├── step-type-runtime.test.js
 │   ├── step-type-snapshots.test.js
+│   ├── step-type-switchable-features.test.js
 │   ├── string-character-count-input.test.js
 │   ├── string-transform-split.test.js
 │   ├── structured-step-editors.test.js

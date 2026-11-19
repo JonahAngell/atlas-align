@@ -107,6 +107,49 @@ test("palette check rejects properties, features and options a control does not 
     ),
     /features|nesting/,
   );
+  assert.match(
+    errorsFor(
+      withField({
+        param: "conditions_json",
+        control: "condition_group",
+        features: { groupChecks: false },
+      }),
+    ),
+    /"groupChecks" is planned/,
+  );
+  assert.match(
+    errorsFor(
+      withField({
+        param: "then_action_type",
+        control: "action",
+        features: { display: false },
+      }),
+    ),
+    /"display" cannot be switched off yet/,
+  );
+});
+
+test("palette check accepts the switchable composite features", () => {
+  assert.equal(
+    errorsFor(
+      withField({
+        param: "conditions_json",
+        control: "condition_group",
+        features: { nesting: false },
+      }),
+    ),
+    "",
+  );
+  assert.equal(
+    errorsFor(
+      withField({
+        param: "then_action_type",
+        control: "action",
+        features: { freeform: false },
+      }),
+    ),
+    "",
+  );
 });
 
 test("palette check rejects a control the runtime cannot render", () => {

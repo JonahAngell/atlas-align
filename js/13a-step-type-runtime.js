@@ -1554,9 +1554,14 @@
       case "condition_group":
       case "action": {
         const editor = COMPOSITE_EDITORS[field.control];
+        // The two composites with switchable features also take the
+        // definition's features: {nesting: false} or {freeform: false}.
+        const switchable =
+          field.control === "condition_group" || field.control === "action";
         const html = app(editor.name)?.(
           editor.reads === "step" ? { ...step, params } : params,
           ...(field.control === "action" ? [field.branch || "THEN"] : []),
+          ...(switchable ? [{ ...(field.features || {}) }] : []),
         );
         return typeof html === "string"
           ? html
