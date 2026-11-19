@@ -665,10 +665,13 @@
       value:
         typeof options.escapeValue === "function" ? options.escapeValue : null,
     };
-    const partials =
+    const basePartials =
       options.partials && typeof options.partials === "object"
         ? options.partials
         : {};
+    // The partials {{> name}} reads. A helper's partialWith() lays another
+    // set over the template's own while it renders one of them.
+    let partials = basePartials;
     const context = {
       data,
       format: options.format || "",
@@ -816,11 +819,27 @@
           Object.assign(escapes, saved);
         }
       };
+      // partialWith(set, name[, value]) is partial() with `set` laid over the
+      // template's own partials, so a partial of another definition (an
+      // action kind, say) can include the template's partials and its own.
+      const partialWith = (set, name, ...rest) => {
+        const saved = partials;
+        partials = {
+          ...basePartials,
+          ...(set && typeof set === "object" ? set : {}),
+        };
+        try {
+          return partial(name, ...rest);
+        } finally {
+          partials = saved;
+        }
+      };
       return helpers[node.name](args, hash, {
         format: context.format,
         data,
         item: frames[0]?.item,
         partial,
+        partialWith,
       });
     }
 

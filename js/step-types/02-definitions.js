@@ -47,6 +47,39 @@
     "freeform",
     "none",
   ]);
+  /**
+   * The partials of the step type that includes an action kind, which the
+   * kind's own partials may include: the condition in one dialect, and the
+   * frames a kind's formula sits in (a filter, a column value, the freeform
+   * match).
+   */
+  const ACTION_HOST_PARTIALS = Object.freeze([
+    "condition",
+    "filter",
+    "valueFormula",
+    "freeformFormula",
+  ]);
+  /** Step type keys an action kind does not have. */
+  const STEP_ONLY_KEYS = Object.freeze([
+    "category",
+    "legacyType",
+    "aliases",
+    "migrations",
+    "subtypes",
+    "editorFrame",
+    "block",
+    "outputs",
+    "branches",
+    "inverse",
+    "orderGroup",
+    "referenceChild",
+    "english",
+    "formulas",
+    "autoNotes",
+    "textImport",
+  ]);
+  /** Field controls an action kind's fields can't use. */
+  const ACTION_FIELD_LIMITS = Object.freeze(["condition_group", "action"]);
   /** Extra values qTest outcome templates may read: the record wording. */
   const OUTCOME_ROOTS = Object.freeze(["record"]);
   const SUBJECT_KEYS = ["param", "stepField"];
@@ -612,6 +645,72 @@
    * => formulas: when given, the result also has warnings, the
    * export shape problems of the definition's tests (exportShapeWarnings).
    */
+  /** True for an action kind (kind "action"), false for a step type. */
+  function isAction(definition) {
+    return definition?.kind === "action";
+  }
+
+  /**
+   * The keys a step type or an action kind needs or can't have, which the
+   * schema can't tell apart: a step type needs english, formulas, export and
+   * export.scriptRole; an action kind is action_<name>, has an english
+   * partial and none of the step type keys.
+   */
+  function kindProblems(definition) {
+    const problems = [];
+    const add = (path, message, code = "schema") =>
+      problems.push({ path, message, code });
+    const fileUtility = definition.export?.fileUtility;
+    if (!isAction(definition)) {
+      ["english", "formulas", "export"].forEach((key) => {
+        if (definition[key] === undefined) add(`/${key}`, "is required");
+      });
+      if (definition.export && definition.export.scriptRole === undefined)
+        add("/export/scriptRole", "is required");
+      if (fileUtility && fileUtility.compiler === undefined)
+        add("/export/fileUtility/compiler", "is required");
+      ["name", "complete"].forEach((key) => {
+        if (definition[key] !== undefined)
+          add(`/${key}`, "is only for an action kind", "definition");
+      });
+      if (fileUtility?.action !== undefined)
+        add(
+          "/export/fileUtility/action",
+          "is only for an action kind; a step type names a compiler",
+          "definition",
+        );
+      return problems;
+    }
+    if (definition.name === undefined) add("/name", "is required");
+    else if (definition.id !== `action_${definition.name}`)
+      add("/id", `must be action_${definition.name}`, "definition");
+    if (typeof definition.partials?.english === "undefined")
+      add("/partials/english", "is required");
+    STEP_ONLY_KEYS.forEach((key) => {
+      if (definition[key] !== undefined)
+        add(`/${key}`, "is only for a step type", "definition");
+    });
+    if (definition.export?.scriptRole !== undefined)
+      add("/export/scriptRole", "is only for a step type", "definition");
+    if (definition.export?.rules !== undefined)
+      add("/export/rules", "is only for a step type", "definition");
+    if (fileUtility?.compiler !== undefined)
+      add(
+        "/export/fileUtility/compiler",
+        "is only for a step type; an action kind names an action",
+        "definition",
+      );
+    (definition.fields || []).forEach((field, index) => {
+      if (ACTION_FIELD_LIMITS.includes(field.control))
+        add(
+          `/fields/${index}/control`,
+          `an action kind can't place ${field.control}`,
+          "definition",
+        );
+    });
+    return problems;
+  }
+
   function validate(definition, options = {}) {
     const errors = [];
     const supported =
@@ -637,6 +736,8 @@
     global.ATLASStepTypes.schema
       .validate(options.schema, definition)
       .forEach((error) => errors.push({ ...error, code: "schema" }));
+    if (errors.length) return { ok: false, errors };
+    kindProblems(definition).forEach((error) => errors.push(error));
     if (errors.length) return { ok: false, errors };
 
     const add = (path, message, code = "definition") =>
@@ -813,9 +914,10 @@
       if (!own.storesConditions)
         add("/inverse", "a linked inverse needs a Conditions field");
     }
-    const fileUtility = definition.export.fileUtility;
+    const fileUtility = definition.export?.fileUtility;
     if (fileUtility) {
       if (
+        fileUtility.compiler !== undefined &&
         options.fileUtilityCompilers &&
         !options.fileUtilityCompilers.includes(fileUtility.compiler)
       )
@@ -837,7 +939,7 @@
           );
       });
     }
-    (definition.export.rules || []).forEach((rule, index) =>
+    (definition.export?.rules || []).forEach((rule, index) =>
       checkConditionParams(rule.when, `/export/rules/${index}/when`),
     );
     ["english", "autoNotes", "formulas"].forEach((section) =>
@@ -855,14 +957,16 @@
           add(`/${section}/bySubtype/${key}`, `"${key}" is not a subtype`);
       }),
     );
-    Object.keys(definition.formulas.bySubtype || {}).forEach((key) => {
+    Object.keys(definition.formulas?.bySubtype || {}).forEach((key) => {
       if (!subtypeValues.has(key))
         add(`/formulas/bySubtype/${key}`, `"${key}" is not a subtype`);
     });
     // A behavior block writes its own English, so its definition may leave
     // the template blank.
     const needsEnglish =
-      !definition.block && !definition.english.variants?.length;
+      !isAction(definition) &&
+      !definition.block &&
+      !definition.english.variants?.length;
     if (needsEnglish && !definition.english.default && subtypeValues.size) {
       subtypeValues.forEach((value) => {
         if (definition.english.bySubtype?.[value] === undefined)
@@ -930,7 +1034,12 @@
         "schema",
       );
     const templateApi = global.ATLASStepTypes.templates;
-    const partialNames = Object.keys(definition.partials || {});
+    // An action kind's partials may include the partials of the step type
+    // that renders it (ACTION_HOST_PARTIALS).
+    const partialNames = [
+      ...Object.keys(definition.partials || {}),
+      ...(isAction(definition) ? ACTION_HOST_PARTIALS : []),
+    ];
     templates(definition).forEach(({ path, template: source }) => {
       // A partial can be included with any context, so its values are not
       // checked against the roots.
@@ -977,6 +1086,8 @@
     TEMPLATE_ROOTS,
     QTEST_ACTION_TEMPLATES,
     QTEST_ACTION_KINDS,
+    ACTION_HOST_PARTIALS,
+    isAction,
     matches,
     isBlank,
     subtypeOf,

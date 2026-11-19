@@ -15,9 +15,10 @@ const read = (path) =>
 const schema = read("catalogs/step-types/schema.json");
 const contract = read("catalogs/file-utility/executable-steps.json");
 const manifest = read("catalogs/step-types/manifest.json");
-const bundled = manifest.definitions.map((entry) =>
-  read(`catalogs/step-types/${entry.file}`),
-);
+// Step types only: an action kind names a File Utility action, not a compiler.
+const bundled = manifest.definitions
+  .map((entry) => read(`catalogs/step-types/${entry.file}`))
+  .filter((definition) => definition.kind !== "action");
 const compilers = Object.keys(contract.compilers);
 
 function errorsFor(definition, extra = { fileUtilityCompilers: compilers }) {

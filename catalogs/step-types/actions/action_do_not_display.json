@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 2,
+  "kind": "action",
+  "id": "action_do_not_display",
+  "version": 1,
+  "name": "do_not_display",
+  "label": "Do not display",
+  "order": 20,
+  "description": "Leave the records out.",
+  "status": "active",
+  "fields": [],
+  "partials": {
+    "english": "{{#if (present (include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json))))}}{{phrase \"analyst_logic.if_then.then_do_not_display_key\" key_column=(include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase \"analyst_logic.if_then.then_do_not_display\"}}{{/if}}",
+    "elseEnglish": "{{#if (present (include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json))))}}{{phrase \"analyst_logic.else.do_not_display_key\" key_column=(include \"excludeKeyColumn\" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase \"analyst_logic.else.do_not_display\"}}{{/if}}",
+    "shape": "filter",
+    "formula": "{{#if (and (eq param.then_exclude_scope \"key\") (present (include \"excludeKeyName\" (first (json param.then_exclude_key_fields_json)))))}}{{> groupExclude (first (json param.then_exclude_key_fields_json))}}{{else}}{{> filter}}{{/if}}",
+    "elseFormula": "{{> filter}}",
+    "formulaNote": "{{#if (and (eq param.then_exclude_scope \"key\") (present (include \"excludeKeyName\" (first (json param.then_exclude_key_fields_json)))))}}{{phrase \"developer_logic.display_notes.do_not_display_key\" key_column=(include \"excludeKeyName\" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase \"developer_logic.display_notes.do_not_display\"}}{{/if}}",
+    "elseFormulaNote": "{{phrase \"developer_logic.display_notes.else_do_not_display\"}}",
+    "excludeKeyColumn": "{{#if (eq param.then_exclude_scope \"key\")}}{{tableColumn (default param.then_exclude_key_source_file this.sourceFile param.source_file) (default param.then_exclude_key_source_alias this.sourceAlias param.source_alias) (default param.then_exclude_key_field this.fieldName)}}{{/if}}",
+    "excludeKeyName": "{{trim (default param.then_exclude_key_field this.fieldName)}}",
+    "excludeKey": {
+      "default": "{{field (default param.then_exclude_key_source_file this.sourceFile) (default param.then_exclude_key_field this.fieldName) alias=(default param.then_exclude_key_source_alias this.sourceAlias)}}"
+    },
+    "groupExclude": {
+      "excel": "Matches: ={{> condition}}\nKeep: =COUNTIFS({{replace (include \"excludeKey\") \"[@[\" \"[[\"}}, {{> excludeKey}}, [[Matches]], TRUE)=0",
+      "sql": "WHERE {{> excludeKey}} NOT IN (SELECT {{> excludeKey}} WHERE {{> condition}})",
+      "python": "mask = {{> condition}}\nexcluded_keys = {{> excludeKey}}[mask].unique()\ndf = df[~{{> excludeKey}}.isin(excluded_keys)]"
+    }
+  },
+  "export": {
+    "qtest": {
+      "action": {
+        "kind": "do_not_display"
+      }
+    },
+    "fileUtility": {
+      "action": "do_not_display"
+    }
+  }
+}

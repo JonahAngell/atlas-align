@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "kind": "action",
+  "id": "action_set_column_calculation",
+  "version": 1,
+  "name": "set_column_calculation",
+  "label": "Calculation",
+  "order": 50,
+  "description": "Write a calculation into a column.",
+  "status": "active",
+  "fields": [],
+  "partials": {
+    "english": "{{phrase \"analyst_logic.if_then.then_set_column_calculation\" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}",
+    "elseEnglish": "{{#if (present param.then_action)}}{{phrase \"analyst_logic.else.freeform\" action=param.then_action}}{{else}}{{phrase \"analyst_logic.else.default\"}}{{/if}}",
+    "shape": "value",
+    "formula": "{{> valueFormula}}",
+    "elseFormula": "{{> valueFormula}}",
+    "formulaNote": "{{#if (and (eq elseStep.param.then_action_type \"display_text\") (eq (action \"actionTarget\" elseStep) (include \"actionTarget\")))}}{{phrase \"developer_logic.notes.append_message_excel\" column=(concat \"\\\"\" (include \"actionTarget\") \"\\\"\")}}{{/if}}",
+    "actionTarget": "{{default param.then_target_column (placeholder \"target_column\" \"[target column]\")}}",
+    "actionValue": {
+      "default": "{{mathFormula (default param.then_value_source_file param.source_file) param.then_value_source_alias param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places}}"
+    },
+    "actionExpression": {
+      "excel": "{{> actionValue}}",
+      "sql": "{{> actionValue}}"
+    },
+    "unmatched": {
+      "excel": "\"\"",
+      "sql": ""
+    },
+    "matchedLines": {
+      "python": "df.loc[mask, {{quote (include \"actionTarget\")}}] = {{> actionValue}}"
+    },
+    "unmatchedLines": {
+      "python": "df.loc[~mask, {{quote (include \"actionTarget\")}}] = {{> actionValue}}"
+    }
+  },
+  "export": {
+    "qtest": {
+      "action": {
+        "kind": "set_column",
+        "targetColumn": "{{param.then_target_column}}",
+        "valueField": "{{param.then_value_field}}",
+        "calculated": "true"
+      }
+    },
+    "fileUtility": {
+      "action": "set_column_calculation"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 2,
+  "kind": "action",
+  "id": "action_freeform",
+  "version": 1,
+  "name": "freeform",
+  "label": "Freeform text",
+  "order": 70,
+  "description": "Describe the action in words.",
+  "status": "active",
+  "fields": [],
+  "partials": {
+    "english": "{{phrase \"analyst_logic.if_then.then_freeform\" action=(default param.then_action step.action)}}",
+    "elseEnglish": "{{#if (present param.then_action)}}{{phrase \"analyst_logic.else.freeform\" action=param.then_action}}{{else}}{{phrase \"analyst_logic.else.default\"}}{{/if}}",
+    "shape": "freeform",
+    "formula": "{{> freeformFormula}}",
+    "elseFormula": "{{> freeformFormula}}",
+    "formulaNote": "{{#if (present (trim (default param.then_action step.action)))}}{{phrase \"developer_logic.notes.freeform_action\" action=(trim (default param.then_action step.action))}}{{else}}{{phrase \"developer_logic.notes.matching_rows\"}}{{/if}}",
+    "elseFormulaNote": "{{#if (present (trim param.then_action))}}{{phrase \"developer_logic.notes.freeform_action\" action=(trim param.then_action)}}{{/if}}"
+  },
+  "export": {
+    "qtest": {
+      "action": {
+        "kind": "{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part=\"kind\"}}{{/if}}",
+        "message": "{{freeformOutcome (trim (default param.then_action step.action)) part=\"message\"}}",
+        "outputColumn": "{{freeformOutcome (trim (default param.then_action step.action)) part=\"outputColumn\"}}",
+        "targetColumn": "{{param.then_target_column}}",
+        "valueField": "{{param.then_value_field}}",
+        "calculated": "true",
+        "text": "{{freeformOutcome (trim (default param.then_action step.action)) part=\"text\"}}"
+      }
+    },
+    "fileUtility": {
+      "action": "freeform"
+    }
+  }
+}

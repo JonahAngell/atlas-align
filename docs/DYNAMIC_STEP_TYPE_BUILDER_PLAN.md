@@ -1374,6 +1374,36 @@ existing `^[a-z][a-z0-9_]*$` check allows it, so no migration).
 This replaces Phase 8 decision 1 for the action partials of new versions,
 and Phase 8 decision 3 (decision 1 below).
 
+As built (5048):
+
+- The seven kinds are in `catalogs/step-types/actions/` and in the
+  manifest under `actions/`. `registry.resolve()` and `list()` leave them
+  out, and `registry.actions()` (`ATLASStepTypeRuntime.actionKinds()`) lists
+  them. A step type still needs `english`, `formulas` and
+  `export.scriptRole`; that is now checked in code, since the schema can't
+  tell the two kinds apart. An action kind needs `name` (its id is
+  `action_<name>`) and an `english` partial, and can't have the step type
+  keys or place Conditions or Action.
+- A kind's partials are named by role: `english`, `elseEnglish`, `shape`
+  (`filter`, `value` or `freeform`, so a step type can ask what frame a kind
+  needs), `formula` and `elseFormula` (which frame, by the step type's
+  `filter`, `valueFormula` or `freeformFormula`), `formulaNote` and
+  `elseFormulaNote`. The parts the frames include (`actionTarget`,
+  `actionValue`, `actionExpression`, `unmatched`, `matchedLines`,
+  `unmatchedLines`, and Do Not Display's `excludeKey*` and `groupExclude`)
+  keep their names, so the step type's frames read the kind's copies. Each
+  is the kind's case of the old `{{#switch}}`, unchanged.
+- The qTest outcome is the kind's `export.qtest.action`, read with
+  `{{action "qtest" part="kind"}}`. The File Utility handler is
+  `export.fileUtility.action`.
+- `{{action "part" context}}` reads the kind of `context` (an ELSE or IF
+  step). With a context that is not a step it renders nothing, where
+  `{{include}}` falls back to the step itself; the one place a kind reads
+  the ELSE (the column-value note) checks the ELSE's kind first.
+- The engine gained `partialWith` for helpers: a partial of another
+  definition rendered with the calling template's partials beneath it.
+- Fields come with the Action editor in 5049, and `complete` with 5050.
+
 ### 2. Operator catalog
 
 `app_config.logic_options` in the phrase catalog becomes the only list:

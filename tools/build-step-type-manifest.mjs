@@ -1,6 +1,7 @@
 /**
  * Rebuilds catalogs/step-types/manifest.json from the definition files in that
- * folder (every *.json except schema.json, manifest.json and controls.json),
+ * folder (every *.json except schema.json, manifest.json and controls.json,
+ * plus the action kinds in actions/),
  * and js/step-types/definitions.generated.js, the same definitions, schema and
  * control palette as one browser script so ATLAS has its registry as soon as
  * the page loads.
@@ -29,10 +30,19 @@ const OPERATORS = new URL(
 );
 const RESERVED = new Set(["schema.json", "manifest.json", "controls.json"]);
 
+const ACTIONS = "actions/";
+
 function definitionFiles() {
-  return readdirSync(DIR)
-    .filter((file) => file.endsWith(".json") && !RESERVED.has(file))
-    .sort();
+  const json = (folder) =>
+    readdirSync(new URL(folder, DIR)).filter((file) => file.endsWith(".json"));
+  return [
+    ...json("./")
+      .filter((file) => !RESERVED.has(file))
+      .sort(),
+    ...json(ACTIONS)
+      .sort()
+      .map((file) => `${ACTIONS}${file}`),
+  ];
 }
 
 const readJson = (file) => JSON.parse(readFileSync(new URL(file, DIR), "utf8"));
@@ -40,12 +50,13 @@ const readJson = (file) => JSON.parse(readFileSync(new URL(file, DIR), "utf8"));
 export function buildManifest() {
   const definitions = definitionFiles().map((file) => {
     const definition = readJson(file);
+    const folder = definition.kind === "action" ? ACTIONS : "";
     const expected = new RegExp(
-      `^${definition.id}(\\.v${definition.version})?\\.json$`,
+      `^${folder}${definition.id}(\\.v${definition.version})?\\.json$`,
     );
     if (!expected.test(file))
       throw new Error(
-        `${file} holds "${definition.id}" version ${definition.version}; name it ${definition.id}.json or ${definition.id}.v${definition.version}.json`,
+        `${file} holds "${definition.id}" version ${definition.version}; name it ${folder}${definition.id}.json or ${folder}${definition.id}.v${definition.version}.json`,
       );
     return {
       id: definition.id,

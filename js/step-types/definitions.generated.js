@@ -17,21 +17,20 @@
         "One step type: its backend name, editor fields, English, automatic notes, Excel/SQL/Python formulas, export roles, validation and tests. Read by js/step-types/01-schema.js, which supports only the keywords used here.",
       type: "object",
       additionalProperties: false,
-      required: [
-        "schemaVersion",
-        "id",
-        "version",
-        "label",
-        "status",
-        "fields",
-        "english",
-        "formulas",
-        "export",
-      ],
+      required: ["schemaVersion", "id", "version", "label", "status", "fields"],
       properties: {
         $comment: { type: "string" },
         schemaVersion: { enum: [1, 2] },
+        kind: {
+          enum: ["step", "action"],
+          description:
+            "step (the default) is a step type. action is an action kind: what a THEN or ELSE branch does, chosen by then_action_type and included by a step type with {{action}}. An action kind's id is action_<name>. A step type needs english, formulas and export; an action kind needs name and an english partial.",
+        },
         id: { $ref: "#/$defs/identifier" },
+        name: {
+          $ref: "#/$defs/identifier",
+          description: "An action kind's then_action_type value.",
+        },
         version: { type: "integer", minimum: 1 },
         label: { $ref: "#/$defs/label" },
         description: { type: "string", maxLength: 500 },
@@ -134,6 +133,14 @@
         referenceChild: {
           type: "boolean",
           description: "Offered in a Reference step's menu as a child step.",
+        },
+        complete: {
+          type: "array",
+          uniqueItems: true,
+          maxItems: 30,
+          items: { $ref: "#/$defs/paramName" },
+          description:
+            "An action kind's params that must be filled in before the step has an action of its own.",
         },
         english: { $ref: "#/$defs/templateSet" },
         formulas: { $ref: "#/$defs/formulas" },
@@ -604,7 +611,7 @@
         export: {
           type: "object",
           additionalProperties: false,
-          required: ["scriptRole"],
+          description: "A step type needs scriptRole; an action kind has none.",
           properties: {
             scriptRole: { $ref: "#/$defs/scriptRole" },
             qtest: { $ref: "#/$defs/qtest" },
@@ -628,11 +635,11 @@
         fileUtility: {
           type: "object",
           additionalProperties: false,
-          required: ["compiler"],
           description:
-            "How File Utility runs this step type. compiler names one of the compilers in catalogs/file-utility/executable-steps.json. A step type without this block can't run in File Utility.",
+            "How File Utility runs this step type. compiler names one of the compilers in catalogs/file-utility/executable-steps.json. A step type without this block can't run in File Utility. An action kind names its File Utility action handler with action instead of compiler.",
           properties: {
             compiler: { $ref: "#/$defs/identifier" },
+            action: { $ref: "#/$defs/identifier" },
             status: {
               enum: ["supported", "partial"],
               description:
@@ -3225,6 +3232,346 @@
           },
         },
         textImport: { fromEnglish: false },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_display",
+        version: 1,
+        name: "display",
+        label: "Display",
+        order: 10,
+        description: "Display the records.",
+        status: "active",
+        fields: [],
+        partials: {
+          english: '{{phrase "analyst_logic.if_then.then_display"}}',
+          elseEnglish: '{{phrase "analyst_logic.else.display"}}',
+          shape: "filter",
+          formula: "{{> filter}}",
+          elseFormula: "{{> filter}}",
+          formulaNote: '{{phrase "developer_logic.display_notes.display"}}',
+          elseFormulaNote:
+            '{{phrase "developer_logic.display_notes.else_display"}}',
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: '{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}',
+              message:
+                '{{freeformOutcome (trim (default param.then_action step.action)) part="message"}}',
+              outputColumn:
+                '{{freeformOutcome (trim (default param.then_action step.action)) part="outputColumn"}}',
+              targetColumn: "{{param.then_target_column}}",
+              valueField: "{{param.then_value_field}}",
+              calculated: "true",
+              text: '{{freeformOutcome (trim (default param.then_action step.action)) part="text"}}',
+            },
+          },
+          fileUtility: { action: "display" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_display_text",
+        version: 1,
+        name: "display_text",
+        label: "Display text",
+        order: 30,
+        description: "Write a text response in a column.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{phrase "analyst_logic.if_then.then_display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}',
+          elseEnglish:
+            '{{phrase "analyst_logic.else.display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}',
+          shape: "value",
+          formula: "{{> valueFormula}}",
+          elseFormula: "{{> valueFormula}}",
+          formulaNote:
+            '{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}',
+          elseFormulaNote:
+            '{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}',
+          actionTarget:
+            '{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}',
+          actionValue: { default: "{{literal param.then_text}}" },
+          actionExpression: {
+            excel:
+              'IF([@[{{excelColumn (include "actionTarget")}}]]="", {{> actionValue}}, [@[{{excelColumn (include "actionTarget")}}]]&{{literal (textSeparator param)}}&{{> actionValue}})',
+            sql: "CONCAT_WS({{literal (textSeparator param)}}, NULLIF({{sqlName (include \"actionTarget\")}}, ''), {{> actionValue}})",
+          },
+          unmatched: {
+            excel: '[@[{{excelColumn (include "actionTarget")}}]]',
+            sql: '{{sqlName (include "actionTarget")}}',
+          },
+          matchedLines: {
+            python:
+              'df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}',
+          },
+          unmatchedLines: {
+            python:
+              'df[{{quote (include "actionTarget")}}] = df.get({{quote (include "actionTarget")}}, "")\nexisting = df.loc[~mask, {{quote (include "actionTarget")}}].fillna("").astype(str)\ndf.loc[~mask, {{quote (include "actionTarget")}}] = existing.where(existing == "", existing + {{literal (textSeparator param)}}) + {{> actionValue}}',
+          },
+          separatorClause:
+            '{{#if (ne (textSeparator param) "||")}}{{phrase "analyst_logic.if_then.then_display_text_separator" separator=(concat "\\"" (replace (textSeparator param) "\\"" "\\\\\\"") "\\"")}}{{/if}}',
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: "display_text",
+              message: "{{param.then_text}}",
+              outputColumn:
+                '{{default param.then_output_column (placeholder "error_message_column" "Error Message")}}',
+            },
+          },
+          fileUtility: { action: "display_text" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_do_not_display",
+        version: 1,
+        name: "do_not_display",
+        label: "Do not display",
+        order: 20,
+        description: "Leave the records out.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.if_then.then_do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.if_then.then_do_not_display"}}{{/if}}',
+          elseEnglish:
+            '{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.else.do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.else.do_not_display"}}{{/if}}',
+          shape: "filter",
+          formula:
+            '{{#if (and (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{> groupExclude (first (json param.then_exclude_key_fields_json))}}{{else}}{{> filter}}{{/if}}',
+          elseFormula: "{{> filter}}",
+          formulaNote:
+            '{{#if (and (eq param.then_exclude_scope "key") (present (include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))))}}{{phrase "developer_logic.display_notes.do_not_display_key" key_column=(include "excludeKeyName" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "developer_logic.display_notes.do_not_display"}}{{/if}}',
+          elseFormulaNote:
+            '{{phrase "developer_logic.display_notes.else_do_not_display"}}',
+          excludeKeyColumn:
+            '{{#if (eq param.then_exclude_scope "key")}}{{tableColumn (default param.then_exclude_key_source_file this.sourceFile param.source_file) (default param.then_exclude_key_source_alias this.sourceAlias param.source_alias) (default param.then_exclude_key_field this.fieldName)}}{{/if}}',
+          excludeKeyName:
+            "{{trim (default param.then_exclude_key_field this.fieldName)}}",
+          excludeKey: {
+            default:
+              "{{field (default param.then_exclude_key_source_file this.sourceFile) (default param.then_exclude_key_field this.fieldName) alias=(default param.then_exclude_key_source_alias this.sourceAlias)}}",
+          },
+          groupExclude: {
+            excel:
+              'Matches: ={{> condition}}\nKeep: =COUNTIFS({{replace (include "excludeKey") "[@[" "[["}}, {{> excludeKey}}, [[Matches]], TRUE)=0',
+            sql: "WHERE {{> excludeKey}} NOT IN (SELECT {{> excludeKey}} WHERE {{> condition}})",
+            python:
+              "mask = {{> condition}}\nexcluded_keys = {{> excludeKey}}[mask].unique()\ndf = df[~{{> excludeKey}}.isin(excluded_keys)]",
+          },
+        },
+        export: {
+          qtest: { action: { kind: "do_not_display" } },
+          fileUtility: { action: "do_not_display" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_freeform",
+        version: 1,
+        name: "freeform",
+        label: "Freeform text",
+        order: 70,
+        description: "Describe the action in words.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{phrase "analyst_logic.if_then.then_freeform" action=(default param.then_action step.action)}}',
+          elseEnglish:
+            '{{#if (present param.then_action)}}{{phrase "analyst_logic.else.freeform" action=param.then_action}}{{else}}{{phrase "analyst_logic.else.default"}}{{/if}}',
+          shape: "freeform",
+          formula: "{{> freeformFormula}}",
+          elseFormula: "{{> freeformFormula}}",
+          formulaNote:
+            '{{#if (present (trim (default param.then_action step.action)))}}{{phrase "developer_logic.notes.freeform_action" action=(trim (default param.then_action step.action))}}{{else}}{{phrase "developer_logic.notes.matching_rows"}}{{/if}}',
+          elseFormulaNote:
+            '{{#if (present (trim param.then_action))}}{{phrase "developer_logic.notes.freeform_action" action=(trim param.then_action)}}{{/if}}',
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: '{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}',
+              message:
+                '{{freeformOutcome (trim (default param.then_action step.action)) part="message"}}',
+              outputColumn:
+                '{{freeformOutcome (trim (default param.then_action step.action)) part="outputColumn"}}',
+              targetColumn: "{{param.then_target_column}}",
+              valueField: "{{param.then_value_field}}",
+              calculated: "true",
+              text: '{{freeformOutcome (trim (default param.then_action step.action)) part="text"}}',
+            },
+          },
+          fileUtility: { action: "freeform" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_set_column_calculation",
+        version: 1,
+        name: "set_column_calculation",
+        label: "Calculation",
+        order: 50,
+        description: "Write a calculation into a column.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{phrase "analyst_logic.if_then.then_set_column_calculation" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}',
+          elseEnglish:
+            '{{#if (present param.then_action)}}{{phrase "analyst_logic.else.freeform" action=param.then_action}}{{else}}{{phrase "analyst_logic.else.default"}}{{/if}}',
+          shape: "value",
+          formula: "{{> valueFormula}}",
+          elseFormula: "{{> valueFormula}}",
+          formulaNote:
+            '{{#if (and (eq elseStep.param.then_action_type "display_text") (eq (action "actionTarget" elseStep) (include "actionTarget")))}}{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}{{/if}}',
+          actionTarget:
+            '{{default param.then_target_column (placeholder "target_column" "[target column]")}}',
+          actionValue: {
+            default:
+              "{{mathFormula (default param.then_value_source_file param.source_file) param.then_value_source_alias param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places}}",
+          },
+          actionExpression: {
+            excel: "{{> actionValue}}",
+            sql: "{{> actionValue}}",
+          },
+          unmatched: { excel: '""', sql: "" },
+          matchedLines: {
+            python:
+              'df.loc[mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+          unmatchedLines: {
+            python:
+              'df.loc[~mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: "set_column",
+              targetColumn: "{{param.then_target_column}}",
+              valueField: "{{param.then_value_field}}",
+              calculated: "true",
+            },
+          },
+          fileUtility: { action: "set_column_calculation" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_set_column_string_transform",
+        version: 1,
+        name: "set_column_string_transform",
+        label: "String transformation",
+        order: 60,
+        description: "Write part of a text value into a column.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{stringTransformPhrase param prefix="then_" context="if_then"}}',
+          elseEnglish:
+            '{{phrase "analyst_logic.else.string_transform" phrase=(stringTransformPhrase param prefix="then_" context="if_then")}}',
+          shape: "value",
+          formula: "{{> valueFormula}}",
+          elseFormula: "{{> valueFormula}}",
+          formulaNote:
+            '{{#if (and (eq elseStep.param.then_action_type "display_text") (eq (action "actionTarget" elseStep) (include "actionTarget")))}}{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}{{/if}}',
+          actionTarget:
+            '{{default (stringTransformTarget param prefix="then_") (placeholder "destination_column" "[destination column]")}}',
+          actionValue: {
+            default: '{{stringTransformFormula param prefix="then_"}}',
+          },
+          actionExpression: {
+            excel: "{{> actionValue}}",
+            sql: "{{> actionValue}}",
+          },
+          unmatched: { excel: '""', sql: "" },
+          matchedLines: {
+            python:
+              'df.loc[mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+          unmatchedLines: {
+            python:
+              'df.loc[~mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: "set_column",
+              targetColumn: "{{param.then_target_column}}",
+              valueField: "{{param.then_value_field}}",
+              calculated: "true",
+            },
+          },
+          fileUtility: { action: "set_column_string_transform" },
+        },
+      },
+      {
+        schemaVersion: 2,
+        kind: "action",
+        id: "action_set_column_value",
+        version: 1,
+        name: "set_column_value",
+        label: "Set value from a field",
+        order: 40,
+        description: "Copy a field into a column.",
+        status: "active",
+        fields: [],
+        partials: {
+          english:
+            '{{phrase "analyst_logic.if_then.then_set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}',
+          elseEnglish:
+            '{{phrase "analyst_logic.else.set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}',
+          shape: "value",
+          formula: "{{> valueFormula}}",
+          elseFormula: "{{> valueFormula}}",
+          formulaNote:
+            '{{#if (and (eq elseStep.param.then_action_type "display_text") (eq (action "actionTarget" elseStep) (include "actionTarget")))}}{{phrase "developer_logic.notes.append_message_excel" column=(concat "\\"" (include "actionTarget") "\\"")}}{{/if}}',
+          actionTarget:
+            '{{default param.then_target_column (placeholder "target_column" "[target column]")}}',
+          actionValue: {
+            default:
+              "{{field (default param.then_value_source_file param.source_file) param.then_value_field alias=param.then_value_source_alias}}",
+          },
+          actionExpression: {
+            excel: "{{> actionValue}}",
+            sql: "{{> actionValue}}",
+          },
+          unmatched: { excel: '""', sql: "" },
+          matchedLines: {
+            python:
+              'df.loc[mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+          unmatchedLines: {
+            python:
+              'df.loc[~mask, {{quote (include "actionTarget")}}] = {{> actionValue}}',
+          },
+        },
+        export: {
+          qtest: {
+            action: {
+              kind: "set_column",
+              targetColumn: "{{param.then_target_column}}",
+              valueField: "{{param.then_value_field}}",
+              calculated: "false",
+            },
+          },
+          fileUtility: { action: "set_column_value" },
+        },
       },
     ],
   };

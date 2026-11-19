@@ -10,6 +10,11 @@
  *   const registry = await ATLASStepTypes.registry.loadFromRepository({ fetch });
  *   registry.resolve("union_sources");   // definition, via aliases
  *   registry.list();                     // active types for the picker
+ *   registry.actions();                  // action kinds (kind "action")
+ *
+ * Action kinds share the registry (and their ids, action_<name>, the
+ * database table) with step types, but resolve() and list() leave them
+ * out, so a step never belongs to one and the picker never offers one.
  */
 (function initializeStepTypeRegistry(global) {
   "use strict";
@@ -160,7 +165,10 @@
      * step_type alias, then its legacy `type` as an alias or id.
      */
     function resolve(stepType, legacyType, version) {
-      const pick = (id) => (id ? get(id, version) || get(id) : null);
+      const pick = (id) => {
+        const definition = id ? get(id, version) || get(id) : null;
+        return definition && definition.kind !== "action" ? definition : null;
+      };
       if (stepType)
         return pick(
           byId.has(stepType)
@@ -175,11 +183,11 @@
       return null;
     }
 
-    /** Latest versions, ordered for the step type picker. */
-    function list({ includeLegacy = false } = {}) {
+    function latest({ includeLegacy = false, actions = false } = {}) {
       return [...byId.keys()]
         .filter((id) => !latestVersions || latestVersions[id] !== undefined)
         .map((id) => get(id))
+        .filter((definition) => (definition.kind === "action") === actions)
         .filter((definition) => includeLegacy || definition.status !== "legacy")
         .sort(
           (a, b) =>
@@ -187,6 +195,16 @@
               (b.order ?? Number.MAX_SAFE_INTEGER) ||
             a.label.localeCompare(b.label),
         );
+    }
+
+    /** Latest step type versions, ordered for the step type picker. */
+    function list({ includeLegacy = false } = {}) {
+      return latest({ includeLegacy });
+    }
+
+    /** Latest action kind versions, ordered for the action kind picker. */
+    function actions({ includeLegacy = false } = {}) {
+      return latest({ includeLegacy, actions: true });
     }
 
     /** Records a definition that could not even be read, e.g. a missing file. */
@@ -206,6 +224,7 @@
       versions,
       resolve,
       list,
+      actions,
       rejected: () =>
         rejected.map((entry) => ({ ...entry, errors: [...entry.errors] })),
       get size() {
@@ -240,7 +259,11 @@
       : [];
     const loaded = await Promise.all(
       entries.map(async (entry) => {
-        if (!/^[a-z][a-z0-9_]*(\.v\d+)?\.json$/.test(String(entry?.file || "")))
+        if (
+          !/^(actions\/)?[a-z][a-z0-9_]*(\.v\d+)?\.json$/.test(
+            String(entry?.file || ""),
+          )
+        )
           return {
             entry,
             error: `"${entry?.file}" is not a definition file name`,

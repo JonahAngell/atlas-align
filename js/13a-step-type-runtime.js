@@ -29,7 +29,8 @@
  * Template helpers (all formats): field source name alias=x, column name,
  * quote value, number value, alias source [alias], source source,
  * placeholder key fallback, conditionTree nodes leaf=partial style=bullets|
- * inline|precedence, plus the helpers, migration handlers and editor blocks
+ * inline|precedence, action part [context] (the chosen action kind's
+ * partial, from catalogs/step-types/actions/), plus the helpers, migration handlers and editor blocks
  * of js/13-step-type-library.js. Besides param, subtype, stepNumber, parent,
  * step and format, templates read conditions (the step's normalized
  * condition tree), storedConditions (the tree as stored, which the IF / THEN
@@ -358,6 +359,30 @@
     }
   }
 
+  /** The name {{action "qtest"}} gives a kind's qTest template. */
+  const QTEST_ACTION_PARTIAL = "export.qtest.action";
+
+  /**
+   * The action kind (kind "action", id action_<name>) a then_action_type
+   * names, in the version a pinned publication uses, or the freeform kind
+   * when the value is blank or names no kind. null without a freeform kind.
+   */
+  function actionKind(value) {
+    if (!registry) return null;
+    const find = (name) => {
+      const definition = /^[a-z][a-z0-9_]*$/.test(name)
+        ? registry.get(`action_${name}`)
+        : null;
+      return definition?.kind === "action" ? pinned(definition) : null;
+    };
+    return (isBlank(value) ? null : find(text(value))) || find("freeform");
+  }
+
+  /** The latest action kinds, ordered for the action kind picker. */
+  function actionKinds() {
+    return registry?.actions ? registry.actions() : [];
+  }
+
   /**
    * The version a pinned publication renders `definition`'s type with, or
    * the definition itself when nothing is pinned or the pin is not loaded.
@@ -667,6 +692,47 @@
           : {}),
       });
       return unwrap(expression) || placeholder("condition", "[condition]");
+    },
+    /**
+     * {{action "part" [context]}}: a partial (english, elseEnglish, formula
+     * and so on) of the action kind named by then_action_type, freeform when
+     * that is blank or names no kind. It renders with the calling template's
+     * partials under the kind's own, so a kind can include the step type's
+     * condition and frames. With a context (elseStep, say) the kind and the
+     * values are that step's, as {{include "name" context}} reads them, and
+     * a context that is not a step (no ELSE step, say) has no action, so ""
+     * comes back. {{action "qtest" part="kind"}} renders the kind's
+     * export.qtest.action template of that name. "" when the kind has no
+     * such part.
+     */
+    action(args, hash, tools) {
+      if (typeof tools.partialWith !== "function")
+        throw new Error("action needs an engine with partialWith");
+      const part = text(args[0]).trim();
+      const rest = args.length > 1 ? [args[1]] : [];
+      const isStep = (value) =>
+        Boolean(value) &&
+        typeof value === "object" &&
+        !Array.isArray(value) &&
+        Object.prototype.hasOwnProperty.call(value, "param") &&
+        value.param !== undefined;
+      if (rest.length && !isStep(rest[0])) return "";
+      const holder = rest.length
+        ? rest[0]
+        : isStep(tools.item)
+          ? tools.item
+          : tools.data;
+      const kind = actionKind(holder?.param?.then_action_type);
+      if (!kind) return "";
+      const set = { ...(kind.partials || {}) };
+      let name = part;
+      if (part === "qtest") {
+        const template = kind.export?.qtest?.action?.[text(hash.part)];
+        if (typeof template !== "string") return "";
+        name = QTEST_ACTION_PARTIAL;
+        set[name] = template;
+      } else if (!Object.prototype.hasOwnProperty.call(set, part)) return "";
+      return tools.partialWith(set, name, ...rest);
     },
     ...(library.helpers || {}),
     ...replacedHelperShims(),
@@ -2013,6 +2079,8 @@
     useRegistry,
     usePinnedVersions,
     pinnedVersions: () => pinnedVersions,
+    actionKind,
+    actionKinds,
     revision: () => revision,
     registry: () => registry,
     onChange,
