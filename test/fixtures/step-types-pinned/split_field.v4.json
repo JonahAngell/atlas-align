@@ -1,0 +1,356 @@
+{
+  "schemaVersion": 1,
+  "id": "split_field",
+  "version": 4,
+  "label": "Split Field",
+  "category": "transform",
+  "order": 55,
+  "description": "Split a field into a derived output.",
+  "status": "active",
+  "legacyType": "transform",
+  "aliases": {
+    "step_type": [],
+    "type": []
+  },
+  "migrations": [
+    {
+      "op": "default",
+      "param": "source_file",
+      "when": {
+        "stepField": "source",
+        "notBlank": true
+      },
+      "valueFrom": ["step.source"]
+    },
+    {
+      "op": "default",
+      "param": "field_name",
+      "when": {
+        "stepField": "field",
+        "notBlank": true
+      },
+      "valueFrom": ["step.field"]
+    },
+    {
+      "op": "handler",
+      "name": "sync_split_field"
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "hidden"
+    },
+    {
+      "param": "source_alias",
+      "control": "hidden",
+      "valueTemplate": "{{sourceAliasFor param.source_file}}"
+    },
+    {
+      "param": "field_name",
+      "control": "field_picker",
+      "label": "Field",
+      "placeholder": "Select field",
+      "sourceParam": "source_file"
+    },
+    {
+      "param": "split_by",
+      "control": "choice",
+      "label": "Split by",
+      "heading": "Split By",
+      "display": "segment",
+      "options": [
+        {
+          "value": "delimiter",
+          "label": "Delimiter"
+        },
+        {
+          "value": "width",
+          "label": "Fixed width"
+        }
+      ]
+    },
+    {
+      "param": "split_delimiter",
+      "control": "choice",
+      "display": "select",
+      "label": "Delimiter",
+      "required": true,
+      "requiredIssue": false,
+      "visibleWhen": {
+        "not": {
+          "param": "split_by",
+          "equals": "width"
+        }
+      },
+      "options": [
+        {
+          "value": "",
+          "label": "Choose delimiter"
+        },
+        {
+          "value": "space",
+          "label": "Space"
+        },
+        {
+          "value": "comma",
+          "label": "Comma"
+        },
+        {
+          "value": "hyphen",
+          "label": "Hyphen"
+        },
+        {
+          "value": "underscore",
+          "label": "Underscore"
+        },
+        {
+          "value": "period",
+          "label": "Period"
+        },
+        {
+          "value": "slash",
+          "label": "Forward slash"
+        },
+        {
+          "value": "backslash",
+          "label": "Backslash"
+        },
+        {
+          "value": "pipe",
+          "label": "Pipe"
+        },
+        {
+          "value": "semicolon",
+          "label": "Semicolon"
+        },
+        {
+          "value": "colon",
+          "label": "Colon"
+        },
+        {
+          "value": "tab",
+          "label": "Tab"
+        },
+        {
+          "value": "custom",
+          "label": "Custom…"
+        }
+      ]
+    },
+    {
+      "param": "split_custom_delimiter",
+      "control": "text",
+      "label": "Custom delimiter",
+      "maxLength": 20,
+      "placeholder": "e.g., \" - \"",
+      "help": "Spaces count. Matched exactly, not as a pattern.",
+      "visibleWhen": {
+        "all": [
+          {
+            "not": {
+              "param": "split_by",
+              "equals": "width"
+            }
+          },
+          {
+            "param": "split_delimiter",
+            "equals": "custom"
+          }
+        ]
+      },
+      "helpId": "atlas-split-field-custom-hint"
+    },
+    {
+      "param": "split_width",
+      "control": "whole_number",
+      "label": "Width (characters)",
+      "min": 1,
+      "max": 10000,
+      "placeholder": "e.g., 4",
+      "required": true,
+      "requiredIssue": false,
+      "visibleWhen": {
+        "param": "split_by",
+        "equals": "width"
+      }
+    },
+    {
+      "param": "split_mode",
+      "control": "choice",
+      "label": "Result",
+      "heading": "Result",
+      "display": "cards",
+      "popover": "list",
+      "layout": "full",
+      "options": [
+        {
+          "value": "part",
+          "label": "Keep one part",
+          "description": "Write one part to an output column."
+        },
+        {
+          "value": "explode",
+          "label": "One record per part",
+          "description": "Turn each part into its own record."
+        }
+      ]
+    },
+    {
+      "param": "split_part",
+      "control": "text",
+      "label": "Part to Keep",
+      "placeholder": "1, 2, 3 … or last",
+      "suggestions": ["1", "2", "3", "last"],
+      "help": "A position counted from 1, or \"last\". Values with fewer parts give a blank.",
+      "visibleWhen": {
+        "not": {
+          "param": "split_mode",
+          "equals": "explode"
+        }
+      }
+    },
+    {
+      "param": "output_column",
+      "control": "field_picker",
+      "label": "Output Column",
+      "placeholder": "Select or create column",
+      "visibleWhen": {
+        "not": {
+          "param": "split_mode",
+          "equals": "explode"
+        }
+      }
+    },
+    {
+      "param": "split_explode_hint",
+      "control": "hint",
+      "layout": "full",
+      "help": "Each part becomes its own record, replacing the field's value. The other columns are copied to every new record. Blank parts are dropped.",
+      "visibleWhen": {
+        "param": "split_mode",
+        "equals": "explode"
+      }
+    }
+  ],
+  "english": {
+    "default": "Split {{tableColumn param.source_file param.source_alias param.field_name}} on {{splitDelimiterName param}} and display part {{param.split_part}} in column {{quote (trim param.output_column)}}.",
+    "variants": [
+      {
+        "when": {
+          "all": [
+            {
+              "param": "split_mode",
+              "equals": "explode"
+            },
+            {
+              "param": "split_by",
+              "equals": "width"
+            }
+          ]
+        },
+        "template": "Split {{tableColumn param.source_file param.source_alias param.field_name}} into pieces of {{default (trim param.split_width) \"[width]\"}} characters and make one record for each part."
+      },
+      {
+        "when": {
+          "param": "split_mode",
+          "equals": "explode"
+        },
+        "template": "Split {{tableColumn param.source_file param.source_alias param.field_name}} on {{splitDelimiterName param}} and make one record for each part."
+      },
+      {
+        "when": {
+          "all": [
+            {
+              "param": "split_by",
+              "equals": "width"
+            },
+            {
+              "param": "split_part",
+              "equals": "last"
+            }
+          ]
+        },
+        "template": "Split {{tableColumn param.source_file param.source_alias param.field_name}} into pieces of {{default (trim param.split_width) \"[width]\"}} characters and display the last part in column {{quote (trim param.output_column)}}."
+      },
+      {
+        "when": {
+          "param": "split_by",
+          "equals": "width"
+        },
+        "template": "Split {{tableColumn param.source_file param.source_alias param.field_name}} into pieces of {{default (trim param.split_width) \"[width]\"}} characters and display part {{param.split_part}} in column {{quote (trim param.output_column)}}."
+      },
+      {
+        "when": {
+          "param": "split_part",
+          "equals": "last"
+        },
+        "template": "Split {{tableColumn param.source_file param.source_alias param.field_name}} on {{splitDelimiterName param}} and display the last part in column {{quote (trim param.output_column)}}."
+      }
+    ]
+  },
+  "formulas": {
+    "shape": "assignment",
+    "target": "{{#if (present param.output_column)}}{{param.output_column}}{{else}}{{placeholder \"output_column\" \"[output column]\"}}{{/if}}",
+    "default": {
+      "excel": "{{#if (eq (splitPart param.split_part) \"last\")}}TAKE(TEXTSPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}), , -1){{else}}INDEX(TEXTSPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}), {{splitPart param.split_part}}){{/if}}",
+      "sql": "{{#if (eq (splitPart param.split_part) \"last\")}}RIGHT({{field param.source_file param.field_name alias=param.source_alias}}, CHARINDEX(REVERSE({{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}), REVERSE({{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}} + {{field param.source_file param.field_name alias=param.source_alias}})) - 1){{else if (eq (splitPart param.split_part) 1)}}LEFT({{field param.source_file param.field_name alias=param.source_alias}}, CHARINDEX({{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}, {{field param.source_file param.field_name alias=param.source_alias}} + {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}) - 1){{else}}(SELECT [value] FROM STRING_SPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}, 1) WHERE [ordinal] = {{splitPart param.split_part}}){{/if}}",
+      "python": "{{field param.source_file param.field_name alias=param.source_alias}}.astype(\"string\").str.split({{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}, regex=False).str[{{#if (eq (splitPart param.split_part) \"last\")}}-1{{else}}{{minus (splitPart param.split_part) 1}}{{/if}}]"
+    },
+    "notes": [
+      "{{#if (eq (splitDelimiterChar param) \"\")}}{{phrase \"developer_logic.notes.missing_delimiter\"}}{{/if}}",
+      "{{#if (gt (splitPart param.split_part) 1)}}{{phrase \"developer_logic.notes.split_sql_version\"}}{{/if}}"
+    ],
+    "variants": [
+      {
+        "when": {
+          "param": "split_mode",
+          "equals": "explode"
+        },
+        "shape": "frame",
+        "excel": "{{#if (eq param.split_by \"width\")}}=MID({{field param.source_file param.field_name alias=param.source_alias}}, SEQUENCE(ROUNDUP(LEN({{field param.source_file param.field_name alias=param.source_alias}})/{{splitWidth param.split_width}}, 0), 1, 1, {{splitWidth param.split_width}}), {{splitWidth param.split_width}}){{else}}=TEXTSPLIT({{field param.source_file param.field_name alias=param.source_alias}}, , {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}){{/if}}",
+        "sql": "{{#if (eq param.split_by \"width\")}}CROSS APPLY GENERATE_SERIES(1, LEN({{field param.source_file param.field_name alias=param.source_alias}}), {{splitWidth param.split_width}}) AS piece\nSELECT SUBSTRING({{field param.source_file param.field_name alias=param.source_alias}}, piece.value, {{splitWidth param.split_width}}) AS {{sqlName (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}{{else}}CROSS APPLY STRING_SPLIT({{field param.source_file param.field_name alias=param.source_alias}}, {{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}) AS piece\nSELECT TRIM(piece.value) AS {{sqlName (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}{{/if}}",
+        "python": "{{#if (eq param.split_by \"width\")}}df[{{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}] = {{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).map(lambda x: [x[i:i + {{splitWidth param.split_width}}] for i in range(0, len(x), {{splitWidth param.split_width}})] or [\"\"])\ndf = df.explode({{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}){{else}}df[{{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}] = {{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).str.split({{quote (orEmpty (splitDelimiterChar param) (placeholder \"delimiter\" \"[delimiter]\"))}}, regex=False)\ndf = df.explode({{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}})\ndf[{{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}] = df[{{quote (default (trim param.field_name) (placeholder \"field\" \"[field]\"))}}].str.strip(){{/if}}",
+        "notes": [
+          "{{#if (and (eq param.split_by \"width\") (not (splitWidthSet param.split_width)))}}{{phrase \"developer_logic.notes.missing_width\"}}{{/if}}",
+          "{{#if (and (ne param.split_by \"width\") (eq (splitDelimiterChar param) \"\"))}}{{phrase \"developer_logic.notes.missing_delimiter\"}}{{/if}}",
+          "{{phrase \"developer_logic.notes.split_explode\"}}"
+        ]
+      },
+      {
+        "when": {
+          "param": "split_by",
+          "equals": "width"
+        },
+        "shape": "assignment",
+        "target": "{{default (trim param.output_column) (placeholder \"output_column\" \"[output column]\")}}",
+        "excel": "{{#if (eq (splitPart param.split_part) \"last\")}}RIGHT({{field param.source_file param.field_name alias=param.source_alias}}, MOD(LEN({{field param.source_file param.field_name alias=param.source_alias}})-1, {{splitWidth param.split_width}})+1){{else}}MID({{field param.source_file param.field_name alias=param.source_alias}}, {{#if (splitWidthSet param.split_width)}}{{plus (times (minus (splitPart param.split_part) 1) (splitWidth param.split_width)) 1}}{{else}}{{minus (splitPart param.split_part) 1}}*{{splitWidth param.split_width}}+1{{/if}}, {{splitWidth param.split_width}}){{/if}}",
+        "sql": "{{#if (eq (splitPart param.split_part) \"last\")}}RIGHT({{field param.source_file param.field_name alias=param.source_alias}}, (LEN({{field param.source_file param.field_name alias=param.source_alias}})-1) % {{splitWidth param.split_width}} + 1){{else}}SUBSTRING({{field param.source_file param.field_name alias=param.source_alias}}, {{#if (splitWidthSet param.split_width)}}{{plus (times (minus (splitPart param.split_part) 1) (splitWidth param.split_width)) 1}}{{else}}{{minus (splitPart param.split_part) 1}}*{{splitWidth param.split_width}}+1{{/if}}, {{splitWidth param.split_width}}){{/if}}",
+        "python": "{{#if (eq (splitPart param.split_part) \"last\")}}{{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).map(lambda x: x[((len(x) - 1) // {{splitWidth param.split_width}}) * {{splitWidth param.split_width}}:]){{else}}{{field param.source_file param.field_name alias=param.source_alias}}.fillna(\"\").astype(str).str.slice({{#if (splitWidthSet param.split_width)}}{{times (minus (splitPart param.split_part) 1) (splitWidth param.split_width)}}{{else}}{{minus (splitPart param.split_part) 1}}*{{splitWidth param.split_width}}{{/if}}, {{#if (splitWidthSet param.split_width)}}{{times (splitPart param.split_part) (splitWidth param.split_width)}}{{else}}{{splitPart param.split_part}}*{{splitWidth param.split_width}}{{/if}}){{/if}}",
+        "notes": [
+          "{{#unless (splitWidthSet param.split_width)}}{{phrase \"developer_logic.notes.missing_width\"}}{{/unless}}"
+        ]
+      }
+    ]
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "column",
+    "fileUtility": {
+      "compiler": "split_field",
+      "status": "partial",
+      "when": "a delimiter is set; not inside an IF branch when it adds rows"
+    },
+    "qtest": {
+      "section": "D",
+      "testType": "Data Validation",
+      "outcomes": {
+        "atlas": "Column {{quote param.output_column}} displays {{default param.split_part \"the designed part\"}} of {{tableColumn param.source_file param.source_alias param.field_name}}.",
+        "source": "The {{quote param.output_column}} value matches the corresponding part of the source {{tableColumn param.source_file param.source_alias param.field_name}} value."
+      }
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  }
+}

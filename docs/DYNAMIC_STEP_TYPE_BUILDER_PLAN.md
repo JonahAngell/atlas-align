@@ -1422,7 +1422,8 @@ As built (5049):
   form it had (the editor snapshots are unchanged).
 - The parameter clean-up per kind (the Matching records toggle, the group
   exclude and the then_ string transform) waits for 5052, which adds the
-  normalize handlers that replace it.
+  normalize handlers that replace it (done there: `display_toggle`,
+  `exclude_scope`, `then_string_transform`).
 
 As built (5050):
 
@@ -1575,6 +1576,42 @@ As built (5051):
 title}` or `{choices}`), so the per-type field problems in
   `23:1747–1889` become rules on their definitions, and Audit Issues draws
   every inline fix from the rule.
+
+As built (5052):
+
+- A field's `normalize` names a handler in `ATLASStepTypeLibrary.handlers`.
+  The runtime runs them in field order, each once, at the end of
+  `normalize()` (when a step loads) and from `normalizeFields(step)` (when
+  the editor saves it, with `saving: true`). An `action` field runs its
+  kind's field handlers before its own. Handlers that tidy editor input
+  (`split_field_params`, `format_field_params`, `display_toggle`,
+  `exclude_scope`) act only on save, as the 15g code did; the Create Column
+  ones (`create_column_string_transform`, `create_column_structured`) and
+  `then_string_transform` run on load too, as js/14's did. The 15g save
+  wrapper, js/14's `normalizeCatalogStep` wrapper and its per-type string
+  transform branch are gone.
+- `then_string_transform` sits on the string transform kind, so ELSE steps
+  get it as IF / THEN steps did (no snapshot changed).
+- A validation rule gains `param`, `fix` (`{sourceParam, title}`,
+  `{title, label, choices}` or `{title, label}`, plus `listParam`) and
+  `problems: {check, match}`. The editors' own checks
+  (`atlasSplitFieldProblems` and the others) stay the source of the
+  messages, so `problems` names a check in
+  `ATLASStepTypeLibrary.problemChecks` and routes each message to the first
+  rule whose `match` finds it, after the rule's `lead`. Re-stating those
+  checks as conditions would have duplicated the editors' logic.
+- `fieldProblems(step)` returns the rules with a fix, from the latest
+  definition (like the replaced helpers, since they call the app's editor
+  code), so pinned versions keep their inline fixes. `validate(step)` leaves
+  them out. Audit Issues' `structuredStepIntegrity` lists `fieldProblems`
+  and the condition checks; its per-type code in js/23 is gone. Issue keys,
+  severities and fixes are unchanged.
+- Do Not Display's key field is a `require` rule with a fix on `if_then` and
+  `else` v5 (unreleased, so changed in place). `split_field` 5,
+  `format_field` 5, `create_column` 4 and `remove_duplicates` 3 add only
+  `normalize` and the rules; their previous versions are pinned fixtures.
+- A rule's `require` now accepts a composite's params when no control
+  palette is given, as conditions already did.
 
 ### Definitions and versions
 

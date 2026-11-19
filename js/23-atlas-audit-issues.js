@@ -1717,170 +1717,31 @@
       });
     },
     structuredStepIntegrity(context) {
+      const runtime = global.ATLASStepTypeRuntime;
       return context.audit.steps.flatMap((step) => {
-        const p = step.params;
         const problems = [];
         const add = (param, message, fix = {}) =>
           problems.push({ param, message, fix });
-        const fieldFix = (sourceParam, title) => ({ sourceParam, title });
-        const delimiterChoices = array(
-          global.ATLAS_STRING_SPLIT_DELIMITERS ||
-            (typeof ATLAS_STRING_SPLIT_DELIMITERS !== "undefined"
-              ? ATLAS_STRING_SPLIT_DELIMITERS
-              : []),
-        ).map(([value, , label]) => ({ value, label }));
-        if (
-          step.type === "split_field" &&
-          typeof global.atlasSplitFieldProblems === "function"
-        ) {
-          const fieldParam = {
-            "Choose the field.": "field_name",
-            "Choose a delimiter.": "split_delimiter",
-            "Type the custom delimiter.": "split_custom_delimiter",
-            "Choose the output column.": "output_column",
-          };
-          array(global.atlasSplitFieldProblems(p)).forEach((message) => {
-            const param =
-              fieldParam[message] ||
-              (/width/.test(message)
-                ? "split_width"
-                : /delimiter/.test(message)
-                  ? "split_custom_delimiter"
-                  : "split_part");
-            const fix =
-              param === "field_name"
-                ? fieldFix("source_file", "Choose field to split")
-                : param === "split_delimiter"
-                  ? {
-                      title: "Choose delimiter",
-                      label: "Delimiter",
-                      choices: delimiterChoices,
-                    }
-                  : param === "output_column"
-                    ? { title: "Name output column", label: "Output column" }
-                    : param === "split_width"
-                      ? { title: "Set width", label: "Width (characters)" }
-                      : param === "split_part"
-                        ? {
-                            title: "Choose part",
-                            label: "Part (1, 2 … or last)",
-                          }
-                        : { title: "Set delimiter", label: "Custom delimiter" };
-            add(param, `Split field: ${message}`, fix);
-          });
-        }
-        if (
-          step.type === "create_column" &&
-          typeof global.atlasCreateColumnStructuredProblems === "function"
+        // The step's own field problems: its latest definition's validation
+        // rules with an inline fix (stepTypeRules reports the others).
+        (
+          runtime?.fieldProblems?.({
+            id: step.id,
+            step_type: step.type,
+            title: step.title,
+            source: step.source,
+            field: step.field,
+            params: step.params,
+          }) || []
         )
-          array(global.atlasCreateColumnStructuredProblems(p)).forEach(
-            (message) => {
-              const param = /date field/.test(message)
-                ? "date_diff_field"
-                : /separator/.test(message)
-                  ? "concat_separator"
-                  : "value_mode";
-              add(
-                param,
-                `Create column: ${message}`,
-                param === "date_diff_field"
-                  ? fieldFix("date_diff_source_file", "Choose date field")
-                  : param === "concat_separator"
-                    ? { title: "Shorten separator", label: "Separator" }
-                    : {
-                        title: "Choose value type",
-                        label: "Value type",
-                        choices: [
-                          "Static value",
-                          "Source field value",
-                          "String transformation",
-                          "Concatenate fields",
-                          "Date difference",
-                        ],
-                      },
-              );
-            },
-          );
-        if (
-          step.type === "format_field" &&
-          typeof global.atlasFormatFieldProblems === "function"
-        )
-          array(global.atlasFormatFieldProblems(p)).forEach((message) => {
-            const param = /field\.$/.test(message)
-              ? "field_name"
-              : /decimal/.test(message)
-                ? "format_decimals"
-                : /date format/.test(message)
-                  ? "format_date_output"
-                  : /width/.test(message)
-                    ? "format_width"
-                    : "format_kind";
-            add(
-              param,
-              `Format field: ${message}`,
-              param === "field_name"
-                ? fieldFix("source_file", "Choose field to format")
-                : param === "format_kind"
-                  ? {
-                      title: "Choose format",
-                      label: "Format",
-                      choices: array(
-                        global.ATLAS_FORMAT_KINDS ||
-                          (typeof ATLAS_FORMAT_KINDS !== "undefined"
-                            ? ATLAS_FORMAT_KINDS
-                            : []),
-                      ).map(([value, label]) => ({ value, label })),
-                    }
-                  : param === "format_date_output"
-                    ? {
-                        title: "Choose date format",
-                        label: "Date format",
-                        choices: [
-                          "MM/DD/YYYY",
-                          "YYYY-MM-DD",
-                          "YYYYMMDD",
-                          "DD.MM.YYYY",
-                        ],
-                      }
-                    : {
-                        title: "Edit format",
-                        label:
-                          param === "format_width"
-                            ? "Width (digits)"
-                            : "Decimal places",
-                      },
-            );
-          });
-        if (
-          step.type === "remove_duplicates" &&
-          typeof global.atlasRemoveDuplicatesProblems === "function"
-        )
-          array(global.atlasRemoveDuplicatesProblems(p)).forEach((message) =>
-            /key field/.test(message)
-              ? add("duplicate_fields_json", `Remove duplicates: ${message}`, {
-                  ...fieldFix("", "Choose key field"),
-                  listParam: true,
-                })
-              : add("duplicate_action", `Remove duplicates: ${message}`, {
-                  title: "Choose record to keep",
-                  label: "Keep",
-                  choices: [
-                    "Keep first record",
-                    "Keep last record",
-                    "Drop all duplicated records",
-                  ],
-                }),
-          );
-        if (
-          (step.type === "if_then" || step.type === "else") &&
-          p.then_action_type === "do_not_display" &&
-          p.then_exclude_scope === "key" &&
-          blank(p.then_exclude_key_field)
-        )
-          add(
-            "then_exclude_key_field",
-            "Do Not Display: choose the key field whose records are hidden.",
-            fieldFix("then_exclude_key_source_file", "Choose key field"),
+          .filter((entry) => entry.fix)
+          .forEach((entry) =>
+            problems.push({
+              param: entry.param,
+              message: entry.message,
+              fix: entry.fix,
+              severity: entry.severity,
+            }),
           );
         if (typeof global.atlasConditionProblems === "function")
           readConditions(step).forEach((condition) =>
@@ -1907,10 +1768,10 @@
               control: `param:${problem.param}`,
             },
             {
-              // A written expression still runs through the older compiler's
-              // expression parser, so it is a warning rather than a blocker.
-              ...(problem.param === "value_mode"
-                ? { severity: "warning" }
+              // A rule's own severity (a written expression is a warning,
+              // since it still runs through the older compiler's parser).
+              ...(problem.severity && problem.severity !== "critical"
+                ? { severity: problem.severity }
                 : {}),
               summary: problem.message,
               control: `param:${problem.param}`,

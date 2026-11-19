@@ -17,7 +17,8 @@
       "param": "then_exclude_scope",
       "control": "block",
       "block": "action_display",
-      "label": "Matching records"
+      "label": "Matching records",
+      "normalize": "display_toggle"
     }
   ],
   "complete": [],

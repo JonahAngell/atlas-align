@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "split_field",
-  "version": 4,
+  "version": 5,
   "label": "Split Field",
   "category": "transform",
   "order": 55,
@@ -68,7 +68,8 @@
           "value": "width",
           "label": "Fixed width"
         }
-      ]
+      ],
+      "normalize": "split_field_params"
     },
     {
       "param": "split_delimiter",
@@ -350,6 +351,137 @@
       }
     }
   },
+  "validation": [
+    {
+      "id": "split_field",
+      "problems": {
+        "check": "split_field",
+        "match": "^Choose the field\\.$"
+      },
+      "lead": "Split field:",
+      "param": "field_name",
+      "severity": "critical",
+      "fix": {
+        "sourceParam": "source_file",
+        "title": "Choose field to split"
+      }
+    },
+    {
+      "id": "split_delimiter",
+      "problems": {
+        "check": "split_field",
+        "match": "^Choose a delimiter\\.$"
+      },
+      "lead": "Split field:",
+      "param": "split_delimiter",
+      "severity": "critical",
+      "fix": {
+        "title": "Choose delimiter",
+        "label": "Delimiter",
+        "choices": [
+          {
+            "value": "space",
+            "label": "Space"
+          },
+          {
+            "value": "comma",
+            "label": "Comma"
+          },
+          {
+            "value": "hyphen",
+            "label": "Hyphen"
+          },
+          {
+            "value": "underscore",
+            "label": "Underscore"
+          },
+          {
+            "value": "period",
+            "label": "Period"
+          },
+          {
+            "value": "slash",
+            "label": "Forward slash"
+          },
+          {
+            "value": "backslash",
+            "label": "Backslash"
+          },
+          {
+            "value": "pipe",
+            "label": "Pipe"
+          },
+          {
+            "value": "semicolon",
+            "label": "Semicolon"
+          },
+          {
+            "value": "colon",
+            "label": "Colon"
+          },
+          {
+            "value": "tab",
+            "label": "Tab"
+          }
+        ]
+      }
+    },
+    {
+      "id": "split_output_column",
+      "problems": {
+        "check": "split_field",
+        "match": "^Choose the output column\\.$"
+      },
+      "lead": "Split field:",
+      "param": "output_column",
+      "severity": "critical",
+      "fix": {
+        "title": "Name output column",
+        "label": "Output column"
+      }
+    },
+    {
+      "id": "split_width",
+      "problems": {
+        "check": "split_field",
+        "match": "width"
+      },
+      "lead": "Split field:",
+      "param": "split_width",
+      "severity": "critical",
+      "fix": {
+        "title": "Set width",
+        "label": "Width (characters)"
+      }
+    },
+    {
+      "id": "split_custom_delimiter",
+      "problems": {
+        "check": "split_field",
+        "match": "delimiter"
+      },
+      "lead": "Split field:",
+      "param": "split_custom_delimiter",
+      "severity": "critical",
+      "fix": {
+        "title": "Set delimiter",
+        "label": "Custom delimiter"
+      }
+    },
+    {
+      "id": "split_part",
+      "problems": {
+        "check": "split_field"
+      },
+      "lead": "Split field:",
+      "param": "split_part",
+      "severity": "critical",
+      "fix": {
+        "title": "Choose part",
+        "label": "Part (1, 2 … or last)"
+      }
+    }
+  ],
   "textImport": {
     "fromEnglish": false
   }

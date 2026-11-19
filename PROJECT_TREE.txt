@@ -488,6 +488,7 @@
 │   │   ├── step-types-pinned
 │   │   │   ├── create_column.v1.json
 │   │   │   ├── create_column.v2.json
+│   │   │   ├── create_column.v3.json
 │   │   │   ├── else.v1.json
 │   │   │   ├── else.v2.json
 │   │   │   ├── else.v3.json
@@ -501,6 +502,7 @@
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
 │   │   │   ├── format_field.v3.json
+│   │   │   ├── format_field.v4.json
 │   │   │   ├── if_then.v1.json
 │   │   │   ├── if_then.v2.json
 │   │   │   ├── if_then.v3.json
@@ -509,10 +511,12 @@
 │   │   │   ├── join.v2.json
 │   │   │   ├── reference_source.v1.json
 │   │   │   ├── remove_duplicates.v1.json
+│   │   │   ├── remove_duplicates.v2.json
 │   │   │   ├── sort_records.v1.json
 │   │   │   ├── split_field.v1.json
 │   │   │   ├── split_field.v2.json
 │   │   │   ├── split_field.v3.json
+│   │   │   ├── split_field.v4.json
 │   │   │   ├── union_sources.v1.json
 │   │   │   └── union_sources.v2.json
 │   │   ├── authorization-role-matrix.fixture.json
@@ -616,6 +620,7 @@
 │   ├── step-type-field-controls.test.js
 │   ├── step-type-file-utility-block.test.js
 │   ├── step-type-new-steps.test.js
+│   ├── step-type-normalize-and-fixes.test.js
 │   ├── step-type-partials.test.js
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js

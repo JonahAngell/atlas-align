@@ -533,6 +533,11 @@
               description: "Internal: an extra class on a hint.",
             },
             group: { $ref: "#/$defs/identifier" },
+            normalize: {
+              $ref: "#/$defs/identifier",
+              description:
+                "A named clean-up handler (ATLASStepTypeLibrary.handlers) the runtime runs on the step's params when the step loads and when the editor saves it. On an action kind's field it runs while a step uses that kind.",
+            },
             tab: {
               $ref: "#/$defs/identifier",
               description:
@@ -704,6 +709,7 @@
           additionalProperties: false,
           anyOf: [
             { required: ["severity", "message"] },
+            { required: ["severity", "problems"] },
             { required: ["builtIn"] },
           ],
           properties: {
@@ -731,6 +737,71 @@
             check: { $ref: "#/$defs/condition" },
             severity: { enum: ["warning", "critical"] },
             message: { type: "string", minLength: 1, maxLength: 500 },
+            problems: {
+              type: "object",
+              additionalProperties: false,
+              required: ["check"],
+              description:
+                "Reads the messages a named problem check (ATLASStepTypeLibrary.problemChecks) finds in the step's params. Each message goes to the first rule of that check whose match finds it (a rule without match takes the rest) and is shown after lead; message is not used.",
+              properties: {
+                check: { $ref: "#/$defs/identifier" },
+                match: {
+                  type: "string",
+                  minLength: 1,
+                  maxLength: 200,
+                  description: "A regular expression the message must match.",
+                },
+              },
+            },
+            lead: {
+              type: "string",
+              minLength: 1,
+              maxLength: 80,
+              description:
+                'Words before a problem check\'s message, such as "Split field:".',
+            },
+            param: {
+              $ref: "#/$defs/paramName",
+              description:
+                "The param the issue points at and the inline fix writes. A require rule points at the param it requires.",
+            },
+            fix: { $ref: "#/$defs/validationFix" },
+          },
+        },
+        validationFix: {
+          type: "object",
+          additionalProperties: false,
+          required: ["title"],
+          description:
+            "The inline fix Audit Issues offers for the rule's param: a field picker (sourceParam names the param holding the source file, blank for any source), a choice list (choices) or a text box (label only). listParam adds the picked field to a JSON list param.",
+          properties: {
+            sourceParam: {
+              type: "string",
+              maxLength: 80,
+              pattern: "^([A-Za-z][A-Za-z0-9_]*)?$",
+            },
+            title: { $ref: "#/$defs/label" },
+            label: { $ref: "#/$defs/label" },
+            choices: {
+              type: "array",
+              minItems: 1,
+              maxItems: 100,
+              items: {
+                anyOf: [
+                  { type: "string", minLength: 1, maxLength: 200 },
+                  {
+                    type: "object",
+                    additionalProperties: false,
+                    required: ["value", "label"],
+                    properties: {
+                      value: { type: "string", maxLength: 200 },
+                      label: { $ref: "#/$defs/label" },
+                    },
+                  },
+                ],
+              },
+            },
+            listParam: { type: "boolean" },
           },
         },
         valueSource: {
@@ -866,6 +937,12 @@
           name: "group",
           type: "identifier",
           description: "Groups related fields in the builder.",
+        },
+        {
+          name: "normalize",
+          type: "identifier",
+          description:
+            "A named clean-up handler the runtime runs on the step's params when the step loads and when the editor saves it.",
         },
         {
           name: "tab",
@@ -1271,7 +1348,7 @@
       {
         schemaVersion: 1,
         id: "create_column",
-        version: 3,
+        version: 4,
         label: "Create Column",
         category: "column",
         order: 20,
@@ -1519,6 +1596,7 @@
               param: "value_mode",
               equals: "String transformation",
             },
+            normalize: "create_column_string_transform",
           },
           {
             param: "expression_type",
@@ -1663,6 +1741,7 @@
                 { param: "column_description", notBlank: true },
               ],
             },
+            normalize: "create_column_structured",
           },
         ],
         english: {
@@ -1814,6 +1893,46 @@
             builtIn: "stringTransform",
             when: { param: "value_mode", equals: "String transformation" },
           },
+          {
+            id: "date_diff_field",
+            problems: {
+              check: "create_column_structured",
+              match: "date field",
+            },
+            lead: "Create column:",
+            param: "date_diff_field",
+            severity: "critical",
+            fix: {
+              sourceParam: "date_diff_source_file",
+              title: "Choose date field",
+            },
+          },
+          {
+            id: "concat_separator",
+            problems: { check: "create_column_structured", match: "separator" },
+            lead: "Create column:",
+            param: "concat_separator",
+            severity: "critical",
+            fix: { title: "Shorten separator", label: "Separator" },
+          },
+          {
+            id: "written_expression",
+            problems: { check: "create_column_structured" },
+            lead: "Create column:",
+            param: "value_mode",
+            severity: "warning",
+            fix: {
+              title: "Choose value type",
+              label: "Value type",
+              choices: [
+                "Static value",
+                "Source field value",
+                "String transformation",
+                "Concatenate fields",
+                "Date difference",
+              ],
+            },
+          },
         ],
       },
       {
@@ -1843,6 +1962,7 @@
             control: "action",
             label: "ELSE action",
             branch: "ELSE",
+            normalize: "exclude_scope",
           },
         ],
         english: { default: '{{include "elseAction"}}' },
@@ -1927,7 +2047,27 @@
           formulaNote:
             '{{#if (and (eq ifStep.step_type "if_then") (not (and (eq ifStep.step_type "if_then") (eq (action "shape" ifStep) "value") (eq (action "shape") "value") (eq (action "actionTarget" ifStep) (action "actionTarget")))))}}{{action "elseFormulaNote"}}{{/if}}',
         },
-        validation: [{ builtIn: "conditions" }, { builtIn: "action" }],
+        validation: [
+          { builtIn: "conditions" },
+          { builtIn: "action" },
+          {
+            id: "exclude_key_field",
+            when: {
+              all: [
+                { param: "then_action_type", equals: "do_not_display" },
+                { param: "then_exclude_scope", equals: "key" },
+              ],
+            },
+            require: "then_exclude_key_field",
+            severity: "critical",
+            message:
+              "Do Not Display: choose the key field whose records are hidden.",
+            fix: {
+              sourceParam: "then_exclude_key_source_file",
+              title: "Choose key field",
+            },
+          },
+        ],
       },
       {
         schemaVersion: 2,
@@ -2181,7 +2321,7 @@
       {
         schemaVersion: 1,
         id: "format_field",
-        version: 4,
+        version: 5,
         label: "Format Field",
         category: "transform",
         order: 50,
@@ -2277,6 +2417,7 @@
                 description: "Pad whole numbers with zeros to a width.",
               },
             ],
+            normalize: "format_field_params",
           },
           {
             param: "format_decimals",
@@ -2355,6 +2496,67 @@
             },
           },
         },
+        validation: [
+          {
+            id: "format_field",
+            problems: { check: "format_field", match: "field\\.$" },
+            lead: "Format field:",
+            param: "field_name",
+            severity: "critical",
+            fix: {
+              sourceParam: "source_file",
+              title: "Choose field to format",
+            },
+          },
+          {
+            id: "format_decimals",
+            problems: { check: "format_field", match: "decimal" },
+            lead: "Format field:",
+            param: "format_decimals",
+            severity: "critical",
+            fix: { title: "Edit format", label: "Decimal places" },
+          },
+          {
+            id: "format_date_output",
+            problems: { check: "format_field", match: "date format" },
+            lead: "Format field:",
+            param: "format_date_output",
+            severity: "critical",
+            fix: {
+              title: "Choose date format",
+              label: "Date format",
+              choices: ["MM/DD/YYYY", "YYYY-MM-DD", "YYYYMMDD", "DD.MM.YYYY"],
+            },
+          },
+          {
+            id: "format_width",
+            problems: { check: "format_field", match: "width" },
+            lead: "Format field:",
+            param: "format_width",
+            severity: "critical",
+            fix: { title: "Edit format", label: "Width (digits)" },
+          },
+          {
+            id: "format_kind",
+            problems: { check: "format_field" },
+            lead: "Format field:",
+            param: "format_kind",
+            severity: "critical",
+            fix: {
+              title: "Choose format",
+              label: "Format",
+              choices: [
+                { value: "text", label: "Text" },
+                { value: "trim", label: "Trim spaces" },
+                { value: "upper", label: "Upper case" },
+                { value: "lower", label: "Lower case" },
+                { value: "number", label: "Number" },
+                { value: "date", label: "Date" },
+                { value: "zeroPad", label: "Leading zeros" },
+              ],
+            },
+          },
+        ],
         textImport: { fromEnglish: false },
       },
       {
@@ -2394,6 +2596,7 @@
             label: "THEN action",
             branch: "THEN",
             tab: "actions",
+            normalize: "exclude_scope",
           },
         ],
         english: {
@@ -2488,6 +2691,23 @@
             when: {
               param: "then_action_type",
               equals: "set_column_string_transform",
+            },
+          },
+          {
+            id: "exclude_key_field",
+            when: {
+              all: [
+                { param: "then_action_type", equals: "do_not_display" },
+                { param: "then_exclude_scope", equals: "key" },
+              ],
+            },
+            require: "then_exclude_key_field",
+            severity: "critical",
+            message:
+              "Do Not Display: choose the key field whose records are hidden.",
+            fix: {
+              sourceParam: "then_exclude_key_source_file",
+              title: "Choose key field",
             },
           },
         ],
@@ -2690,7 +2910,7 @@
       {
         schemaVersion: 1,
         id: "remove_duplicates",
-        version: 2,
+        version: 3,
         label: "Remove Duplicates",
         description: "Remove records whose selected columns all match.",
         category: "transform",
@@ -2787,6 +3007,36 @@
             },
           },
         },
+        validation: [
+          {
+            id: "duplicate_key_field",
+            problems: { check: "remove_duplicates", match: "key field" },
+            lead: "Remove duplicates:",
+            param: "duplicate_fields_json",
+            severity: "critical",
+            fix: {
+              sourceParam: "",
+              title: "Choose key field",
+              listParam: true,
+            },
+          },
+          {
+            id: "duplicate_action",
+            problems: { check: "remove_duplicates" },
+            lead: "Remove duplicates:",
+            param: "duplicate_action",
+            severity: "critical",
+            fix: {
+              title: "Choose record to keep",
+              label: "Keep",
+              choices: [
+                "Keep first record",
+                "Keep last record",
+                "Drop all duplicated records",
+              ],
+            },
+          },
+        ],
         textImport: { fromEnglish: false },
       },
       {
@@ -2861,7 +3111,7 @@
       {
         schemaVersion: 1,
         id: "split_field",
-        version: 4,
+        version: 5,
         label: "Split Field",
         category: "transform",
         order: 55,
@@ -2908,6 +3158,7 @@
               { value: "delimiter", label: "Delimiter" },
               { value: "width", label: "Fixed width" },
             ],
+            normalize: "split_field_params",
           },
           {
             param: "split_delimiter",
@@ -3110,6 +3361,78 @@
             },
           },
         },
+        validation: [
+          {
+            id: "split_field",
+            problems: { check: "split_field", match: "^Choose the field\\.$" },
+            lead: "Split field:",
+            param: "field_name",
+            severity: "critical",
+            fix: { sourceParam: "source_file", title: "Choose field to split" },
+          },
+          {
+            id: "split_delimiter",
+            problems: {
+              check: "split_field",
+              match: "^Choose a delimiter\\.$",
+            },
+            lead: "Split field:",
+            param: "split_delimiter",
+            severity: "critical",
+            fix: {
+              title: "Choose delimiter",
+              label: "Delimiter",
+              choices: [
+                { value: "space", label: "Space" },
+                { value: "comma", label: "Comma" },
+                { value: "hyphen", label: "Hyphen" },
+                { value: "underscore", label: "Underscore" },
+                { value: "period", label: "Period" },
+                { value: "slash", label: "Forward slash" },
+                { value: "backslash", label: "Backslash" },
+                { value: "pipe", label: "Pipe" },
+                { value: "semicolon", label: "Semicolon" },
+                { value: "colon", label: "Colon" },
+                { value: "tab", label: "Tab" },
+              ],
+            },
+          },
+          {
+            id: "split_output_column",
+            problems: {
+              check: "split_field",
+              match: "^Choose the output column\\.$",
+            },
+            lead: "Split field:",
+            param: "output_column",
+            severity: "critical",
+            fix: { title: "Name output column", label: "Output column" },
+          },
+          {
+            id: "split_width",
+            problems: { check: "split_field", match: "width" },
+            lead: "Split field:",
+            param: "split_width",
+            severity: "critical",
+            fix: { title: "Set width", label: "Width (characters)" },
+          },
+          {
+            id: "split_custom_delimiter",
+            problems: { check: "split_field", match: "delimiter" },
+            lead: "Split field:",
+            param: "split_custom_delimiter",
+            severity: "critical",
+            fix: { title: "Set delimiter", label: "Custom delimiter" },
+          },
+          {
+            id: "split_part",
+            problems: { check: "split_field" },
+            lead: "Split field:",
+            param: "split_part",
+            severity: "critical",
+            fix: { title: "Choose part", label: "Part (1, 2 … or last)" },
+          },
+        ],
         textImport: { fromEnglish: false },
       },
       {
@@ -3204,6 +3527,7 @@
             control: "block",
             block: "action_display",
             label: "Matching records",
+            normalize: "display_toggle",
           },
         ],
         complete: [],
@@ -3500,6 +3824,7 @@
             control: "block",
             block: "action_set_column_string_transform",
             label: "Operation",
+            normalize: "then_string_transform",
           },
         ],
         complete: [

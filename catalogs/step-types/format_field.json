@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "format_field",
-  "version": 4,
+  "version": 5,
   "label": "Format Field",
   "category": "transform",
   "order": 50,
@@ -119,7 +119,8 @@
           "label": "Leading zeros",
           "description": "Pad whole numbers with zeros to a width."
         }
-      ]
+      ],
+      "normalize": "format_field_params"
     },
     {
       "param": "format_decimals",
@@ -213,6 +214,108 @@
       }
     }
   },
+  "validation": [
+    {
+      "id": "format_field",
+      "problems": {
+        "check": "format_field",
+        "match": "field\\.$"
+      },
+      "lead": "Format field:",
+      "param": "field_name",
+      "severity": "critical",
+      "fix": {
+        "sourceParam": "source_file",
+        "title": "Choose field to format"
+      }
+    },
+    {
+      "id": "format_decimals",
+      "problems": {
+        "check": "format_field",
+        "match": "decimal"
+      },
+      "lead": "Format field:",
+      "param": "format_decimals",
+      "severity": "critical",
+      "fix": {
+        "title": "Edit format",
+        "label": "Decimal places"
+      }
+    },
+    {
+      "id": "format_date_output",
+      "problems": {
+        "check": "format_field",
+        "match": "date format"
+      },
+      "lead": "Format field:",
+      "param": "format_date_output",
+      "severity": "critical",
+      "fix": {
+        "title": "Choose date format",
+        "label": "Date format",
+        "choices": ["MM/DD/YYYY", "YYYY-MM-DD", "YYYYMMDD", "DD.MM.YYYY"]
+      }
+    },
+    {
+      "id": "format_width",
+      "problems": {
+        "check": "format_field",
+        "match": "width"
+      },
+      "lead": "Format field:",
+      "param": "format_width",
+      "severity": "critical",
+      "fix": {
+        "title": "Edit format",
+        "label": "Width (digits)"
+      }
+    },
+    {
+      "id": "format_kind",
+      "problems": {
+        "check": "format_field"
+      },
+      "lead": "Format field:",
+      "param": "format_kind",
+      "severity": "critical",
+      "fix": {
+        "title": "Choose format",
+        "label": "Format",
+        "choices": [
+          {
+            "value": "text",
+            "label": "Text"
+          },
+          {
+            "value": "trim",
+            "label": "Trim spaces"
+          },
+          {
+            "value": "upper",
+            "label": "Upper case"
+          },
+          {
+            "value": "lower",
+            "label": "Lower case"
+          },
+          {
+            "value": "number",
+            "label": "Number"
+          },
+          {
+            "value": "date",
+            "label": "Date"
+          },
+          {
+            "value": "zeroPad",
+            "label": "Leading zeros"
+          }
+        ]
+      }
+    }
+  ],
   "textImport": {
     "fromEnglish": false
   }

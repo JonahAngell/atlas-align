@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "create_column",
-  "version": 3,
+  "version": 4,
   "label": "Create Column",
   "category": "column",
   "order": 20,
@@ -314,7 +314,8 @@
       "visibleWhen": {
         "param": "value_mode",
         "equals": "String transformation"
-      }
+      },
+      "normalize": "create_column_string_transform"
     },
     {
       "param": "expression_type",
@@ -470,7 +471,8 @@
             "notBlank": true
           }
         ]
-      }
+      },
+      "normalize": "create_column_structured"
     }
   ],
   "english": {
@@ -652,6 +654,54 @@
       "when": {
         "param": "value_mode",
         "equals": "String transformation"
+      }
+    },
+    {
+      "id": "date_diff_field",
+      "problems": {
+        "check": "create_column_structured",
+        "match": "date field"
+      },
+      "lead": "Create column:",
+      "param": "date_diff_field",
+      "severity": "critical",
+      "fix": {
+        "sourceParam": "date_diff_source_file",
+        "title": "Choose date field"
+      }
+    },
+    {
+      "id": "concat_separator",
+      "problems": {
+        "check": "create_column_structured",
+        "match": "separator"
+      },
+      "lead": "Create column:",
+      "param": "concat_separator",
+      "severity": "critical",
+      "fix": {
+        "title": "Shorten separator",
+        "label": "Separator"
+      }
+    },
+    {
+      "id": "written_expression",
+      "problems": {
+        "check": "create_column_structured"
+      },
+      "lead": "Create column:",
+      "param": "value_mode",
+      "severity": "warning",
+      "fix": {
+        "title": "Choose value type",
+        "label": "Value type",
+        "choices": [
+          "Static value",
+          "Source field value",
+          "String transformation",
+          "Concatenate fields",
+          "Date difference"
+        ]
       }
     }
   ]
