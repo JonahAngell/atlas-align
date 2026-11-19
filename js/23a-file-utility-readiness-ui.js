@@ -157,7 +157,12 @@
     let result;
     try {
       const audit = global.atlasDisplayDocument?.() || global.state?.audit;
-      result = global.FileUtilityReadiness.check(audit || {}, contract);
+      // Each step is checked with the definition version it renders with,
+      // so a publication uses the versions it pins.
+      const runtime = global.ATLASStepTypeRuntime;
+      result = global.FileUtilityReadiness.check(audit || {}, contract, {
+        definitionFor: runtime?.definitionFor,
+      });
     } catch (error) {
       showState(elements, {
         tone: "amber",
