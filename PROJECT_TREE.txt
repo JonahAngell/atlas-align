@@ -17,7 +17,8 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   └── settings.json
+│   ├── settings.json
+│   └── settings.local.json
 ├── .cursor
 │   └── rules
 │       ├── core
