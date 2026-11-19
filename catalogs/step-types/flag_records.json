@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "id": "flag_records",
-  "version": 4,
+  "version": 5,
   "label": "Flag Records",
   "category": "logic",
   "description": "Flag matching records or hide them.",
@@ -110,13 +110,12 @@
       "sql": "{{> formula}}",
       "python": "{{> formula}}"
     },
-    "notes": [
-      "{{> formulaNote}}"
-    ]
+    "notes": ["{{> formulaNote}}"]
   },
   "autoNotes": null,
   "export": {
     "scriptRole": "flag",
+    "fileUtility": { "compiler": "legacy_condition" },
     "qtest": {
       "action": {
         "kind": "display_text",

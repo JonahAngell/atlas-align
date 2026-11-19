@@ -586,6 +586,7 @@
           properties: {
             scriptRole: { $ref: "#/$defs/scriptRole" },
             qtest: { $ref: "#/$defs/qtest" },
+            fileUtility: { $ref: "#/$defs/fileUtility" },
             rules: {
               type: "array",
               maxItems: 50,
@@ -599,6 +600,39 @@
                   qtest: { $ref: "#/$defs/qtest" },
                 },
               },
+            },
+          },
+        },
+        fileUtility: {
+          type: "object",
+          additionalProperties: false,
+          required: ["compiler"],
+          description:
+            "How File Utility runs this step type. compiler names one of the compilers in catalogs/file-utility/executable-steps.json. A step type without this block can't run in File Utility.",
+          properties: {
+            compiler: { $ref: "#/$defs/identifier" },
+            status: {
+              enum: ["supported", "partial"],
+              description:
+                "supported (the default) runs as is; partial runs only in the cases named in when.",
+            },
+            when: {
+              type: "string",
+              maxLength: 500,
+              description:
+                "The cases a partial step type runs in, or a limit on a supported one, shown in the readiness report.",
+            },
+            params: {
+              type: "object",
+              maxProperties: 50,
+              description:
+                "The compiler's params mapped to this step type's params, for a type whose fields are named differently. Params left out keep their own names.",
+              propertyNames: {
+                type: "string",
+                maxLength: 64,
+                pattern: "^[a-z][a-z0-9_]*$",
+              },
+              additionalProperties: { $ref: "#/$defs/identifier" },
             },
           },
         },
@@ -1172,7 +1206,7 @@
       {
         schemaVersion: 1,
         id: "create_column",
-        version: 2,
+        version: 3,
         label: "Create Column",
         category: "column",
         order: 20,
@@ -1688,6 +1722,11 @@
         },
         export: {
           scriptRole: "column",
+          fileUtility: {
+            compiler: "create_column",
+            status: "partial",
+            when: "the value modes in the File Utility contract; free-text expressions are blockers",
+          },
           qtest: {
             section: "D",
             testType: "Data Validation",
@@ -1715,7 +1754,7 @@
       {
         schemaVersion: 2,
         id: "else",
-        version: 3,
+        version: 4,
         label: "ELSE",
         category: "logic",
         description: "What happens when the IF conditions are not met.",
@@ -1755,6 +1794,7 @@
         autoNotes: { default: '{{phrase "notes.else.default"}}' },
         export: {
           scriptRole: "else",
+          fileUtility: { compiler: "else" },
           qtest: {
             action: {
               kind: '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text" "do_not_display"}}{{default param.then_action_type "freeform"}}{{/case}}{{#case "set_column_value" "set_column_calculation" "set_column_string_transform"}}set_column{{/case}}{{#default}}{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}{{/default}}{{/switch}}',
@@ -1859,7 +1899,7 @@
       {
         schemaVersion: 2,
         id: "filter_rows",
-        version: 3,
+        version: 4,
         label: "Filter Rows",
         category: "logic",
         description: "Keep or exclude matching rows.",
@@ -1929,6 +1969,7 @@
         autoNotes: null,
         export: {
           scriptRole: "filter",
+          fileUtility: { compiler: "legacy_condition" },
           qtest: { action: { kind: "do_not_display" } },
         },
         textImport: { fromEnglish: false },
@@ -1964,7 +2005,7 @@
       {
         schemaVersion: 2,
         id: "flag_records",
-        version: 4,
+        version: 5,
         label: "Flag Records",
         category: "logic",
         description: "Flag matching records or hide them.",
@@ -2058,6 +2099,7 @@
         autoNotes: null,
         export: {
           scriptRole: "flag",
+          fileUtility: { compiler: "legacy_condition" },
           qtest: {
             action: {
               kind: "display_text",
@@ -2106,7 +2148,7 @@
       {
         schemaVersion: 1,
         id: "format_field",
-        version: 3,
+        version: 4,
         label: "Format Field",
         category: "transform",
         order: 50,
@@ -2264,6 +2306,11 @@
         autoNotes: null,
         export: {
           scriptRole: "column",
+          fileUtility: {
+            compiler: "format_field",
+            status: "partial",
+            when: "the formats in the File Utility contract",
+          },
           qtest: {
             section: "D",
             testType: "Data Validation",
@@ -2280,7 +2327,7 @@
       {
         schemaVersion: 2,
         id: "if_then",
-        version: 3,
+        version: 4,
         label: "IF / THEN",
         category: "logic",
         order: 30,
@@ -2329,6 +2376,7 @@
         autoNotes: null,
         export: {
           scriptRole: "condition",
+          fileUtility: { compiler: "if_then" },
           qtest: {
             action: {
               kind: '{{#switch (default param.then_action_type "freeform")}}{{#case "display_text" "do_not_display"}}{{default param.then_action_type "freeform"}}{{/case}}{{#case "set_column_value" "set_column_calculation" "set_column_string_transform"}}set_column{{/case}}{{#default}}{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part="kind"}}{{/if}}{{/default}}{{/switch}}',
@@ -2465,7 +2513,7 @@
       {
         schemaVersion: 1,
         id: "join",
-        version: 2,
+        version: 3,
         label: "Join / Union Sources",
         category: "combine",
         order: 40,
@@ -2552,6 +2600,10 @@
         },
         export: {
           scriptRole: "join",
+          fileUtility: {
+            compiler: "join",
+            when: "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL OUTER JOIN, UNION; not inside an IF branch",
+          },
           qtest: {
             section: "D",
             testType: "Integration",
@@ -2569,7 +2621,7 @@
       {
         schemaVersion: 1,
         id: "reference_source",
-        version: 1,
+        version: 2,
         label: "Reference Source",
         category: "source",
         order: 10,
@@ -2627,6 +2679,7 @@
         autoNotes: null,
         export: {
           scriptRole: "source",
+          fileUtility: { compiler: "reference_source" },
           qtest: {
             section: "G",
             testType: "Integration",
@@ -2655,7 +2708,7 @@
       {
         schemaVersion: 1,
         id: "remove_duplicates",
-        version: 1,
+        version: 2,
         label: "Remove Duplicates",
         description: "Remove records whose selected columns all match.",
         category: "transform",
@@ -2737,6 +2790,10 @@
         autoNotes: null,
         export: {
           scriptRole: "dedupe",
+          fileUtility: {
+            compiler: "remove_duplicates",
+            when: "not inside an IF branch",
+          },
           qtest: {
             section: "E",
             testType: "Data Validation",
@@ -2753,7 +2810,7 @@
       {
         schemaVersion: 1,
         id: "sort_records",
-        version: 1,
+        version: 2,
         label: "Sort Records",
         description: "Sort records by one or more fields.",
         category: "transform",
@@ -2802,6 +2859,10 @@
         autoNotes: null,
         export: {
           scriptRole: "sort",
+          fileUtility: {
+            compiler: "sort_records",
+            when: "not inside an IF branch",
+          },
           qtest: {
             section: "E",
             testType: "Data Validation",
@@ -2818,7 +2879,7 @@
       {
         schemaVersion: 1,
         id: "split_field",
-        version: 3,
+        version: 4,
         label: "Split Field",
         category: "transform",
         order: 55,
@@ -3051,6 +3112,11 @@
         autoNotes: null,
         export: {
           scriptRole: "column",
+          fileUtility: {
+            compiler: "split_field",
+            status: "partial",
+            when: "a delimiter is set; not inside an IF branch when it adds rows",
+          },
           qtest: {
             section: "D",
             testType: "Data Validation",
@@ -3067,7 +3133,7 @@
       {
         schemaVersion: 1,
         id: "union_sources",
-        version: 2,
+        version: 3,
         label: "Union Sources",
         category: "combine",
         description:
@@ -3119,6 +3185,10 @@
         },
         export: {
           scriptRole: "union",
+          fileUtility: {
+            compiler: "union_sources",
+            when: "two different sources; not inside an IF branch",
+          },
           qtest: {
             section: "D",
             testType: "Integration",

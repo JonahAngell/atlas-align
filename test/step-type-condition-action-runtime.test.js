@@ -176,7 +176,9 @@ test("pinned versions render like the latest, qTest action included", async () =
   );
   assert.deepEqual(
     latest.map((item) => item.version),
-    [3, 4],
+    ["if_then", "flag_records"].map(
+      (id) => read(`catalogs/step-types/${id}.json`).version,
+    ),
   );
   pinned.forEach(({ version: _version, ...rest }, index) => {
     const { version: _latest, ...expected } = latest[index];

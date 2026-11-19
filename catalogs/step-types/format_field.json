@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "format_field",
-  "version": 3,
+  "version": 4,
   "label": "Format Field",
   "category": "transform",
   "order": 50,
@@ -199,6 +199,11 @@
   "autoNotes": null,
   "export": {
     "scriptRole": "column",
+    "fileUtility": {
+      "compiler": "format_field",
+      "status": "partial",
+      "when": "the formats in the File Utility contract"
+    },
     "qtest": {
       "section": "D",
       "testType": "Data Validation",

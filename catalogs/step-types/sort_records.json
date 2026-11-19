@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "sort_records",
-  "version": 1,
+  "version": 2,
   "label": "Sort Records",
   "description": "Sort records by one or more fields.",
   "category": "transform",
@@ -63,6 +63,10 @@
   "autoNotes": null,
   "export": {
     "scriptRole": "sort",
+    "fileUtility": {
+      "compiler": "sort_records",
+      "when": "not inside an IF branch"
+    },
     "qtest": {
       "section": "E",
       "testType": "Data Validation",

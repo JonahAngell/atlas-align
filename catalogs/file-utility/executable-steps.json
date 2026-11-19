@@ -1,9 +1,22 @@
 {
-  "contractVersion": 1,
+  "contractVersion": 2,
   "compilerVersion": "1.0.0",
   "engineVersion": "3.1.0",
-  "description": "What File Utility can run from an ATLAS Align audit. Kept identical in the ATLAS Align and File Utility repos; a test in each repo checks its copy. 'supported' compiles as is, 'partial' compiles only in the cases named in 'when', anything not listed is a blocker.",
-  "stepTypes": {
+  "description": "What File Utility can run from an ATLAS Align audit. Kept identical in the ATLAS Align and File Utility repos; a test in each repo checks its copy. A step type definition names one of 'compilers' in its export.fileUtility block, with a status and, for 'partial', the cases it runs in ('when'). 'legacyStepTypes' gives the same answers for definition versions written before that block existed. 'supported' compiles as is, 'partial' compiles only in the cases named in 'when', anything else is a blocker.",
+  "compilers": {
+    "reference_source": {"changesRows": false},
+    "create_column": {"changesRows": false},
+    "if_then": {"changesRows": false},
+    "else": {"changesRows": false},
+    "join": {"changesRows": true},
+    "union_sources": {"changesRows": true},
+    "format_field": {"changesRows": false},
+    "split_field": {"changesRows": false},
+    "sort_records": {"changesRows": true},
+    "remove_duplicates": {"changesRows": true},
+    "legacy_condition": {"changesRows": false}
+  },
+  "legacyStepTypes": {
     "reference_source": {"status": "supported"},
     "create_column": {"status": "partial", "when": "valueModes below; free-text expressions are blockers"},
     "if_then": {"status": "supported"},

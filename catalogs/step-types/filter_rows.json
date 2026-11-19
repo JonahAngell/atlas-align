@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "id": "filter_rows",
-  "version": 3,
+  "version": 4,
   "label": "Filter Rows",
   "category": "logic",
   "description": "Keep or exclude matching rows.",
@@ -9,9 +9,7 @@
   "legacyType": "if",
   "aliases": {
     "step_type": [],
-    "type": [
-      "transform"
-    ]
+    "type": ["transform"]
   },
   "migrations": [
     {
@@ -86,13 +84,12 @@
       "sql": "{{> formula}}",
       "python": "{{> formula}}"
     },
-    "notes": [
-      "{{> formulaNote}}"
-    ]
+    "notes": ["{{> formulaNote}}"]
   },
   "autoNotes": null,
   "export": {
     "scriptRole": "filter",
+    "fileUtility": { "compiler": "legacy_condition" },
     "qtest": {
       "action": {
         "kind": "do_not_display"

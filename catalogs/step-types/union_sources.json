@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "union_sources",
-  "version": 2,
+  "version": 3,
   "label": "Union Sources",
   "category": "combine",
   "description": "Append the rows of two sources. Saved steps open as a UNION Join.",
@@ -57,6 +57,10 @@
   },
   "export": {
     "scriptRole": "union",
+    "fileUtility": {
+      "compiler": "union_sources",
+      "when": "two different sources; not inside an IF branch"
+    },
     "qtest": {
       "section": "D",
       "testType": "Integration",

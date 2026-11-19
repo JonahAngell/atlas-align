@@ -477,20 +477,32 @@
 │   │   │   └── synthetic-audits.js
 │   │   ├── step-types-pinned
 │   │   │   ├── create_column.v1.json
+│   │   │   ├── create_column.v2.json
 │   │   │   ├── else.v1.json
 │   │   │   ├── else.v2.json
+│   │   │   ├── else.v3.json
 │   │   │   ├── filter_rows.v1.json
 │   │   │   ├── filter_rows.v2.json
+│   │   │   ├── filter_rows.v3.json
 │   │   │   ├── flag_records.v1.json
 │   │   │   ├── flag_records.v3.json
+│   │   │   ├── flag_records.v4.json
 │   │   │   ├── format_field.v1.json
 │   │   │   ├── format_field.v2.json
+│   │   │   ├── format_field.v3.json
 │   │   │   ├── if_then.v1.json
 │   │   │   ├── if_then.v2.json
+│   │   │   ├── if_then.v3.json
 │   │   │   ├── join.v1.json
+│   │   │   ├── join.v2.json
+│   │   │   ├── reference_source.v1.json
+│   │   │   ├── remove_duplicates.v1.json
+│   │   │   ├── sort_records.v1.json
 │   │   │   ├── split_field.v1.json
 │   │   │   ├── split_field.v2.json
-│   │   │   └── union_sources.v1.json
+│   │   │   ├── split_field.v3.json
+│   │   │   ├── union_sources.v1.json
+│   │   │   └── union_sources.v2.json
 │   │   ├── authorization-role-matrix.fixture.json
 │   │   ├── file-utility-compile-verdicts.json
 │   │   └── released-step-type-hashes.json
@@ -585,6 +597,7 @@
 │   ├── step-type-condition-helpers.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
+│   ├── step-type-file-utility-block.test.js
 │   ├── step-type-partials.test.js
 │   ├── step-type-pinned-versions.test.js
 │   ├── step-type-preview-scripts.test.js

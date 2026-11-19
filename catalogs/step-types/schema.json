@@ -541,6 +541,7 @@
       "properties": {
         "scriptRole": { "$ref": "#/$defs/scriptRole" },
         "qtest": { "$ref": "#/$defs/qtest" },
+        "fileUtility": { "$ref": "#/$defs/fileUtility" },
         "rules": {
           "type": "array",
           "maxItems": 50,
@@ -554,6 +555,35 @@
               "qtest": { "$ref": "#/$defs/qtest" }
             }
           }
+        }
+      }
+    },
+    "fileUtility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["compiler"],
+      "description": "How File Utility runs this step type. compiler names one of the compilers in catalogs/file-utility/executable-steps.json. A step type without this block can't run in File Utility.",
+      "properties": {
+        "compiler": { "$ref": "#/$defs/identifier" },
+        "status": {
+          "enum": ["supported", "partial"],
+          "description": "supported (the default) runs as is; partial runs only in the cases named in when."
+        },
+        "when": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "The cases a partial step type runs in, or a limit on a supported one, shown in the readiness report."
+        },
+        "params": {
+          "type": "object",
+          "maxProperties": 50,
+          "description": "The compiler's params mapped to this step type's params, for a type whose fields are named differently. Params left out keep their own names.",
+          "propertyNames": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "additionalProperties": { "$ref": "#/$defs/identifier" }
         }
       }
     },

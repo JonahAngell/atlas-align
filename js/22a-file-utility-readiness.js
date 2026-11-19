@@ -161,7 +161,8 @@
     const pseudoSources = new Set(
       (rules.pseudoSources || []).map((value) => String(value).toLowerCase()),
     );
-    const stepTypes = dict(rules.stepTypes);
+    // Contract version 2 renamed stepTypes; version 1 files still read.
+    const stepTypes = dict(rules.legacyStepTypes || rules.stepTypes);
     const thenActions = dict(rules.thenActions);
     const createModes = dict(rules.createColumnModes);
     const valueModes = dict(rules.valueModes);

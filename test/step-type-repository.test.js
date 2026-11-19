@@ -45,6 +45,9 @@ const sortRecords = () =>
   JSON.parse(read("catalogs/step-types/sort_records.json"));
 const removeDuplicates = () =>
   JSON.parse(read("catalogs/step-types/remove_duplicates.json"));
+// The bundled versions; tests that add a version use the next number.
+const SORT_V = sortRecords().version;
+const REMOVE_V = removeDuplicates().version;
 
 /** An in-memory atlas_step_type_definitions behind the repository SQL. */
 function fakePool(rows = []) {
@@ -197,13 +200,13 @@ test("a changed file with a stored version is rejected, logged and never overwri
   assert.deepEqual(result.conflicts, [
     {
       id: "sort_records",
-      version: 1,
+      version: stored.version,
       fileHash: documentHash(changed),
       storedHash: documentHash(stored),
     },
   ]);
   assert.equal(
-    pool.table.get("sort_records@1").definition.label,
+    pool.table.get(`sort_records@${stored.version}`).definition.label,
     "Sort Records",
   );
   assert.equal(pool.events.length, 0);
@@ -275,7 +278,7 @@ test("a file edited without rebuilding the manifest is not imported", async () =
 });
 
 test("GET /api/step-types lists the latest versions and pinned older ones", async () => {
-  const v1 = sortRecords();
+  const v1 = { ...sortRecords(), version: 1 };
   const v2 = { ...sortRecords(), version: 2, label: "Sort Records v2" };
   const pool = fakePool([
     {
@@ -381,14 +384,14 @@ test("retiring a published version records a retired event", async () => {
   await importRepositoryStepTypes(pool, { logger: quietLogger() });
   const retired = await retireStepTypeVersion(pool, {
     typeId: "sort_records",
-    version: 1,
+    version: SORT_V,
     actor: BUILDER,
     reason: "Replaced by Order Records",
   });
   assert.equal(retired.status, "retired");
-  assert.equal(pool.table.get("sort_records@1").status, "retired");
+  assert.equal(pool.table.get(`sort_records@${SORT_V}`).status, "retired");
   assert.equal(
-    pool.table.get("sort_records@1").updated_by_username,
+    pool.table.get(`sort_records@${SORT_V}`).updated_by_username,
     "admin.user",
   );
   const event = pool.events.at(-1);
@@ -397,7 +400,7 @@ test("retiring a published version records a retired event", async () => {
     {
       definitionId: undefined,
       typeId: "sort_records",
-      version: 1,
+      version: SORT_V,
       event: "retired",
       details: { reason: "Replaced by Order Records" },
       actor: "u-42",
@@ -413,7 +416,7 @@ test("retiring a published version records a retired event", async () => {
 
   // Retiring again, or a version that does not exist, changes nothing.
   const events = pool.events.length;
-  for (const version of [1, 99])
+  for (const version of [SORT_V, 99])
     assert.equal(
       await retireStepTypeVersion(pool, {
         typeId: "sort_records",
@@ -424,7 +427,7 @@ test("retiring a published version records a retired event", async () => {
     );
   assert.equal(pool.events.length, events);
   await assert.rejects(
-    retireStepTypeVersion(pool, { typeId: "sort_records", version: 1 }),
+    retireStepTypeVersion(pool, { typeId: "sort_records", version: SORT_V }),
     /acting user/,
   );
 });
@@ -435,7 +438,7 @@ test("GET /api/step-types names types with no published version left", async () 
   assert.deepEqual((await listStepTypes(pool)).retired, []);
   await retireStepTypeVersion(pool, {
     typeId: "sort_records",
-    version: 1,
+    version: SORT_V,
     actor: BUILDER,
   });
   assert.deepEqual((await listStepTypes(pool)).retired, ["sort_records"]);
@@ -443,7 +446,7 @@ test("GET /api/step-types names types with no published version left", async () 
 
 /** remove_duplicates v2 whose "Records to keep" choice gains one option. */
 function removeDuplicatesWithExtraOption(extra = "Keep newest record") {
-  const definition = { ...removeDuplicates(), version: 2 };
+  const definition = { ...removeDuplicates(), version: REMOVE_V + 1 };
   definition.fields = definition.fields.map((field) =>
     field.param === "duplicate_action"
       ? {
@@ -473,13 +476,13 @@ test("retiring the latest version is refused when the older one lacks its option
   await assert.rejects(
     retireStepTypeVersion(pool, {
       typeId: "remove_duplicates",
-      version: 2,
+      version: REMOVE_V + 1,
       actor: BUILDER,
     }),
     (error) => {
       assert.ok(error instanceof StepTypeRetireBlockedError);
       assert.equal(error.code, "option_removed");
-      assert.equal(error.fallbackVersion, 1);
+      assert.equal(error.fallbackVersion, REMOVE_V);
       assert.deepEqual(error.removed, [
         {
           param: "duplicate_action",
@@ -491,7 +494,10 @@ test("retiring the latest version is refused when the older one lacks its option
       return true;
     },
   );
-  assert.equal(pool.table.get("remove_duplicates@2").status, "published");
+  assert.equal(
+    pool.table.get(`remove_duplicates@${REMOVE_V + 1}`).status,
+    "published",
+  );
   assert.equal(pool.events.length, events, "no event for a refused retire");
   assert.equal(pool.statements.at(-1), "ROLLBACK");
 });
@@ -505,7 +511,7 @@ test("retiring is allowed when no option values would be stranded", async () => 
     (
       await retireStepTypeVersion(pool, {
         typeId: "remove_duplicates",
-        version: 1,
+        version: REMOVE_V,
         actor: BUILDER,
       })
     ).status,
@@ -517,20 +523,24 @@ test("retiring is allowed when no option values would be stranded", async () => 
     (
       await retireStepTypeVersion(pool, {
         typeId: "remove_duplicates",
-        version: 2,
+        version: REMOVE_V + 1,
         actor: BUILDER,
       })
     ).status,
     "retired",
   );
   // The latest can go when the version before it has every option value.
-  const same = { ...sortRecords(), version: 2, label: "Order Records" };
+  const same = {
+    ...sortRecords(),
+    version: SORT_V + 1,
+    label: "Order Records",
+  };
   addPublished(pool, same);
   assert.equal(
     (
       await retireStepTypeVersion(pool, {
         typeId: "sort_records",
-        version: 2,
+        version: SORT_V + 1,
         actor: BUILDER,
       })
     ).status,

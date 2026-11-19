@@ -10,11 +10,12 @@ const contractUrl = new URL(
 
 // The SHA-256 of catalogs/file-utility/executable-steps.json. That file is a
 // byte-for-byte copy of atlas/executable-steps.json in File Utility
-// (JonahAngell/audit-file-utility), where the same hash is pinned. Do not edit
-// the copy here. To change what File Utility can run, change it there, copy the
-// file over, and update this hash and the readiness rules in the same PR.
+// (JonahAngell/audit-file-utility), where the same hash is pinned. A change
+// lands as a pair: one PR here and one there, with the same file and hash,
+// and the readiness rules updated in the same PR. Contract version 2 was
+// written here first (Phase 9, branch 5039); File Utility takes it in 5043.
 const CONTRACT_SHA256 =
-  "34584e9a30845babef10fe20410358fceff17c64a419ab4c7b6cacb42173805a";
+  "fb8a63f48ebf23c56ed917d4a42c6b08035aa635e3111a992780db0156016695";
 
 test("the File Utility contract is an unmodified copy", () => {
   const digest = createHash("sha256")
@@ -39,7 +40,8 @@ test("the File Utility contract has the expected shape", () => {
       `operator "${operator}" maps to a string`,
     );
   for (const key of [
-    "stepTypes",
+    "compilers",
+    "legacyStepTypes",
     "valueModes",
     "thenActions",
     "createColumnModes",
@@ -53,4 +55,20 @@ test("the File Utility contract has the expected shape", () => {
     );
   for (const key of ["blockedOperators", "runParameterTokens", "pseudoSources"])
     assert.ok(Array.isArray(contract[key]), `${key} is a list`);
+});
+
+test("contract version 2 lists each compiler and whether it changes rows", () => {
+  const contract = JSON.parse(readFileSync(contractUrl, "utf8"));
+  assert.equal(contract.contractVersion, 2);
+  assert.equal(
+    contract.stepTypes,
+    undefined,
+    "stepTypes is now legacyStepTypes",
+  );
+  for (const [name, compiler] of Object.entries(contract.compilers))
+    assert.equal(
+      typeof compiler.changesRows,
+      "boolean",
+      `compiler "${name}" says whether it changes rows`,
+    );
 });

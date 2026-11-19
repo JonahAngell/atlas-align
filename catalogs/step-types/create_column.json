@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "create_column",
-  "version": 2,
+  "version": 3,
   "label": "Create Column",
   "category": "column",
   "order": 20,
@@ -619,6 +619,11 @@
   },
   "export": {
     "scriptRole": "column",
+    "fileUtility": {
+      "compiler": "create_column",
+      "status": "partial",
+      "when": "the value modes in the File Utility contract; free-text expressions are blockers"
+    },
     "qtest": {
       "section": "D",
       "testType": "Data Validation",
