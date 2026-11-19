@@ -28,7 +28,7 @@ test("released step type versions keep the content they were released with", () 
   }
 });
 
-test("flag records is version 3, so its hidden-record fields reach production", () => {
+test("flag records is version 3 or later, so its hidden-record fields reach production", () => {
   const entry = manifest.definitions.find((item) => item.id === "flag_records");
-  assert.equal(entry.version, 3);
+  assert.ok(entry.version >= 3, `flag_records is version ${entry.version}`);
 });

@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "id": "filter_rows",
+  "version": 2,
+  "label": "Filter Rows",
+  "category": "logic",
+  "description": "Keep or exclude matching rows.",
+  "status": "legacy",
+  "legacyType": "if",
+  "aliases": {
+    "step_type": [],
+    "type": ["transform"]
+  },
+  "migrations": [
+    {
+      "op": "handler",
+      "name": "copy_step_source"
+    }
+  ],
+  "fields": [
+    {
+      "param": "source_file",
+      "control": "hidden"
+    },
+    {
+      "param": "source_alias",
+      "control": "hidden",
+      "valueTemplate": "{{sourceAliasFor param.source_file}}"
+    },
+    {
+      "param": "field_name",
+      "control": "field_picker",
+      "label": "Field",
+      "placeholder": "Select field",
+      "sourceParam": "source_file"
+    },
+    {
+      "param": "operator",
+      "control": "choice",
+      "label": "Operator",
+      "heading": "Operator",
+      "display": "chips",
+      "popover": "pills",
+      "optionsFrom": "app_config.logic_options.operators",
+      "options": [
+        {
+          "value": "is equal to",
+          "label": "is equal to"
+        }
+      ]
+    },
+    {
+      "param": "compare_value",
+      "control": "textarea",
+      "label": "Compare Value",
+      "placeholder": "One or more values"
+    },
+    {
+      "param": "filter_action",
+      "control": "choice",
+      "label": "Filter action",
+      "heading": "Filter Action",
+      "display": "segment",
+      "optionsFrom": "app_config.logic_options.filter_actions",
+      "options": [
+        {
+          "value": "Keep matching rows",
+          "label": "Keep matching rows"
+        },
+        {
+          "value": "Exclude matching rows",
+          "label": "Exclude matching rows"
+        }
+      ]
+    }
+  ],
+  "english": {
+    "default": "{{phrase \"analyst_logic.filter_rows.default\" table_column=(tableColumn param.source_file param.source_alias param.field_name) operator=(orEmpty param.operator \"is equal to\") compare_value=(valueList param.compare_value lead=\" \") filter_action=(orEmpty param.filter_action \"Keep matching rows\")}}"
+  },
+  "formulas": {
+    "shape": "frame",
+    "default": {
+      "excel": "{{conditionFormula param step}}",
+      "sql": "{{conditionFormula param step}}",
+      "python": "{{conditionFormula param step}}"
+    },
+    "notes": ["{{conditionFormula param step note=0}}"]
+  },
+  "autoNotes": null,
+  "export": {
+    "scriptRole": "filter",
+    "qtest": {
+      "action": {
+        "kind": "do_not_display"
+      }
+    }
+  },
+  "textImport": {
+    "fromEnglish": false
+  },
+  "validation": [
+    {
+      "builtIn": "conditions"
+    },
+    {
+      "builtIn": "action"
+    }
+  ]
+}

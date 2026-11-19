@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "filter_rows",
-  "version": 2,
+  "version": 3,
   "label": "Filter Rows",
   "category": "logic",
   "description": "Keep or exclude matching rows.",
@@ -9,7 +9,9 @@
   "legacyType": "if",
   "aliases": {
     "step_type": [],
-    "type": ["transform"]
+    "type": [
+      "transform"
+    ]
   },
   "migrations": [
     {
@@ -80,11 +82,13 @@
   "formulas": {
     "shape": "frame",
     "default": {
-      "excel": "{{conditionFormula param step}}",
-      "sql": "{{conditionFormula param step}}",
-      "python": "{{conditionFormula param step}}"
+      "excel": "{{> formula}}",
+      "sql": "{{> formula}}",
+      "python": "{{> formula}}"
     },
-    "notes": ["{{conditionFormula param step note=0}}"]
+    "notes": [
+      "{{> formulaNote}}"
+    ]
   },
   "autoNotes": null,
   "export": {
@@ -97,6 +101,25 @@
   },
   "textImport": {
     "fromEnglish": false
+  },
+  "partials": {
+    "leaf": {
+      "excel": "{{#if (or (eq this.valueMode \"blank\") (eq (operatorKind this.operator) \"blank\"))}}{{blankTest (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator}}{{else if (eq this.valueMode \"expression\")}}{{#if (operatorNegated this.operator)}}{{negate (concat \"(\" (default (trim this.expression) (placeholder \"expression\" \"[expression]\")) \")\")}}{{else}}({{default (trim this.expression) (placeholder \"expression\" \"[expression]\")}}){{/if}}{{else if (eq this.valueMode \"field\")}}{{#if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true) field=true leftName=(trim (default this.fieldName this.field)) rightName=(trim this.compareFieldName)}}{{else}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true)}}{{/if}}{{else if (eq this.compareParameter \"runDate\")}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (runParameter)}}{{else if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (conditionValues this)}}{{else if (and (gt (count (conditionValues this)) 1) (in (operatorSymbol this.operator) \"=\" \"<>\"))}}{{> manyValues}}{{else}}{{combine (compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (compareLiteral (conditionValues this) this)) \"OR\"}}{{/if}}",
+      "sql": "{{#if (or (eq this.valueMode \"blank\") (eq (operatorKind this.operator) \"blank\"))}}{{blankTest (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator}}{{else if (eq this.valueMode \"expression\")}}{{#if (operatorNegated this.operator)}}{{negate (concat \"(\" (default (trim this.expression) (placeholder \"expression\" \"[expression]\")) \")\")}}{{else}}({{default (trim this.expression) (placeholder \"expression\" \"[expression]\")}}){{/if}}{{else if (eq this.valueMode \"field\")}}{{#if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true) field=true leftName=(trim (default this.fieldName this.field)) rightName=(trim this.compareFieldName)}}{{else}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true)}}{{/if}}{{else if (eq this.compareParameter \"runDate\")}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (runParameter)}}{{else if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (conditionValues this)}}{{else if (and (gt (count (conditionValues this)) 1) (in (operatorSymbol this.operator) \"=\" \"<>\"))}}{{> manyValues}}{{else}}{{combine (compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (compareLiteral (conditionValues this) this)) \"OR\"}}{{/if}}",
+      "python": "{{#if (or (eq this.valueMode \"blank\") (eq (operatorKind this.operator) \"blank\"))}}{{blankTest (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator}}{{else if (eq this.valueMode \"expression\")}}{{#if (operatorNegated this.operator)}}{{negate (concat \"(\" (default (trim this.expression) (placeholder \"expression\" \"[expression]\")) \")\")}}{{else}}({{default (trim this.expression) (placeholder \"expression\" \"[expression]\")}}){{/if}}{{else if (eq this.valueMode \"field\")}}{{#if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true) field=true leftName=(trim (default this.fieldName this.field)) rightName=(trim this.compareFieldName)}}{{else}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (mathFormula this.compareSourceFile this.compareSourceAlias this.compareFieldName (default this.compareMathJson this.compare_math_json this.compareMath) raw=true)}}{{/if}}{{else if (eq this.compareParameter \"runDate\")}}{{compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (runParameter)}}{{else if (eq (operatorKind this.operator) \"text_match\")}}{{textMatch (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (conditionValues this)}}{{else if (and (gt (count (conditionValues this)) 1) (in (operatorSymbol this.operator) \"=\" \"<>\"))}}{{> manyValues}}{{else}}{{combine (compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (compareLiteral (conditionValues this) this)) \"OR\"}}{{/if}}"
+    },
+    "manyValues": {
+      "excel": "{{#if (eq (operatorSymbol this.operator) \"<>\")}}{{combine (compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (compareLiteral (conditionValues this) this)) \"AND\"}}{{else}}{{combine (compare (field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias) this.operator (compareLiteral (conditionValues this) this)) \"OR\"}}{{/if}}",
+      "sql": "{{field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias}} {{#if (eq (operatorSymbol this.operator) \"<>\")}}NOT IN{{else}}IN{{/if}} ({{join (compareLiteral (conditionValues this) this)}})",
+      "python": "{{#if (eq (operatorSymbol this.operator) \"<>\")}}~{{/if}}{{field this.sourceFile (default this.fieldName this.field) alias=this.sourceAlias}}.isin([{{join (compareLiteral (conditionValues this) this)}}])"
+    },
+    "condition": "{{conditionTree (list (object sourceFile=(default param.source_file step.source) sourceAlias=param.source_alias fieldName=(default param.field_name step.field) operator=(default param.operator \"is equal to\") valueMode=\"values\" compareValue=param.compare_value)) leaf=\"leaf\" style=\"precedence\"}}",
+    "formula": {
+      "excel": "{{#if (eq param.filter_action \"Exclude matching rows\")}}={{negate (include \"condition\")}}{{else}}={{> condition}}{{/if}}",
+      "sql": "{{#if (eq param.filter_action \"Exclude matching rows\")}}WHERE {{negate (include \"condition\")}}{{else}}WHERE {{> condition}}{{/if}}",
+      "python": "mask = {{> condition}}\ndf = df[{{#if (eq param.filter_action \"Exclude matching rows\")}}~mask{{else}}mask{{/if}}]"
+    },
+    "formulaNote": "{{#if (eq param.filter_action \"Exclude matching rows\")}}{{phrase \"developer_logic.display_notes.do_not_display\"}}{{else}}{{phrase \"developer_logic.display_notes.display\"}}{{/if}}"
   },
   "validation": [
     {
