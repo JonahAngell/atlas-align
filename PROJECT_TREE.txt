@@ -60,7 +60,8 @@
 │   │   ├── 20261028120000_add_manual_audit_lock_publications.sql
 │   │   ├── 20261116120000_create_atlas_audit_runs.sql
 │   │   ├── 20261117120000_create_atlas_step_type_definitions.sql
-│   │   └── 20261117130000_create_atlas_step_type_drafts.sql
+│   │   ├── 20261117130000_create_atlas_step_type_drafts.sql
+│   │   └── 20261119120000_add_atlas_audit_run_step_type_versions.sql
 │   ├── opa
 │   │   └── authz.rego
 │   └── config
