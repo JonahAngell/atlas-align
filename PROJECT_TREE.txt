@@ -17,8 +17,7 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   ├── settings.json
-│   └── settings.local.json
+│   └── settings.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -452,6 +451,13 @@
 │   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
+│   │   ├── condition-action-matrix
+│   │   │   ├── recorded
+│   │   │   │   ├── actions.json
+│   │   │   │   ├── conditions.json
+│   │   │   │   ├── filter-flag.json
+│   │   │   │   └── groups.json
+│   │   │   └── cases.js
 │   │   ├── step-type-snapshots
 │   │   │   ├── recorded
 │   │   │   │   ├── sample-active-employees-in-sap-not-wd.json
@@ -484,6 +490,7 @@
 │   │   ├── file-utility-compile-verdicts.json
 │   │   └── released-step-type-hashes.json
 │   ├── support
+│   │   ├── condition-action-matrix.js
 │   │   ├── step-type-corpus.js
 │   │   ├── step-type-harness.js
 │   │   └── step-type-scripts.js
@@ -520,6 +527,7 @@
 │   ├── boot-loader.test.js
 │   ├── code-export.test.js
 │   ├── complete-statements-preview.test.js
+│   ├── condition-action-matrix.test.js
 │   ├── custom-source.test.js
 │   ├── deep-links.test.js
 │   ├── developer-logic.test.js
@@ -622,6 +630,7 @@
 │   ├── clear_database.sql
 │   ├── create-review-bundle.mjs
 │   ├── install-git-hooks.mjs
+│   ├── record-condition-action-matrix.mjs
 │   ├── record-step-type-snapshots.mjs
 │   └── sync-app-version.mjs
 ├── tutorials
