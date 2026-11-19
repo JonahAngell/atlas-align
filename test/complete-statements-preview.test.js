@@ -54,6 +54,8 @@ function loadPreview(entries) {
   };
   vm.createContext(context);
   vm.runInContext(read("js/07-phrase-catalog.js"), context);
+  // Step capabilities (conditions, branches, inverse) live with the hierarchy.
+  vm.runInContext(read("js/02-hierarchy.js"), context);
   vm.runInContext(
     `phraseCatalog = ${read("catalogs/logic_phrase_catalog.json")};`,
     context,

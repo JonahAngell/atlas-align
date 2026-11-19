@@ -546,7 +546,7 @@ function completeStatementJoinConditions(blocks) {
  * @param {any} step - IF step to invert.
  */
 function completeStatementInvertedBlock(step) {
-  if (!step || completeStatementStepType(step) !== "if_then") return [];
+  if (!atlasStepIsBranchingCondition(step)) return [];
   return completeStatementConditionBlock(invertedConditionsForStep(step));
 }
 
@@ -566,7 +566,8 @@ function completeStatementLogic(step, conditions) {
   const stepType = completeStatementStepType(step);
   if (!conditions.length)
     return { analyst: analystLogic(step), developer: developerLogic(step) };
-  if (stepType === "if_then" || stepType === "else") {
+  const branching = atlasStepIsBranchingCondition(step);
+  if (branching || stepType === "else") {
     // A display-only copy: the step's own action under the combined conditions.
     const params = {
       ...(step.params || {}),
@@ -576,7 +577,11 @@ function completeStatementLogic(step, conditions) {
     delete params.inverse_of_step_id;
     // An attached ELSE has its own row here, so keep it out of the IF formula.
     params.include_else_branch = "No";
-    const copy = { ...step, step_type: "if_then", type: "if", params };
+    // ELSE renders as IF / THEN; another branching type renders as itself.
+    const copy =
+      stepType === "if_then" || stepType === "else"
+        ? { ...step, step_type: "if_then", type: "if", params }
+        : { ...step, params };
     return { analyst: analystLogic(copy), developer: developerLogic(copy) };
   }
   const conditionText = completeStatementConditionPartial(
@@ -615,8 +620,12 @@ function completeStatementConditionPartial(conditions, partial, format) {
     },
   };
   return (
-    globalThis.ATLASStepTypeRuntime?.partial?.("if_then", partial, step, format) ||
-    ""
+    globalThis.ATLASStepTypeRuntime?.partial?.(
+      "if_then",
+      partial,
+      step,
+      format,
+    ) || ""
   );
 }
 
@@ -730,8 +739,9 @@ function completeStatementPreviewRows() {
       outer = parent ? thenBlocksById.get(parentId) || [] : [];
     }
 
+    const branching = atlasStepIsBranchingCondition(step);
     let own = [];
-    if (stepType === "if_then")
+    if (branching)
       own = completeStatementConditionBlock(parseStepConditions(step));
     else if (stepType === "else")
       own = completeStatementInvertedBlock(
@@ -740,16 +750,15 @@ function completeStatementPreviewRows() {
       );
     const blocks = own.length ? [...outer, own] : outer;
 
-    if (stepType === "if_then" && branch !== "else-if")
-      lastIfBySibling.set(parentId, step);
-    if (parent && branch === "else-if" && stepType === "if_then")
+    if (branching && branch !== "else-if") lastIfBySibling.set(parentId, step);
+    if (parent && branch === "else-if" && branching)
       elseIfsBySibling.set(parentId, [
         ...(elseIfsBySibling.get(parentId) || []),
         step,
       ]);
 
     const isGateOnly =
-      (stepType === "if_then" || stepType === "else") &&
+      (branching || stepType === "else") &&
       hasDisplayedChild.has(step.id) &&
       !completeStatementHasIndependentAction(step);
     const parentHiddenNotes = hiddenNotesById.get(parentId) || [];

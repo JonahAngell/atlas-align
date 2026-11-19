@@ -57,6 +57,11 @@ async function runtime(audit, extras = {}) {
   );
   // Step type definitions turn the per-type checks on.
   loadStepTypeScripts(context);
+  // Step capabilities (order groups) live with the hierarchy.
+  vm.runInContext(
+    readFileSync(new URL("../js/02-hierarchy.js", import.meta.url), "utf8"),
+    context,
+  );
   vm.runInContext(engineSource, context);
   vm.runInContext(adapterSource, context);
   await context.ATLASAuditIssues.catalogReady;
