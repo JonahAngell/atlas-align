@@ -213,12 +213,6 @@
       ? params
       : {};
 
-  /** A step from a helper's `param step` arguments, for the app's own code. */
-  const stepOf = (args) => ({
-    ...paramsOf(args[1]),
-    params: { ...paramsOf(args[0]) },
-  });
-
   /** One part of an app formula result: a note=N, the lead or a dialect. */
   function formulaPart(result, hash, format) {
     const formulas = result || {};
@@ -932,19 +926,15 @@
         format,
       );
     },
-    /** IF + the step's condition tree in words (the condition_group control). */
-    conditionText(args) {
-      const step = stepOf(args);
-      return text(
-        app("ensureIfThenPrefix")?.(app("conditionGroupPlain")?.(step)),
-      );
-    },
-    /** The THEN action in words, or the ELSE action with branch="ELSE". */
-    actionText(args, hash) {
-      const name =
-        hash.branch === "ELSE" ? "elseActionPlain" : "thenActionPlain";
-      return text(app(name)?.(stepOf(args)));
-    },
+    // conditionText, actionText, ifThenFormula, elseFormula and
+    // conditionFormula are replaced helpers (replacedHelpers below): the
+    // runtime renders them through the latest if_then, else, filter_rows and
+    // flag_records partials. Without those partials they write nothing.
+    conditionText: () => "",
+    actionText: () => "",
+    ifThenFormula: () => "",
+    elseFormula: () => "",
+    conditionFormula: () => "",
     /** Text that starts with IF, ELSE IF or ELSE, else IF + the text. */
     ifPrefix(args) {
       const value = text(args[0]).trim();
@@ -974,17 +964,6 @@
       return Array.isArray(args[0]) && args[0].length ? args[0][0] : "";
     },
     /**
-     * One dialect of an IF / THEN step's formulas, or one of its notes
-     * (note=N), from the app's condition and action formulas.
-     */
-    ifThenFormula(args, hash, { format }) {
-      return formulaPart(app("atlasDevIfThen")?.(stepOf(args)), hash, format);
-    },
-    /** One dialect, the lead (part="lead") or a note of an ELSE step. */
-    elseFormula(args, hash, { format }) {
-      return formulaPart(app("atlasDevElse")?.(stepOf(args)), hash, format);
-    },
-    /**
      * Compare values, one per line, as quoted text: "A", "A" or "B", and
      * so on. Blank when there are none; lead=" " goes in front otherwise.
      */
@@ -1001,17 +980,6 @@
             .map((item) => `"${item}"`)
             .join(", ");
       return `${text(hash.lead)}${text(shown)}`;
-    },
-    /**
-     * One dialect or a note (note=N) of a single-condition step: Filter
-     * Rows or Flag Records, built as the IF / THEN they stand for.
-     */
-    conditionFormula(args, hash, { format }) {
-      return formulaPart(
-        app("atlasDevLegacyCondition")?.(stepOf(args)),
-        hash,
-        format,
-      );
     },
     /** Excel table of a key list's first key, else of the step's source. */
     firstKeyTable(args) {

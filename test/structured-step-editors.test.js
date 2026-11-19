@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadApp } from "./support/step-type-harness.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -13,6 +14,22 @@ function slice(file, startMarker, endMarker) {
   const end = source.indexOf(endMarker, start + startMarker.length);
   assert.ok(start >= 0 && end > start, `${startMarker} block found`);
   return source.slice(start, end);
+}
+
+/** A step rendered through the step type runtime: a partial, or all of it. */
+async function rendered(step, partial = "", format = "english") {
+  const context = await loadApp();
+  context.__step = JSON.parse(JSON.stringify(step));
+  return JSON.parse(
+    JSON.stringify(
+      vm.runInContext(
+        partial
+          ? `ATLASStepTypeRuntime.partial("if_then", ${JSON.stringify(partial)}, __step, ${JSON.stringify(format)})`
+          : "({ english: ATLASStepTypeRuntime.english(__step), formulas: ATLASStepTypeRuntime.formulas(__step) })",
+        context,
+      ),
+    ),
+  );
 }
 
 /** One top-level function of a source file, by name. */
@@ -132,8 +149,7 @@ test("exclude settings are dropped unless the action hides by key", () => {
   }
 });
 
-test("exclude by key reads in analyst and developer logic", () => {
-  const ctx = load();
+test("exclude by key reads in analyst and developer logic", async () => {
   const step = {
     id: "if1",
     step_type: "if_then",
@@ -146,11 +162,11 @@ test("exclude by key reads in analyst and developer logic", () => {
       then_exclude_key_source_file: "PA0001",
     },
   };
+  const { english, formulas: dev } = await rendered(step);
   assert.match(
-    ctx.thenActionPlain(step),
+    english,
     /do not display any record with the same .*Personnel Number.* value/,
   );
-  const dev = ctx.atlasDevIfThen(step);
   assert.match(dev.sql, /NOT IN \(SELECT/);
   assert.match(dev.python, /isin\(excluded_keys\)/);
 });
@@ -274,7 +290,7 @@ test("a written expression becomes a description and is flagged", () => {
   assert.equal(ctx.atlasCreateColumnIsWrittenExpression(runnable), false);
 });
 
-test("a run parameter condition is stored as values with a run date mirror", () => {
+test("a run parameter condition is stored as values with a run date mirror", async () => {
   const ctx = load();
   const leaf = ctx.atlasNormalizeConditionLeaf({
     id: "c1",
@@ -289,8 +305,15 @@ test("a run parameter condition is stored as values with a run date mirror", () 
   assert.equal(leaf.compareValues, undefined);
   assert.equal(ctx.atlasConditionUiValueMode(leaf), "parameter");
   assert.deepEqual(plain(ctx.atlasConditionProblems(leaf)), []);
-  assert.match(ctx.conditionToPlain(leaf, true), /is less than the run date/);
-  assert.match(ctx.atlasDevConditionLeaf(leaf, "sql"), /< @RunDate/);
+  const step = {
+    step_type: "if_then",
+    params: { conditions_json: JSON.stringify([leaf]), then_action_type: "display" },
+  };
+  assert.match(
+    await rendered(step, "conditionText"),
+    /is less than the run date/,
+  );
+  assert.match(await rendered(step, "condition", "sql"), /< @RunDate/);
 
   const text = ctx.atlasNormalizeConditionLeaf({
     operator: "contains",

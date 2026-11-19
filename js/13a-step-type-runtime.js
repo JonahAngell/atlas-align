@@ -792,6 +792,33 @@
     );
   }
 
+  /**
+   * One partial of a type's latest definition rendered for a step, e.g. the
+   * IF / THEN condition in words (if_then "conditionText") or in one formula
+   * dialect ("condition"). "" when the latest definition has no such partial.
+   * @param {string} typeId - Step type whose latest definition has the partial.
+   * @param {string} name - Partial name.
+   * @param {any} step - Step the partial reads (params, conditions).
+   * @param {string} [format] - "english", "plain", "excel", "sql" or "python".
+   */
+  function partial(typeId, name, step, format = "english") {
+    const definition = registry?.resolve(typeId) || null;
+    if (
+      !definition ||
+      definition.block ||
+      !/^[A-Za-z][A-Za-z0-9_]*$/.test(text(name)) ||
+      !Object.prototype.hasOwnProperty.call(definition.partials || {}, name)
+    )
+      return "";
+    try {
+      return text(
+        render(`{{include "${name}"}}`, step || {}, definition, format),
+      ).trim();
+    } catch (error) {
+      return renderFailure(definition, name, error);
+    }
+  }
+
   /** A sentence that says which template failed and what to do about it. */
   function renderFailure(definition, part, error) {
     return `[${definition.label} ${part} could not be built: ${error?.message || error}. Fix the definition in the step type builder.]`;
@@ -1083,16 +1110,24 @@
   /**
    * The outcome qTest tests: the definition's `export.qtest.action` (plain
    * templates; kind picks which of the others it has), else, for a type with
-   * an action field, the app's action code.
+   * an action field, its latest version's.
    */
   function qtestActionWith(definition, step) {
     const { definitions } = engine();
     const action = definitions.exportFor(definition, step)?.qtest?.action;
     if (!action?.kind) {
+      // An older version with an action field (if_then v2, say) tests the
+      // outcome its latest version writes.
       const hasAction = definitions
         .fields(definition, definitions.subtypeOf(definition, step))
         .some((field) => field.control === "action");
-      return hasAction ? app("atlasQtestThenAction")?.(step) || null : null;
+      const latest = hasAction ? registry?.resolve(definition.id) : null;
+      return latest &&
+        latest !== definition &&
+        !latest.block &&
+        definitions.exportFor(latest, step)?.qtest?.action?.kind
+        ? qtestActionWith(latest, step)
+        : null;
     }
     const part = (name, template) => {
       try {
@@ -1943,6 +1978,8 @@
     definitionFor,
     normalize,
     english,
+    partial,
+    storedConditions: storedConditionsFor,
     autoNotes,
     formulas,
     exportShapeWarnings,

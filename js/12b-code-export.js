@@ -157,10 +157,9 @@ function atlasCodePrimaryAlias(entries) {
   if (fromStep) return fromStep;
   let conditions = [];
   try {
-    conditions =
-      first && typeof parseStepConditions === "function"
-        ? parseStepConditions(first.step)
-        : [];
+    conditions = first
+      ? globalThis.ATLASStepTypeRuntime?.storedConditions?.(first.step) || []
+      : [];
   } catch (_error) {
     conditions = [];
   }

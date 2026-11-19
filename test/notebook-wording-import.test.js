@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadApp } from "./support/step-type-harness.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -162,17 +163,12 @@ test("display text reads an appended-with-separator clause", () => {
   assert.equal("then_text_separator" in plain.params, false);
 });
 
-test("display text sentences name only a non-default separator", () => {
-  const context = {
-    sourceAliasFor: (source) => source,
-    document: { addEventListener: () => {} },
+test("display text sentences name only a non-default separator", async () => {
+  const context = await loadApp();
+  const english = (item) => {
+    context.__step = item;
+    return vm.runInContext("ATLASStepTypeRuntime.english(__step)", context);
   };
-  vm.createContext(context);
-  vm.runInContext(read("js/07-phrase-catalog.js"), context);
-  vm.runInContext(
-    `phraseCatalog = ${read("catalogs/logic_phrase_catalog.json")};`,
-    context,
-  );
   const step = (separator) => ({
     step_type: "else",
     params: {
@@ -183,14 +179,14 @@ test("display text sentences name only a non-default separator", () => {
     },
   });
   assert.equal(
-    context.elseActionPlain(step()),
+    english(step()),
     'ELSE display text response "Research IT0395" in new column "Error Message".',
   );
   assert.equal(
-    context.elseActionPlain(step("||")),
-    context.elseActionPlain(step()),
+    english(step("||")),
+    english(step()),
   );
-  const custom = context.elseActionPlain(step(" | "));
+  const custom = english(step(" | "));
   assert.equal(
     custom,
     'ELSE display text response "Research IT0395" in new column "Error Message", appended with separator " | ".',
