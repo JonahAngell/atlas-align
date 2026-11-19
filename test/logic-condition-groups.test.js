@@ -2,9 +2,20 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import { loadApp } from "./support/step-type-harness.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
+
+/** A step's conditions in words, as the if_then definition writes them. */
+async function conditionText(step) {
+  const context = await loadApp();
+  context.__step = JSON.parse(JSON.stringify(step));
+  return vm.runInContext(
+    'ATLASStepTypeRuntime.partial("if_then", "conditionText", __step)',
+    context,
+  );
+}
 
 function loadPhraseCatalog() {
   let next = 0;
@@ -99,9 +110,8 @@ test("normalizing sets IF first, group connectors inside, and drops empty groups
   assert.equal(normalized[1].items[2].items[0].connector, "AND");
 });
 
-test("analyst text lists sub-conditions as indented bullets under their condition", () => {
-  const ctx = loadPhraseCatalog();
-  const text = ctx.conditionGroupPlain(stepWith(tree()));
+test("analyst text lists sub-conditions as indented bullets under their condition", async () => {
+  const text = await conditionText(stepWith(tree()));
   assert.equal(
     text,
     [
@@ -114,9 +124,8 @@ test("analyst text lists sub-conditions as indented bullets under their conditio
   );
 });
 
-test("flat conditions keep their single-line text", () => {
-  const ctx = loadPhraseCatalog();
-  const text = ctx.conditionGroupPlain(
+test("flat conditions keep their single-line text", async () => {
+  const text = await conditionText(
     stepWith([leaf("c1", "x", "y", "IF"), leaf("c2", "z", "q", "AND")]),
   );
   assert.equal(
@@ -222,7 +231,7 @@ test("step-card split view leaves bullet connectors on their own line", () => {
   );
 });
 
-test("a group with one item reads as a plain condition", () => {
+test("a group with one item reads as a plain condition", async () => {
   const ctx = loadPhraseCatalog();
   const single = [
     leaf("c1", "x", "y", "IF"),
@@ -235,7 +244,7 @@ test("a group with one item reads as a plain condition", () => {
     },
   ];
   assert.equal(
-    ctx.conditionGroupPlain(stepWith(single)),
+    await conditionText(stepWith(single)),
     'IF file "sap" column "x" is equal to "y" AND file "sap" column "z" is equal to "q"',
   );
   assert.equal(

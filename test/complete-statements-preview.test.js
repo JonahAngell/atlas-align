@@ -30,6 +30,7 @@ const COMPLETE_STATEMENT_FUNCTIONS = [
   "completeStatementInvertedBlock",
   "completeStatementLowerFirst",
   "completeStatementLogic",
+  "completeStatementConditionPartial",
   "completeStatementDeveloperLogic",
   "completeStatementNotes",
   "completeStatementPreviewRows",
@@ -192,11 +193,12 @@ test("mixed AND/OR keeps AND precedence when wrapped", () => {
     cond("B", "is equal to", "2", "AND"),
     cond("C", "is equal to", "3", "OR"),
   ]);
-  const text = ctx.atlasDevConditionTree(
+  const text = ctx.completeStatementConditionPartial(
     ctx.completeStatementJoinConditions([
       [cond("P", "is equal to", "0", "IF")],
       block,
     ]),
+    "condition",
     "sql",
   );
   assert.equal(text, "[P] = '0' AND (([A] = '1' AND [B] = '2') OR [C] = '3')");

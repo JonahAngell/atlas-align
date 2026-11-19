@@ -252,34 +252,6 @@ function qtestErrorColumn() {
 }
 
 /**
- * The THEN/ELSE outcome of an IF/THEN or ELSE step, including legacy
- * free-text actions.
- * @param {any} step - Logic step object being read.
- */
-function atlasQtestThenAction(step) {
-  const params = step.params || {};
-  const actionType = params.then_action_type || "freeform";
-  if (actionType === "display_text")
-    return {
-      kind: "display_text",
-      message: params.then_text || "",
-      outputColumn: params.then_output_column || qtestErrorColumn(),
-    };
-  if (actionType === "do_not_display") return { kind: "do_not_display" };
-  if (actionType.startsWith("set_column"))
-    return {
-      kind: "set_column",
-      targetColumn: params.then_target_column || "",
-      valueField: params.then_value_field || "",
-      calculated: actionType !== "set_column_value",
-    };
-  const text = String(params.then_action || step.action || "").trim();
-  if (!text || /^(ELSE\s*:?|(ELSE\s+)?IF\b[\s\S]*:)$/i.test(text))
-    return { kind: "none" };
-  return qtestFreeformOutcome(text);
-}
-
-/**
  * What a freeform action sentence does for qTest: display text in a column,
  * do not display, or freeform (the text itself).
  * @param {string} value - The action in words, without its IF or ELSE lead.
@@ -306,7 +278,14 @@ function qtestFreeformOutcome(value) {
  * @param {any} step - Logic step object being read.
  */
 function qtestConditionText(step) {
-  const group = conditionGroupPlain(step)
+  const group = String(
+    globalThis.ATLASStepTypeRuntime?.partial?.(
+      "if_then",
+      "conditionText",
+      step,
+      "english",
+    ) || "",
+  )
     .replace(/^IF\s+/i, "")
     .trim();
   if (group) return group;

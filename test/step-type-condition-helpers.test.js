@@ -3,10 +3,10 @@
  * catalog, and the export shape warning (Phase 8, branch 5031 of the Dynamic
  * Step Type Builder plan).
  *
- * No repository definition uses these helpers yet. A test-only definition
- * writes a condition's formula with them, through a leaf partial, and must
- * match the app's own atlasDevConditionTree for every condition in the
- * condition and action matrix.
+ * A test-only definition writes a condition's formula with them, through a
+ * leaf partial, and must match the if_then definition's condition partial
+ * (which replaced the app's condition formulas in branch 5035) for every
+ * condition in the condition and action matrix.
  */
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -37,7 +37,7 @@ const VALUES = "(compareLiteral (conditionValues this) this)";
 const EXPRESSION =
   '(default (trim this.expression) (placeholder "expression" "[expression]"))';
 
-/** One condition as a formula, the rules of atlasDevConditionLeaf. */
+/** One condition as a formula, the rules of the if_then leaf partial. */
 const LEAF = [
   `{{#if (or (eq this.valueMode "blank") (eq (operatorKind this.operator) "blank"))}}`,
   `{{blankTest ${LEFT} this.operator}}`,
@@ -363,7 +363,7 @@ test("helpers: freeformOutcome reads a sentence as the qTest action does", async
     const expected = plain(
       run(
         context,
-        `atlasQtestThenAction({ params: { then_action_type: "freeform", then_action: __sentence } })`,
+        `qtestFreeformOutcome(__sentence)`,
       ),
     );
     assert.deepEqual(helper(context, "freeformOutcome", [sentence]), expected);
@@ -466,7 +466,7 @@ function matrixSteps(groupNames) {
     );
 }
 
-test("matrix: the condition partial matches atlasDevConditionTree for every condition", async () => {
+test("matrix: the condition partial matches the if_then condition for every condition", async () => {
   const items = matrixSteps(["conditions", "groups", "actions"]);
   assert.ok(items.length > 50, `only ${items.length} IF / THEN steps`);
   const differences = [];
@@ -483,7 +483,7 @@ test("matrix: the condition partial matches atlasDevConditionTree for every cond
           const formulas = ATLASStepTypeRuntime.formulas(probe);
           const expected = {};
           ["excel", "sql", "python"].forEach((dialect) => {
-            expected[dialect] = atlasDevConditionTree(parseStepConditions(step), dialect);
+            expected[dialect] = ATLASStepTypeRuntime.partial("if_then", "condition", step, dialect);
           });
           return { formulas, expected };
         })()`,
@@ -501,7 +501,7 @@ test("matrix: the condition partial matches atlasDevConditionTree for every cond
   assert.deepEqual(differences.slice(0, 5), []);
 });
 
-test("matrix: the action helpers match atlasDevActionValue for every action", async () => {
+test("matrix: the action helpers match the if_then action value for every action", async () => {
   const items = matrixSteps(["actions"]).filter(({ step }) =>
     ["set_column_calculation", "set_column_string_transform"].includes(
       step.params.then_action_type,
@@ -521,7 +521,7 @@ test("matrix: the action helpers match atlasDevActionValue for every action", as
           const formulas = ATLASStepTypeRuntime.formulas(probe);
           const expected = {};
           ["excel", "sql", "python"].forEach((dialect) => {
-            expected[dialect] = atlasDevActionValue(step.params, dialect).value;
+            expected[dialect] = ATLASStepTypeRuntime.partial("if_then", "actionValue", step, dialect);
           });
           const english = ATLASStepTypeRuntime.english(probe);
           const config = atlasStringTransformConfig(step.params, "then_");

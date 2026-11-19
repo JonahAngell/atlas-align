@@ -579,10 +579,10 @@ function completeStatementLogic(step, conditions) {
     const copy = { ...step, step_type: "if_then", type: "if", params };
     return { analyst: analystLogic(copy), developer: developerLogic(copy) };
   }
-  const conditionText = ensureIfThenPrefix(
-    conditionTreePlain(conditions, (condition) =>
-      conditionToPlain(condition, false),
-    ),
+  const conditionText = completeStatementConditionPartial(
+    conditions,
+    "conditionText",
+    "english",
   );
   const action = completeStatementLowerFirst(
     String(analystLogic(step) || "").replace(/\.\s*$/, ""),
@@ -598,6 +598,29 @@ function completeStatementLogic(step, conditions) {
 }
 
 /**
+ * One if_then partial rendered for the given conditions, as the IF / THEN
+ * step that holds them would write it: "conditionText" in words, or
+ * "condition" and "filter" in one formula dialect.
+ * @param {Array<any>} conditions - Every condition the step runs under.
+ * @param {string} partial - if_then partial name.
+ * @param {string} format - "english", "excel", "sql" or "python".
+ */
+function completeStatementConditionPartial(conditions, partial, format) {
+  const step = {
+    step_type: "if_then",
+    type: "if",
+    params: {
+      conditions_json: JSON.stringify(conditions),
+      then_action_type: "display",
+    },
+  };
+  return (
+    globalThis.ATLASStepTypeRuntime?.partial?.("if_then", partial, step, format) ||
+    ""
+  );
+}
+
+/**
  * Developer Logic for a non-IF step that runs under inherited conditions.
  * Single-column assignments are wrapped in the condition (IF / CASE WHEN /
  * df.loc[mask]); anything else lists the row condition before the step's own
@@ -607,8 +630,11 @@ function completeStatementLogic(step, conditions) {
  */
 function completeStatementDeveloperLogic(step, conditions) {
   normalizeCatalogStep?.(step);
-  const scope = atlasDevEachDialect((dialect) =>
-    atlasDevConditionTree(conditions, dialect),
+  const scope = Object.fromEntries(
+    ["excel", "sql", "python"].map((dialect) => [
+      dialect,
+      completeStatementConditionPartial(conditions, "condition", dialect),
+    ]),
   );
   let own = null;
   try {
@@ -632,7 +658,13 @@ function completeStatementDeveloperLogic(step, conditions) {
       "developer_logic.notes.complete_statement_scope",
       {},
     ),
-    ...atlasDevFilterFormulas(scope, true),
+    // The rows that meet the conditions, as a Display step keeps them.
+    ...Object.fromEntries(
+      ["excel", "sql", "python"].map((dialect) => [
+        dialect,
+        completeStatementConditionPartial(conditions, "filter", dialect),
+      ]),
+    ),
   });
   const ownText = atlasDeveloperFormulaText(own);
   return ownText ? `${rows}\n\n${ownText}` : rows;

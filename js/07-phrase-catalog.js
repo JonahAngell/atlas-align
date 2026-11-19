@@ -227,16 +227,6 @@ function formattedValueList(value) {
   });
 }
 
-function conditionCompareMathOperationsForPhrase(condition = {}) {
-  if (typeof parseSourceMathOperations !== "function") return [];
-  return parseSourceMathOperations(
-    condition.compareMathJson ||
-      condition.compare_math_json ||
-      condition.compareMath ||
-      [],
-  );
-}
-
 function compareMathOperatorWord(operator = "") {
   const path = {
     "+": "analyst_logic.math.plus",
@@ -258,73 +248,6 @@ function compareMathOperandPlain(operation = {}, fallbackSourceFile = "") {
     );
   }
   return String(operation.operand || "").trim();
-}
-
-function conditionCompareFieldPlain(condition = {}) {
-  const base = tableColumnPlain(
-    condition.compareSourceFile || condition.sourceFile,
-    condition.compareSourceAlias || condition.sourceAlias,
-    condition.compareFieldName,
-  );
-  const operations = conditionCompareMathOperationsForPhrase(condition);
-  const mathText = operations
-    .map((operation) => {
-      const word = compareMathOperatorWord(operation.operator);
-      const operand = compareMathOperandPlain(
-        operation,
-        condition.compareSourceFile || condition.sourceFile,
-      );
-      return word && operand ? `${word} ${operand}` : "";
-    })
-    .filter(Boolean)
-    .join(" ");
-  return `${base}${mathText ? ` ${mathText}` : ""}`.trim();
-}
-
-/**
- * Formats the right side of a condition.
- * @param {any} condition - Condition object to format or render.
- */
-function conditionValuePlain(condition) {
-  if (condition.valueMode === "blank")
-    return renderCatalogPhrase("analyst_logic.blank_comparison.value", {});
-  if (condition.valueMode === "field")
-    return conditionCompareFieldPlain(condition);
-  if (condition.valueMode === "expression")
-    return String(condition.expression || "").trim();
-  if (condition.compareParameter === "runDate")
-    return renderCatalogPhrase("analyst_logic.run_parameter.runDate", {});
-  return formattedValueList(
-    Array.isArray(condition.compareValues) && condition.compareValues.length
-      ? condition.compareValues
-      : condition.compareValue || condition.value || "",
-  );
-}
-
-/**
- * Formats a full condition as plain standardized text.
- * @param {any} condition - Condition object to format or render.
- * @param {any} omitSource - Input used by conditionToPlain.
- */
-function conditionToPlain(condition, omitSource = false) {
-  const left = tableColumnPlain(
-    condition.sourceFile,
-    condition.sourceAlias,
-    condition.fieldName || condition.field,
-    omitSource,
-  );
-  const operator =
-    condition.valueMode === "blank"
-      ? renderCatalogPhrase(
-          String(condition.operator || "").includes("not")
-            ? "analyst_logic.blank_comparison.is_not_blank"
-            : "analyst_logic.blank_comparison.is_blank",
-          {},
-        )
-      : condition.operator || "is equal to";
-  const value =
-    condition.valueMode === "blank" ? "" : conditionValuePlain(condition);
-  return `${left} ${operator}${value ? ` ${value}` : ""}`.trim();
 }
 
 // -----------------------------------------------------------------------------
@@ -481,26 +404,6 @@ function atlasCollapseSingleConditionGroups(nodes) {
 }
 
 /**
- * Formats a condition tree as analyst text. Top-level nodes read inline. A
- * group that follows a condition belongs to it: that condition's line ends
- * with "AND:"/"OR:" and the group's items follow as indented bullets, each
- * ending with the group's connector except the last. A group with no
- * condition before it opens with "ALL OF:"/"ANY OF:".
- * @param {Array<any>} nodes - Top-level condition nodes.
- * @param {Function} leafText - leafText(condition) returns the condition text.
- */
-function conditionTreePlain(nodes, leafText) {
-  return ATLASStepTypes.conditions.bullets(nodes, {
-    leaf: leafText,
-    line: (connector, text) =>
-      renderCatalogPhrase("analyst_logic.if_then.condition_line", {
-        connector,
-        condition_text: text,
-      }),
-  });
-}
-
-/**
  * Formats a condition tree as one expression, wrapping each group of two or
  * more items in parentheses, e.g. IF a AND (b OR c OR (d AND e)).
  * @param {Array<any>} nodes - Top-level condition nodes.
@@ -631,27 +534,6 @@ function invertedConditionsForStep(step) {
   });
 }
 
-/**
- * Formats all IF/THEN conditions as a condition group.
- * @param {any} step - Logic step object being read or modified.
- */
-function conditionGroupPlain(step) {
-  return conditionTreePlain(parseStepConditions(step), (condition) =>
-    conditionToPlain(condition, false),
-  );
-}
-
-/**
- * Ensures condition text starts with an IF-style prefix.
- * @param {any} text - Input used by ensureIfThenPrefix.
- */
-function ensureIfThenPrefix(text) {
-  const value = String(text || "").trim();
-  if (!value) return value;
-  if (/^(IF|ELSE IF|ELSE)\b/i.test(value)) return value;
-  return `IF ${value}`;
-}
-
 /** Separator placed between messages when a Display text column already has one. */
 const ATLAS_DISPLAY_TEXT_DEFAULT_SEPARATOR = "||";
 
@@ -697,100 +579,6 @@ function atlasDisplayTextPhraseValues(params = {}, message) {
     ),
     separator_clause: atlasDisplayTextSeparatorClause(params),
   };
-}
-
-/**
- * Formats the THEN action for an IF/THEN step.
- * @param {any} step - Logic step object being read or modified.
- */
-function thenActionPlain(step) {
-  const params = step.params || {};
-  const actionType = params.then_action_type || "freeform";
-  if (actionType === "display_text")
-    return renderCatalogPhrase(
-      "analyst_logic.if_then.then_display_text",
-      atlasDisplayTextPhraseValues(params),
-    );
-  if (actionType === "set_column_value")
-    return renderCatalogPhrase("analyst_logic.if_then.then_set_column_value", {
-      target_column: quotePhraseValue(params.then_target_column || ""),
-      value_column: tableColumnPlain(
-        params.then_value_source_file || params.source_file,
-        params.then_value_source_alias || params.source_alias,
-        params.then_value_field || "",
-      ),
-    });
-  if (actionType === "display")
-    return renderCatalogPhrase("analyst_logic.if_then.then_display", {});
-  if (actionType === "do_not_display")
-    return excludeKeyColumnPlain(params)
-      ? renderCatalogPhrase("analyst_logic.if_then.then_do_not_display_key", {
-          key_column: excludeKeyColumnPlain(params),
-        })
-      : renderCatalogPhrase("analyst_logic.if_then.then_do_not_display", {});
-  return renderCatalogPhrase("analyst_logic.if_then.then_freeform", {
-    action: params.then_action || step.action || "",
-  });
-}
-
-/**
- * Names the key column of a "Do not display all records for this key"
- * action, or "" when the action hides matching records only.
- * @param {Record<string, any>} params - Step params.
- */
-function excludeKeyColumnPlain(params = {}) {
-  if (params.then_exclude_scope !== "key") return "";
-  let key = {};
-  try {
-    key = JSON.parse(params.then_exclude_key_fields_json || "[]")[0] || {};
-  } catch {
-    key = {};
-  }
-  const fieldName = params.then_exclude_key_field || key.fieldName || "";
-  if (!fieldName) return "";
-  return tableColumnPlain(
-    params.then_exclude_key_source_file || key.sourceFile || params.source_file,
-    params.then_exclude_key_source_alias ||
-      key.sourceAlias ||
-      params.source_alias,
-    fieldName,
-  );
-}
-
-/**
- * Formats an ELSE step action.
- * @param {any} step - Logic step object being read or modified.
- */
-function elseActionPlain(step) {
-  const params = step.params || {};
-  const actionType = params.then_action_type || "freeform";
-  if (actionType === "display_text")
-    return renderCatalogPhrase(
-      "analyst_logic.else.display_text",
-      atlasDisplayTextPhraseValues(params),
-    );
-  if (actionType === "set_column_value")
-    return renderCatalogPhrase("analyst_logic.else.set_column_value", {
-      target_column: quotePhraseValue(params.then_target_column || ""),
-      value_column: tableColumnPlain(
-        params.then_value_source_file || params.source_file,
-        params.then_value_source_alias || params.source_alias,
-        params.then_value_field || "",
-      ),
-    });
-  if (actionType === "display")
-    return renderCatalogPhrase("analyst_logic.else.display", {});
-  if (actionType === "do_not_display")
-    return excludeKeyColumnPlain(params)
-      ? renderCatalogPhrase("analyst_logic.else.do_not_display_key", {
-          key_column: excludeKeyColumnPlain(params),
-        })
-      : renderCatalogPhrase("analyst_logic.else.do_not_display", {});
-  if (params.then_action)
-    return renderCatalogPhrase("analyst_logic.else.freeform", {
-      action: params.then_action,
-    });
-  return renderCatalogPhrase("analyst_logic.else.default", {});
 }
 
 /**
@@ -945,34 +733,6 @@ function atlasMathRoundingPhrase(mode = "none", decimals = "0") {
   });
 }
 
-const atlasThenActionPlainBeforeMathUpdate = thenActionPlain;
-thenActionPlain = function thenActionPlainWithMath(step) {
-  const p = step.params || {};
-  if (p.then_action_type !== "set_column_calculation")
-    return atlasThenActionPlainBeforeMathUpdate(step);
-  const source = tableColumnPlain(
-    p.then_value_source_file || p.source_file,
-    p.then_value_source_alias ||
-      sourceAliasFor(p.then_value_source_file || p.source_file),
-    p.then_value_field,
-  );
-  const operations = parseSourceMathOperations(p.then_math_json || []);
-  const math = operations
-    .map(
-      (operation) =>
-        `${compareMathOperatorWord(operation.operator)} ${compareMathOperandPlain(operation, p.then_value_source_file || p.source_file)}`,
-    )
-    .filter(Boolean)
-    .join(" ");
-  return renderCatalogPhrase(
-    "analyst_logic.if_then.then_set_column_calculation",
-    {
-      target_column: quotePhraseValue(p.then_target_column || ""),
-      calculation: `${source}${math ? ` ${math}` : ""}${atlasMathRoundingPhrase(p.then_rounding_mode, p.then_rounding_decimal_places)}`,
-    },
-  );
-};
-
 // ATLAS-MATH-OPERATIONS-UPDATE:END
 
 // ATLAS-STRING-TRANSFORM-UPDATE:BEGIN
@@ -1037,26 +797,4 @@ function atlasStringTransformAnalystPhrase(config, context = "create_column") {
     atlasStringTransformAnalystValues(config),
   );
 }
-const atlasThenActionPlainBeforeStringTransform = thenActionPlain;
-thenActionPlain = function thenActionPlainWithStringTransform(step) {
-  const p = step.params || {};
-  if (p.then_action_type === "set_column_string_transform")
-    return atlasStringTransformAnalystPhrase(
-      atlasStringTransformConfig(p, "then_"),
-      "if_then",
-    );
-  return atlasThenActionPlainBeforeStringTransform(step);
-};
-const atlasElseActionPlainBeforeStringTransform = elseActionPlain;
-elseActionPlain = function elseActionPlainWithStringTransform(step) {
-  const p = step.params || {};
-  if (p.then_action_type === "set_column_string_transform")
-    return renderCatalogPhrase("analyst_logic.else.string_transform", {
-      phrase: atlasStringTransformAnalystPhrase(
-        atlasStringTransformConfig(p, "then_"),
-        "if_then",
-      ),
-    });
-  return atlasElseActionPlainBeforeStringTransform(step);
-};
 // ATLAS-STRING-TRANSFORM-UPDATE:END
