@@ -5,10 +5,21 @@
   "version": 1,
   "name": "set_column_value",
   "label": "Set value from a field",
-  "order": 40,
+  "order": 20,
   "description": "Copy a field into a column.",
   "status": "active",
-  "fields": [],
+  "picker": {
+    "label": "Set Column Value from Field",
+    "description": "Copy a field into the target column."
+  },
+  "fields": [
+    {
+      "param": "then_value_field",
+      "control": "block",
+      "block": "action_set_column_value",
+      "label": "Value Field"
+    }
+  ],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_set_column_value\" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.set_column_value\" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}",

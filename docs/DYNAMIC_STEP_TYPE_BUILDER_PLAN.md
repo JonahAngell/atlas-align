@@ -1404,6 +1404,26 @@ As built (5048):
   definition rendered with the calling template's partials beneath it.
 - Fields come with the Action editor in 5049, and `complete` with 5050.
 
+As built (5049):
+
+- `atlasActionEditorHtml` is the Action editor: the Action Type picker over
+  `actionKinds()`, then `ATLASStepTypeRuntime.actionEditorHtml(kind, …)`,
+  which draws the kind's fields with the field renderer. The three builder
+  layers and the string-transform wrapper are gone, and so is the
+  `atlasActionFreeformOff` flag; the picker takes `{freeform}` instead.
+- A kind's `picker` gives its choice label and description, `choice` (Do
+  Not Display shows under Display) and `legacy` (Freeform Text is offered
+  only to a step that uses it). The kinds' `order` is the picker order. A
+  kind's `editor` gives the form's class and heading (String
+  Transformation's).
+- Freeform's form is a plain `textarea` field. The other kinds' forms show
+  hints, previews and the Matching records toggle that no field control
+  draws, so each places an editor block, `action_<name>`, that draws the
+  form it had (the editor snapshots are unchanged).
+- The parameter clean-up per kind (the Matching records toggle, the group
+  exclude and the then_ string transform) waits for 5052, which adds the
+  normalize handlers that replace it.
+
 ### 2. Operator catalog
 
 `app_config.logic_options` in the phrase catalog becomes the only list:

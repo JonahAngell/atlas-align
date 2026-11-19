@@ -20,14 +20,15 @@ const read = (file) =>
 const run = (context, code) => vm.runInContext(code, context);
 const plain = (value) => JSON.parse(JSON.stringify(value ?? null));
 
+// In Action Type picker order.
 const KINDS = [
+  "freeform",
+  "set_column_value",
+  "set_column_string_transform",
+  "set_column_calculation",
+  "display_text",
   "display",
   "do_not_display",
-  "display_text",
-  "set_column_value",
-  "set_column_calculation",
-  "set_column_string_transform",
-  "freeform",
 ];
 const DIALECTS = ["excel", "sql", "python"];
 const QTEST = read("catalogs/step-types/if_then.json").export.qtest.action;
@@ -271,10 +272,11 @@ test("the action composite's features are the registered kinds", async () => {
   const kinds = plain(
     run(context, "ATLASStepTypeRuntime.actionKinds().map((d) => d.name)"),
   );
+  // The kinds are in picker order; controls.json lists them by topic.
   assert.deepEqual(
-    action.features.map((feature) => feature.name),
-    kinds,
-    "controls.json lists one feature per action kind, in the kinds' order",
+    action.features.map((feature) => feature.name).sort(),
+    [...kinds].sort(),
+    "controls.json lists one feature per action kind",
   );
 });
 
@@ -415,4 +417,81 @@ test("action kind definitions are checked for the keys a kind needs", async () =
   assert.deepEqual(check({ ...step, name: "sort" }), [
     "/name is only for an action kind",
   ]);
+});
+
+test("the Action Type picker lists the action kinds by their picker labels", async () => {
+  const context = await loadApp();
+  const choices = (current, options) => {
+    context.__options = options;
+    return plain(
+      run(
+        context,
+        `atlasThenActionTypeChoices(${JSON.stringify(current)}, __options).map(([value, label]) => value + ": " + label)`,
+      ),
+    );
+  };
+  const structured = [
+    "set_column_value: Set Column Value from Field",
+    "set_column_string_transform: Set Column to String Transformation",
+    "set_column_calculation: Set Column to Calculated Value",
+    "display_text: Display Text Response in Column",
+    "display: Display / Do Not Display",
+  ];
+  // Freeform is legacy: offered only to a step that uses it.
+  assert.deepEqual(choices("display"), structured);
+  assert.deepEqual(choices("freeform"), [
+    "freeform: Freeform Text (legacy)",
+    ...structured,
+  ]);
+  assert.deepEqual(choices("freeform", { freeform: false }), structured);
+  // Do Not Display shows under the Display choice.
+  assert.equal(
+    run(context, 'atlasActionChoiceValue("do_not_display")'),
+    "display",
+  );
+  assert.equal(
+    run(context, 'atlasActionChoiceValue("display_text")'),
+    "display_text",
+  );
+});
+
+test("the Action editor draws the selected kind's fields", async () => {
+  const context = await loadApp();
+  const editor = (params, branch = "THEN") => {
+    context.__params = params;
+    return run(
+      context,
+      `atlasActionEditorHtml(__params, ${JSON.stringify(branch)})`,
+    );
+  };
+  // Freeform is a plain textarea field.
+  assert.match(
+    editor({ then_action_type: "freeform", then_action: "a <b>" }),
+    /<label class="full">Action<textarea data-param="then_action" placeholder="e\.g\., display records in the audit">a &lt;b&gt;<\/textarea><\/label>/,
+  );
+  // The other kinds place their form as an editor block.
+  assert.match(
+    editor({ then_action_type: "display_text" }, "ELSE"),
+    /display-text-preview[^>]*><strong>Preview:<\/strong> ELSE /,
+  );
+  assert.match(
+    editor({ then_action_type: "do_not_display" }),
+    /data-param="then_exclude_scope"/,
+  );
+  // A kind's editor frame: String Transformation has its own heading.
+  assert.match(
+    editor({ then_action_type: "set_column_string_transform" }, "ELSE"),
+    /^<div class="then-action-builder string-transform-builder"><h4> ELSE Action <\/h4>/,
+  );
+  // Any kind's fields go through the field renderer.
+  const html = run(
+    context,
+    `ATLASStepTypeRuntime.actionEditorHtml(
+      { fields: [{ param: "then_text", control: "text", label: "Message" }] },
+      { then_text: "Check" },
+    )`,
+  );
+  assert.match(html, /Message/);
+  assert.match(html, /data-param="then_text"/);
+  assert.match(html, /value="Check"/);
 });

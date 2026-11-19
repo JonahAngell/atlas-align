@@ -142,6 +142,40 @@
           description:
             "An action kind's params that must be filled in before the step has an action of its own.",
         },
+        picker: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            label: { $ref: "#/$defs/label" },
+            description: { type: "string", maxLength: 500 },
+            choice: {
+              $ref: "#/$defs/identifier",
+              description:
+                "The kind whose choice also stands for this one, as Do Not Display shows under Display.",
+            },
+            legacy: {
+              type: "boolean",
+              description:
+                "Offered only to a step that already uses this kind.",
+            },
+          },
+          description:
+            "How an action kind shows in the Action Type picker: its choice label and description, when they differ from label and description.",
+        },
+        editor: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            className: {
+              type: "string",
+              pattern: "^[a-z][a-z0-9 -]*$",
+              maxLength: 200,
+            },
+            heading: { $ref: "#/$defs/label" },
+          },
+          description:
+            "An action kind's form: the class after then-action-builder (else refined-action-builder dynamic-action-builder), and a heading shown after THEN or ELSE.",
+        },
         english: { $ref: "#/$defs/templateSet" },
         formulas: { $ref: "#/$defs/formulas" },
         autoNotes: {
@@ -3240,10 +3274,21 @@
         version: 1,
         name: "display",
         label: "Display",
-        order: 10,
+        order: 60,
         description: "Display the records.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Display / Do Not Display",
+          description: "Keep or remove the records that match.",
+        },
+        fields: [
+          {
+            param: "then_exclude_scope",
+            control: "block",
+            block: "action_display",
+            label: "Matching records",
+          },
+        ],
         partials: {
           english: '{{phrase "analyst_logic.if_then.then_display"}}',
           elseEnglish: '{{phrase "analyst_logic.else.display"}}',
@@ -3278,10 +3323,21 @@
         version: 1,
         name: "display_text",
         label: "Display text",
-        order: 30,
+        order: 50,
         description: "Write a text response in a column.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Display Text Response in Column",
+          description: "Show a text response in a column.",
+        },
+        fields: [
+          {
+            param: "then_text",
+            control: "block",
+            block: "action_display_text",
+            label: "Message",
+          },
+        ],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_display_text" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder "error_message_column" "Error Message"))) separator_clause=(include "separatorClause")}}',
@@ -3336,10 +3392,18 @@
         version: 1,
         name: "do_not_display",
         label: "Do not display",
-        order: 20,
+        order: 70,
         description: "Leave the records out.",
         status: "active",
-        fields: [],
+        picker: { choice: "display" },
+        fields: [
+          {
+            param: "then_exclude_scope",
+            control: "block",
+            block: "action_display",
+            label: "Matching records",
+          },
+        ],
         partials: {
           english:
             '{{#if (present (include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json))))}}{{phrase "analyst_logic.if_then.then_do_not_display_key" key_column=(include "excludeKeyColumn" (first (json param.then_exclude_key_fields_json)))}}{{else}}{{phrase "analyst_logic.if_then.then_do_not_display"}}{{/if}}',
@@ -3381,10 +3445,24 @@
         version: 1,
         name: "freeform",
         label: "Freeform text",
-        order: 70,
+        order: 10,
         description: "Describe the action in words.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Freeform Text (legacy)",
+          description:
+            "Written in words. Choose a structured action so the step can run.",
+          legacy: true,
+        },
+        fields: [
+          {
+            param: "then_action",
+            control: "textarea",
+            label: "Action",
+            layout: "full",
+            placeholder: "e.g., display records in the audit",
+          },
+        ],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_freeform" action=(default param.then_action step.action)}}',
@@ -3422,10 +3500,21 @@
         version: 1,
         name: "set_column_calculation",
         label: "Calculation",
-        order: 50,
+        order: 40,
         description: "Write a calculation into a column.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Set Column to Calculated Value",
+          description: "Calculate a numeric result into the target column.",
+        },
+        fields: [
+          {
+            param: "then_math_json",
+            control: "block",
+            block: "action_set_column_calculation",
+            label: "Calculation",
+          },
+        ],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_set_column_calculation" target_column=(quote param.then_target_column) calculation=(mathPhrase (default param.then_value_source_file param.source_file) (default param.then_value_source_alias (sourceAliasFor (default param.then_value_source_file param.source_file))) param.then_value_field param.then_math_json param.then_rounding_mode param.then_rounding_decimal_places)}}',
@@ -3475,10 +3564,22 @@
         version: 1,
         name: "set_column_string_transform",
         label: "String transformation",
-        order: 60,
+        order: 30,
         description: "Write part of a text value into a column.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Set Column to String Transformation",
+          description: "Take characters or a character count from a field.",
+        },
+        editor: { className: "string-transform-builder", heading: "Action" },
+        fields: [
+          {
+            param: "then_string_operation",
+            control: "block",
+            block: "action_set_column_string_transform",
+            label: "Operation",
+          },
+        ],
         partials: {
           english:
             '{{stringTransformPhrase param prefix="then_" context="if_then"}}',
@@ -3527,10 +3628,21 @@
         version: 1,
         name: "set_column_value",
         label: "Set value from a field",
-        order: 40,
+        order: 20,
         description: "Copy a field into a column.",
         status: "active",
-        fields: [],
+        picker: {
+          label: "Set Column Value from Field",
+          description: "Copy a field into the target column.",
+        },
+        fields: [
+          {
+            param: "then_value_field",
+            control: "block",
+            block: "action_set_column_value",
+            label: "Value Field",
+          },
+        ],
         partials: {
           english:
             '{{phrase "analyst_logic.if_then.then_set_column_value" target_column=(quote param.then_target_column) value_column=(tableColumn (default param.then_value_source_file param.source_file) (default param.then_value_source_alias param.source_alias) param.then_value_field)}}',

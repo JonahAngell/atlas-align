@@ -1885,6 +1885,18 @@
     return [...found].sort();
   }
 
+  /**
+   * An action kind's form fields for the THEN or ELSE action (the Action
+   * editor's body, under its kind picker). Editor blocks read the branch
+   * from their field.
+   */
+  function actionEditorHtml(kind, params, branch = "THEN") {
+    const step = { params: params || {} };
+    return (kind?.fields || [])
+      .map((field) => fieldHtml({ ...field, branch }, step, kind))
+      .join("");
+  }
+
   /** The editor form for a step, or null for built-in editors. */
   function renderEditor(step) {
     return renderEditorWith(definitionFor(step), step);
@@ -2081,6 +2093,7 @@
     pinnedVersions: () => pinnedVersions,
     actionKind,
     actionKinds,
+    actionEditorHtml,
     revision: () => revision,
     registry: () => registry,
     onChange,

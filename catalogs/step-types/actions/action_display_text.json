@@ -5,10 +5,21 @@
   "version": 1,
   "name": "display_text",
   "label": "Display text",
-  "order": 30,
+  "order": 50,
   "description": "Write a text response in a column.",
   "status": "active",
-  "fields": [],
+  "picker": {
+    "label": "Display Text Response in Column",
+    "description": "Show a text response in a column."
+  },
+  "fields": [
+    {
+      "param": "then_text",
+      "control": "block",
+      "block": "action_display_text",
+      "label": "Message"
+    }
+  ],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",

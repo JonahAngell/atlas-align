@@ -63,7 +63,10 @@
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
  * sync_format_field, sync_split_field, sync_create_column, sync_join,
  * union_sources_to_join, sync_if_then, copy_step_source.
- * Editor blocks (a field's `block`): sort_keys, duplicate_keys.
+ * Editor blocks (a field's `block`): sort_keys, duplicate_keys, and the
+ * action kinds' forms (action_display, action_display_text,
+ * action_set_column_value, action_set_column_calculation and
+ * action_set_column_string_transform).
  *
  * Behavior blocks (a definition's `block`) supply whole parts of a type from
  * the app's own code: normalize(step, index) on the real step, editor(step)
@@ -725,7 +728,8 @@
     },
     /** Joins expressions with AND / OR in the current dialect. */
     combine(args, _hash, { format }) {
-      const connector = text(args[1]).trim().toUpperCase() === "OR" ? "OR" : "AND";
+      const connector =
+        text(args[1]).trim().toUpperCase() === "OR" ? "OR" : "AND";
       const items = listOf(args[0]).flat().map(text);
       return text(app("atlasDevCombine")?.(items, connector, format));
     },
@@ -743,9 +747,11 @@
     },
     /** blank, text_match, compare, or "" for an operator none lists. */
     operatorKind(args) {
-      return ["blank", "text_match", "compare"].find(
-        (kind) => operatorMeaning(kind, args[0]) !== undefined,
-      ) || "";
+      return (
+        ["blank", "text_match", "compare"].find(
+          (kind) => operatorMeaning(kind, args[0]) !== undefined,
+        ) || ""
+      );
     },
     /** The comparison symbol of an operator; "=" when it has none. */
     operatorSymbol(args) {
@@ -827,7 +833,9 @@
     blankTest(args, _hash, { format }) {
       const meaning = operatorMeaning("blank", args[1]);
       const notBlank =
-        meaning !== undefined ? meaning === true : operatorOf(args[1]).includes("not");
+        meaning !== undefined
+          ? meaning === true
+          : operatorOf(args[1]).includes("not");
       return text(app("atlasDevBlankTest")?.(text(args[0]), notBlank, format));
     },
     /** The run parameter in the current dialect (@RunDate, run_date, RunDate). */
@@ -1053,6 +1061,25 @@
       editor: (step) =>
         app("atlasDuplicateFieldsEditorHtml")?.(step.params || {}),
     },
+    // The action kinds' forms, under the Action editor's kind picker.
+    ...Object.fromEntries(
+      [
+        ["action_set_column_value", "atlasSetColumnValueActionHtml"],
+        ["action_set_column_calculation", "atlasCalculationActionHtml"],
+        [
+          "action_set_column_string_transform",
+          "atlasStringTransformActionHtml",
+        ],
+        ["action_display_text", "atlasDisplayTextActionHtml"],
+        ["action_display", "atlasDisplayActionHtml"],
+      ].map(([block, editor]) => [
+        block,
+        {
+          editor: (step, field) =>
+            app(editor)?.(step.params || {}, field?.branch || "THEN"),
+        },
+      ]),
+    ),
   });
 
   /**

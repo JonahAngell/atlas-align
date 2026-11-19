@@ -5,10 +5,21 @@
   "version": 1,
   "name": "display",
   "label": "Display",
-  "order": 10,
+  "order": 60,
   "description": "Display the records.",
   "status": "active",
-  "fields": [],
+  "picker": {
+    "label": "Display / Do Not Display",
+    "description": "Keep or remove the records that match."
+  },
+  "fields": [
+    {
+      "param": "then_exclude_scope",
+      "control": "block",
+      "block": "action_display",
+      "label": "Matching records"
+    }
+  ],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_display\"}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.display\"}}",
