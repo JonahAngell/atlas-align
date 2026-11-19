@@ -17,6 +17,7 @@
  *   atlasCreatedColumnNames createdColumns(step)      new output columns
  *   renderGuidedBuilder     renderEditor(step)        editor form
  *   text import             parseText(text)           sentence to step
+ *                           useImporters({conditions, action})  the app's readers
  *   Audit Issues            validate(step)            validation rules
  *                           builtInChecks(step)       built-in checks it uses
  *   STEP_TYPE_OPTIONS and import titles: typeOptions() and onChange().
@@ -1409,8 +1410,35 @@
         pattern += regexEscape(node.value);
         continue;
       }
+      // {{> conditionText}} or the replaced conditionText helper: the IF
+      // conditions, read by the conditions importer.
+      if (
+        (node.type === "partial" &&
+          node.name === "conditionText" &&
+          !node.context) ||
+        (node.type === "output" &&
+          node.value?.type === "call" &&
+          node.value.name === "conditionText")
+      ) {
+        captures.push({ kind: "conditions" });
+        pattern += "(.+?)";
+        continue;
+      }
       if (node.type !== "output") return null;
       const value = node.value;
+      // {{action "english"}}: the action in words, read by the action importer.
+      if (
+        value?.type === "call" &&
+        value.name === "action" &&
+        value.args.length === 1 &&
+        value.args[0].type === "literal" &&
+        value.args[0].value === "english" &&
+        !Object.keys(value.hash || {}).length
+      ) {
+        captures.push({ kind: "action" });
+        pattern += "(.+?)";
+        continue;
+      }
       const direct = paramOf(value);
       if (direct) {
         captures.push({ kind: "text", param: direct });
@@ -1444,14 +1472,88 @@
   }
 
   /**
+   * The app's sentence readers for the parts no plain capture can read, so
+   * the runtime does not reach into js/15j: conditions(text) returns
+   * { ok, conditions, conditionTree?, references, controls } or
+   * { ok: false, message }, and action(text) returns
+   * { params, references, controls } or { ok: false, message }.
+   */
+  let importers = {};
+  function useImporters(next = {}) {
+    importers = { ...importers, ...next };
+  }
+
+  /** "IF " in front of condition text that does not start with it. */
+  const withIf = (value) =>
+    /^if\b/i.test(value) ? value : `IF ${value}`.trim();
+
+  /**
+   * Reads the Conditions and Action captures of a match with the importers:
+   * { conditions, conditionTree, conditionParam, params, references,
+   * controls }, { ok: false, message } when one cannot be read, or null when
+   * the definition has no field for a capture or the app has no importer.
+   */
+  function importParts(definition, subtype, captures) {
+    const fields = engine().definitions.fields(definition, subtype);
+    const result = {
+      conditions: [],
+      conditionTree: null,
+      conditionParam: "",
+      params: {},
+      references: [],
+      controls: [],
+    };
+    for (const capture of captures) {
+      if (capture.kind === "conditions") {
+        const field = fields.find((item) => item.control === "condition_group");
+        if (!field || typeof importers.conditions !== "function") return null;
+        const parsed = importers.conditions(withIf(capture.value.trim()));
+        if (!parsed?.ok) return { ok: false, message: parsed?.message };
+        result.conditions = parsed.conditions || [];
+        result.conditionTree = parsed.conditionTree || null;
+        result.conditionParam = field.param;
+        result.references.push(...(parsed.references || []));
+        result.controls.push(...(parsed.controls || []));
+      } else if (capture.kind === "action") {
+        const field = fields.find((item) => item.control === "action");
+        if (!field || typeof importers.action !== "function") return null;
+        const parsed = importers.action(capture.value.trim());
+        if (!parsed || parsed.ok === false)
+          return { ok: false, message: parsed?.message };
+        const type = text(parsed.params?.then_action_type) || "freeform";
+        const kind = actionKind(type);
+        const features = field.features || {};
+        // The kinds the field offers: not one it switches off, and not
+        // freeform (a legacy kind) when freeform is off.
+        if (
+          features[type] === false ||
+          (features.freeform === false && (!kind || kind.picker?.legacy))
+        )
+          return {
+            ok: false,
+            message: `${definition.label} does not offer the ${kind?.picker?.label || kind?.label || type} action.`,
+          };
+        Object.assign(result.params, parsed.params || {});
+        result.references.push(...(parsed.references || []));
+        result.controls.push(...(parsed.controls || []));
+      }
+    }
+    return result;
+  }
+
+  /**
    * Reads a sentence written by a definition's English template. Returns
-   * { stepType, title, params, captures: [{ kind, param, label, value, sourceParam }] }
-   * or null when no importable definition matches.
+   * { stepType, title, params, captures: [{ kind, param, label, value, sourceParam }],
+   * conditions, conditionTree, conditionParam, references, controls } (the
+   * last five from the Conditions and Action importers), { ok: false,
+   * message } when a definition's sentence matches but its conditions or
+   * action cannot be read, or null when no importable definition matches.
    */
   function parseText(sentence) {
     if (!registry) return null;
     const value = text(sentence).trim();
     if (!value) return null;
+    let failure = null;
     for (const definition of registry.list({ includeLegacy: true })) {
       if (definition.textImport?.fromEnglish !== true) continue;
       const candidates = [];
@@ -1485,18 +1587,34 @@
           label: labels.get(capture.param) || capture.param,
           value: match[index + 1] ?? "",
         }));
-        captures.forEach((capture) => {
+        const plain = captures.filter(
+          (capture) =>
+            capture.kind !== "conditions" && capture.kind !== "action",
+        );
+        plain.forEach((capture) => {
           params[capture.param] = capture.value.trim();
         });
+        const parts = importParts(definition, candidate.subtype, captures);
+        if (!parts) continue;
+        if (parts.ok === false) {
+          failure = failure || parts;
+          continue;
+        }
+        Object.assign(params, parts.params);
         return {
           stepType: definition.id,
           title: definition.label,
           params,
-          captures,
+          captures: plain,
+          conditions: parts.conditions,
+          conditionTree: parts.conditionTree,
+          conditionParam: parts.conditionParam,
+          references: parts.references,
+          controls: parts.controls,
         };
       }
     }
-    return null;
+    return failure;
   }
 
   // ---------------------------------------------------------------------------
@@ -2134,6 +2252,7 @@
     mergeTypeOptions,
     importTitles,
     parseText,
+    useImporters,
     renderEditor,
     rerenderParams,
     validate,

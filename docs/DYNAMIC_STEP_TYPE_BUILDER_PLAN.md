@@ -1545,6 +1545,27 @@ Both parsers move behind a small interface on `ATLASStepTypeRuntime`
 globals. A builder type that writes `{{> conditionText}} THEN {{action
 "english"}}` imports like IF / THEN. The bundled types keep their parsers.
 
+As built (5051):
+
+- `sentenceMatcher` captures `{{> conditionText}}` (no context) and any
+  call of the replaced `conditionText` helper as `conditions`, and
+  `{{action "english"}}` (no other arguments) as `action`. `parseText`
+  reads them with the importers `js/15j` registers through
+  `ATLASStepTypeRuntime.useImporters({conditions, action})`, and binds them
+  to the definition's `condition_group` and `action` fields. A definition
+  without such a field, or an app without the importer, does not match.
+- Condition text gets a leading `IF` when it has none. An action kind the
+  field turns off (`features[kind] === false`, or a legacy kind such as
+  freeform when `features.freeform` is false) is refused with "<Type> does
+  not offer the <kind> action.", and unreadable conditions return the
+  conditions reader's message, not the generic one.
+- The draft carries `conditionParam`, so `atlasImportMaterialize` stores the
+  conditions in that param, as it does `conditions_json` for IF / THEN.
+- Any sentence that starts with `IF` still goes to the bundled readers
+  first, so a builder type needs words of its own in front (for example
+  `Review {{> conditionText}} THEN {{action "english"}}`).
+- The engine version stays 1.19.0: this PR bumps it once.
+
 ### 6. Clean-up and inline fixes as settings
 
 - Field `normalize`: a named handler from `js/13-step-type-library.js`
