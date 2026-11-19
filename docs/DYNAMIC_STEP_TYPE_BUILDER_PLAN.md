@@ -1613,6 +1613,23 @@ As built (5052):
 - A rule's `require` now accepts a composite's params when no control
   palette is given, as conditions already did.
 
+As built (5053): contract v3 was not part of 5047 or 5050, so it is written
+here first, as an ATLAS Align commit on `feature-5053-file-utility-contract-v3`,
+and File Utility takes it on `feature-5053-file-utility-action-kinds`.
+
+- `npm run step-types:manifest` rewrites the contract's `operators` (every
+  value, alias and formula alias in `operator_catalog`, mapped to File
+  Utility's code by its `meaning`) and `blockedOperators` (the values with no
+  meaning File Utility runs). The rest of the file is kept byte for byte,
+  since File Utility holds a copy. The comparisons gain their formula
+  aliases (`greater than`, `>` and so on).
+- Readiness runs an action through `actionHandler`: the kind definition's
+  `export.fileUtility.action`, found with the new `actionKindFor(name)`
+  option (the UI passes the runtime's `actionKind`, without its Freeform
+  fallback). A kind with no definition, as in a publication saved before
+  5048, is its own handler, so contract v2 answers are unchanged. A kind
+  with no handler, or one the contract's `thenActions` lacks, is a blocker.
+
 ### Definitions and versions
 
 | Definition                                                                                                                                                                            | Now        | New  | What changes                                                                         |
