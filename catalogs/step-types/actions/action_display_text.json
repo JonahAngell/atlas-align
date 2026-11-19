@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 2,
+  "kind": "action",
+  "id": "action_display_text",
+  "version": 1,
+  "name": "display_text",
+  "label": "Display text",
+  "order": 30,
+  "description": "Write a text response in a column.",
+  "status": "active",
+  "fields": [],
+  "partials": {
+    "english": "{{phrase \"analyst_logic.if_then.then_display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",
+    "elseEnglish": "{{phrase \"analyst_logic.else.display_text\" message=(quote param.then_text) output_column=(quote (default param.then_output_column (placeholder \"error_message_column\" \"Error Message\"))) separator_clause=(include \"separatorClause\")}}",
+    "shape": "value",
+    "formula": "{{> valueFormula}}",
+    "elseFormula": "{{> valueFormula}}",
+    "formulaNote": "{{phrase \"developer_logic.notes.append_message_excel\" column=(concat \"\\\"\" (include \"actionTarget\") \"\\\"\")}}",
+    "elseFormulaNote": "{{phrase \"developer_logic.notes.append_message_excel\" column=(concat \"\\\"\" (include \"actionTarget\") \"\\\"\")}}",
+    "actionTarget": "{{default param.then_output_column (placeholder \"error_message_column\" \"Error Message\")}}",
+    "actionValue": {
+      "default": "{{literal param.then_text}}"
+    },
+    "actionExpression": {
+      "excel": "IF([@[{{excelColumn (include \"actionTarget\")}}]]=\"\", {{> actionValue}}, [@[{{excelColumn (include \"actionTarget\")}}]]&{{literal (textSeparator param)}}&{{> actionValue}})",
+      "sql": "CONCAT_WS({{literal (textSeparator param)}}, NULLIF({{sqlName (include \"actionTarget\")}}, ''), {{> actionValue}})"
+    },
+    "unmatched": {
+      "excel": "[@[{{excelColumn (include \"actionTarget\")}}]]",
+      "sql": "{{sqlName (include \"actionTarget\")}}"
+    },
+    "matchedLines": {
+      "python": "df[{{quote (include \"actionTarget\")}}] = df.get({{quote (include \"actionTarget\")}}, \"\")\nexisting = df.loc[mask, {{quote (include \"actionTarget\")}}].fillna(\"\").astype(str)\ndf.loc[mask, {{quote (include \"actionTarget\")}}] = existing.where(existing == \"\", existing + {{literal (textSeparator param)}}) + {{> actionValue}}"
+    },
+    "unmatchedLines": {
+      "python": "df[{{quote (include \"actionTarget\")}}] = df.get({{quote (include \"actionTarget\")}}, \"\")\nexisting = df.loc[~mask, {{quote (include \"actionTarget\")}}].fillna(\"\").astype(str)\ndf.loc[~mask, {{quote (include \"actionTarget\")}}] = existing.where(existing == \"\", existing + {{literal (textSeparator param)}}) + {{> actionValue}}"
+    },
+    "separatorClause": "{{#if (ne (textSeparator param) \"||\")}}{{phrase \"analyst_logic.if_then.then_display_text_separator\" separator=(concat \"\\\"\" (replace (textSeparator param) \"\\\"\" \"\\\\\\\"\") \"\\\"\")}}{{/if}}"
+  },
+  "export": {
+    "qtest": {
+      "action": {
+        "kind": "display_text",
+        "message": "{{param.then_text}}",
+        "outputColumn": "{{default param.then_output_column (placeholder \"error_message_column\" \"Error Message\")}}"
+      }
+    },
+    "fileUtility": {
+      "action": "display_text"
+    }
+  }
+}

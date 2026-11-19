@@ -11,7 +11,8 @@ import { documentHash } from "./canonical-json.js";
 
 const ROOT = new URL("../", import.meta.url);
 const CATALOG = new URL("catalogs/step-types/", ROOT);
-const DEFINITION_FILE = /^[a-z][a-z0-9_]*(\.v\d+)?\.json$/;
+/** A definition file: a step type, or an action kind in actions/. */
+const DEFINITION_FILE = /^(actions\/)?[a-z][a-z0-9_]*(\.v\d+)?\.json$/;
 
 const readJson = (url) => JSON.parse(readFileSync(url, "utf8"));
 

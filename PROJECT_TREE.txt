@@ -94,6 +94,14 @@
 │   ├── file-utility
 │   │   └── executable-steps.json
 │   ├── step-types
+│   │   ├── actions
+│   │   │   ├── action_display_text.json
+│   │   │   ├── action_display.json
+│   │   │   ├── action_do_not_display.json
+│   │   │   ├── action_freeform.json
+│   │   │   ├── action_set_column_calculation.json
+│   │   │   ├── action_set_column_string_transform.json
+│   │   │   └── action_set_column_value.json
 │   │   ├── controls.json
 │   │   ├── create_column.json
 │   │   ├── else.json
@@ -513,6 +521,7 @@
 │   │   ├── step-type-corpus.js
 │   │   ├── step-type-harness.js
 │   │   └── step-type-scripts.js
+│   ├── action-kind-catalog.test.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js
