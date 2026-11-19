@@ -424,24 +424,26 @@ function parseStepConditions(step) {
   return ATLASStepTypes.conditions.parse(step, { uid, sourceAliasFor });
 }
 
-const INVERSE_CONDITION_OPERATOR_MAP = {
-  "is equal to": "is not equal to",
-  "is not equal to": "is equal to",
-  contains: "does not contain",
-  "does not contain": "contains",
-  "starts with": "does not start with",
-  "does not start with": "starts with",
-  "ends with": "does not end with",
-  "does not end with": "ends with",
-  "is greater than": "is less than or equal to",
-  "is greater than or equal to": "is less than",
-  "is less than": "is greater than or equal to",
-  "is less than or equal to": "is greater than",
-  "is blank/null": "is not blank/null",
-  "is not blank/null": "is blank/null",
-  "matches expression": "does not match expression",
-  "does not match expression": "matches expression",
-};
+/**
+ * The condition operators of the phrase catalog
+ * (app_config.logic_options.operator_catalog and operator_sets), read
+ * through ATLASStepTypes.conditions.operatorCatalog: entries, values, sets
+ * per value mode, formula meanings, inverses and the sentence spellings.
+ */
+function atlasOperatorCatalog() {
+  const read = globalThis.ATLASStepTypes?.conditions?.operatorCatalog;
+  if (typeof read !== "function")
+    return {
+      entries: [],
+      values: [],
+      sets: {},
+      meanings: {},
+      inverses: {},
+      sentence: [],
+      canonical: {},
+    };
+  return read(getCatalogValue("app_config.logic_options", null));
+}
 
 /**
  * Returns the logical opposite of a guided IF operator.
@@ -452,8 +454,9 @@ function inverseConditionOperator(operator, valueMode = "values") {
   const normalized = String(operator || "")
     .trim()
     .toLowerCase();
-  if (INVERSE_CONDITION_OPERATOR_MAP[normalized])
-    return INVERSE_CONDITION_OPERATOR_MAP[normalized];
+  const inverses = atlasOperatorCatalog().inverses;
+  if (Object.prototype.hasOwnProperty.call(inverses, normalized))
+    return inverses[normalized];
   if (valueMode === "blank")
     return renderCatalogPhrase(
       normalized.includes("not")

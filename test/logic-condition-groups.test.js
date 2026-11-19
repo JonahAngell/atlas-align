@@ -3,6 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { loadApp } from "./support/step-type-harness.js";
+import {
+  loadStepTypeScripts,
+  STEP_TYPE_ENGINE_SCRIPTS,
+} from "./support/step-type-scripts.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
@@ -155,6 +159,8 @@ test("inversion applies De Morgan at every level", () => {
 function loadImport() {
   const sandbox = {};
   vm.createContext(sandbox);
+  // The condition operators come from the step type engine.
+  loadStepTypeScripts(sandbox, STEP_TYPE_ENGINE_SCRIPTS);
   vm.runInContext(read("js/15j-logic-text-import.js"), sandbox);
   return sandbox;
 }

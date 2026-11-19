@@ -22,15 +22,108 @@
   const RUN_PARAMETERS = Object.freeze([
     Object.freeze(["runDate", "Run Date", "The date the audit is run."]),
   ]);
+  // ---------------------------------------------------------------------------
+  // Operators: the phrase catalog's app_config.logic_options.operator_catalog
+  // and operator_sets, copied into js/step-types/operators.generated.js.
+  // ---------------------------------------------------------------------------
+
+  const operatorCache = new WeakMap();
+  const EMPTY_OPERATORS = Object.freeze({ catalog: [], sets: {} });
+
+  /**
+   * The condition operators, from `logicOptions` (the phrase catalog's
+   * app_config.logic_options) or, without it, operators.generated.js:
+   *   entries    [{value, inverse, meaning, aliases, formulaAliases}] in order
+   *   values     the entries' values
+   *   sets       {mode: [operator...]}, what each value mode offers
+   *   meanings   {compare, text_match, blank}: {operator: meaning}, aliases
+   *              included (what operator_meanings held)
+   *   inverses   {operator: opposite}
+   *   sentence   every value and alias, longest first, for reading text
+   *   canonical  {alias: value}
+   */
+  function operatorCatalog(logicOptions) {
+    const source = Array.isArray(logicOptions?.operator_catalog)
+      ? {
+          catalog: logicOptions.operator_catalog,
+          sets: logicOptions.operator_sets || {},
+        }
+      : global.ATLASStepTypes?.operators || EMPTY_OPERATORS;
+    const cached = operatorCache.get(source.catalog);
+    if (cached) return cached;
+    const entries = (source.catalog || []).filter(
+      (entry) => entry && typeof entry.value === "string",
+    );
+    const meanings = { compare: {}, text_match: {}, blank: {} };
+    const inverses = {};
+    const canonical = {};
+    entries.forEach((entry) => {
+      const spellings = [entry.value, ...(entry.aliases || [])];
+      if (entry.inverse) inverses[entry.value] = entry.inverse;
+      (entry.aliases || []).forEach((alias) => {
+        canonical[alias] = entry.value;
+      });
+      Object.entries(entry.meaning || {}).forEach(([kind, meaning]) => {
+        meanings[kind] = meanings[kind] || {};
+        [...spellings, ...(entry.formulaAliases || [])].forEach((spelling) => {
+          meanings[kind][spelling] = meaning;
+        });
+      });
+    });
+    const sentence = entries
+      .flatMap((entry) => [entry.value, ...(entry.aliases || [])])
+      .map((value, index) => ({ value, index }))
+      .sort((a, b) => b.value.length - a.value.length || a.index - b.index)
+      .map(({ value }) => value);
+    const sets = Object.fromEntries(
+      Object.entries(source.sets || {})
+        .filter(([, list]) => Array.isArray(list))
+        .map(([mode, list]) => [mode, Object.freeze([...list])]),
+    );
+    const found = Object.freeze({
+      entries: Object.freeze(
+        entries.map((entry) => Object.freeze({ ...entry })),
+      ),
+      values: Object.freeze(entries.map((entry) => entry.value)),
+      sets: Object.freeze(sets),
+      meanings: Object.freeze(meanings),
+      inverses: Object.freeze(inverses),
+      sentence: Object.freeze(sentence),
+      canonical: Object.freeze(canonical),
+    });
+    if (source.catalog && typeof source.catalog === "object")
+      operatorCache.set(source.catalog, found);
+    return found;
+  }
+
+  /**
+   * Problems with the operator catalog: a set naming an operator the
+   * catalog does not list, an inverse that is not an operator, or a value
+   * listed twice. Empty when it is consistent.
+   */
+  function operatorProblems(logicOptions) {
+    const found = operatorCatalog(logicOptions);
+    const known = new Set(found.values);
+    const problems = [];
+    if (known.size !== found.values.length)
+      problems.push("an operator is listed twice");
+    found.entries.forEach((entry) => {
+      if (entry.inverse && !known.has(entry.inverse))
+        problems.push(`the inverse of "${entry.value}" is not an operator`);
+    });
+    Object.entries(found.sets).forEach(([mode, list]) =>
+      list.forEach((operator) => {
+        if (!known.has(operator))
+          problems.push(
+            `the ${mode} set names "${operator}", which is not an operator`,
+          );
+      }),
+    );
+    return problems;
+  }
+
   /** Operators a run parameter can be compared with. */
-  const PARAMETER_OPERATORS = Object.freeze([
-    "is equal to",
-    "is not equal to",
-    "is greater than",
-    "is greater than or equal to",
-    "is less than",
-    "is less than or equal to",
-  ]);
+  const parameterOperators = () => operatorCatalog().sets.parameter || [];
   /** Text the current compiler reads as the run date (see RUN_TOKENS). */
   const RUN_PARAMETER_MIRROR = Object.freeze({ runDate: "run date" });
 
@@ -169,7 +262,7 @@
         : "runDate";
       next.valueMode = "values";
       next.compareParameter = parameter;
-      next.compareValue = PARAMETER_OPERATORS.includes(next.operator)
+      next.compareValue = parameterOperators().includes(next.operator)
         ? RUN_PARAMETER_MIRROR[parameter]
         : "";
       delete next.compareValues;
@@ -303,7 +396,11 @@
 
   const api = Object.freeze({
     RUN_PARAMETERS,
-    PARAMETER_OPERATORS,
+    get PARAMETER_OPERATORS() {
+      return parameterOperators();
+    },
+    operatorCatalog,
+    operatorProblems,
     RUN_PARAMETER_MIRROR,
     STYLES,
     isGroup,

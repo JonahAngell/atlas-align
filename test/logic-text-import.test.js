@@ -2,6 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
+import {
+  loadStepTypeScripts,
+  STEP_TYPE_ENGINE_SCRIPTS,
+} from "./support/step-type-scripts.js";
 
 const source = readFileSync(
   new URL("../js/15j-logic-text-import.js", import.meta.url),
@@ -9,6 +13,8 @@ const source = readFileSync(
 );
 const sandbox = {};
 vm.createContext(sandbox);
+// The condition operators come from the step type engine.
+loadStepTypeScripts(sandbox, STEP_TYPE_ENGINE_SCRIPTS);
 vm.runInContext(source, sandbox);
 
 const {

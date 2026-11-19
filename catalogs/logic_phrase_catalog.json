@@ -323,64 +323,101 @@
         "is greater than",
         "is less than"
       ],
-      "operator_meanings": {
-        "$comment": "What each operator means in a formula. compare: the comparison symbol. text_match: contains / starts / ends, and whether it is negated. blank: true when the operator tests for a value (not blank). Read by js/02b-developer-formulas.js and the formula template helpers.",
-        "compare": {
-          "is equal to": "=",
-          "equals": "=",
-          "=": "=",
-          "is not equal to": "<>",
-          "not equal to": "<>",
-          "<>": "<>",
-          "is greater than": ">",
-          "greater than": ">",
-          ">": ">",
-          "is greater than or equal to": ">=",
-          "greater than or equal to": ">=",
-          ">=": ">=",
-          "is less than": "<",
-          "less than": "<",
-          "<": "<",
-          "is less than or equal to": "<=",
-          "less than or equal to": "<=",
-          "<=": "<="
+      "operator_catalog": [
+        {
+          "$comment": "Every condition operator, in editor order: the stored value, its logical opposite (ELSE and linked inverses), what it means in a formula (compare: the symbol; text_match: contains / starts / ends and whether it is negated; blank: true when it tests for a value), aliases a sentence may use (text import) and formulaAliases only formulas read. operator_meanings and the import list are derived from it (ATLASStepTypes.conditions.operatorCatalog); operator_sets name which operators each value mode offers; operators is the list Filter Rows and Flag Records offer."
         },
-        "text_match": {
-          "contains": {
-            "kind": "contains",
-            "negated": false
-          },
-          "does not contain": {
-            "kind": "contains",
-            "negated": true
-          },
-          "starts with": {
-            "kind": "starts",
-            "negated": false
-          },
-          "does not start with": {
-            "kind": "starts",
-            "negated": true
-          },
-          "ends with": {
-            "kind": "ends",
-            "negated": false
-          },
-          "does not end with": {
-            "kind": "ends",
-            "negated": true
-          }
+        {
+          "value": "is equal to",
+          "inverse": "is not equal to",
+          "meaning": { "compare": "=" },
+          "formulaAliases": ["equals", "="]
         },
-        "blank": {
-          "is blank": false,
-          "is blank/null": false,
-          "is null": false,
-          "is not blank": true,
-          "is not blank/null": true,
-          "is not null": true
+        {
+          "value": "is not equal to",
+          "inverse": "is equal to",
+          "meaning": { "compare": "<>" },
+          "formulaAliases": ["not equal to", "<>"]
+        },
+        {
+          "value": "contains",
+          "inverse": "does not contain",
+          "meaning": { "text_match": { "kind": "contains", "negated": false } }
+        },
+        {
+          "value": "does not contain",
+          "inverse": "contains",
+          "meaning": { "text_match": { "kind": "contains", "negated": true } }
+        },
+        {
+          "value": "starts with",
+          "inverse": "does not start with",
+          "meaning": { "text_match": { "kind": "starts", "negated": false } }
+        },
+        {
+          "value": "does not start with",
+          "inverse": "starts with",
+          "meaning": { "text_match": { "kind": "starts", "negated": true } }
+        },
+        {
+          "value": "ends with",
+          "inverse": "does not end with",
+          "meaning": { "text_match": { "kind": "ends", "negated": false } }
+        },
+        {
+          "value": "does not end with",
+          "inverse": "ends with",
+          "meaning": { "text_match": { "kind": "ends", "negated": true } }
+        },
+        {
+          "value": "is greater than",
+          "inverse": "is less than or equal to",
+          "meaning": { "compare": ">" },
+          "formulaAliases": ["greater than", ">"]
+        },
+        {
+          "value": "is greater than or equal to",
+          "inverse": "is less than",
+          "meaning": { "compare": ">=" },
+          "formulaAliases": ["greater than or equal to", ">="]
+        },
+        {
+          "value": "is less than",
+          "inverse": "is greater than or equal to",
+          "meaning": { "compare": "<" },
+          "formulaAliases": ["less than", "<"]
+        },
+        {
+          "value": "is less than or equal to",
+          "inverse": "is greater than",
+          "meaning": { "compare": "<=" },
+          "formulaAliases": ["less than or equal to", "<="]
+        },
+        {
+          "value": "is blank/null",
+          "inverse": "is not blank/null",
+          "meaning": { "blank": false },
+          "aliases": ["is blank"],
+          "formulaAliases": ["is null"]
+        },
+        {
+          "value": "is not blank/null",
+          "inverse": "is blank/null",
+          "meaning": { "blank": true },
+          "aliases": ["is not blank"],
+          "formulaAliases": ["is not null"]
+        },
+        {
+          "value": "matches expression",
+          "inverse": "does not match expression"
+        },
+        {
+          "value": "does not match expression",
+          "inverse": "matches expression"
         }
-      },
+      ],
       "operator_sets": {
+        "blank": ["is blank/null", "is not blank/null"],
         "values": [
           "is equal to",
           "is not equal to",
