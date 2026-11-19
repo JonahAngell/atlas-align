@@ -5,10 +5,23 @@
   "version": 1,
   "name": "freeform",
   "label": "Freeform text",
-  "order": 70,
+  "order": 10,
   "description": "Describe the action in words.",
   "status": "active",
-  "fields": [],
+  "picker": {
+    "label": "Freeform Text (legacy)",
+    "description": "Written in words. Choose a structured action so the step can run.",
+    "legacy": true
+  },
+  "fields": [
+    {
+      "param": "then_action",
+      "control": "textarea",
+      "label": "Action",
+      "layout": "full",
+      "placeholder": "e.g., display records in the audit"
+    }
+  ],
   "partials": {
     "english": "{{phrase \"analyst_logic.if_then.then_freeform\" action=(default param.then_action step.action)}}",
     "elseEnglish": "{{#if (present param.then_action)}}{{phrase \"analyst_logic.else.freeform\" action=param.then_action}}{{else}}{{phrase \"analyst_logic.else.default\"}}{{/if}}",

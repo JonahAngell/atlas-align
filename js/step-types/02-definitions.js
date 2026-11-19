@@ -669,7 +669,7 @@
         add("/export/scriptRole", "is required");
       if (fileUtility && fileUtility.compiler === undefined)
         add("/export/fileUtility/compiler", "is required");
-      ["name", "complete"].forEach((key) => {
+      ["name", "complete", "picker", "editor"].forEach((key) => {
         if (definition[key] !== undefined)
           add(`/${key}`, "is only for an action kind", "definition");
       });
@@ -700,6 +700,9 @@
         "is only for a step type; an action kind names an action",
         "definition",
       );
+    const choice = definition.picker?.choice;
+    if (choice === definition.name)
+      add("/picker/choice", "names this kind itself", "definition");
     (definition.fields || []).forEach((field, index) => {
       if (ACTION_FIELD_LIMITS.includes(field.control))
         add(

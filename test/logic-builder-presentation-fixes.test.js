@@ -133,11 +133,11 @@ test("created columns receive the canonical blue token classification", () => {
 
 test("Display text action drops the unused Reference Field and previews the rule", () => {
   const visualSource = fs.readFileSync("js/15g-visual-ui-events.js", "utf8");
-  const start = visualSource.indexOf('if (actionType === "display_text")');
-  assert.notEqual(start, -1, "display_text branch should exist");
+  const start = visualSource.indexOf("function atlasDisplayTextActionHtml(");
+  assert.notEqual(start, -1, "display_text form should exist");
   const branch = visualSource.slice(
     start,
-    visualSource.indexOf("if (atlasIsDisplayActionType(actionType))", start),
+    visualSource.indexOf("\n}\n", start),
   );
   assert.doesNotMatch(branch, /Reference Field/);
   assert.doesNotMatch(branch, /then_target_column/);

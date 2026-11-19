@@ -120,6 +120,36 @@
       "items": { "$ref": "#/$defs/paramName" },
       "description": "An action kind's params that must be filled in before the step has an action of its own."
     },
+    "picker": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/$defs/label" },
+        "description": { "type": "string", "maxLength": 500 },
+        "choice": {
+          "$ref": "#/$defs/identifier",
+          "description": "The kind whose choice also stands for this one, as Do Not Display shows under Display."
+        },
+        "legacy": {
+          "type": "boolean",
+          "description": "Offered only to a step that already uses this kind."
+        }
+      },
+      "description": "How an action kind shows in the Action Type picker: its choice label and description, when they differ from label and description."
+    },
+    "editor": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "className": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9 -]*$",
+          "maxLength": 200
+        },
+        "heading": { "$ref": "#/$defs/label" }
+      },
+      "description": "An action kind's form: the class after then-action-builder (else refined-action-builder dynamic-action-builder), and a heading shown after THEN or ELSE."
+    },
     "english": { "$ref": "#/$defs/templateSet" },
     "formulas": { "$ref": "#/$defs/formulas" },
     "autoNotes": {

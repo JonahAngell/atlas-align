@@ -5,10 +5,25 @@
   "version": 1,
   "name": "set_column_string_transform",
   "label": "String transformation",
-  "order": 60,
+  "order": 30,
   "description": "Write part of a text value into a column.",
   "status": "active",
-  "fields": [],
+  "picker": {
+    "label": "Set Column to String Transformation",
+    "description": "Take characters or a character count from a field."
+  },
+  "editor": {
+    "className": "string-transform-builder",
+    "heading": "Action"
+  },
+  "fields": [
+    {
+      "param": "then_string_operation",
+      "control": "block",
+      "block": "action_set_column_string_transform",
+      "label": "Operation"
+    }
+  ],
   "partials": {
     "english": "{{stringTransformPhrase param prefix=\"then_\" context=\"if_then\"}}",
     "elseEnglish": "{{phrase \"analyst_logic.else.string_transform\" phrase=(stringTransformPhrase param prefix=\"then_\" context=\"if_then\")}}",
