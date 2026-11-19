@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "split_field",
-  "version": 3,
+  "version": 4,
   "label": "Split Field",
   "category": "transform",
   "order": 55,
@@ -336,6 +336,11 @@
   "autoNotes": null,
   "export": {
     "scriptRole": "column",
+    "fileUtility": {
+      "compiler": "split_field",
+      "status": "partial",
+      "when": "a delimiter is set; not inside an IF branch when it adds rows"
+    },
     "qtest": {
       "section": "D",
       "testType": "Data Validation",

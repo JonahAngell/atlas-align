@@ -1110,7 +1110,6 @@ Surveyed on File Utility `main` at c7f1c03 and ATLAS Align `main` at
      "compiler": "if_then",
      "status": "supported",
      "when": "",
-     "changesRows": false,
      "params": { "conditions_json": "conditions_json" }
    }
    ```
@@ -1118,19 +1117,24 @@ Surveyed on File Utility `main` at c7f1c03 and ATLAS Align `main` at
    `compiler` names one of File Utility's handlers (today's `c_<type>`
    functions, plus `legacy_condition` for `filter_rows` and `flag_records`).
    `params` maps the handler's params to this type's params, so a builder
-   type with differently named fields can reuse a handler. `changesRows`
-   replaces `SHAPE_TYPES`. `status` and `when` replace the contract's
+   type with differently named fields can reuse a handler. `status` (default
+   `supported`; `partial` needs `when`) and `when` replace the contract's
    `stepTypes` entry. A definition with no block can't run in File Utility,
    and the readiness message says so. Checks that depend on values (free-text
    expressions in `create_column`, the formats of `format_field`) stay in the
    handlers, keyed by compiler instead of type id.
 
-3. **Contract v2.** `contractVersion` 2 adds `compilers` (each handler with
-   the params it reads and whether it changes rows) and renames `stepTypes`
-   to `legacyStepTypes`, used only for pinned definition versions written
-   before the block existed. The engine checks a block against `compilers`
-   the way it checks fields against the palette: only when the caller passes
-   the contract, which ATLAS Align and the builder do. Both repos still keep
+3. **Contract v2.** `contractVersion` 2 adds `compilers` (each handler and
+   whether it changes rows, which replaces `SHAPE_TYPES`) and renames
+   `stepTypes` to `legacyStepTypes`, used only for pinned definition versions
+   written before the block existed. The engine checks a block against
+   `compilers` the way it checks fields against the palette: only when the
+   caller passes the compiler names (`fileUtilityCompilers`). The builder and
+   ATLAS Align's tests pass them. ATLAS Align's registry does not, so a type
+   naming a compiler File Utility lacks still loads, and readiness reports it.
+   The params each handler reads are not listed: several are families with
+   prefixes and numbers (`then_`, `string_split_column_1`…), so a list would
+   be wrong. The engine checks that a map points at the type's own params. Both repos still keep
    the file identical and check it by hash.
 4. **Reading definitions from the database.** `get-publication.sql` also
    returns `step_type_versions`. A new `get-step-type-definitions.sql` reads
@@ -1141,13 +1145,14 @@ Surveyed on File Utility `main` at c7f1c03 and ATLAS Align `main` at
    still only reads: the SQL rule test gains `atlas_step_type_definitions` as
    a table it may read. A missing pinned version is a blocker naming the type
    and version, never a silent fallback to another version.
-5. **Migrations.** A step saved with an older definition version is brought
-   up to the pinned version with the definition's declarative migration ops
-   (`set`, `default`, `rename`, `remove`, `mapValue`, `setStepType`), ported
-   to Python. A `handler` op is ported only where a bundled definition uses
-   one; otherwise the step is a blocker. A shared fixture file of
-   before/after params, kept identical in both repos like the contract, runs
-   in both test suites so the two runners can't drift.
+5. **No migration port.** A publication is saved in the shape of the
+   versions it pins, and the editor saves a draft after normalizing it, so
+   File Utility compiles the document as saved, as it does today. ATLAS
+   Align's normalization is more than the declarative ops: the bundled types
+   use code handlers (`sync_if_then`, `sync_create_column`,
+   `sync_split_field`, `copy_step_source`), subtype and field defaults, and
+   composite normalizers. A Python copy of all that would be large and would
+   drift. Decided while building 5039.
 6. **Readiness from the same data.** `22a` looks up each step's pinned
    definition and reads its block, falling back to `legacyStepTypes` for an
    old version. Its value checks are keyed by compiler. ATLAS readiness and
@@ -1173,12 +1178,11 @@ compiling through `legacyStepTypes`.
 - File Utility: every fixture audit compiles to the same v3 procedure before
   and after (its existing compile tests); a builder-style definition whose
   block names `if_then` with a param map compiles to the same procedure as
-  the equivalent `if_then` step; a missing pinned version blocks; the
-  migration fixtures; the SQL rule test; database tests against the seeded
+  the equivalent `if_then` step; a missing pinned version blocks; the SQL rule test; database tests against the seeded
   schema (`tests/atlas_db_seed.py`) for pinned, draft and unpinned reads.
 - ATLAS Align: readiness gives the same answers for the fixture audits;
   the engine refuses a block with an unknown compiler or an unmapped param;
-  the contract and migration-fixture hash tests.
+  the contract hash test.
 - File Utility reads the definitions it tests against from a vendored copy of
   ATLAS Align's `catalogs/step-types/`, refreshed by a sync script with a lock
   file like the builder's `atlas-engine.lock`. Production reads only the
@@ -1189,11 +1193,11 @@ compiling through `legacyStepTypes`.
 | Branch                                                   | Work                                                                                                                                                                                | Engine |
 | -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
 | `feature-5038-atlas-db-on-main` (File Utility)           | Land the database access from #28 on `main`, rebased, with its tests.                                                                                                               | —      |
-| `feature-5039-file-utility-definition-block`             | Schema and engine check for `export.fileUtility`; contract v2; the twelve new bundled versions; the migration fixture file.                                                         | 1.17.0 |
+| `feature-5039-file-utility-definition-block`             | Schema and engine check for `export.fileUtility`; contract v2; the twelve new bundled versions; their old versions as pinned fixtures.                                              | 1.17.0 |
 | `feature-5040-readiness-from-definitions`                | `22a` reads the pinned definition's block, with `legacyStepTypes` for old versions; value checks keyed by compiler.                                                                 | 1.17.1 |
 | `feature-5041-run-step-type-versions`                    | Migration adding `step_type_versions` to `atlas_audit_runs`.                                                                                                                        | —      |
 | `feature-5042-read-step-type-definitions` (File Utility) | Read the pin map and the pinned definitions; the draft and unpinned rule; the SQL rule test; the vendored definitions and sync script.                                              | —      |
-| `feature-5043-compile-from-definitions` (File Utility)   | Contract v2; `compile_step` dispatches on the block; `SHAPE_TYPES` and `legacy_condition`'s type checks go; the migration runner; the run record.                                   | —      |
+| `feature-5043-compile-from-definitions` (File Utility)   | Contract v2; `compile_step` dispatches on the block; `SHAPE_TYPES` and `legacy_condition`'s type checks go; the run record.                                                         | —      |
 | `feature-5044-builder-file-utility` (builder repository) | Bump `atlas-engine.lock` and copy the contract; an Export setting to pick a compiler and map params, checked by the engine; "Runs in File Utility" or the reason it can't in Tests. | —      |
 
 5038 goes first. 5039 and 5043 change the contract and merge as a pair,
@@ -1208,8 +1212,11 @@ ATLAS Align first. 5040 needs 5039. 5042 needs 5038 and 5041. 5044 goes last.
   tests guard it.
 - **Twelve new versions at once.** New versions add one block each; the
   pinned and released-hash tests prove the templates did not change.
-- **Two migration runners.** The shared fixtures catch drift; a new
-  migration op must be added to both, or File Utility blocks the step.
+- **Drafts saved before a newer version.** A draft run compiles against the
+  latest published versions, but the draft may have been saved under an
+  older one. The handlers already read older param shapes (they fall back to
+  `step.source`, `step.field` and the old condition list), and anything they
+  can't read is a blocker, not a wrong result.
 - **Builder types with bad param maps.** The engine refuses a block that maps
   to a param the type doesn't have, so the builder can't publish one.
 
@@ -1221,6 +1228,8 @@ ATLAS Align first. 5040 needs 5039. 5042 needs 5038 and 5041. 5044 goes last.
    engine (design 1).
 3. The production source is the shared database; the vendored definitions
    are for tests only.
+4. No Python migration port (design 5), and no `changesRows` or param lists
+   in the block; both decided while building 5039.
 
 ## Phase 10: Condition and action catalogs (planned, issue #5037)
 

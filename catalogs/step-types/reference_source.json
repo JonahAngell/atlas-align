@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "reference_source",
-  "version": 1,
+  "version": 2,
   "label": "Reference Source",
   "category": "source",
   "order": 10,
@@ -69,6 +69,7 @@
   "autoNotes": null,
   "export": {
     "scriptRole": "source",
+    "fileUtility": { "compiler": "reference_source" },
     "qtest": {
       "section": "G",
       "testType": "Integration",

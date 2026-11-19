@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "remove_duplicates",
-  "version": 1,
+  "version": 2,
   "label": "Remove Duplicates",
   "description": "Remove records whose selected columns all match.",
   "category": "transform",
@@ -92,6 +92,10 @@
   "autoNotes": null,
   "export": {
     "scriptRole": "dedupe",
+    "fileUtility": {
+      "compiler": "remove_duplicates",
+      "when": "not inside an IF branch"
+    },
     "qtest": {
       "section": "E",
       "testType": "Data Validation",

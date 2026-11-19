@@ -11,7 +11,15 @@ import { loadApp } from "./support/step-type-harness.js";
 
 const read = (file) =>
   readFileSync(new URL(`../${file}`, import.meta.url), "utf8");
-const SORT_V1 = JSON.parse(read("catalogs/step-types/sort_records.json"));
+const BUNDLED_SORT_VERSION = JSON.parse(
+  read("catalogs/step-types/sort_records.json"),
+).version;
+// Version 1 and 2 as the server would send them, whatever the bundled file's
+// own version is.
+const SORT_V1 = {
+  ...JSON.parse(read("catalogs/step-types/sort_records.json")),
+  version: 1,
+};
 const SORT_V2 = {
   ...SORT_V1,
   version: 2,
@@ -75,7 +83,9 @@ test("published definitions from the API replace the bundled versions", async ()
   assert.match(english(context), /^Order the rows by .* in Ascending order\.$/);
   assert.deepEqual(
     run(context, 'ATLASStepTypeRuntime.registry().versions("sort_records")'),
-    [1, 2],
+    // The bundled version stays next to the server's version 2 (or is
+    // replaced by it when the bundled file is version 2 itself).
+    [...new Set([BUNDLED_SORT_VERSION, 2])].sort((a, b) => a - b),
   );
   // Bundled types the server did not send keep working.
   assert.ok(

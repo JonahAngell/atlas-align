@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "join",
-  "version": 2,
+  "version": 3,
   "label": "Join / Union Sources",
   "category": "combine",
   "order": 40,
@@ -113,6 +113,10 @@
   },
   "export": {
     "scriptRole": "join",
+    "fileUtility": {
+      "compiler": "join",
+      "when": "INNER JOIN, LEFT JOIN, RIGHT JOIN, FULL OUTER JOIN, UNION; not inside an IF branch"
+    },
     "qtest": {
       "section": "D",
       "testType": "Integration",

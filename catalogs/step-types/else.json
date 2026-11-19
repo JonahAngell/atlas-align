@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "id": "else",
-  "version": 3,
+  "version": 4,
   "label": "ELSE",
   "category": "logic",
   "description": "What happens when the IF conditions are not met.",
@@ -46,15 +46,14 @@
       "sql": "{{> formula}}",
       "python": "{{> formula}}"
     },
-    "notes": [
-      "{{> formulaNote}}"
-    ]
+    "notes": ["{{> formulaNote}}"]
   },
   "autoNotes": {
     "default": "{{phrase \"notes.else.default\"}}"
   },
   "export": {
     "scriptRole": "else",
+    "fileUtility": { "compiler": "else" },
     "qtest": {
       "action": {
         "kind": "{{#switch (default param.then_action_type \"freeform\")}}{{#case \"display_text\" \"do_not_display\"}}{{default param.then_action_type \"freeform\"}}{{/case}}{{#case \"set_column_value\" \"set_column_calculation\" \"set_column_string_transform\"}}set_column{{/case}}{{#default}}{{#if (or (blank (trim (default param.then_action step.action))) (branchLead (trim (default param.then_action step.action))))}}none{{else}}{{freeformOutcome (trim (default param.then_action step.action)) part=\"kind\"}}{{/if}}{{/default}}{{/switch}}",

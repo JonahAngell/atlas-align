@@ -506,7 +506,9 @@
    * blocks (known block names), handlers (known migration handler names),
    * controls (field controls the caller renders), palette (the control
    * palette, which limits each field to its control's properties and
-   * features), supportedSchemaVersions, renderFormulas (definition, step)
+   * features), fileUtilityCompilers (the compiler names in the File
+   * Utility contract, which limits export.fileUtility.compiler to them),
+   * supportedSchemaVersions, renderFormulas (definition, step)
    * => formulas: when given, the result also has warnings, the
    * export shape problems of the definition's tests (exportShapeWarnings).
    */
@@ -704,6 +706,30 @@
         checkConditionParams(rule.when, `${path}/when`);
       if (rule.check) checkConditionParams(rule.check, `${path}/check`);
     });
+    const fileUtility = definition.export.fileUtility;
+    if (fileUtility) {
+      if (
+        options.fileUtilityCompilers &&
+        !options.fileUtilityCompilers.includes(fileUtility.compiler)
+      )
+        add(
+          "/export/fileUtility/compiler",
+          `File Utility has no "${fileUtility.compiler}" compiler`,
+        );
+      if (fileUtility.status === "partial" && !fileUtility.when)
+        add(
+          "/export/fileUtility/when",
+          "a partial step type needs when: the cases it runs in",
+        );
+      // A behavior block owns params the definition does not list.
+      Object.entries(fileUtility.params || {}).forEach(([from, to]) => {
+        if (!params.has(to) && !definition.block && !openParams)
+          add(
+            `/export/fileUtility/params/${from}`,
+            `"${to}" is not a field of this step type`,
+          );
+      });
+    }
     (definition.export.rules || []).forEach((rule, index) =>
       checkConditionParams(rule.when, `/export/rules/${index}/when`),
     );
