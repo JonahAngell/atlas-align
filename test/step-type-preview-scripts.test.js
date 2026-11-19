@@ -242,3 +242,49 @@ test("the preview scripts give exactly the whole app's outputs", async () => {
   assert.deepEqual(errors, []);
   assert.deepEqual(differences, []);
 });
+
+test("the preview renders a new type's condition editor before it has conditions", async () => {
+  // With an empty condition list (a new type built in the Step Type Builder,
+  // or after removing the last condition) the editor writes a blank one back
+  // through writeLiveConditions (js/15c-source-field-picker.js).
+  const { context } = await loadPreview();
+  const html = vm.runInContext(
+    `(() => {
+      const engine = ATLASStepTypes;
+      const runtime = ATLASStepTypeRuntime;
+      const registry = engine.registry.createRegistry({
+        helpers: [...runtime.HELPER_NAMES],
+        blocks: [...runtime.BLOCK_NAMES],
+        handlers: [...runtime.HANDLER_NAMES],
+        schema: engine.bundled.schema,
+      });
+      engine.bundled.definitions.forEach((d) => registry.add(d, { origin: "repository" }));
+      const added = registry.add(
+        {
+          schemaVersion: 1, id: "my_check", version: 1, label: "My Check", description: "",
+          category: "logic", order: 100, status: "active", legacyType: "if",
+          aliases: { step_type: [], type: [] }, migrations: [],
+          fields: [
+            { param: "conditions_json", control: "condition_group", label: "Conditions" },
+            { param: "then_action_type", control: "action", label: "THEN action", branch: "THEN" },
+          ],
+          english: { default: "{{ifPrefix (conditionText param step)}}" },
+          formulas: { shape: "none" }, autoNotes: null, export: { scriptRole: "condition" },
+          textImport: { fromEnglish: false }, tests: [],
+        },
+        { origin: "builder" },
+      );
+      if (!added.ok) throw new Error(JSON.stringify(added.errors));
+      runtime.useRegistry(registry);
+      state.audit = normalizeLoadedAudit(
+        { name: "Preview", steps: [{ id: "new_check", step_type: "my_check", type: "if", title: "My Check", params: { conditions_json: "[]" } }] },
+        "repo",
+      );
+      state.auditSelected = true;
+      return renderGuidedBuilder(state.audit.steps[0]);
+    })()`,
+    context,
+  );
+  assert.equal(typeof html, "string");
+  assert.match(html, /data-condition-list/);
+});
