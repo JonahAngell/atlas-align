@@ -162,6 +162,12 @@
       const runtime = global.ATLASStepTypeRuntime;
       result = global.FileUtilityReadiness.check(audit || {}, contract, {
         definitionFor: runtime?.definitionFor,
+        // actionKind falls back to Freeform Text; readiness wants the kind
+        // the step names.
+        actionKindFor: (name) => {
+          const kind = runtime?.actionKind?.(name);
+          return kind && kind.name === name ? kind : null;
+        },
       });
     } catch (error) {
       showState(elements, {

@@ -14,8 +14,10 @@ const contractUrl = new URL(
 // lands as a pair: one PR here and one there, with the same file and hash,
 // and the readiness rules updated in the same PR. Contract version 2 was
 // written here first (Phase 9, branch 5039); File Utility takes it in 5043.
+// Version 3 (Phase 10, branch 5053) was written here first too: its
+// operators are generated from the operator catalog.
 const CONTRACT_SHA256 =
-  "fb8a63f48ebf23c56ed917d4a42c6b08035aa635e3111a992780db0156016695";
+  "b8e328c7516b80d5809c18e3d444bba71559dee8c9b616bb31c61072d6f25a9b";
 
 test("the File Utility contract is an unmodified copy", () => {
   const digest = createHash("sha256")
@@ -57,9 +59,9 @@ test("the File Utility contract has the expected shape", () => {
     assert.ok(Array.isArray(contract[key]), `${key} is a list`);
 });
 
-test("contract version 2 lists each compiler and whether it changes rows", () => {
+test("contract version 3 lists each compiler and whether it changes rows", () => {
   const contract = JSON.parse(readFileSync(contractUrl, "utf8"));
-  assert.equal(contract.contractVersion, 2);
+  assert.equal(contract.contractVersion, 3);
   assert.equal(
     contract.stepTypes,
     undefined,

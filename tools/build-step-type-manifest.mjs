@@ -4,10 +4,11 @@
  * plus the action kinds in actions/),
  * and js/step-types/definitions.generated.js, the same definitions, schema and
  * control palette as one browser script so ATLAS has its registry as soon as
- * the page loads.
+ * the page loads. It also writes the condition operators, as an engine script
+ * and as the "operators" and "blockedOperators" of the File Utility contract.
  *
- *   npm run step-types:manifest           rewrite both files
- *   npm run step-types:manifest -- --check  fail when either is out of date
+ *   npm run step-types:manifest           rewrite the files
+ *   npm run step-types:manifest -- --check  fail when any is out of date
  *
  * Each entry records the id, version, file name and the SHA-256 of the
  * definition's canonical JSON, which the server compares against database
@@ -26,6 +27,10 @@ const BUNDLE = new URL(
 );
 const OPERATORS = new URL(
   "../js/step-types/operators.generated.js",
+  import.meta.url,
+);
+const CONTRACT = new URL(
+  "../catalogs/file-utility/executable-steps.json",
   import.meta.url,
 );
 const RESERVED = new Set(["schema.json", "manifest.json", "controls.json"]);
@@ -118,6 +123,91 @@ export async function buildOperators() {
   return prettier.format(source, { ...config, filepath: path });
 }
 
+// File Utility's name for each operator meaning (procedures_v3 condition
+// operators). A meaning not listed here has no File Utility code yet.
+const FILE_UTILITY_COMPARE = {
+  "=": "equals",
+  "<>": "notEquals",
+  ">": "gt",
+  ">=": "gte",
+  "<": "lt",
+  "<=": "lte",
+};
+const FILE_UTILITY_TEXT_MATCH = {
+  contains: ["contains", "notContains"],
+  starts: ["startsWith", "notStartsWith"],
+  ends: ["endsWith", "notEndsWith"],
+};
+
+/** File Utility's code for an operator catalog entry, or null. */
+export function fileUtilityOperator(entry) {
+  const meaning = entry?.meaning;
+  if (!meaning) return null;
+  if (meaning.compare != null)
+    return FILE_UTILITY_COMPARE[meaning.compare] || null;
+  if (meaning.text_match) {
+    const pair = FILE_UTILITY_TEXT_MATCH[meaning.text_match.kind];
+    return pair ? pair[meaning.text_match.negated ? 1 : 0] : null;
+  }
+  if (meaning.blank != null) return meaning.blank ? "notBlank" : "blank";
+  return null;
+}
+
+/**
+ * The File Utility contract with its "operators" (every value, alias and
+ * formula alias in the operator catalog, mapped to File Utility's code) and
+ * "blockedOperators" (the catalog values without one) rewritten. The rest
+ * of the file is kept byte for byte, since File Utility holds an identical
+ * copy.
+ */
+export function buildContract() {
+  const catalog = JSON.parse(
+    readFileSync(
+      new URL("../catalogs/logic_phrase_catalog.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const entries = catalog.app_config.logic_options.operator_catalog.filter(
+    (entry) => entry && entry.value,
+  );
+  const operators = [];
+  const blocked = [];
+  const seen = new Set();
+  entries.forEach((entry) => {
+    const code = fileUtilityOperator(entry);
+    if (!code) {
+      blocked.push(entry.value);
+      return;
+    }
+    [entry.value, ...(entry.aliases || []), ...(entry.formulaAliases || [])]
+      .map((name) => String(name).toLowerCase())
+      .forEach((name) => {
+        if (seen.has(name)) return;
+        seen.add(name);
+        operators.push(`    ${JSON.stringify(name)}: ${JSON.stringify(code)}`);
+      });
+  });
+  const contract = readFileSync(CONTRACT, "utf8");
+  const replace = (text, pattern, value, key) => {
+    if (!pattern.test(text))
+      throw new Error(
+        `catalogs/file-utility/executable-steps.json has no "${key}" to rewrite.`,
+      );
+    return text.replace(pattern, value);
+  };
+  return replace(
+    replace(
+      contract,
+      /"operators": \{[^}]*\}/,
+      `"operators": {\n${operators.join(",\n")}\n  }`,
+      "operators",
+    ),
+    /"blockedOperators": \[[^\]]*\]/,
+    `"blockedOperators": ${JSON.stringify(blocked).replace(/","/g, '", "')}`,
+    "blockedOperators",
+  );
+}
+
 /**
  * The browser script that carries the schema and every definition the
  * manifest lists, formatted the way the pre-commit hook formats it.
@@ -153,6 +243,7 @@ if (isMain) {
   const next = `${JSON.stringify(manifest, null, 2)}\n`;
   const bundle = await buildBundle(manifest);
   const operators = await buildOperators();
+  const contract = buildContract();
   const read = (url) => {
     try {
       return readFileSync(url, "utf8");
@@ -165,20 +256,25 @@ if (isMain) {
       read(MANIFEST) !== next && "catalogs/step-types/manifest.json",
       read(BUNDLE) !== bundle && "js/step-types/definitions.generated.js",
       read(OPERATORS) !== operators && "js/step-types/operators.generated.js",
+      read(CONTRACT) !== contract &&
+        "catalogs/file-utility/executable-steps.json",
     ].filter(Boolean);
     if (stale.length) {
       console.error(
-        `${stale.join(" and ")} ${stale.length > 1 ? "are" : "is"} out of date. Run \`npm run step-types:manifest\`.`,
+        `${stale.join(", ")} ${stale.length > 1 ? "are" : "is"} out of date. Run \`npm run step-types:manifest\`.`,
       );
       process.exit(1);
     }
-    console.log("Step type manifest, bundle and operators are up to date.");
+    console.log(
+      "Step type manifest, bundle, operators and contract operators are up to date.",
+    );
   } else {
     writeFileSync(MANIFEST, next);
     writeFileSync(BUNDLE, bundle);
     writeFileSync(OPERATORS, operators);
+    writeFileSync(CONTRACT, contract);
     console.log(
-      `Wrote catalogs/step-types/manifest.json, js/step-types/definitions.generated.js (${manifest.definitions.length} definitions) and js/step-types/operators.generated.js.`,
+      `Wrote catalogs/step-types/manifest.json, js/step-types/definitions.generated.js (${manifest.definitions.length} definitions), js/step-types/operators.generated.js and the operators in catalogs/file-utility/executable-steps.json.`,
     );
   }
 }

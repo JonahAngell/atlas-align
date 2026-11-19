@@ -171,7 +171,10 @@
    * Options: definitionFor(step), the definition version the step renders
    * with (ATLASStepTypeRuntime.definitionFor, which applies a publication's
    * pins). Without it, or for a step it has no definition for, the step type
-   * id is looked up in the contract's legacyStepTypes.
+   * id is looked up in the contract's legacyStepTypes. actionKindFor(name),
+   * the action kind definition a then_action_type names in the version the
+   * audit uses, or null; its export.fileUtility.action is the handler. A kind
+   * with no definition is its own handler.
    */
   function check(document, contract, options = {}) {
     if (!document || typeof document !== "object" || Array.isArray(document))
@@ -180,6 +183,15 @@
     const definitionFor =
       typeof options.definitionFor === "function"
         ? options.definitionFor
+        : () => null;
+    const actionKindFor =
+      typeof options.actionKindFor === "function"
+        ? (kind) => {
+            const definition = options.actionKindFor(kind);
+            return definition && typeof definition === "object"
+              ? definition
+              : null;
+          }
         : () => null;
     // Contract version 2 lists each compiler and whether it changes rows.
     const compilers = own(rules, "compilers") ? dict(rules.compilers) : null;
@@ -613,12 +625,29 @@
       return undefined;
     }
 
+    // The File Utility handler for an action kind: the kind definition's
+    // export.fileUtility.action (contract version 3), or, for a kind with no
+    // definition (a publication saved before action kinds were definitions),
+    // the kind's own name. Throws Blocked when File Utility has no handler.
+    function actionHandler(kind) {
+      const definition = actionKindFor(kind);
+      let handler = kind;
+      if (definition) {
+        handler = text(definition.export?.fileUtility?.action);
+        if (!handler)
+          throw new Blocked(
+            `the action '${text(definition.label) || kind}' has no File Utility handler yet.`,
+          );
+      }
+      if (!own(thenActions, handler))
+        throw new Blocked(`the action '${handler}' is not known.`);
+      return handler;
+    }
+
     // Returns the unparsed free-form text, or null when the action is fully
     // checked. Throws Blocked when the action itself is unusable.
     function action(step, params) {
-      const kind = text(params.then_action_type) || "freeform";
-      if (!own(thenActions, kind))
-        throw new Blocked(`the action '${kind}' is not known.`);
+      const kind = actionHandler(text(params.then_action_type) || "freeform");
       if (kind === "freeform") {
         const freeText = text(params.then_action);
         if (/^display\s+"[\s\S]+"\s+in\s+column\s+"[\s\S]+"$/i.test(freeText)) {
