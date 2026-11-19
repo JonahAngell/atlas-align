@@ -1,11 +1,20 @@
 # Dynamic Step Type Builder: Plan
 
-Status: approved (2026-11-16). Phases 0–7 are merged (Phase 0 was
-JonahAngell/atlas-align#37, issue #5000), and so are the field-control
-conversions (issues #5010–#5014). Phase 8, condition and action templates
-(issue #5026), is merged: ATLAS Align #62–#69 and builder #8. Phase 9,
-File Utility on the step type engine, and Phase 10, condition and action
-catalogs, are planned below (issue #5037). Phase 11 (docs) has not started.
+Status: approved (2026-11-16). Phases 0–10 are done and merged: the engine,
+registry entry points, definitions for every built-in type, exports and
+validation, Postgres storage and version pins, the builder app (in its own
+repository), condition and action templates (Phase 8, issue #5026), File
+Utility on the step type engine (Phase 9) and the condition and action
+catalogs (Phase 10, issue #5037). Phase 11 (docs, issue #5055) is in review.
+
+As built (5055): `PROJECT_CONTEXT.md` ("Step type engine" and the file
+catalog), `README.md` (step types, the builder app, File Utility) and
+`docs/HOW_TO_ADD_A_STEP_TYPE.md`. The builder and File Utility docs are in
+their own repositories. Where the code and the plan differ, the code wins: the
+`.zip` puts `<id>.cases.json` in `test/fixtures/step-types/`, but that folder
+does not exist in this repository until an export adds it and no ATLAS Align
+test reads it; `carriesConditions` is a runtime answer, not a definition key;
+and `orderGroup` is an explicit key, not derived from `export.scriptRole`.
 
 Phase 2 note: the owners ask `window.ATLASStepTypeRuntime`
 (`js/13a-step-type-runtime.js`), which answers from the registry or returns

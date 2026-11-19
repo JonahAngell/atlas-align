@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.8.0
+**Current Version:** v3.8.1
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
@@ -328,9 +328,9 @@ An error rolls back the transaction, including the live-table replacement. The S
 
 **Hierarchy and ordering.** `js/02-hierarchy.js` owns stable step parent/child relationships, branch types, grouped sibling ordering, numbering, indentation, parent eligibility, child creation, movement, and outdent behavior. The audit's complete `steps` collection remains authoritative. Manual movement is constrained to eligible siblings and order groups.
 
-**Rule categories and guided builders.** The active authoring implementation is layered through `js/14-catalog-driven-builder.js` and the later-loaded `15a` through `15g` scripts. Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the supported catalog-normalized legacy step forms. `catalogs/logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. The split `15a`-`15k` files are active.
+**Rule categories and guided builders.** Step types are definitions, not code: the guided editor, picker list, normalization, English, notes, formulas, scripts, qTest rows, validation and text import for every type are read from the step type engine (see "Step type engine" below). `js/14-catalog-driven-builder.js` keeps the picker list (`STEP_TYPE_OPTIONS`, rebuilt from the registry) and the shared editor plumbing; the later-loaded `15a` through `15g` scripts draw the editor shell, rule list, pickers and composite controls (conditions, actions, join keys, math, string transforms). Current guided behavior covers Reference, JOIN/UNION, IF/THEN and ELSE branches, comparisons, create-column/output actions, calculations, string transforms, and the legacy types (Filter Rows, Flag Records, Union Sources, ELSE) that definitions keep for saved audits. `catalogs/logic_phrase_catalog.json` provides standardized phrase templates and option catalogs. The split `15a`-`15k` files are active.
 
-**Conditions and branches.** Conditions support operator-specific value modes, multiple values, field-to-field comparison, and structured math on the comparison side. IF/THEN editing uses the final tabbed builder from `js/15g-visual-ui-events.js`. Linked inverse ELSE steps are synchronized from the source IF conditions unless the step explicitly opts out with `params.inverse_else === "Yes"`; legacy inverse steps are migrated through the same later layer.
+**Conditions and branches.** Conditions support operator-specific value modes, multiple values, field-to-field comparison, and structured math on the comparison side. IF/THEN editing uses the `condition_group` and `action` controls, drawn in two tabs. Whether a step carries conditions, has THEN/ELSE children, offers a linked inverse or sorts in an order group comes from its definition (`ATLASStepTypeRuntime.capabilities`), not from a fixed list of type names. Linked inverse ELSE steps are synchronized from the source IF conditions unless the step explicitly opts out with `params.inverse_else === "Yes"`; legacy inverse steps are migrated through the same later layer.
 
 **JOIN and UNION.** `js/15f-join-picker.js` owns the active JOIN picker, supported join presentation, Venn/union visualization, and JOIN developer-logic rendering. JOIN field/source choices remain tied to selected audit sources and resolved source identity. A JOIN can match on several key pairs (`a.b = c.d AND a.g = c.h`): the Join Keys editor uses the same add/remove row list as IF/THEN Comparison Values, pairs are stored in `params.join_keys_json`, and the first pair is mirrored to `left_field`/`right_field` so single-key readers, repairs, and older audits keep working. The shared helpers (`atlasJoinKeyPairsFromParams()`, `atlasJoinKeyPairsInUse()`, `atlasApplyJoinKeyPairs()`) live in `js/02-logic-rendering.js`. UNION handling remains distinct from JOIN relationship behavior.
 
@@ -376,6 +376,172 @@ The same canonical field-row composition feeds downstream requirements exports. 
 - Requirements Preview composes canonical Fields and Logic views from the same audit document.
 - Audit Issues evaluates that document without becoming a second persistent issue store.
 - Readiness Review and the floating dialog render the same canonical issue result and route users back to the owning authoring surface.
+
+### Step type engine
+
+Every step type is a JSON definition. There is no per-type code for editor
+markup, normalization, English, notes, formulas, scripts, qTest, validation or
+text import: those owners ask the registry, and a type no definition claims is
+unknown. The design and the as-built notes are in
+`docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md`; the guide for adding a type is
+`docs/HOW_TO_ADD_A_STEP_TYPE.md`.
+
+**Definitions.** One file per type in `catalogs/step-types/<id>.json`, checked
+against `catalogs/step-types/schema.json` by `js/step-types/01-schema.js` and
+by the cross-checks in `js/step-types/02-definitions.js`. The keys are
+`schemaVersion` (1, or 2 for a definition with `partials`), `id` (stored as
+`step.step_type`, never renamed), `version`, `label`, `category`, `order`,
+`status` (`active` or `legacy`), `legacyType`, `aliases`, `migrations`,
+`subtypes`, `fields`, `outputs`, `english`, `autoNotes`, `formulas`, `export`,
+`partials`, `validation`, `textImport`, `tests`, and the capability keys
+`branches`, `inverse`, `orderGroup` and `referenceChild`. Saved steps keep their
+param names and values; a definition's `aliases` and `migrations` (rename,
+default, set, remove, mapValue, or a named handler) turn older shapes into the
+current one on every load, import and text import.
+
+**Fields and the control palette.** `fields` describes the editor. Each field has
+a `param`, a `control` and the settings that control reads (`label`, `required`,
+`default`, `visibleWhen`, `enabledWhen`, `sourceParam`, `options`, `features`,
+and so on). The palette is `catalogs/step-types/controls.json`: for every
+control, the field properties it reads, the params it writes, the features an
+author can switch off, and whether it is `available` or `planned`. The schema's
+control list, `ATLASStepTypeRuntime.FIELD_CONTROLS` and the palette must agree
+(`test/step-type-field-controls.test.js`), and validation rejects a property, a
+feature or a control the runtime cannot draw. `math`, `string_transform`,
+`join_type`, `join_keys`, `sort_keys`, `duplicate_keys`, `condition_group` and
+`action` are composite controls drawn by the app's own editors; a definition can
+place them and show or hide them, not change their parts.
+
+**Templates and partials.** English, notes, formulas, qTest outcomes and
+headings are templates in a small language (`js/step-types/00-templates.js`):
+`{{param.x}}`, helper calls, `#if`, `#switch`, `#each`, and `{{> name}}`
+partials declared under `partials` (one template, or one per format). Templates
+are parsed into a tree and walked. Nothing is `eval`'d, a lookup reads only own
+properties, and output length, depth and loop counts are limited. The helpers
+are `js/step-types/00-templates.js`'s built-ins plus the app's
+(`js/13-step-type-library.js`, `js/13a-step-type-runtime.js`); a definition that
+names an unknown helper, block or handler is rejected.
+
+**Registry and origins.** `js/step-types/04-registry.js` holds definitions by id
+and version, resolves aliases, and never overwrites: adding the same id and
+version with different content is rejected. The browser starts on the bundled
+definitions (`js/step-types/definitions.generated.js`, built from
+`catalogs/step-types/` by `npm run step-types:manifest`), so it is never empty,
+then `ATLASStepTypeRuntime.loadFromServer` loads `GET /api/step-types` into a
+registry that still holds the bundle. A definition has one of two origins:
+`repository` (a file in `catalogs/step-types/`, imported when the server
+starts) or `builder` (published in the Step Type Builder). Both are rows of
+`atlas_step_type_definitions` (migration
+`20261117120000_create_atlas_step_type_definitions.sql`), one immutable row per
+`(type_id, version)` with a content hash; a trigger refuses any change except
+status and `updated_*`. At startup `src/step-type-engine.js` checks the files
+with the engine in a `vm` and `src/step-type-repository.js` inserts the versions
+the database lacks, skips identical ones, and logs and rejects a file whose
+content differs from the stored version (or that changed after the manifest was
+built). `atlas_step_type_events` is the audit trail and `atlas_step_type_drafts`
+(`20261117130000_...`) holds the builder's drafts. A definition whose
+`schemaVersion` the engine cannot read does not load; admins see the Audit Issue
+`audit.logic.step-type-definitions-unavailable`.
+
+**Versioning and publication pins.** A released version never changes; a change
+is a new version. A publication records the versions it was made with in
+`atlas_audit_publications.step_type_versions`. Published and locked audits, and
+publications opened in Audit History, render through
+`ATLASStepTypeRuntime.usePinnedVersions()`; editable audits use the latest
+published version of each type (`latest` in the API payload). Retiring a
+version keeps it for the publications pinned to it and removes the type from the
+picker when no published version is left. A block replaced by fields stays as a
+shim (`replacedBlocks`) so older pins still render. The test
+`test/step-type-released-versions.test.js` ties each file's hash to
+`test/fixtures/released-step-type-hashes.json`. File Utility runs record the
+versions they compiled against (`20261119120000_add_atlas_audit_run_step_type_versions.sql`).
+
+**Action kinds and `{{action}}`.** What a THEN or ELSE branch does is a
+definition with `kind: "action"` in `catalogs/step-types/actions/` (`display`,
+`do_not_display`, `display_text`, `set_column_value`, `set_column_calculation`,
+`set_column_string_transform`, `freeform`). Its id is `action_<name>` and `name`
+is the `then_action_type` it is chosen by. Its partials write the English
+(`english`, `elseEnglish`), formulas, notes, the action target and the qTest
+outcome; its `picker` entry draws the Action Type choice; its
+`export.fileUtility.action` names the File Utility handler. A step type with a
+`condition_group` and an `action` field includes the chosen kind with
+`{{action "english"}}`, `{{action "formula"}}`, `{{action "qtest" part="kind"}}`
+and so on. Action kinds share the registry and the table with step types but are
+left out of `resolve()` and `list()`.
+
+**Operator catalog.** The condition operators are one list:
+`app_config.logic_options.operator_catalog` (with `operator_sets`) in
+`catalogs/logic_phrase_catalog.json`. It gives each operator its stored value,
+its logical opposite, its meaning in a formula, and the aliases a sentence may
+use. `npm run step-types:manifest` copies it into
+`js/step-types/operators.generated.js` (read through
+`ATLASStepTypes.conditions.operatorCatalog`) and into the `operators` and
+`blockedOperators` of the File Utility contract.
+
+**`branches`, `inverse`, `orderGroup`, `carriesConditions`.** `ATLASStepTypeRuntime.capabilities(step)`
+answers from the step's (pinned) definition. `branches: ["then", "else"]` lets
+the step have THEN and ELSE children, whose conditions the complete statements
+inherit; `inverse: true` offers Create or Open Linked Inverse and needs
+`branches` and a Conditions field; `orderGroup` (10 sources, 20 joins, 30
+created columns, 40 the rest) sets the sibling order; `referenceChild` offers
+the type in a Reference step's menu. `carriesConditions` is not a key: it is
+true for a definition with a `condition_group` field or a legacy condition type.
+Bundled versions that predate these keys are answered from a legacy table by
+type id. New steps start from the definition and the composites' defaults
+(`newStepDefaults`).
+
+**`textImport`.** `fromEnglish: true` derives a sentence reader from the English
+template. The template may contain only literal text, `{{param.x}}`, `quote`,
+`column`, `number`, `source`, `field` with two params, `{{> conditionText}}` and
+`{{action "english"}}`; the last two use the Conditions and Action readers
+`js/15j-logic-text-import.js` registers. Any other helper or block means the type
+sets `fromEnglish: false` (the bundled types do) or names a `handler`. A sentence
+that starts with `IF` goes to the bundled IF / THEN reader first.
+
+**Validation rules.** A definition's `validation` array feeds Audit Issues
+(`audit.logic.step-type-rules`, `js/23-atlas-audit-issues.js`). A rule is a
+`require` (a blank param, with `when`, `severity`, `message` and an optional
+inline `fix`: a field picker, a choice list or a text box), a `problems` rule
+reading a named check in `problemChecks`, or `builtIn`, which turns on one of the
+existing checks (`conditions`, `fieldRelationships`, `action`, `join`,
+`createdColumns`, `sourceMath`, `thenMath`, `stringTransform`,
+`thenStringTransform`) for that type. Catalog strings are data; no check code
+lives in a definition.
+
+**`export`.** `scriptRole` (`source`, `join`, `union`, `column`, `filter`, `sort`,
+`dedupe`, `condition`, `else`, `flag`, `none`) tells the SQL and Python script
+builders in `js/12b-code-export.js` how to place the step; `formulas.shape`
+(`expression`, `assignment`, `filter`, `frame`) tells them what the formula is.
+`export.qtest` gives the lettered section, test type, expected outcomes
+(`outcomes.atlas`, `outcomes.source`) and, for a type without an `action` field,
+the outcome tested (`action`). `export.rules` can change the role or qTest
+placement for a subtype or action. A row-level step whose SQL the script builder
+cannot place gets an `export_shape` warning when the definition loads; it never
+blocks publishing.
+
+**`export.fileUtility` and File Utility.** File Utility
+(`JonahAngell/audit-file-utility`) runs published audits. It reads the
+definitions and each publication's pinned versions from the shared database and
+decides what runs from the definition's `export.fileUtility` block: `compiler`
+(one of the contract's `compilers`), `status` (`supported` or `partial`), `when`
+(the cases a partial type runs in) and `params` (compiler params mapped to this
+type's). A type without the block cannot run there. The contract is
+`catalogs/file-utility/executable-steps.json` (version 3: `compilers`,
+`thenActions` handlers, `operators`, plus `legacyStepTypes` for versions written
+before the block existed). It is kept identical in both repositories, each with a
+test. `js/22a-file-utility-readiness.js` reads the same block and contract, so
+Readiness & Review gives the verdict File Utility's compiler gives. A new
+compiler, THEN handler or operator needs a change in both repositories.
+
+**Step Type Builder.** `JonahAngell/atlas-step-type-builder` is a separate
+Launch app for admins (`atlas-align-admin`). It copies the engine files listed
+in `js/step-types/engine-manifest.json` (`engineVersion`, currently the version
+in that file) at a revision pinned in its `atlas-engine.lock`, so its preview and
+its checks are ATLAS Align's own. It writes drafts to `atlas_step_type_drafts`,
+publishes versions to `atlas_step_type_definitions` with origin `builder`, and
+exports a `.zip` laid out from this repository's root. The repository files
+become the permanent baseline for each environment. Raise `engineVersion`
+whenever an engine file changes behavior.
 
 ### Validation and Readiness
 
@@ -668,9 +834,13 @@ Vanity-label rows require source file and field name. Alias rows require source 
 
 Workbook data first populates transient `workbookState`. Selecting an audit constructs an in-memory document and then uses normal audit activation and persistence. The workbook is not the shared system of record. Current usage is derived from logic; final display selection/order persists in the audit document.
 
+#### Text import
+
+"Import from text" (`js/15j-logic-text-import.js`) reads a sentence the builder writes into a step. Types with `textImport.fromEnglish` are matched by `ATLASStepTypeRuntime.parseText`, which derives a pattern from each definition's English template (see "Step type engine"); sentences starting with `IF`, and the types that set `fromEnglish: false`, go to the readers this script owns. The dialog maps the file and column tokens onto audit sources before anything is stored.
+
 #### Exports
 
-The Export page (`sections/export.html`, `css/export.css`, `js/29-export-dashboard.js`) is a dashboard for the selected audit. `js/29-export-dashboard.js` keeps a format registry: `ATLASExportFormats.register({ id, label, description, extension, build, fileName, actions, preview, tags, hidden })` adds a format, and the page renders one card per visible format with its size, an editable file name (unsafe characters and a repeated extension are removed), Download or Copy actions, and a preview (text, sandboxed HTML iframe, or workbook table). The My Audits Export menu uses the same registry. Visible formats are JSON, Excel, Qtest, and HTML; CSV and Markdown are registered but hidden. Before each export the page saves pending changes with `atlasSaveIfDirty`; a failed save stops the export. A locked audit is never saved, and if another session locked a newer revision, that revision is reloaded first. Read-only users export what they see.
+The Export page (`sections/export.html`, `css/export.css`, `js/29-export-dashboard.js`) is a dashboard for the selected audit. `js/29-export-dashboard.js` keeps a format registry: `ATLASExportFormats.register({ id, label, description, extension, build, fileName, actions, preview, tags, hidden })` adds a format, and the page renders one card per visible format with its size, an editable file name (unsafe characters and a repeated extension are removed), Download or Copy actions, and a preview (text, sandboxed HTML iframe, or workbook table). The My Audits Export menu uses the same registry. Visible formats are JSON, Excel, Qtest, and HTML; CSV and Markdown are registered but hidden. SQL and Python script formats are also registered; `js/12b-code-export.js` builds them from each definition's `export.scriptRole`, formulas and `export` shape, with no per-type code. Before each export the page saves pending changes with `atlasSaveIfDirty`; a failed save stops the export. A locked audit is never saved, and if another session locked a newer revision, that revision is reloaded first. Read-only users export what they see.
 
 `js/03-capture-actions.js` builds the hidden CSV and Markdown formats. `js/12-export-foundation.js` builds the structured files:
 
@@ -848,7 +1018,8 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
   - `js/step-types/02-definitions.js` — `definitions`: definition checks beyond the schema (cross-references, conditions, migrations, templates), condition matching, the subtype accessors for templates, formulas, fields and export roles, and the export shape check (`exportShapeProblems`, the code export's rule for placing a condition, ELSE, filter or flag step; `validate` with `renderFormulas` adds it as `warnings` for each test case).
   - `js/step-types/03-migrations.js` — `migrations`: runs a definition's aliases and declarative migration rules on a saved step without changing the input.
   - `js/step-types/04-registry.js` — `registry`: the immutable, versioned registry with alias resolution and rejected-definition reporting, plus `loadFromRepository()` for `catalogs/step-types/`.
-  - `js/step-types/05-conditions.js` — `conditions`: the condition tree as plain data (`parse`, `normalizeLeaf`, `normalizedTree`, the run parameter constants) and the three layouts `bullets`, `inline` and `precedence` that the app and the `conditionTree` template helper share.
+  - `js/step-types/05-conditions.js` — `conditions`: the operator catalog accessors, the condition tree as plain data (`parse`, `normalizeLeaf`, `normalizedTree`, the run parameter constants) and the three layouts `bullets`, `inline` and `precedence` that the app and the `conditionTree` template helper share.
+- `js/step-types/operators.generated.js` — Generated by `npm run step-types:manifest` from `app_config.logic_options.operator_catalog` and `operator_sets` in `catalogs/logic_phrase_catalog.json`; do not edit. Read by `ATLASStepTypes.conditions.operatorCatalog`. It is in the engine manifest.
 - `js/step-types/definitions.generated.js` — Generated by `npm run step-types:manifest`; do not edit. Sets `ATLASStepTypes.bundled` to the schema and every definition in `catalogs/step-types/`, so the registry is built synchronously at load. Not part of the engine manifest.
 - `js/01-state-dom.js` — Shared `state`, cached DOM references, theme, navigation, and unsaved-change detection.
 - `js/02-hierarchy.js` — Logic step parent/child order, numbering, and child creation.
@@ -863,19 +1034,21 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/10-field-picker.js` — Resolves source identity against the catalog, keeping key, file name, and alias separate.
 - `js/11-repo-library.js` — Loads repository catalog JSON and normalizes audits from those files.
 - `js/12-export-foundation.js` — Excel, HTML, and qTest file builders for the current audit.
+- `js/12b-code-export.js` — SQL Server and Python script builders. They place each step by its definition's `export.scriptRole` and formula shape, and write a TODO comment for a step that cannot become code.
+- `js/15j-logic-text-import.js` — Text import: reads a sentence into a step. Definitions with `textImport.fromEnglish` are read by the registry (`ATLASStepTypeRuntime.parseText`); this script registers the Conditions and Action readers (`useImporters`) and runs the dialog that maps file and column tokens onto audit sources.
 - `js/15k-audit-import-sources.js` — Reviews the sources an audit JSON import names: create a custom source, map onto a library source, or keep as written.
 - `js/29-export-dashboard.js` — Export format registry and the Export page dashboard.
 - `js/13-catalog-field-browser.js` — Searchable source and field browser.
-- `js/13-step-type-library.js` — `window.ATLASStepTypeLibrary`: the code pieces a definition can name: template helpers (`tableColumn`, `firstSource`, `excelTable`, `sqlSource`, `pySource`, `orEmpty`, `formatKind`, `splitPart`, `sortKeys`, `duplicateKeys` and others), migration handlers (`sync_sort_fields`, `sync_duplicate_fields`) and editor blocks (`sort_keys`, `duplicate_keys`). The registry rejects names that are not here. `replacedHelpers` lists the helpers a later definition version replaced with partials (`conditionText`, `actionText`, `ifThenFormula`, `elseFormula`, `conditionFormula`); the runtime renders each through the latest definition's partials, so a version pinned before them still renders. The app's own condition and action text and formulas are gone, so without those partials these helpers write nothing.
-- `js/13a-step-type-runtime.js` — `window.ATLASStepTypeRuntime`: builds the step type registry from the bundled definitions (or fetches `catalogs/step-types/`), then loads the published definitions from `GET /api/step-types` with the bundle as the fallback (`loadFromServer`), renders published and locked audits with their publication's pinned versions (`usePinnedVersions`), and answers every step type owner (normalization, English, automatic notes, Developer Logic, script role, qTest placement, action and expected outcomes, created columns, editor, text import with the Conditions and Action readers 15j registers (`useImporters`), validation and the Audit Issues checks a type turns on with `builtIn` rules, field problems with inline fixes (`fieldProblems`, from rules with `param` and `fix`), field `normalize` handlers (`normalizeFields` on save), the picker and import titles). Each call returns null when no definition claims the step. A definition's `block` supplies the parts it has; templates supply the rest. `export.qtest.action` templates (`kind`, then the fields that kind has) give the qTest action; without them a type with an action field uses its latest version's. `partial(type, name, step, format)` renders one partial of a type's latest definition (the complete statements and the qTest condition use the if_then `conditionText`, `condition` and `filter` partials), and `storedConditions(step)` gives the stored condition tree. Template helpers: `field`, `column`, `quote`, `number`, `alias`, `source`, `placeholder`.
-- `js/14-catalog-driven-builder.js` — Catalog-driven normalization and base rendering for each logic step type.
+- `js/13-step-type-library.js` — `window.ATLASStepTypeLibrary`: the code pieces a definition can name. The registry rejects a name that is not here. `helpers` are template helpers (`tableColumn`, `sqlName`, `phrase`, `compare`, `textMatch`, `combine`, `conditionValues`, `sortKeys`, `duplicateKeys`, `joinKeyPairs`, `joinFormula`, `mathFormula`, `stringTransformFormula`, `valueList` and others); `handlers` are migration and `normalize` clean-ups (`sync_sort_fields`, `sync_duplicate_fields`, `sync_format_field`, `sync_split_field`, `sync_create_column`, `sync_join`, `sync_if_then`, `copy_step_source`, `union_sources_to_join`, `exclude_scope` and others); `problemChecks` are the named checks a `problems` validation rule reads; `blocks` are `sort_keys` and `duplicate_keys`, the two list editors still drawn as blocks. `replacedBlocks` keeps a shim for every block a later definition version replaced with fields (`format_field`, `split_field`, `create_column`, `join`, `union_sources`, `if_then`, `else`, `filter_rows`, `flag_records`), so a publication pinned to an older version still renders. `replacedHelpers` lists the helpers a later version replaced with partials (`conditionText`, `actionText`, `ifThenFormula`, `elseFormula`, `conditionFormula`); the runtime renders each through the latest definition's partials.
+- `js/13a-step-type-runtime.js` — `window.ATLASStepTypeRuntime`: builds the step type registry from the bundled definitions (or fetches `catalogs/step-types/`), then loads the published definitions from `GET /api/step-types` with the bundle as the fallback (`loadFromServer`), renders published and locked audits with their publication's pinned versions (`usePinnedVersions`), and answers every step type owner (normalization, English, automatic notes, Developer Logic, script role, qTest placement, action and expected outcomes, created columns, editor, text import with the Conditions and Action readers 15j registers (`useImporters`), validation and the Audit Issues checks a type turns on with `builtIn` rules, field problems with inline fixes (`fieldProblems`, from rules with `param` and `fix`), field `normalize` handlers (`normalizeFields` on save), the picker and import titles). Each call returns null when no definition claims the step. A definition's `block` supplies the parts it has; templates supply the rest. `export.qtest.action` templates (`kind`, then the fields that kind has) give the qTest action; without them a type with an action field uses its latest version's. `partial(type, name, step, format)` renders one partial of a type's latest definition (the complete statements and the qTest condition use the if_then `conditionText`, `condition` and `filter` partials), and `storedConditions(step)` gives the stored condition tree. Template helpers: `field`, `column`, `quote`, `number`, `alias`, `source`, `placeholder`. It also answers `capabilities(step)` (`carriesConditions`, `storesConditions`, `branches`, `inverse`, `orderGroup`), `newStepDefaults(typeId)` (the composites' defaults for a new step), and the action kinds (`actionKinds()`, and the `{{action "part"}}` template helper).
+- `js/14-catalog-driven-builder.js` — The picker list built from the registry, and the shared base for the guided editor. Per-type normalization and rendering live in the definitions.
 - `js/15a-audit-library-ui.js` — Visual UI base for picker, condition, and rule rendering. Must stay before `15b` through `15h`.
 - `js/15b-source-library-ui.js` — Audit and source browser presentation and selected-source actions.
 - `js/15c-source-field-picker.js` — Logic Builder live editor and table-preview foundation.
 - `js/15d-logic-rules-list.js` — Selected-step editor and editor-aware picker commit.
 - `js/15e-logic-step-editor.js` — Compact rule cards, hierarchy actions, and rule menus.
 - `js/15f-join-picker.js` — JOIN type picker, multi-key Join Keys editor, developer logic, and Venn diagram.
-- `js/15g-visual-ui-events.js` — IF/THEN condition and action editing, picker search, and ELSE handling.
+- `js/15g-visual-ui-events.js` — Condition and action editor controls, picker search, ELSE handling, the final rule list, and new-step creation from definitions (`atlasBuildNewStep`).
 - `js/15h-visual-picker.js` — Shared visual picker. Callers supply entries and handle the result.
 - `js/16-page-shell.js` — Top bar, navigation lock, assignment editor, and signed-in profile.
 - `js/16a-user-impersonation.js` — Profile picker for server-authoritative impersonation.
@@ -890,6 +1063,8 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/25-inbox.js` — Recipient Inbox.
 - `js/21-display-fields.js` — Display Fields selection and order.
 - `js/22-audit-issue-engine.js` — Persistence-free evaluator for declarative audit-issue rules.
+- `js/22a-file-utility-readiness.js` — Pure "runnable in File Utility" rules. They read an audit and the contract `catalogs/file-utility/executable-steps.json` and report the steps File Utility cannot run, with the same verdicts as File Utility's own compiler.
+- `js/23a-file-utility-readiness-ui.js` — The "Runnable in File Utility" section of Readiness & Review.
 - `js/23-atlas-audit-issues.js` — ATLAS adapter: context, catalog loading, and the readiness surface. Per-type checks (condition rows, THEN actions, joins, created columns, calculations, string transformations) run only for step types whose definition turns them on with a `builtIn` validation rule. The structured field problems and their inline fixes come from the definitions' rules (`ATLASStepTypeRuntime.fieldProblems`).
 - `js/28-validation-runner.js` — Preview-only Read-Only Isolation runner. It stays inert until `/api/me` enables it.
 - `js/06-events-bootstrap.js` — Wires top-level events and starts the application.
@@ -950,7 +1125,10 @@ Loaded from `index.html` before `js/05-tutorials.js`.
 - `catalogs/audit-issue-rules.json` — Declarative audit-issue rules evaluated by `js/22-audit-issue-engine.js`.
 - `catalogs/step-types/schema.json` — JSON Schema for a step type definition, enforced by `js/step-types/01-schema.js`.
 - `catalogs/step-types/manifest.json` — Ids, versions, file names and canonical-JSON hashes of the definition files in `catalogs/step-types/`. Generated by `npm run step-types:manifest`.
-- `catalogs/step-types/*.json` (other files) — One step type definition each, for every type that came with ATLAS Align: `create_column`, `if_then`, `join`, `reference_source`, `format_field`, `split_field`, `sort_records`, `remove_duplicates`, and the legacy types hidden from the picker (`else`, `union_sources`, `filter_rows`, `flag_records`). Complex types name a behavior block (`block`) from `js/13-step-type-library.js`.
+- `catalogs/step-types/*.json` (other files) — One step type definition each, for every type that came with ATLAS Align: `create_column`, `if_then`, `join`, `reference_source`, `format_field`, `split_field`, `sort_records`, `remove_duplicates`, and the legacy types hidden from the picker (`else`, `union_sources`, `filter_rows`, `flag_records`). Every one is made of fields; the older `block` versions stay registered as shims for pinned publications.
+- `catalogs/step-types/controls.json` — The control palette: every control the editor can draw, with the field properties it reads, the params it writes, the features it can switch off and whether it is `available` or `planned`. Checked against the schema's control list and `ATLASStepTypeRuntime.FIELD_CONTROLS`.
+- `catalogs/step-types/actions/*.json` — Action kinds (`kind: "action"`, id `action_<name>`): what a THEN or ELSE branch does. Each one draws the Action editor choice and carries the wording, formulas, qTest outcome and File Utility handler name.
+- `catalogs/file-utility/executable-steps.json` — The File Utility contract (version 3): the compilers, THEN action handlers and operators File Utility can run, kept identical in the File Utility repository. Its `operators` lists are generated by `npm run step-types:manifest`.
 - `catalogs/source-fields.json` — Source field catalog.
 - `catalogs/source-file-index.json` — Source file index.
 - `catalogs/source-table-aliases.json` — Source alias map.
