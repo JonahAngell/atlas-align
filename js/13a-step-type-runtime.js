@@ -920,6 +920,14 @@
     return result;
   }
 
+  /**
+   * Export shape warnings of a definition: each of its tests rendered with
+   * the real formulas and checked as the code export would place them.
+   */
+  function exportShapeWarnings(definition) {
+    return engine().definitions.exportShapeWarnings(definition, formulasWith);
+  }
+
   /** Columns the step adds to the data, or null for built-in code. */
   function createdColumns(step) {
     return createdColumnsWith(definitionFor(step), step);
@@ -1814,6 +1822,7 @@
     english,
     autoNotes,
     formulas,
+    exportShapeWarnings,
     createdColumns,
     scriptRole,
     qtest,

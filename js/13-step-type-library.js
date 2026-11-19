@@ -46,6 +46,14 @@
  *   ifThenFormula / elseFormula param step part=lead note=N   IF and ELSE formulas
  *   valueList value lead=" "                      compare values as quoted text
  *   conditionFormula param step note=N            Filter Rows / Flag Records formulas
+ *   combine list connector / list a b … / negate expr / unwrap expr
+ *   operatorKind op / operatorSymbol op / operatorNegated op
+ *   conditionValues condition / compareLiteral values condition
+ *   compare left op right / textMatch left op values field=true leftName rightName
+ *   blankTest left op / runParameter / json value / freeformOutcome text part=x
+ *   (math helpers also take source alias field mathJson rounding places as
+ *   list arguments, mathFormula raw=true gives the math without rounding;
+ *   string transform helpers take prefix="then_", the phrase context=)
  *
  * Migration handlers: sync_sort_fields, sync_duplicate_fields,
  * sync_format_field, sync_split_field, sync_create_column, sync_join,
@@ -426,6 +434,53 @@
   // Template helpers.
   // ---------------------------------------------------------------------------
 
+  /**
+   * The values a math helper reads: a params object (source_file,
+   * source_alias, field_name, source_math_json, rounding_mode,
+   * rounding_decimal_places), or the same six as list arguments, so the
+   * then_ params and a condition's compare math reuse the helpers.
+   */
+  function mathValues(args) {
+    if (args.length <= 1) return paramsOf(args[0]);
+    const [
+      source_file,
+      source_alias,
+      field_name,
+      source_math_json,
+      rounding_mode,
+      rounding_decimal_places,
+    ] = args;
+    return {
+      source_file,
+      source_alias,
+      field_name,
+      source_math_json,
+      rounding_mode,
+      rounding_decimal_places,
+    };
+  }
+
+  /** An operator as the formulas read it: trimmed, lower case. */
+  const operatorOf = (value) =>
+    text(value || "is equal to")
+      .trim()
+      .toLowerCase();
+
+  /** What an operator means (see the phrase catalog's operator_meanings). */
+  const operatorMeaning = (kind, operator) =>
+    app("atlasDevOperatorMeaning")?.(kind, operatorOf(operator));
+
+  /** A helper argument as a list: arrays stay, blanks become []. */
+  const listOf = (value) =>
+    Array.isArray(value) ? value : value == null || value === "" ? [] : [value];
+
+  /** One literal compare value: a number when the rule allows, else text. */
+  function compareLiteralOf(value, numeric, format) {
+    if (numeric)
+      return text(app("atlasDevNumber")?.(value) ?? text(value).trim());
+    return text(app("atlasDevString")?.(text(value), format) ?? value);
+  }
+
   const helpers = Object.freeze({
     /** Analyst text for a column; blank when no field is named. */
     tableColumn(args) {
@@ -560,21 +615,31 @@
       return text(app("separatorPlain")?.(args[0]) ?? args[0]);
     },
     /** Create Column string transformation sentence. */
-    stringTransformPhrase(args) {
-      const config = app("atlasStringTransformConfig")?.(paramsOf(args[0]));
+    stringTransformPhrase(args, hash) {
+      const config = app("atlasStringTransformConfig")?.(
+        paramsOf(args[0]),
+        text(hash.prefix),
+      );
       const phrase = app("atlasStringTransformAnalystPhrase");
-      return config && phrase ? text(phrase(config, "create_column")) : "";
+      return config && phrase
+        ? text(phrase(config, text(hash.context) || "create_column"))
+        : "";
     },
     /** The column a string transformation writes; blank when none is named. */
-    stringTransformTarget(args) {
+    stringTransformTarget(args, hash) {
       return text(
-        app("atlasStringTransformConfig")?.(paramsOf(args[0]))
-          ?.destinationColumn,
+        app("atlasStringTransformConfig")?.(
+          paramsOf(args[0]),
+          text(hash.prefix),
+        )?.destinationColumn,
       );
     },
     /** A string transformation's value in the current dialect. */
-    stringTransformFormula(args, _hash, { format }) {
-      const config = app("atlasDevStringTransformConfig")?.(paramsOf(args[0]));
+    stringTransformFormula(args, hash, { format }) {
+      const config = app("atlasDevStringTransformConfig")?.(
+        paramsOf(args[0]),
+        text(hash.prefix),
+      );
       return text(app("atlasDevStringTransform")?.(config || {}, format));
     },
     /** One dialect of a Create Column split, or one of its notes (note=N). */
@@ -587,7 +652,7 @@
     },
     /** Whether a source field value has math operations or rounding. */
     mathActive(args) {
-      const values = paramsOf(args[0]);
+      const values = mathValues(args);
       return Boolean(
         mathOperations(values.source_math_json).length ||
         (values.rounding_mode && values.rounding_mode !== "none"),
@@ -595,7 +660,7 @@
     },
     /** "file "wd" column "Pay" times 2, then round to ..." for analyst text. */
     mathPhrase(args) {
-      const values = paramsOf(args[0]);
+      const values = mathValues(args);
       const base = text(
         app("tableColumnPlain")?.(
           values.source_file,
@@ -621,13 +686,23 @@
       return `${base}${math ? ` ${math}` : ""}${rounding}`;
     },
     /** A source field value with its math and rounding in the current dialect. */
-    mathFormula(args, _hash, { format }) {
-      const values = paramsOf(args[0]);
+    mathFormula(args, hash, { format }) {
+      const values = mathValues(args);
       const field = app("atlasDevFieldSpec")?.(
         values.source_file,
         values.source_alias,
         values.field_name,
       );
+      if (hash.raw === true) {
+        const reference = app("atlasDevField")?.(field, format);
+        return text(
+          app("atlasDevMath")?.(
+            reference,
+            mathOperations(values.source_math_json || []),
+            format,
+          )?.expression,
+        );
+      }
       const rounding = app("atlasDevRoundingMode")?.(
         values.rounding_mode || values.rounding_method,
       );
@@ -643,6 +718,139 @@
           format,
         ),
       );
+    },
+    /** Joins expressions with AND / OR in the current dialect. */
+    combine(args, _hash, { format }) {
+      const connector = text(args[1]).trim().toUpperCase() === "OR" ? "OR" : "AND";
+      const items = listOf(args[0]).flat().map(text);
+      return text(app("atlasDevCombine")?.(items, connector, format));
+    },
+    /** Its arguments as a list, for combine, compare and textMatch. */
+    list(args) {
+      return [...args];
+    },
+    /** A boolean expression negated in the current dialect. */
+    negate(args, _hash, { format }) {
+      return text(app("atlasDevNot")?.(text(args[0]), format));
+    },
+    /** An expression without one pair of parentheses around all of it. */
+    unwrap(args) {
+      return text(app("atlasDevUnwrap")?.(text(args[0])) ?? args[0]);
+    },
+    /** blank, text_match, compare, or "" for an operator none lists. */
+    operatorKind(args) {
+      return ["blank", "text_match", "compare"].find(
+        (kind) => operatorMeaning(kind, args[0]) !== undefined,
+      ) || "";
+    },
+    /** The comparison symbol of an operator; "=" when it has none. */
+    operatorSymbol(args) {
+      return text(operatorMeaning("compare", args[0]) || "=");
+    },
+    /** Whether the operator says "not". */
+    operatorNegated(args) {
+      return operatorOf(args[0]).includes("not");
+    },
+    /** A condition's compare values as a list (compareValues, else lines). */
+    conditionValues(args) {
+      return [...(app("atlasDevValueList")?.(paramsOf(args[0])) || [])];
+    },
+    /**
+     * Compare values as literals of the current dialect. They are numbers
+     * when every value is one and the condition's operator is < / > or its
+     * field is a cataloged number, so codes like "1016" stay text. A list
+     * gives a list (one blank value when it is empty); one value gives one.
+     */
+    compareLiteral(args, _hash, { format }) {
+      const condition = paramsOf(args[1]);
+      const many = Array.isArray(args[0]);
+      const values = many ? args[0].map(text) : [text(args[0])];
+      const symbol = operatorMeaning("compare", condition.operator) || "=";
+      const relational = symbol !== "=" && symbol !== "<>";
+      const isNumber = app("atlasDevIsNumberText") || (() => false);
+      const field = app("atlasDevFieldSpec")?.(
+        condition.sourceFile,
+        condition.sourceAlias,
+        condition.fieldName || condition.field,
+      );
+      const numeric =
+        values.length > 0 &&
+        values.every(isNumber) &&
+        (relational || Boolean(app("atlasDevFieldIsNumeric")?.(field)));
+      const literals = (values.length ? values : [""]).map((value) =>
+        compareLiteralOf(value, numeric, format),
+      );
+      return many ? literals : literals[0];
+    },
+    /**
+     * left (operator) right in the current dialect. A list `right` gives a
+     * list of comparisons, one per value.
+     */
+    compare(args, _hash, { format }) {
+      const [left, operator, right] = args;
+      const symbol = operatorMeaning("compare", operator) || "=";
+      const one = (value) =>
+        text(app("atlasDevCompare")?.(text(left), symbol, text(value), format));
+      return Array.isArray(right) ? right.map(one) : one(right);
+    },
+    /**
+     * A contains / starts with / ends with test, negated when the operator
+     * is. `values` are literal texts (a list or one); with field=true it is
+     * the expression of another column, and leftName / rightName are the
+     * two column names (for pandas). Blank for other operators.
+     */
+    textMatch(args, hash, { format }) {
+      const [left, operator, values] = args;
+      const match = operatorMeaning("text_match", operator);
+      if (!match) return "";
+      const terms =
+        hash.field === true
+          ? [
+              {
+                literal: false,
+                expression: text(values),
+                leftName: text(hash.leftName),
+                rightName: text(hash.rightName),
+              },
+            ]
+          : (listOf(values).length ? listOf(values) : [""]).map((value) => ({
+              literal: true,
+              value: text(value),
+            }));
+      return text(app("atlasDevTextMatch")?.(text(left), match, terms, format));
+    },
+    /** A blank (or, for an operator with "not", a not-blank) test. */
+    blankTest(args, _hash, { format }) {
+      const meaning = operatorMeaning("blank", args[1]);
+      const notBlank =
+        meaning !== undefined ? meaning === true : operatorOf(args[1]).includes("not");
+      return text(app("atlasDevBlankTest")?.(text(args[0]), notBlank, format));
+    },
+    /** The run parameter in the current dialect (@RunDate, run_date, RunDate). */
+    runParameter(_args, _hash, { format }) {
+      return { sql: "@RunDate", python: "run_date" }[format] || "RunDate";
+    },
+    /** A JSON text as a value; [] when it is blank or not JSON. */
+    json(args) {
+      if (args[0] && typeof args[0] === "object") return args[0];
+      try {
+        const parsed = JSON.parse(text(args[0]));
+        return parsed && typeof parsed === "object" ? parsed : [];
+      } catch {
+        return [];
+      }
+    },
+    /**
+     * What a freeform action sentence does, for qTest: { kind, message,
+     * outputColumn, text } read with today's sentence rules; part=kind (or
+     * message, outputColumn, text) gives one of them.
+     */
+    freeformOutcome(args, hash) {
+      const outcome = app("qtestFreeformOutcome")?.(text(args[0])) || {
+        kind: "none",
+      };
+      if (hash.part !== undefined) return text(outcome[text(hash.part)]);
+      return { ...outcome };
     },
     /** A text literal as the developer formulas write it in each dialect. */
     literal(args, _hash, { format }) {

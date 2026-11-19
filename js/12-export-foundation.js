@@ -276,6 +276,17 @@ function atlasQtestThenAction(step) {
   const text = String(params.then_action || step.action || "").trim();
   if (!text || /^(ELSE\s*:?|(ELSE\s+)?IF\b[\s\S]*:)$/i.test(text))
     return { kind: "none" };
+  return qtestFreeformOutcome(text);
+}
+
+/**
+ * What a freeform action sentence does for qTest: display text in a column,
+ * do not display, or freeform (the text itself).
+ * @param {string} value - The action in words, without its IF or ELSE lead.
+ */
+function qtestFreeformOutcome(value) {
+  const text = String(value || "").trim();
+  if (!text) return { kind: "none" };
   const display =
     /display\s+(?:text\s+response\s+)?"([^"]+)"\s+in\s+(?:new\s+|newly\s+created\s+)?column\s+"([^"]+)"/i.exec(
       text,

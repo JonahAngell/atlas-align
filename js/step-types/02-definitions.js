@@ -258,6 +258,75 @@
     return result;
   }
 
+  /** Script roles whose formulas the code export places as a row test. */
+  const ROW_TEST_ROLES = Object.freeze(["condition", "else", "filter", "flag"]);
+
+  /**
+   * Why the code export could not place a step's formulas, the rule
+   * atlasCodeClassify (js/12b) uses: for a row-test role the SQL must start
+   * with "WHERE " or name a column with "AS [", and an ELSE needs SQL or a
+   * lead. Formulas with a note are exempt, because the export shows the note
+   * as the reason (freeform actions). [] when the export can place them.
+   */
+  function exportShapeProblems(role, formulas) {
+    if (!ROW_TEST_ROLES.includes(role)) return [];
+    const result = formulas && typeof formulas === "object" ? formulas : {};
+    if ((Array.isArray(result.notes) ? result.notes : []).some(Boolean))
+      return [];
+    const sql = String(result.sql || "");
+    if (!sql.trim()) {
+      if (role === "else" && String(result.lead || "").trim()) return [];
+      return [
+        {
+          code: "export_shape",
+          message: `a ${role} step needs SQL${role === "else" ? " or a lead" : ""} for the code export`,
+        },
+      ];
+    }
+    if (sql.startsWith("WHERE ") || /\bAS \[/.test(sql)) return [];
+    return [
+      {
+        code: "export_shape",
+        message: `the code export cannot place this ${role} step: its SQL must start with "WHERE " or name a column with "AS [", or the formulas need a note`,
+      },
+    ];
+  }
+
+  /**
+   * Export shape warnings for each of a definition's tests: each case's
+   * sample step is rendered with renderFormulas(definition, step) and
+   * checked with exportShapeProblems. They never stop loading or publishing.
+   */
+  function exportShapeWarnings(definition, renderFormulas) {
+    if (typeof renderFormulas !== "function") return [];
+    const cases = Array.isArray(definition?.tests) ? definition.tests : [];
+    const warnings = [];
+    cases.forEach((testCase, index) => {
+      const step = {
+        id: `test_${index + 1}`,
+        ...(testCase?.step || {}),
+        step_type: definition.id,
+        params: { ...(testCase?.params || {}) },
+      };
+      const role = exportFor(definition, step).scriptRole;
+      if (!ROW_TEST_ROLES.includes(role)) return;
+      let formulas;
+      try {
+        formulas = renderFormulas(definition, step);
+      } catch {
+        return;
+      }
+      exportShapeProblems(role, formulas || {}).forEach((problem) =>
+        warnings.push({
+          path: `/tests/${index}`,
+          code: problem.code,
+          message: `test "${testCase?.name || index + 1}": ${problem.message}`,
+        }),
+      );
+    });
+    return warnings;
+  }
+
   /** Every template in a definition with its JSON pointer. */
   function templates(definition) {
     const found = [];
@@ -404,7 +473,9 @@
    * blocks (known block names), handlers (known migration handler names),
    * controls (field controls the caller renders), palette (the control
    * palette, which limits each field to its control's properties and
-   * features), supportedSchemaVersions.
+   * features), supportedSchemaVersions, renderFormulas (definition, step)
+   * => formulas: when given, the result also has warnings, the
+   * export shape problems of the definition's tests (exportShapeWarnings).
    */
   function validate(definition, options = {}) {
     const errors = [];
@@ -723,6 +794,14 @@
     const aliases = definition.aliases || {};
     if ((aliases.step_type || []).includes(definition.id))
       add("/aliases/step_type", "lists the step type's own id");
+    if (typeof options.renderFormulas === "function")
+      return {
+        ok: errors.length === 0,
+        errors,
+        warnings: errors.length
+          ? []
+          : exportShapeWarnings(definition, options.renderFormulas),
+      };
     return { ok: errors.length === 0, errors };
   }
 
@@ -741,6 +820,9 @@
     paletteProblems,
     fields,
     exportFor,
+    ROW_TEST_ROLES,
+    exportShapeProblems,
+    exportShapeWarnings,
     templates,
     validate,
   });
