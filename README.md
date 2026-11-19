@@ -26,19 +26,34 @@ On Launch, leave `ATLAS_APP_ENV` unset. Launch injects `STUDIOSHARE_DB_URL` and 
 
 Workflow stages stay off until each `ATLAS_WORKFLOW_*_ENABLED` flag is the literal value `true`, in dependency order from reads through publication deletion. A later stage stays off when an earlier one is off. Local Compose turns all eight on.
 
+## Step types
+
+Every step type (Reference, Create Column, IF / THEN, Join and the rest) is a JSON definition in `catalogs/step-types/`, not hand-written code. A definition describes the editor, the English and Developer Logic wording, the Excel, SQL and Python formulas, the qTest rows, validation, text import and what File Utility can run. The engine in `js/step-types/` reads definitions; the server stores them as versioned rows in PostgreSQL and serves them at `GET /api/step-types`, and each publication records the versions it was made with.
+
+After changing a definition, run `npm run step-types:manifest` to rebuild the generated files, then `npm test`. [docs/HOW_TO_ADD_A_STEP_TYPE.md](docs/HOW_TO_ADD_A_STEP_TYPE.md) is the developer guide, [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) describes the engine, and [docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md](docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md) holds the design.
+
+## Step Type Builder
+
+[atlas-step-type-builder](https://github.com/JonahAngell/atlas-step-type-builder) is a separate app where `atlas-align-admin` users create, test and publish step types without editing JSON. It previews each change with this repository's own engine, publishes to the same database tables, and exports a `.zip` laid out from this repository's root. Unzip it at the root, run `npm run step-types:manifest` and `npm test`, and open a pull request. See [docs/HOW_TO_ADD_A_STEP_TYPE.md](docs/HOW_TO_ADD_A_STEP_TYPE.md).
+
+## File Utility
+
+[audit-file-utility](https://github.com/JonahAngell/audit-file-utility) runs published audits. Each definition's `export.fileUtility` block names the File Utility compiler that runs the type, checked against the contract `catalogs/file-utility/executable-steps.json`, which both repositories keep identical. Readiness & Review uses the same contract to show which steps File Utility cannot run.
+
 ## Repository layout
 
-| Path | What it is |
-| --- | --- |
-| `server.js` | Express entry point. Serves the browser and the API. |
-| `index.html`, `sections/`, `js/` | Browser shell, HTML partials, and classic scripts. Load order in `index.html` is a dependency. |
-| `css/` | Feature CSS. `build-css.mjs` writes root `styles.css` from `css/manifest.json`. |
-| `src/` | Server modules: repositories, authorization, local identity, and workflow flags. |
-| `sql/` | SQL statements loaded by those repositories. |
-| `.launch/migrations` | Ordered PostgreSQL migrations applied by Launch and by the local database container. |
-| `local-db/` | Local init script and synthetic seed data. |
-| `test/` | Node contract tests (`npm test`). |
-| `tests/` | Playwright checks; run against a local server by default, or a deployed Preview when `PLAYWRIGHT_BASE_URL` is set. |
+| Path                             | What it is                                                                                                                  |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `server.js`                      | Express entry point. Serves the browser and the API.                                                                        |
+| `index.html`, `sections/`, `js/` | Browser shell, HTML partials, and classic scripts. Load order in `index.html` is a dependency.                              |
+| `catalogs/step-types/`           | Step type definitions, action kinds, the schema and the control palette.                                                    |
+| `css/`                           | Feature CSS. `build-css.mjs` writes root `styles.css` from `css/manifest.json`.                                             |
+| `src/`                           | Server modules: repositories, authorization, local identity, workflow flags, and the step type engine check and repository. |
+| `sql/`                           | SQL statements loaded by those repositories.                                                                                |
+| `.launch/migrations`             | Ordered PostgreSQL migrations applied by Launch and by the local database container.                                        |
+| `local-db/`                      | Local init script and synthetic seed data.                                                                                  |
+| `test/`                          | Node contract tests (`npm test`).                                                                                           |
+| `tests/`                         | Playwright checks; run against a local server by default, or a deployed Preview when `PLAYWRIGHT_BASE_URL` is set.          |
 
 [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) lists every application file and the behavior it owns.
 

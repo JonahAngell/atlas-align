@@ -17,7 +17,8 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   └── settings.json
+│   ├── settings.json
+│   └── settings.local.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -154,6 +155,7 @@
 │   ├── DYNAMIC_STEP_TYPE_BUILDER_PLAN.md
 │   ├── field_table.html
 │   ├── FILE_UTILITY_STEP_PARAMS.md
+│   ├── HOW_TO_ADD_A_STEP_TYPE.md
 │   ├── sample_field_table.html
 │   └── SOURCE_LIBRARY_LIVE_DEBUG.md
 ├── evidence
