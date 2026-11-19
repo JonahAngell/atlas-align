@@ -43,20 +43,26 @@ function checkRule() {
 test("bundled types keep today's capabilities", async () => {
   const context = await loadApp();
   const expected = {
-    if_then: [true, true, ["then", "else"], true, 40],
-    else: [true, false, [], false, 40],
-    filter_rows: [true, false, [], false, 40],
-    flag_records: [true, false, [], false, 40],
-    reference_source: [false, false, [], false, 10],
-    join: [false, false, [], false, 20],
-    create_column: [false, false, [], false, 30],
-    union_sources: [false, false, [], false, 40],
-    split_field: [false, false, [], false, 40],
+    if_then: [true, true, ["then", "else"], true, 40, true],
+    else: [true, false, [], false, 40, false],
+    filter_rows: [true, false, [], false, 40, false],
+    flag_records: [true, false, [], false, 40, false],
+    reference_source: [false, false, [], false, 10, false],
+    join: [false, false, [], false, 20, false],
+    create_column: [false, false, [], false, 30, true],
+    union_sources: [false, false, [], false, 40, false],
+    split_field: [false, false, [], false, 40, false],
   };
   for (const [id, values] of Object.entries(expected)) {
     const definition = read(`catalogs/step-types/${id}.json`);
-    const [carriesConditions, storesConditions, branches, inverse, group] =
-      values;
+    const [
+      carriesConditions,
+      storesConditions,
+      branches,
+      inverse,
+      group,
+      referenceChild,
+    ] = values;
     assert.deepEqual(
       capabilities(context, definition),
       {
@@ -65,6 +71,7 @@ test("bundled types keep today's capabilities", async () => {
         branches,
         inverse,
         orderGroup: group,
+        referenceChild,
       },
       id,
     );
@@ -80,6 +87,7 @@ test("declared keys win over the legacy answers", async () => {
     branches: ["then", "else"],
     inverse: true,
     orderGroup: 40,
+    referenceChild: false,
   });
   const quiet = {
     ...checkRule(),
@@ -93,6 +101,7 @@ test("declared keys win over the legacy answers", async () => {
     branches: [],
     inverse: false,
     orderGroup: 30,
+    referenceChild: false,
   });
 });
 

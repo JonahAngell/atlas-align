@@ -291,6 +291,7 @@
     storedConditions: Object.freeze(["else", "filter_rows", "flag_records"]),
     branches: Object.freeze({ if_then: Object.freeze(["then", "else"]) }),
     inverse: Object.freeze(["if_then"]),
+    referenceChild: Object.freeze(["if_then", "create_column"]),
     orderGroups: Object.freeze({
       reference_source: 10,
       join: 20,
@@ -300,12 +301,13 @@
   const DEFAULT_ORDER_GROUP = 40;
 
   /**
-   * { carriesConditions, storesConditions, branches, inverse, orderGroup }
-   * for `definition` (or, with no definition, for the type id `typeId`).
+   * { carriesConditions, storesConditions, branches, inverse, orderGroup,
+   * referenceChild } for `definition` (or, with no definition, for the type id `typeId`).
    * storesConditions: the step keeps its conditions in a condition_group
    * field; carriesConditions also covers the legacy types that store one
    * condition in their own params. branches lists the children it has
-   * ("then", "else"); inverse turns on Create or Open Linked Inverse.
+   * ("then", "else"); inverse turns on Create or Open Linked Inverse;
+   * referenceChild offers the type in a Reference step's child menu.
    * Definition keys win over the legacy answers.
    */
   function capabilities(definition, typeId = definition?.id) {
@@ -333,6 +335,10 @@
       orderGroup: Number.isInteger(own.orderGroup)
         ? own.orderGroup
         : LEGACY_CAPABILITIES.orderGroups[id] || DEFAULT_ORDER_GROUP,
+      referenceChild:
+        typeof own.referenceChild === "boolean"
+          ? own.referenceChild
+          : LEGACY_CAPABILITIES.referenceChild.includes(id),
     };
   }
 

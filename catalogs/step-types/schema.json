@@ -111,6 +111,10 @@
       "enum": [10, 20, 30, 40],
       "description": "Where the step sorts among its siblings: 10 sources, 20 joins, 30 created columns, 40 everything else (the default)."
     },
+    "referenceChild": {
+      "type": "boolean",
+      "description": "Offered in a Reference step's menu as a child step."
+    },
     "english": { "$ref": "#/$defs/templateSet" },
     "formulas": { "$ref": "#/$defs/formulas" },
     "autoNotes": {
