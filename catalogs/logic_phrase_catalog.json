@@ -323,6 +323,63 @@
         "is greater than",
         "is less than"
       ],
+      "operator_meanings": {
+        "$comment": "What each operator means in a formula. compare: the comparison symbol. text_match: contains / starts / ends, and whether it is negated. blank: true when the operator tests for a value (not blank). Read by js/02b-developer-formulas.js and the formula template helpers.",
+        "compare": {
+          "is equal to": "=",
+          "equals": "=",
+          "=": "=",
+          "is not equal to": "<>",
+          "not equal to": "<>",
+          "<>": "<>",
+          "is greater than": ">",
+          "greater than": ">",
+          ">": ">",
+          "is greater than or equal to": ">=",
+          "greater than or equal to": ">=",
+          ">=": ">=",
+          "is less than": "<",
+          "less than": "<",
+          "<": "<",
+          "is less than or equal to": "<=",
+          "less than or equal to": "<=",
+          "<=": "<="
+        },
+        "text_match": {
+          "contains": {
+            "kind": "contains",
+            "negated": false
+          },
+          "does not contain": {
+            "kind": "contains",
+            "negated": true
+          },
+          "starts with": {
+            "kind": "starts",
+            "negated": false
+          },
+          "does not start with": {
+            "kind": "starts",
+            "negated": true
+          },
+          "ends with": {
+            "kind": "ends",
+            "negated": false
+          },
+          "does not end with": {
+            "kind": "ends",
+            "negated": true
+          }
+        },
+        "blank": {
+          "is blank": false,
+          "is blank/null": false,
+          "is null": false,
+          "is not blank": true,
+          "is not blank/null": true,
+          "is not null": true
+        }
+      },
       "operator_sets": {
         "values": [
           "is equal to",

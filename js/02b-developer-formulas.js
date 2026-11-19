@@ -17,44 +17,23 @@
 
 const ATLAS_DEV_NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/;
 
-const ATLAS_DEV_COMPARE_OPERATORS = {
-  "is equal to": "=",
-  equals: "=",
-  "=": "=",
-  "is not equal to": "<>",
-  "not equal to": "<>",
-  "<>": "<>",
-  "is greater than": ">",
-  "greater than": ">",
-  ">": ">",
-  "is greater than or equal to": ">=",
-  "greater than or equal to": ">=",
-  ">=": ">=",
-  "is less than": "<",
-  "less than": "<",
-  "<": "<",
-  "is less than or equal to": "<=",
-  "less than or equal to": "<=",
-  "<=": "<=",
-};
-
-const ATLAS_DEV_TEXT_MATCH_OPERATORS = {
-  contains: { kind: "contains", negated: false },
-  "does not contain": { kind: "contains", negated: true },
-  "starts with": { kind: "starts", negated: false },
-  "does not start with": { kind: "starts", negated: true },
-  "ends with": { kind: "ends", negated: false },
-  "does not end with": { kind: "ends", negated: true },
-};
-
-const ATLAS_DEV_BLANK_OPERATORS = {
-  "is blank": false,
-  "is blank/null": false,
-  "is null": false,
-  "is not blank": true,
-  "is not blank/null": true,
-  "is not null": true,
-};
+/**
+ * What an operator means in a formula, from the phrase catalog
+ * (app_config.logic_options.operator_meanings): kind is "compare" (the
+ * symbol, e.g. "<>"), "text_match" ({kind, negated}) or "blank" (true when
+ * the operator tests for a value).
+ */
+function atlasDevOperatorMeaning(kind, operator) {
+  const meanings =
+    typeof getCatalogValue === "function"
+      ? getCatalogValue(`app_config.logic_options.operator_meanings.${kind}`, null)
+      : null;
+  return meanings &&
+    typeof meanings === "object" &&
+    Object.prototype.hasOwnProperty.call(meanings, operator)
+    ? meanings[operator]
+    : undefined;
+}
 
 const ATLAS_DEV_PANDAS_JOIN = {
   "INNER JOIN": "inner",
@@ -644,12 +623,9 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
 
   if (valueMode === "blank")
     return atlasDevBlankTest(left, operator.includes("not"), dialect);
-  if (operator in ATLAS_DEV_BLANK_OPERATORS)
-    return atlasDevBlankTest(
-      left,
-      ATLAS_DEV_BLANK_OPERATORS[operator],
-      dialect,
-    );
+  const blankMeaning = atlasDevOperatorMeaning("blank", operator);
+  if (blankMeaning !== undefined)
+    return atlasDevBlankTest(left, blankMeaning === true, dialect);
   if (valueMode === "expression") {
     const expression =
       String(condition.expression || "").trim() ||
@@ -658,7 +634,7 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
     return operator.includes("not") ? atlasDevNot(wrapped, dialect) : wrapped;
   }
 
-  const textMatch = ATLAS_DEV_TEXT_MATCH_OPERATORS[operator];
+  const textMatch = atlasDevOperatorMeaning("text_match", operator);
   if (valueMode === "field") {
     const compareField = atlasDevFieldSpec(
       condition.compareSourceFile,
@@ -695,7 +671,7 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
       );
     return atlasDevCompare(
       left,
-      ATLAS_DEV_COMPARE_OPERATORS[operator] || "=",
+      atlasDevOperatorMeaning("compare", operator) || "=",
       right,
       dialect,
     );
@@ -704,7 +680,7 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
   if (condition.compareParameter === "runDate")
     return atlasDevCompare(
       left,
-      ATLAS_DEV_COMPARE_OPERATORS[operator] || "=",
+      atlasDevOperatorMeaning("compare", operator) || "=",
       { sql: "@RunDate", python: "run_date" }[dialect] || "RunDate",
       dialect,
     );
@@ -721,7 +697,7 @@ function atlasDevConditionLeaf(condition = {}, dialect) {
       dialect,
     );
 
-  const symbol = ATLAS_DEV_COMPARE_OPERATORS[operator] || "=";
+  const symbol = atlasDevOperatorMeaning("compare", operator) || "=";
   const relational = symbol !== "=" && symbol !== "<>";
   // Compare as numbers only when the values are numeric and the field is a
   // cataloged number (or the operator is < / >), so codes like "1016" stay text.

@@ -577,6 +577,7 @@
 │   ├── startup-recovery.test.js
 │   ├── step-editor-saved-choice.test.js
 │   ├── step-editor-step-type.test.js
+│   ├── step-type-condition-helpers.test.js
 │   ├── step-type-engine.test.js
 │   ├── step-type-field-controls.test.js
 │   ├── step-type-partials.test.js

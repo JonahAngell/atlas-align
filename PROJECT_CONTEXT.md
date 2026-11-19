@@ -12,7 +12,7 @@ Update this document when a documented contract or authoritative owner changes, 
 
 **Application Name:** ATLAS Align
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:BEGIN -->
-**Current Version:** v3.6.0
+**Current Version:** v3.6.1
 <!-- ATLAS-APP-VERSION:PROJECT-CONTEXT:END -->
 
 ATLAS Align is a browser application for defining and maintaining audit requirements. In the reviewed scope, users can locate audits, create or duplicate an audit, switch among database audits, import audit JSON, recover an in-progress browser draft, save revisioned audit documents to PostgreSQL, archive audits, and administer archived audits through Deleted Items.
@@ -844,7 +844,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/step-types/` — The step type engine for the Dynamic Step Type Builder (`docs/DYNAMIC_STEP_TYPE_BUILDER_PLAN.md`). Self-contained: no DOM, app state or code execution, so the Step Type Builder repository can copy it. `engine-manifest.json` lists the files in load order, the engine version and the supported definition schema versions. Each file adds one namespace to `window.ATLASStepTypes`. The app reads it only through `js/13a-step-type-runtime.js`.
   - `js/step-types/00-templates.js` — `templates`: the template language parser, renderer (with `{{> name}}` partials, plain or keyed by format), `check()` and `references()`. Templates are parsed, never run, and lookups read own properties only.
   - `js/step-types/01-schema.js` — `schema`: a JSON Schema validator for the subset of keywords `catalogs/step-types/schema.json` uses; any other keyword is refused.
-  - `js/step-types/02-definitions.js` — `definitions`: definition checks beyond the schema (cross-references, conditions, migrations, templates), condition matching, and the subtype accessors for templates, formulas, fields and export roles.
+  - `js/step-types/02-definitions.js` — `definitions`: definition checks beyond the schema (cross-references, conditions, migrations, templates), condition matching, the subtype accessors for templates, formulas, fields and export roles, and the export shape check (`exportShapeProblems`, the code export's rule for placing a condition, ELSE, filter or flag step; `validate` with `renderFormulas` adds it as `warnings` for each test case).
   - `js/step-types/03-migrations.js` — `migrations`: runs a definition's aliases and declarative migration rules on a saved step without changing the input.
   - `js/step-types/04-registry.js` — `registry`: the immutable, versioned registry with alias resolution and rejected-definition reporting, plus `loadFromRepository()` for `catalogs/step-types/`.
   - `js/step-types/05-conditions.js` — `conditions`: the condition tree as plain data (`parse`, `normalizeLeaf`, `normalizedTree`, the run parameter constants) and the three layouts `bullets`, `inline` and `precedence` that the app and the `conditionTree` template helper share.
@@ -852,7 +852,7 @@ Loaded in this order. `js/06-events-bootstrap.js` is last and calls `init()`.
 - `js/01-state-dom.js` — Shared `state`, cached DOM references, theme, navigation, and unsaved-change detection.
 - `js/02-hierarchy.js` — Logic step parent/child order, numbering, and child creation.
 - `js/02-logic-rendering.js` — Base `renderAll()` and the targeted render scheduler. Later scripts may replace individual surfaces.
-- `js/02b-developer-formulas.js` — The only Developer Logic generator. Defines `developerLogic(step)`, which writes approximate Excel, SQL Server, and Python (pandas) formulas for each logic step.
+- `js/02b-developer-formulas.js` — The only Developer Logic generator. Defines `developerLogic(step)`, which writes approximate Excel, SQL Server, and Python (pandas) formulas for each logic step. What each condition operator means in a formula (compare symbol, text match, blank test) comes from `app_config.logic_options.operator_meanings` in the phrase catalog.
 - `js/03-capture-actions.js` — Reads the open controls back into `state` before save, export, and autosave.
 - `js/04-persistence.js` — IndexedDB crash recovery. PostgreSQL is the shared store.
 - `js/05-tutorials.js` — Positions tutorial cards and handles tutorial navigation. Tutorial step lists live in `tutorials/`.
