@@ -636,7 +636,8 @@
   /**
    * Returns { ok, errors: [{ path, message, code }] }.
    * Options: schema (required), helpers (names the caller supplies),
-   * blocks (known block names), handlers (known migration handler names),
+   * blocks (known block names), handlers (known migration and normalize
+   * handler names), problemChecks (known validation problem checks),
    * controls (field controls the caller renders), palette (the control
    * palette, which limits each field to its control's properties and
    * features), fileUtilityCompilers (the compiler names in the File
@@ -801,6 +802,15 @@
         paletteProblems(field, `${path}/${index}`, options.palette).forEach(
           (message) => add(`${path}/${index}`, message),
         );
+        if (
+          field.normalize &&
+          options.handlers &&
+          !options.handlers.includes(field.normalize)
+        )
+          add(
+            `${path}/${index}/normalize`,
+            `unknown normalize handler "${field.normalize}"`,
+          );
         if (field.control === "block") {
           if (!field.block)
             add(`${path}/${index}/block`, "a block field needs a block name");
@@ -897,11 +907,35 @@
     });
     (definition.validation || []).forEach((rule, index) => {
       const path = `/validation/${index}`;
-      if (!rule.require && !rule.check && !rule.builtIn)
-        add(path, "a rule needs require, check or builtIn");
-      if (rule.builtIn && (rule.require || rule.check))
-        add(path, "a builtIn rule takes no require or check");
-      if (rule.require && !params.has(rule.require))
+      if (!rule.require && !rule.check && !rule.builtIn && !rule.problems)
+        add(path, "a rule needs require, check, builtIn or problems");
+      if (rule.builtIn && (rule.require || rule.check || rule.problems))
+        add(path, "a builtIn rule takes no require, check or problems");
+      if (rule.problems && (rule.require || rule.check))
+        add(path, "a problems rule takes no require or check");
+      if (
+        rule.problems &&
+        options.problemChecks &&
+        !options.problemChecks.includes(rule.problems.check)
+      )
+        add(
+          `${path}/problems/check`,
+          `unknown problem check "${rule.problems.check}"`,
+        );
+      if (rule.problems?.match !== undefined)
+        try {
+          new RegExp(rule.problems.match);
+        } catch (_error) {
+          add(`${path}/problems/match`, "is not a regular expression");
+        }
+      if (rule.param && !openParams && !params.has(rule.param))
+        add(
+          `${path}/param`,
+          `"${rule.param}" is not a field of this step type`,
+        );
+      if (rule.fix && !rule.param && !rule.require)
+        add(`${path}/fix`, "an inline fix needs param or require");
+      if (rule.require && !openParams && !params.has(rule.require))
         add(
           `${path}/require`,
           `"${rule.require}" is not a field of this step type`,

@@ -486,6 +486,10 @@
           "description": "Internal: an extra class on a hint."
         },
         "group": { "$ref": "#/$defs/identifier" },
+        "normalize": {
+          "$ref": "#/$defs/identifier",
+          "description": "A named clean-up handler (ATLASStepTypeLibrary.handlers) the runtime runs on the step's params when the step loads and when the editor saves it. On an action kind's field it runs while a step uses that kind."
+        },
         "tab": {
           "$ref": "#/$defs/identifier",
           "description": "Internal: the editorFrame tab that shows this field."
@@ -646,6 +650,7 @@
       "additionalProperties": false,
       "anyOf": [
         { "required": ["severity", "message"] },
+        { "required": ["severity", "problems"] },
         { "required": ["builtIn"] }
       ],
       "properties": {
@@ -671,7 +676,68 @@
         "require": { "$ref": "#/$defs/paramName" },
         "check": { "$ref": "#/$defs/condition" },
         "severity": { "enum": ["warning", "critical"] },
-        "message": { "type": "string", "minLength": 1, "maxLength": 500 }
+        "message": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "problems": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["check"],
+          "description": "Reads the messages a named problem check (ATLASStepTypeLibrary.problemChecks) finds in the step's params. Each message goes to the first rule of that check whose match finds it (a rule without match takes the rest) and is shown after lead; message is not used.",
+          "properties": {
+            "check": { "$ref": "#/$defs/identifier" },
+            "match": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "A regular expression the message must match."
+            }
+          }
+        },
+        "lead": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Words before a problem check's message, such as \"Split field:\"."
+        },
+        "param": {
+          "$ref": "#/$defs/paramName",
+          "description": "The param the issue points at and the inline fix writes. A require rule points at the param it requires."
+        },
+        "fix": { "$ref": "#/$defs/validationFix" }
+      }
+    },
+    "validationFix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title"],
+      "description": "The inline fix Audit Issues offers for the rule's param: a field picker (sourceParam names the param holding the source file, blank for any source), a choice list (choices) or a text box (label only). listParam adds the picked field to a JSON list param.",
+      "properties": {
+        "sourceParam": {
+          "type": "string",
+          "maxLength": 80,
+          "pattern": "^([A-Za-z][A-Za-z0-9_]*)?$"
+        },
+        "title": { "$ref": "#/$defs/label" },
+        "label": { "$ref": "#/$defs/label" },
+        "choices": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 100,
+          "items": {
+            "anyOf": [
+              { "type": "string", "minLength": 1, "maxLength": 200 },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["value", "label"],
+                "properties": {
+                  "value": { "type": "string", "maxLength": 200 },
+                  "label": { "$ref": "#/$defs/label" }
+                }
+              }
+            ]
+          }
+        },
+        "listParam": { "type": "boolean" }
       }
     },
     "valueSource": {

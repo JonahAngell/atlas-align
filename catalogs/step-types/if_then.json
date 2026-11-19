@@ -48,7 +48,8 @@
       "control": "action",
       "label": "THEN action",
       "branch": "THEN",
-      "tab": "actions"
+      "tab": "actions",
+      "normalize": "exclude_scope"
     }
   ],
   "english": {
@@ -139,6 +140,28 @@
       "when": {
         "param": "then_action_type",
         "equals": "set_column_string_transform"
+      }
+    },
+    {
+      "id": "exclude_key_field",
+      "when": {
+        "all": [
+          {
+            "param": "then_action_type",
+            "equals": "do_not_display"
+          },
+          {
+            "param": "then_exclude_scope",
+            "equals": "key"
+          }
+        ]
+      },
+      "require": "then_exclude_key_field",
+      "severity": "critical",
+      "message": "Do Not Display: choose the key field whose records are hidden.",
+      "fix": {
+        "sourceParam": "then_exclude_key_source_file",
+        "title": "Choose key field"
       }
     }
   ]

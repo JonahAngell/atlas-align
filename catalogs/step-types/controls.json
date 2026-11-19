@@ -64,6 +64,11 @@
       "description": "Groups related fields in the builder."
     },
     {
+      "name": "normalize",
+      "type": "identifier",
+      "description": "A named clean-up handler the runtime runs on the step's params when the step loads and when the editor saves it."
+    },
+    {
       "name": "tab",
       "type": "identifier",
       "internal": true,

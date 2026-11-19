@@ -1047,6 +1047,66 @@
     union_sources_to_join(step) {
       app("atlasConvertUnionSourcesStep")?.(step);
     },
+
+    // Field normalize handlers (a field's `normalize`): the runtime runs
+    // them when a step loads and, with saving true, when the editor saves
+    // it. An action kind's field runs while a step uses that kind.
+    /** Split Field: the structured settings and their split_on mirror. */
+    split_field_params(_step, { params, saving }) {
+      if (saving) app("atlasNormalizeSplitFieldParams")?.(params);
+    },
+    /** Format Field: the structured settings and the `format` mirror. */
+    format_field_params(_step, { params, saving }) {
+      if (saving) app("atlasNormalizeFormatFieldParams")?.(params);
+    },
+    /** Create Column: a legacy or current string transformation. */
+    create_column_string_transform(step) {
+      app("atlasNormalizeStringTransformParams")?.(step);
+    },
+    /**
+     * Create Column: date difference settings only in that mode, and a
+     * written expression copied into column_description.
+     */
+    create_column_structured(_step, { params }) {
+      app("atlasNormalizeCreateColumnStructuredParams")?.(params);
+    },
+    /** A THEN or ELSE string transformation (its action kind). */
+    then_string_transform(step) {
+      app("atlasNormalizeThenStringTransformParams")?.(step);
+    },
+    /**
+     * Display and Do Not Display share one card, which saves "display"; its
+     * Matching records toggle (then_display_mode) says which one it is.
+     */
+    display_toggle(_step, { params, saving }) {
+      if (!saving) return;
+      const mode = params.then_display_mode;
+      delete params.then_display_mode;
+      if (params.then_action_type !== "display") return;
+      if (mode === "do_not_display") params.then_action_type = "do_not_display";
+      params.then_action =
+        params.then_action_type === "do_not_display"
+          ? "Do not display matching records"
+          : "Display matching records";
+    },
+    /** Do Not Display's "all records for this key" settings. */
+    exclude_scope(_step, { params, saving }) {
+      if (saving) app("atlasNormalizeExcludeScopeParams")?.(params);
+    },
+  });
+
+  // ---------------------------------------------------------------------------
+  // Problem checks: the messages a validation rule's `problems` reads. Each
+  // returns the list the step's own editor shows.
+  // ---------------------------------------------------------------------------
+
+  const problemChecks = Object.freeze({
+    split_field: (params) => app("atlasSplitFieldProblems")?.(params) || [],
+    create_column_structured: (params) =>
+      app("atlasCreateColumnStructuredProblems")?.(params) || [],
+    format_field: (params) => app("atlasFormatFieldProblems")?.(params) || [],
+    remove_duplicates: (params) =>
+      app("atlasRemoveDuplicatesProblems")?.(params) || [],
   });
 
   // ---------------------------------------------------------------------------
@@ -1132,6 +1192,7 @@
     helpers,
     replacedHelpers,
     handlers,
+    problemChecks,
     blocks,
     replacedBlocks,
     formatKind,

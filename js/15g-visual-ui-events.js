@@ -3713,31 +3713,17 @@ function atlasBindLogicPaneSwitch() {
 
 atlasBindLogicPaneSwitch();
 
-// Display and Do Not Display share one action card. The card stores "display";
-// the Matching records toggle decides which of the two the step keeps.
-const atlasCaptureGuidedFieldsBeforeDisplayToggle = atlasCaptureGuidedFields;
-atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithDisplayToggle(
+// Saved editor input is tidied by the definition's field `normalize`
+// handlers (js/13-step-type-library.js): the Display toggle, Do Not Display's
+// key scope, and the structured Split, Create Column and Format settings.
+const atlasCaptureGuidedFieldsBeforeNormalize = atlasCaptureGuidedFields;
+atlasCaptureGuidedFields = function atlasCaptureGuidedFieldsWithNormalize(
   root,
   step,
 ) {
-  atlasCaptureGuidedFieldsBeforeDisplayToggle(root, step);
-  const params = step?.params;
-  if (!params) return;
-  const mode = params.then_display_mode;
-  delete params.then_display_mode;
-  if (params.then_action_type === "display") {
-    if (mode === "do_not_display") params.then_action_type = "do_not_display";
-    params.then_action =
-      params.then_action_type === "do_not_display"
-        ? "Do not display matching records"
-        : "Display matching records";
-  }
-  atlasNormalizeExcludeScopeParams(params);
-  if (step.step_type === "split_field") atlasNormalizeSplitFieldParams(params);
-  if (step.step_type === "create_column")
-    atlasNormalizeCreateColumnStructuredParams(params);
-  if (step.step_type === "format_field")
-    atlasNormalizeFormatFieldParams(params);
+  atlasCaptureGuidedFieldsBeforeNormalize(root, step);
+  if (!step?.params) return;
+  window.ATLASStepTypeRuntime?.normalizeFields?.(step);
 };
 
 /**

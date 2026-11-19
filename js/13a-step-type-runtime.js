@@ -61,6 +61,7 @@
 
   const library = global.ATLASStepTypeLibrary || {};
   const HANDLERS = Object.freeze({ ...(library.handlers || {}) });
+  const PROBLEM_CHECKS = Object.freeze({ ...(library.problemChecks || {}) });
   /**
    * Behavior blocks. A block a later definition version replaced with fields
    * (library.replacedBlocks: block name -> type id) is kept as a shim that
@@ -324,6 +325,7 @@
       helpers: [...HELPER_NAMES],
       blocks: Object.keys(BLOCKS),
       handlers: Object.keys(HANDLERS),
+      problemChecks: Object.keys(PROBLEM_CHECKS),
       controls: [...FIELD_CONTROLS],
       ...(palette ? { palette } : {}),
     };
@@ -982,6 +984,63 @@
   }
 
   /**
+   * The `normalize` handlers of a definition's fields, in field order, each
+   * once. An action field runs its kind's field handlers before its own.
+   */
+  function fieldNormalizers(definition, step) {
+    const { definitions } = engine();
+    const kindOf = (value) => {
+      const name = text(value).trim() || "freeform";
+      const found = /^[a-z][a-z0-9_]*$/.test(name)
+        ? registry.get(`action_${name}`)
+        : null;
+      return found?.kind === "action" ? found : registry.get("action_freeform");
+    };
+    const names = [];
+    const addName = (name) => {
+      if (name && !names.includes(name)) names.push(name);
+    };
+    definitions
+      .fields(definition, definitions.subtypeOf(definition, step))
+      .forEach((field) => {
+        if (field.control === "action") {
+          const kind = kindOf(step.params?.then_action_type);
+          (kind?.fields || []).forEach((item) => addName(item.normalize));
+        }
+        addName(field.normalize);
+      });
+    return names;
+  }
+
+  /**
+   * The latest version of a definition's type. Field clean-up and inline
+   * fixes call the app's own editor code, so like the replaced helpers they
+   * follow the latest definition, even for a pinned publication.
+   */
+  function latestOf(definition) {
+    return (definition && registry?.get(definition.id)) || definition;
+  }
+
+  function runFieldNormalizers(definition, step, saving) {
+    step.params = step.params || {};
+    fieldNormalizers(latestOf(definition), step).forEach((name) =>
+      HANDLERS[name]?.(step, { params: step.params, saving }),
+    );
+  }
+
+  /**
+   * Runs the field `normalize` handlers on a step the editor just saved
+   * (saving: true, so the handlers that tidy editor input run too). Returns
+   * false when no definition claims the step.
+   */
+  function normalizeFields(step) {
+    const definition = definitionFor(step);
+    if (!definition) return false;
+    runFieldNormalizers(definition, step, true);
+    return true;
+  }
+
+  /**
    * Brings a saved step up to its definition: aliases, migrations, the
    * subtype default and field defaults. Returns false when no definition
    * claims the step, so the caller runs its built-in normalization.
@@ -1014,6 +1073,7 @@
     // created fields) still happen.
     normalizeComposites(current, step);
     blockPart(current, "normalize")?.(step, index);
+    runFieldNormalizers(current, step, false);
     if (!step.id) step.id = app("uid")?.("step") || `step_${Date.now()}`;
     step.sortOrder = Number.isFinite(Number(step.sortOrder))
       ? step.sortOrder
@@ -2161,15 +2221,35 @@
       .map((rule) => rule.builtIn);
   }
 
+  /**
+   * The issues a step's definition finds: required fields and validation
+   * rules. Rules with an inline fix (field problems) come from the latest
+   * definition: fieldProblems(step).
+   */
   function validate(step) {
     const definition = definitionFor(step);
     if (!definition) return null;
+    return validateWith(definition, step).filter((entry) => !entry.fix);
+  }
+
+  /**
+   * A step's field problems: the latest definition's validation rules that
+   * carry an inline fix ({param, message, severity, fix, ...}), in the order
+   * Audit Issues lists them. null when no definition claims the step.
+   */
+  function fieldProblems(step) {
+    const definition = definitionFor(step);
+    if (!definition) return null;
+    return validateWith(latestOf(definition), step, { fixesOnly: true });
+  }
+
+  function validateWith(definition, step, { fixesOnly = false } = {}) {
     const { definitions } = engine();
     const params = step.params || {};
     const issues = [];
     const subtype = definitions.subtypeOf(definition, step);
     definitions.fields(definition, subtype).forEach((field) => {
-      if (!field.required || field.requiredIssue === false) return;
+      if (fixesOnly || !field.required || field.requiredIssue === false) return;
       if (field.visibleWhen && !definitions.matches(field.visibleWhen, step))
         return;
       if (isBlank(params[field.param]))
@@ -2182,31 +2262,67 @@
           message: `${definition.label}: ${labelText(field)} is required. Fill it in on the step.`,
         });
     });
-    (definition.validation || []).forEach((rule, index) => {
-      if (rule.builtIn) return;
-      if (
-        rule.when &&
-        rule.when !== "always" &&
-        !definitions.matches(rule.when, step)
-      )
+    const rules = definition.validation || [];
+    const applies = (rule) =>
+      !rule.when ||
+      rule.when === "always" ||
+      definitions.matches(rule.when, step);
+    const fieldOf = (param) =>
+      param
+        ? definitions
+            .fields(definition, subtype)
+            .find((item) => item.param === param)
+        : null;
+    const entry = (rule, index, message) => {
+      const param = rule.param || rule.require || "";
+      const field = fieldOf(param);
+      return {
+        id: rule.id || `rule-${index + 1}`,
+        severity: rule.severity,
+        param,
+        label: field ? labelText(field) : param,
+        title: `${definition.label} step needs attention`,
+        message,
+        ...(rule.fix ? { fix: JSON.parse(JSON.stringify(rule.fix)) } : {}),
+      };
+    };
+    const checked = new Set();
+    rules.forEach((rule, index) => {
+      if (rule.builtIn || (fixesOnly && !rule.fix)) return;
+      if (rule.problems) {
+        // A problem check runs once; each message goes to the first rule of
+        // that check whose match finds it, in the order the check gives.
+        const name = rule.problems.check;
+        if (checked.has(name)) return;
+        checked.add(name);
+        const routes = rules
+          .map((item, at) => ({ rule: item, at }))
+          .filter(
+            ({ rule: item }) => item.problems?.check === name && applies(item),
+          );
+        const messages = PROBLEM_CHECKS[name]?.(params, step) || [];
+        (Array.isArray(messages) ? messages : []).forEach((message) => {
+          const said = text(message);
+          const route = routes.find(
+            ({ rule: item }) =>
+              item.problems.match === undefined ||
+              new RegExp(item.problems.match).test(said),
+          );
+          if (route)
+            issues.push(
+              entry(
+                route.rule,
+                route.at,
+                route.rule.lead ? `${route.rule.lead} ${said}` : said,
+              ),
+            );
+        });
         return;
+      }
+      if (!applies(rule)) return;
       const missing = rule.require && isBlank(params[rule.require]);
       const failed = rule.check && !definitions.matches(rule.check, step);
-      if (missing || failed) {
-        const field = rule.require
-          ? definitions
-              .fields(definition, subtype)
-              .find((item) => item.param === rule.require)
-          : null;
-        issues.push({
-          id: rule.id || `rule-${index + 1}`,
-          severity: rule.severity,
-          param: rule.require || "",
-          label: field ? labelText(field) : rule.require || "",
-          title: `${definition.label} step needs attention`,
-          message: rule.message,
-        });
-      }
+      if (missing || failed) issues.push(entry(rule, index, rule.message));
     });
     return issues;
   }
@@ -2217,6 +2333,7 @@
     BLOCK_NAMES: Object.freeze(Object.keys(BLOCKS)),
     FIELD_CONTROLS,
     HANDLER_NAMES: Object.freeze(Object.keys(HANDLERS)),
+    PROBLEM_CHECK_NAMES: Object.freeze(Object.keys(PROBLEM_CHECKS)),
     load,
     loadBundled,
     loadFromServer,
@@ -2234,6 +2351,7 @@
     definitionById,
     definitionFor,
     normalize,
+    normalizeFields,
     english,
     partial,
     storedConditions: storedConditionsFor,
@@ -2256,6 +2374,7 @@
     renderEditor,
     rerenderParams,
     validate,
+    fieldProblems,
   });
   global.ATLASStepTypeRuntime = api;
 

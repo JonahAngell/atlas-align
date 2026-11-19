@@ -71,8 +71,9 @@ function normalizeCatalogStep(step, index = 0) {
   if (!step.step_type && !step.type) step.step_type = "if_then";
   if (!globalThis.ATLASStepTypeRuntime?.normalize?.(step, index))
     atlasNormalizeUnknownStep(step, index);
+  // Field clean-up (string transforms, structured settings) runs in the
+  // runtime's normalize, from each field's `normalize` handler.
   atlasNormalizeMathParams(step);
-  atlasNormalizeStringTransformParams(step);
   return step;
 }
 
@@ -1715,53 +1716,59 @@ function atlasRegisterSplitResults(step) {
   return registered[0] || null;
 }
 
-/** Brings string transformation params up to the current shape. */
+/**
+ * Brings a Create Column string transformation up to the current shape (the
+ * create_column_string_transform normalize handler).
+ * @param {any} normalized - The step, changed in place.
+ */
 function atlasNormalizeStringTransformParams(normalized) {
   const p = normalized.params || (normalized.params = {});
-  if (normalized.step_type === "create_column") {
-    if (
-      ["first_characters", "last_characters", "character_count"].includes(
-        p.expression_type,
-      )
-    ) {
-      p.value_mode = ATLAS_STRING_TRANSFORM_VALUE_MODE;
-      p.string_operation =
-        p.expression_type === "character_count" ? "string_length" : "substring";
-      p.string_position =
-        p.expression_type === "last_characters" ? "last" : "first";
-      p.string_source_file =
-        p.string_source_file || p.source_file || normalized.source || "";
-      p.string_source_field =
-        p.string_source_field ||
-        p.expression_source_field ||
-        p.field_name ||
-        "";
-      p.string_character_count =
-        p.string_character_count || p.character_count || "";
-    }
-    if (p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE) {
-      const normalizedString = atlasStringTransformConfig(p);
-      p.string_operation = normalizedString.operation;
-      p.string_position = normalizedString.position;
-      p.string_source_file =
-        p.string_source_file || p.source_file || normalized.source || "";
-      p.string_source_alias =
-        sourceAliasFor?.(p.string_source_file) || p.string_source_file;
-      if (normalizedString.operation === "split") {
-        p.string_split_mode = normalizedString.splitMode;
-        p.string_split_delimiter = normalizedString.delimiterChoice;
-        // Named splits keep column_name on the first output so checks and
-        // pickers that read one created name still find this step.
-        if (normalizedString.named && normalizedString.outputColumns[0])
-          p.column_name = normalizedString.outputColumns[0];
-      }
-      atlasRegisterStringTransformResult(normalized);
-    }
-  }
   if (
-    normalized.step_type === "if_then" &&
-    p.then_action_type === "set_column_string_transform"
+    ["first_characters", "last_characters", "character_count"].includes(
+      p.expression_type,
+    )
   ) {
+    p.value_mode = ATLAS_STRING_TRANSFORM_VALUE_MODE;
+    p.string_operation =
+      p.expression_type === "character_count" ? "string_length" : "substring";
+    p.string_position =
+      p.expression_type === "last_characters" ? "last" : "first";
+    p.string_source_file =
+      p.string_source_file || p.source_file || normalized.source || "";
+    p.string_source_field =
+      p.string_source_field || p.expression_source_field || p.field_name || "";
+    p.string_character_count =
+      p.string_character_count || p.character_count || "";
+  }
+  if (p.value_mode === ATLAS_STRING_TRANSFORM_VALUE_MODE) {
+    const normalizedString = atlasStringTransformConfig(p);
+    p.string_operation = normalizedString.operation;
+    p.string_position = normalizedString.position;
+    p.string_source_file =
+      p.string_source_file || p.source_file || normalized.source || "";
+    p.string_source_alias =
+      sourceAliasFor?.(p.string_source_file) || p.string_source_file;
+    if (normalizedString.operation === "split") {
+      p.string_split_mode = normalizedString.splitMode;
+      p.string_split_delimiter = normalizedString.delimiterChoice;
+      // Named splits keep column_name on the first output so checks and
+      // pickers that read one created name still find this step.
+      if (normalizedString.named && normalizedString.outputColumns[0])
+        p.column_name = normalizedString.outputColumns[0];
+    }
+    atlasRegisterStringTransformResult(normalized);
+  }
+  return normalized;
+}
+
+/**
+ * Brings a THEN string transformation up to the current shape (the
+ * then_string_transform normalize handler, on the action kind's field).
+ * @param {any} normalized - The step, changed in place.
+ */
+function atlasNormalizeThenStringTransformParams(normalized) {
+  const p = normalized.params || (normalized.params = {});
+  if (p.then_action_type === "set_column_string_transform") {
     const normalizedThenString = atlasStringTransformConfig(p, "then_");
     p.then_string_operation = normalizedThenString.operation;
     p.then_string_position = normalizedThenString.position;
@@ -2324,21 +2331,6 @@ function atlasRemoveDuplicatesProblems(p = {}) {
     problems.push("Choose which record to keep.");
   return problems;
 }
-
-const atlasNormalizeCatalogStepBeforeStructuredEditors = normalizeCatalogStep;
-normalizeCatalogStep = function normalizeCatalogStepWithStructuredEditors(
-  step,
-  index = 0,
-) {
-  const normalized = atlasNormalizeCatalogStepBeforeStructuredEditors(
-    step,
-    index,
-  );
-  const target = normalized || step;
-  if (target?.step_type === "create_column")
-    atlasNormalizeCreateColumnStructuredParams(target.params);
-  return normalized;
-};
 
 // Conditions: one operator vocabulary, a run parameter mode and value arrays
 // (js/step-types/05-conditions.js).

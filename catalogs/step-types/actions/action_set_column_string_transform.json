@@ -21,7 +21,8 @@
       "param": "then_string_operation",
       "control": "block",
       "block": "action_set_column_string_transform",
-      "label": "Operation"
+      "label": "Operation",
+      "normalize": "then_string_transform"
     }
   ],
   "complete": [

@@ -32,7 +32,8 @@
       "param": "then_action_type",
       "control": "action",
       "label": "ELSE action",
-      "branch": "ELSE"
+      "branch": "ELSE",
+      "normalize": "exclude_scope"
     }
   ],
   "english": {
@@ -116,6 +117,28 @@
     },
     {
       "builtIn": "action"
+    },
+    {
+      "id": "exclude_key_field",
+      "when": {
+        "all": [
+          {
+            "param": "then_action_type",
+            "equals": "do_not_display"
+          },
+          {
+            "param": "then_exclude_scope",
+            "equals": "key"
+          }
+        ]
+      },
+      "require": "then_exclude_key_field",
+      "severity": "critical",
+      "message": "Do Not Display: choose the key field whose records are hidden.",
+      "fix": {
+        "sourceParam": "then_exclude_key_source_file",
+        "title": "Choose key field"
+      }
     }
   ]
 }
