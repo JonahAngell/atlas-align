@@ -216,6 +216,39 @@ test("File Utility run history is one additive, audit scoped table", () => {
   assert.doesNotMatch(runsUp, /\bBEGIN\b|\bCOMMIT\b/i);
   assert.match(runsMigration, /DROP TABLE IF EXISTS atlas_audit_runs/);
 });
+const runVersionsMigration = readFileSync(
+  resolve(
+    here,
+    "../.launch/migrations/20261119120000_add_atlas_audit_run_step_type_versions.sql",
+  ),
+  "utf8",
+);
+const [runVersionsUp, runVersionsDown] =
+  runVersionsMigration.split("-- migrate:down");
+test("runs record their step type versions in one nullable column", () => {
+  assert.match(
+    runVersionsUp,
+    /ALTER TABLE atlas_audit_runs\s+ADD COLUMN IF NOT EXISTS step_type_versions jsonb,/,
+  );
+  // Nullable with no default: older runs and older File Utility builds
+  // leave it empty rather than claiming no step types were used.
+  assert.doesNotMatch(runVersionsUp, /step_type_versions jsonb NOT NULL/);
+  assert.doesNotMatch(runVersionsUp, /DEFAULT/);
+  assert.match(
+    runVersionsUp,
+    /CHECK \(step_type_versions IS NULL OR jsonb_typeof\(step_type_versions\) = 'object'\)/,
+  );
+  assert.doesNotMatch(
+    runVersionsUp,
+    /\b(UPDATE atlas_\w+|INSERT INTO|DELETE FROM|DROP)\b/i,
+  );
+  assert.doesNotMatch(runVersionsUp, /\bBEGIN\b|\bCOMMIT\b/i);
+  assert.match(
+    runVersionsDown,
+    /DROP CONSTRAINT IF EXISTS ck_atlas_audit_runs_step_type_versions_object/,
+  );
+  assert.match(runVersionsDown, /DROP COLUMN IF EXISTS step_type_versions/);
+});
 test("rejects a prototype replacement header", () => {
   const headers = [...FIELD_LIBRARY_COLUMNS];
   headers[0] = "__proto__";
