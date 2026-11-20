@@ -142,10 +142,46 @@
 │   ├── requirements-preview.css
 │   ├── sources.css
 │   └── visual-picker.css
+├── dist
+│   └── copilot-agent
+│       ├── knowledge
+│       │   ├── ATLAS_PLATFORM.md
+│       │   ├── AUDIT_JSON_FORMAT.md
+│       │   ├── STEP_TYPE_AUTHORING.md
+│       │   └── STEP_TYPE_REFERENCE.md
+│       ├── skills
+│       │   ├── atlas-audit-json.zip
+│       │   ├── atlas-conditions-actions.zip
+│       │   ├── atlas-file-utility-readiness.zip
+│       │   ├── atlas-source-library.zip
+│       │   ├── atlas-step-type-authoring.zip
+│       │   └── atlas-step-type-selection.zip
+│       └── INSTRUCTIONS.md
 ├── docs
 │   ├── audit-imports
 │   │   ├── diesi-sapl-infotypes-missing-notebook.json
 │   │   └── legacy-filter-flag-check.json
+│   ├── copilot
+│   │   ├── knowledge
+│   │   │   ├── ATLAS_PLATFORM.md
+│   │   │   ├── AUDIT_JSON_FORMAT.md
+│   │   │   ├── STEP_TYPE_AUTHORING.md
+│   │   │   └── STEP_TYPE_REFERENCE.md
+│   │   ├── skills
+│   │   │   ├── atlas-audit-json
+│   │   │   │   └── SKILL.md
+│   │   │   ├── atlas-conditions-actions
+│   │   │   │   └── SKILL.md
+│   │   │   ├── atlas-file-utility-readiness
+│   │   │   │   └── SKILL.md
+│   │   │   ├── atlas-source-library
+│   │   │   │   └── SKILL.md
+│   │   │   ├── atlas-step-type-authoring
+│   │   │   │   └── SKILL.md
+│   │   │   └── atlas-step-type-selection
+│   │   │       └── SKILL.md
+│   │   ├── INSTRUCTIONS.md
+│   │   └── README.md
 │   ├── App Update Documentation.docx
 │   ├── ATLAS Field Library.csv
 │   ├── ATLAS_AUDIT_WORKFLOW_CONTRACT.md
@@ -564,6 +600,7 @@
 │   ├── code-export.test.js
 │   ├── complete-statements-preview.test.js
 │   ├── condition-action-matrix.test.js
+│   ├── copilot-agent.test.js
 │   ├── custom-source.test.js
 │   ├── deep-links.test.js
 │   ├── developer-logic.test.js
@@ -673,6 +710,7 @@
 │   └── smoke.spec.js
 ├── tools
 │   ├── analyze-css-cascade.mjs
+│   ├── build-copilot-agent.mjs
 │   ├── build-step-type-manifest.mjs
 │   ├── check-syntax.mjs
 │   ├── clear_database.sql

@@ -11,3 +11,6 @@ REVIEW_BUNDLE*.txt
 
 # CodeGraph local index (rebuilt with `codegraph init`)
 .codegraph/
+
+# Copilot agent upload files (npm run copilot:build)
+dist/
