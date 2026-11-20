@@ -441,6 +441,12 @@
 ├── src
 │   ├── ai
 │   │   ├── code
+│   │   │   ├── facts
+│   │   │   │   ├── index.js
+│   │   │   │   ├── python-tokens.js
+│   │   │   │   ├── python.js
+│   │   │   │   ├── sql-tokens.js
+│   │   │   │   └── sql.js
 │   │   │   ├── export-sandbox.js
 │   │   │   ├── ingest.js
 │   │   │   └── scan.js
@@ -494,6 +500,10 @@
 │   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
+│   │   ├── code-import
+│   │   │   └── constructs
+│   │   │       ├── pandas-handwritten.py
+│   │   │       └── tsql-handwritten.sql
 │   │   ├── condition-action-matrix
 │   │   │   ├── recorded
 │   │   │   │   ├── actions.json
@@ -561,6 +571,7 @@
 │   │   └── step-type-scripts.js
 │   ├── action-kind-catalog.test.js
 │   ├── ai-client.test.js
+│   ├── ai-code-facts.test.js
 │   ├── ai-code-ingest.test.js
 │   ├── ai-export-sandbox.test.js
 │   ├── ai-routes.test.js
