@@ -166,6 +166,7 @@
 │   │   │       └── SKILL.md
 │   │   ├── INSTRUCTIONS.md
 │   │   └── README.md
+│   ├── AI_PARSER_SPIKE.md
 │   ├── App Update Documentation.docx
 │   ├── ATLAS Field Library.csv
 │   ├── ATLAS_AUDIT_WORKFLOW_CONTRACT.md
