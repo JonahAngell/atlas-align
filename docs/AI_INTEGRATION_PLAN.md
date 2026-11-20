@@ -2,6 +2,8 @@
 
 Status: design only. No application code changes in this document's branch.
 
+> **Priority update (2026-11-20).** Code to Logic (translating SQL, Python and notebooks into steps), code-aware chat and the AI review features are planned in `docs/AI_CODE_TO_LOGIC_PLAN.md`. That document's §9 replaces the rollout order in §9 below. Everything else here still applies.
+
 This plan adds one AI assistant panel and three inline AI tools to ATLAS Align. It reuses patterns proven in the Resume Engine (`resume_engine/backend/app/ai_client.py`, `ai_chat.py`, `ai_schemas.py`, `docs/ai_suggestions_blueprint.md`), rebuilt for this Node/Express codebase. Every AI output is a suggestion. Nothing is written to an audit until a person approves it, and every write goes through a save path that already exists.
 
 Rules applied: `.claude/rules/core/security.md`, `design-foundations.md`, `contributing.md`, and `.claude/rules/products/studioshare-launch.md`.
