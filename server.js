@@ -133,11 +133,15 @@ import { createPreviewRouter } from "./src/routes/preview-routes.js";
 import { createWorkflowRouter } from "./src/routes/workflow-routes.js";
 import { createReviewRouter } from "./src/routes/review-routes.js";
 import { createStepTypeRouter } from "./src/routes/step-type-routes.js";
+import { createAiRouter } from "./src/routes/ai-routes.js";
+import { createAiClient } from "./src/ai/client.js";
+import { aiConfig } from "./src/ai/config.js";
 import {
   importRepositoryStepTypes,
   listStepTypes,
 } from "./src/step-type-repository.js";
 import {
+  aiRateLimits,
   apiRateLimits,
   securityHeaders,
   useJsonBodyParsers,
@@ -813,6 +817,19 @@ app.use(createPreviewRouter(routeContext));
 app.use(createWorkflowRouter(routeContext));
 app.use(createReviewRouter(routeContext));
 app.use(createStepTypeRouter(routeContext));
+{
+  const settings = aiConfig();
+  app.use(
+    createAiRouter({
+      requireCurrentUser,
+      aiClient: createAiClient(),
+      aiLimits: aiRateLimits({
+        perMinute: settings.perMinute,
+        perDay: settings.perDay,
+      }),
+    }),
+  );
+}
 
 app.use((error, _req, res, _next) => {
   if (error instanceof multer.MulterError) {

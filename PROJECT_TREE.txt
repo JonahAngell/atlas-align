@@ -17,8 +17,7 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   ├── settings.json
-│   └── settings.local.json
+│   └── settings.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -142,21 +141,6 @@
 │   ├── requirements-preview.css
 │   ├── sources.css
 │   └── visual-picker.css
-├── dist
-│   └── copilot-agent
-│       ├── knowledge
-│       │   ├── ATLAS_PLATFORM.md
-│       │   ├── AUDIT_JSON_FORMAT.md
-│       │   ├── STEP_TYPE_AUTHORING.md
-│       │   └── STEP_TYPE_REFERENCE.md
-│       ├── skills
-│       │   ├── atlas-audit-json.zip
-│       │   ├── atlas-conditions-actions.zip
-│       │   ├── atlas-file-utility-readiness.zip
-│       │   ├── atlas-source-library.zip
-│       │   ├── atlas-step-type-authoring.zip
-│       │   └── atlas-step-type-selection.zip
-│       └── INSTRUCTIONS.md
 ├── docs
 │   ├── audit-imports
 │   │   ├── diesi-sapl-infotypes-missing-notebook.json
@@ -455,7 +439,13 @@
 │   │   └── resolve-impersonation-session.sql
 │   └── .prettierrc
 ├── src
+│   ├── ai
+│   │   ├── cache.js
+│   │   ├── client.js
+│   │   ├── config.js
+│   │   └── json.js
 │   ├── routes
+│   │   ├── ai-routes.js
 │   │   ├── audit-routes.js
 │   │   ├── field-library-routes.js
 │   │   ├── identity-routes.js
@@ -566,6 +556,8 @@
 │   │   ├── step-type-harness.js
 │   │   └── step-type-scripts.js
 │   ├── action-kind-catalog.test.js
+│   ├── ai-client.test.js
+│   ├── ai-routes.test.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js
