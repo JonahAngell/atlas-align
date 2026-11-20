@@ -1,0 +1,96 @@
+{
+  "tier": "G1",
+  "exportDate": "2026-01-01",
+  "scripts": [
+    {
+      "id": "currency-accuracy-outside-north-america",
+      "from": "audits/Currency_Accuracy_Outside_North_America.json",
+      "title": "Currency Accuracy Outside North America",
+      "steps": 66,
+      "sql": "currency-accuracy-outside-north-america.sql",
+      "python": "currency-accuracy-outside-north-america.py",
+      "expected": "currency-accuracy-outside-north-america.audit.json",
+      "syntheticValues": 2
+    },
+    {
+      "id": "untitled-audit",
+      "from": "audits/Untitled_Audit.json",
+      "title": "Untitled Audit",
+      "steps": 2,
+      "sql": "untitled-audit.sql",
+      "python": "untitled-audit.py",
+      "expected": "untitled-audit.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "active-employees-in-sap-not-wd",
+      "from": "audits/active-employees-in-sap-not-wd.json",
+      "title": "Active Employees in SAP, Not WD",
+      "steps": 43,
+      "sql": "active-employees-in-sap-not-wd.sql",
+      "python": "active-employees-in-sap-not-wd.py",
+      "expected": "active-employees-in-sap-not-wd.audit.json",
+      "syntheticValues": 5
+    },
+    {
+      "id": "dcl-it210",
+      "from": "audits/dcl-it210.json",
+      "title": "DCL IT210",
+      "steps": 24,
+      "sql": "dcl-it210.sql",
+      "python": "dcl-it210.py",
+      "expected": "dcl-it210.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "dcl-loa-90-day",
+      "from": "audits/dcl-loa-90-day.json",
+      "title": "DCL LOA 90 Day",
+      "steps": 16,
+      "sql": "dcl-loa-90-day.sql",
+      "python": "dcl-loa-90-day.py",
+      "expected": "dcl-loa-90-day.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "diesi-sapl-infotypes-missing",
+      "from": "audits/diesi-sapl---infotypes-missing.json",
+      "title": "DIESI SAPL - Infotypes Missing",
+      "steps": 40,
+      "sql": "diesi-sapl-infotypes-missing.sql",
+      "python": "diesi-sapl-infotypes-missing.py",
+      "expected": "diesi-sapl-infotypes-missing.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "sample-audit-logic-flow",
+      "from": "audits/sample-audit-logic-flow.json",
+      "title": "Sample Audit Logic Flow",
+      "steps": 2,
+      "sql": "sample-audit-logic-flow.sql",
+      "python": "sample-audit-logic-flow.py",
+      "expected": "sample-audit-logic-flow.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "service-dates",
+      "from": "audits/service-dates.json",
+      "title": "Service Dates",
+      "steps": 131,
+      "sql": "service-dates.sql",
+      "python": "service-dates.py",
+      "expected": "service-dates.audit.json",
+      "syntheticValues": 0
+    },
+    {
+      "id": "diesi-sapl-infotypes-missing-notebook",
+      "from": "docs/audit-imports/diesi-sapl-infotypes-missing-notebook.json",
+      "title": "DIESI SAPL - Infotypes Missing (Notebook)",
+      "steps": 36,
+      "sql": "diesi-sapl-infotypes-missing-notebook.sql",
+      "python": "diesi-sapl-infotypes-missing-notebook.py",
+      "expected": "diesi-sapl-infotypes-missing-notebook.audit.json",
+      "syntheticValues": 0
+    }
+  ]
+}

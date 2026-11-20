@@ -85,9 +85,13 @@ const asText = (value) =>
 
 /**
  * { sql, python } for the audit, as ATLAS's export writes them.
- * The audit is copied, so the caller's object is never changed.
+ * The audit is copied, so the caller's object is never changed. `today`
+ * fixes the export date in the header, for fixtures.
  */
-export function exportAuditCode(audit, { timeoutMs = 5000 } = {}) {
+export function exportAuditCode(
+  audit,
+  { timeoutMs = 5000, today = null } = {},
+) {
   const copy = structuredClone(audit || {});
   let counter = 0;
   const context = vm.createContext({
@@ -95,7 +99,7 @@ export function exportAuditCode(audit, { timeoutMs = 5000 } = {}) {
     console: quiet,
     document: noDocument,
     uid: (prefix = "id") => `${prefix}_${++counter}`,
-    today: () => new Date().toISOString().slice(0, 10),
+    today: () => today || new Date().toISOString().slice(0, 10),
     atlasDisplayDocument: () => null,
   });
   const { list, catalog } = scripts();
