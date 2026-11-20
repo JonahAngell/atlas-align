@@ -1,6 +1,6 @@
 {
   "name": "atlas-align",
-  "version": "3.8.1",
+  "version": "3.8.7",
   "private": true,
   "description": "ATLAS Align audit logic builder: Express server, PostgreSQL storage, and browser application for StudioShare Launch",
   "type": "module",
@@ -15,6 +15,7 @@
     "test": "node --test",
     "snapshots:record": "node tools/record-step-type-snapshots.mjs",
     "matrix:record": "node tools/record-condition-action-matrix.mjs",
+    "gold:build": "node tools/build-code-import-gold.mjs",
     "step-types:manifest": "node tools/build-step-type-manifest.mjs",
     "copilot:build": "node tools/build-copilot-agent.mjs --package",
     "local:up": "docker compose up --build",

@@ -1,0 +1,45 @@
+USE [HRAudit];
+GO
+SET NOCOUNT ON;
+DECLARE @AsOf DATE = '2026-01-31', @Area NVARCHAR(10);
+SET @Area = '2450';
+
+/* Active cast from SAP */
+SELECT e.[PERNR], e.[Name], ISNULL(e.[Email], '') AS [Email]
+INTO #active
+FROM [HR].[dbo].[PA0000] e WITH (NOLOCK)
+INNER JOIN dbo.PA0001 AS a ON a.PERNR = e.PERNR AND a.ENDDA >= @AsOf
+WHERE e.[STAT2] = '3'
+  AND a.WERKS = @Area
+  AND LTRIM(RTRIM(e.[Name])) <> ''
+  AND e.PERSG NOT IN ('9', 'X');
+
+UPDATE #active
+SET [Flag] = CASE WHEN [Email] = '' THEN 'Missing email' ELSE NULL END
+WHERE [Name] IS NOT NULL;
+
+WITH ranked AS (
+  SELECT *, ROW_NUMBER() OVER (PARTITION BY [PERNR] ORDER BY [BEGDA] DESC) AS rn
+  FROM #active
+), wd AS (
+  SELECT [Employee_ID], [Legacy_ID] FROM wd.Workers
+)
+SELECT r.PERNR, w.[Employee_ID]
+FROM ranked r
+LEFT OUTER JOIN wd w ON w.[Legacy_ID] = RIGHT(REPLICATE('0', 8) + r.PERNR, 8)
+WHERE r.rn = 1
+ORDER BY r.PERNR DESC;
+
+SELECT TOP 10 PERNR, COUNT(*) AS n FROM #active GROUP BY PERNR HAVING COUNT(*) > 1;
+SELECT x.* FROM #active x CROSS APPLY (SELECT TOP 1 * FROM dbo.PA0002 p WHERE p.PERNR = x.PERNR) y;
+DECLARE @sql NVARCHAR(MAX) = N'SELECT * FROM ' + QUOTENAME(@Area);
+EXEC (@sql);
+EXEC sp_executesql @sql;
+MERGE dbo.Target AS t USING #active AS s ON t.PERNR = s.PERNR
+WHEN MATCHED THEN UPDATE SET t.Name = s.Name
+WHEN NOT MATCHED THEN INSERT (PERNR) VALUES (s.PERNR);
+DECLARE c CURSOR FOR SELECT PERNR FROM #active;
+OPEN c;
+SELECT * FROM (SELECT PERNR, BTRTL FROM #active) src PIVOT (COUNT(BTRTL) FOR BTRTL IN ([A], [B])) p;
+SELECT PERNR FROM #active UNION ALL SELECT PERNR FROM dbo.PA0001
+GO

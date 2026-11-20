@@ -109,6 +109,43 @@ export function apiRateLimits({
   };
 }
 
+const AI_LIMIT_DETAIL =
+  "You've reached the AI request limit. Wait a minute, then try again.";
+const AI_DAILY_DETAIL =
+  "You've reached today's AI request limit. You can keep working without AI, and the limit resets tomorrow.";
+
+/**
+ * Per-user limits for AI calls, on top of the global API limits. Over the
+ * limit, the reply is the AI envelope with status "rate_limited". Counts are
+ * per process, so with replicas the real limit is N times this (decision D5).
+ * GET /api/ai/status is not counted.
+ */
+export function aiRateLimits({ perMinute = 10, perDay = 200 } = {}) {
+  const envelope = (detail) => (_req, res) =>
+    res.status(429).json({ status: "rate_limited", detail, proposals: [] });
+  const common = {
+    keyGenerator: rateLimitKey,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    validate: { xForwardedForHeader: false },
+    skip: (req) => req.method === "GET" && /\/status$/.test(req.path),
+  };
+  return {
+    minute: rateLimit({
+      ...common,
+      windowMs: RATE_LIMIT_WINDOW_MS,
+      limit: perMinute,
+      handler: envelope(AI_LIMIT_DETAIL),
+    }),
+    day: rateLimit({
+      ...common,
+      windowMs: 24 * 60 * 60 * 1000,
+      limit: perDay,
+      handler: envelope(AI_DAILY_DETAIL),
+    }),
+  };
+}
+
 /** Registers the large document parser on its routes, then the default parser. */
 export function useJsonBodyParsers(app) {
   const largeJson = express.json({ limit: LARGE_JSON_LIMIT });

@@ -17,8 +17,7 @@
 │   │       └── typescript.md
 │   ├── CLAUDE.md
 │   ├── launch.json
-│   ├── settings.json
-│   └── settings.local.json
+│   └── settings.json
 ├── .cursor
 │   └── rules
 │       ├── core
@@ -142,21 +141,6 @@
 │   ├── requirements-preview.css
 │   ├── sources.css
 │   └── visual-picker.css
-├── dist
-│   └── copilot-agent
-│       ├── knowledge
-│       │   ├── ATLAS_PLATFORM.md
-│       │   ├── AUDIT_JSON_FORMAT.md
-│       │   ├── STEP_TYPE_AUTHORING.md
-│       │   └── STEP_TYPE_REFERENCE.md
-│       ├── skills
-│       │   ├── atlas-audit-json.zip
-│       │   ├── atlas-conditions-actions.zip
-│       │   ├── atlas-file-utility-readiness.zip
-│       │   ├── atlas-source-library.zip
-│       │   ├── atlas-step-type-authoring.zip
-│       │   └── atlas-step-type-selection.zip
-│       └── INSTRUCTIONS.md
 ├── docs
 │   ├── audit-imports
 │   │   ├── diesi-sapl-infotypes-missing-notebook.json
@@ -182,6 +166,7 @@
 │   │   │       └── SKILL.md
 │   │   ├── INSTRUCTIONS.md
 │   │   └── README.md
+│   ├── AI_PARSER_SPIKE.md
 │   ├── App Update Documentation.docx
 │   ├── ATLAS Field Library.csv
 │   ├── ATLAS_AUDIT_WORKFLOW_CONTRACT.md
@@ -455,7 +440,23 @@
 │   │   └── resolve-impersonation-session.sql
 │   └── .prettierrc
 ├── src
+│   ├── ai
+│   │   ├── code
+│   │   │   ├── facts
+│   │   │   │   ├── index.js
+│   │   │   │   ├── python-tokens.js
+│   │   │   │   ├── python.js
+│   │   │   │   ├── sql-tokens.js
+│   │   │   │   └── sql.js
+│   │   │   ├── export-sandbox.js
+│   │   │   ├── ingest.js
+│   │   │   └── scan.js
+│   │   ├── cache.js
+│   │   ├── client.js
+│   │   ├── config.js
+│   │   └── json.js
 │   ├── routes
+│   │   ├── ai-routes.js
 │   │   ├── audit-routes.js
 │   │   ├── field-library-routes.js
 │   │   ├── identity-routes.js
@@ -500,6 +501,39 @@
 │   └── qtest-test-design-template.xlsx
 ├── test
 │   ├── fixtures
+│   │   ├── code-import
+│   │   │   ├── constructs
+│   │   │   │   ├── pandas-handwritten.py
+│   │   │   │   └── tsql-handwritten.sql
+│   │   │   └── g1
+│   │   │       ├── active-employees-in-sap-not-wd.audit.json
+│   │   │       ├── active-employees-in-sap-not-wd.py
+│   │   │       ├── active-employees-in-sap-not-wd.sql
+│   │   │       ├── currency-accuracy-outside-north-america.audit.json
+│   │   │       ├── currency-accuracy-outside-north-america.py
+│   │   │       ├── currency-accuracy-outside-north-america.sql
+│   │   │       ├── dcl-it210.audit.json
+│   │   │       ├── dcl-it210.py
+│   │   │       ├── dcl-it210.sql
+│   │   │       ├── dcl-loa-90-day.audit.json
+│   │   │       ├── dcl-loa-90-day.py
+│   │   │       ├── dcl-loa-90-day.sql
+│   │   │       ├── diesi-sapl-infotypes-missing-notebook.audit.json
+│   │   │       ├── diesi-sapl-infotypes-missing-notebook.py
+│   │   │       ├── diesi-sapl-infotypes-missing-notebook.sql
+│   │   │       ├── diesi-sapl-infotypes-missing.audit.json
+│   │   │       ├── diesi-sapl-infotypes-missing.py
+│   │   │       ├── diesi-sapl-infotypes-missing.sql
+│   │   │       ├── manifest.json
+│   │   │       ├── sample-audit-logic-flow.audit.json
+│   │   │       ├── sample-audit-logic-flow.py
+│   │   │       ├── sample-audit-logic-flow.sql
+│   │   │       ├── service-dates.audit.json
+│   │   │       ├── service-dates.py
+│   │   │       ├── service-dates.sql
+│   │   │       ├── untitled-audit.audit.json
+│   │   │       ├── untitled-audit.py
+│   │   │       └── untitled-audit.sql
 │   │   ├── condition-action-matrix
 │   │   │   ├── recorded
 │   │   │   │   ├── actions.json
@@ -566,6 +600,12 @@
 │   │   ├── step-type-harness.js
 │   │   └── step-type-scripts.js
 │   ├── action-kind-catalog.test.js
+│   ├── ai-client.test.js
+│   ├── ai-code-facts.test.js
+│   ├── ai-code-gold.test.js
+│   ├── ai-code-ingest.test.js
+│   ├── ai-export-sandbox.test.js
+│   ├── ai-routes.test.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
 │   ├── atlas-audit-issues.test.js
@@ -710,6 +750,7 @@
 │   └── smoke.spec.js
 ├── tools
 │   ├── analyze-css-cascade.mjs
+│   ├── build-code-import-gold.mjs
 │   ├── build-copilot-agent.mjs
 │   ├── build-step-type-manifest.mjs
 │   ├── check-syntax.mjs
