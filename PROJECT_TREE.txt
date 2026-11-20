@@ -440,6 +440,9 @@
 │   └── .prettierrc
 ├── src
 │   ├── ai
+│   │   ├── code
+│   │   │   ├── ingest.js
+│   │   │   └── scan.js
 │   │   ├── cache.js
 │   │   ├── client.js
 │   │   ├── config.js
@@ -557,6 +560,7 @@
 │   │   └── step-type-scripts.js
 │   ├── action-kind-catalog.test.js
 │   ├── ai-client.test.js
+│   ├── ai-code-ingest.test.js
 │   ├── ai-routes.test.js
 │   ├── app-version-git-hook.test.js
 │   ├── app-version-sync.test.js
