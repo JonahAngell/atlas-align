@@ -16,6 +16,7 @@
     "snapshots:record": "node tools/record-step-type-snapshots.mjs",
     "matrix:record": "node tools/record-condition-action-matrix.mjs",
     "step-types:manifest": "node tools/build-step-type-manifest.mjs",
+    "copilot:build": "node tools/build-copilot-agent.mjs --package",
     "local:up": "docker compose up --build",
     "local:down": "docker compose down",
     "local:reset": "docker compose down -v",
